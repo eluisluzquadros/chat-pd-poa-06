@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AlertTriangle, CheckCircle, XCircle, Play, BarChart3, FileText } from "lucide-react";
 import { toast } from "sonner";
+import { AddTestCaseDialog } from "./AddTestCaseDialog";
 
 interface QAValidationRun {
   id: string;
@@ -297,10 +298,15 @@ export function QADashboard() {
         <TabsContent value="cases" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Casos de Teste Ativos</CardTitle>
-              <CardDescription>
-                Questões e respostas esperadas para validação
-              </CardDescription>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle>Casos de Teste Ativos</CardTitle>
+                  <CardDescription>
+                    Questões e respostas esperadas para validação
+                  </CardDescription>
+                </div>
+                <AddTestCaseDialog onTestCaseAdded={fetchData} />
+              </div>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
