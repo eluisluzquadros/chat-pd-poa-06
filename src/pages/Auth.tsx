@@ -7,7 +7,7 @@ import { GoogleAuthButton } from '@/components/auth/GoogleAuthButton';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { InterestForm } from '@/components/auth/InterestForm';
 import { Card, CardContent } from '@/components/ui/card';
-import { Loader2, UserPlus, Shield } from 'lucide-react';
+import { Loader2, UserPlus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { SecureAuthService } from '@/services/secureAuthService';
 import { toast } from 'sonner';
@@ -17,7 +17,6 @@ import { DemoSetupButton } from '@/components/DemoSetupButton';
 const AuthPage = () => {
   const { isAuthenticated, refreshAuthState } = useAuth();
   const [isInterestModalOpen, setIsInterestModalOpen] = useState(false);
-  const [demoLoading, setDemoLoading] = useState(false);
   const [authMode, setAuthMode] = useState<'login' | 'signup'>('login');
   const navigate = useNavigate();
 
@@ -44,24 +43,6 @@ const AuthPage = () => {
     setIsInterestModalOpen(false);
   };
 
-  const handleDemoLogin = async () => {
-    setDemoLoading(true);
-    try {
-      const result = await SecureAuthService.signIn('demo@pdus.com', 'Demo123!');
-      if (result.success) {
-        toast.success("Acesso demo supervisor ativado!");
-        await refreshAuthState();
-        navigate('/chat', { replace: true });
-      } else {
-        toast.error(result.error || "Erro ao ativar modo demo");
-      }
-    } catch (error) {
-      toast.error("Erro ao ativar modo demo");
-      console.error("Demo login error:", error);
-    } finally {
-      setDemoLoading(false);
-    }
-  };
   
   return (
     <div className="min-h-screen flex flex-col" style={{
@@ -104,21 +85,6 @@ const AuthPage = () => {
                   </div>
                   
                    <DemoSetupButton />
-                   
-                   <Button 
-                     type="button" 
-                     variant="outline" 
-                     onClick={handleDemoLogin}
-                     disabled={demoLoading}
-                     className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white border-blue-600"
-                   >
-                     {demoLoading ? (
-                       <Loader2 className="h-4 w-4 animate-spin" />
-                     ) : (
-                       <Shield className="h-4 w-4" />
-                     )}
-                     {demoLoading ? 'Ativando...' : 'Acesso Supervisor Demo'}
-                   </Button>
                 </>
               )}
               
