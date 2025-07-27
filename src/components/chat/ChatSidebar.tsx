@@ -7,6 +7,7 @@ import { HeaderActions } from "./sidebar/HeaderActions";
 import { SearchBar } from "./sidebar/SearchBar";
 import { SessionList } from "./sidebar/SessionList";
 import { DeleteSessionDialog } from "./sidebar/DeleteSessionDialog";
+import { TokenStatsButton } from "./TokenStatsButton";
 
 interface ChatSidebarProps {
   messages: Message[];
@@ -97,6 +98,7 @@ export function ChatSidebar({
             setSearchTerm={setSearchTerm}
             onToggleSidebar={onToggleSidebar}
           />
+          <TokenStatsButton />
         </div>
 
         <div className="flex-1 overflow-hidden">

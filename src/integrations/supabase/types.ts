@@ -374,6 +374,53 @@ export type Database = {
         }
         Relationships: []
       }
+      token_usage: {
+        Row: {
+          created_at: string
+          estimated_cost: number
+          id: string
+          input_tokens: number
+          message_content_preview: string | null
+          model: string
+          output_tokens: number
+          session_id: string | null
+          total_tokens: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          estimated_cost?: number
+          id?: string
+          input_tokens?: number
+          message_content_preview?: string | null
+          model: string
+          output_tokens?: number
+          session_id?: string | null
+          total_tokens?: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          estimated_cost?: number
+          id?: string
+          input_tokens?: number
+          message_content_preview?: string | null
+          model?: string
+          output_tokens?: number
+          session_id?: string | null
+          total_tokens?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "token_usage_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "chat_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_accounts: {
         Row: {
           created_at: string
@@ -433,7 +480,19 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      token_usage_summary: {
+        Row: {
+          message_count: number | null
+          model: string | null
+          total_cost: number | null
+          total_input_tokens: number | null
+          total_output_tokens: number | null
+          total_tokens: number | null
+          usage_date: string | null
+          user_id: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       binary_quantize: {

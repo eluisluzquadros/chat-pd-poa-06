@@ -5,6 +5,7 @@ import { Message } from "@/types/chat";
 import { useToast } from "@/hooks/use-toast";
 import { getCurrentAuthenticatedSession } from "@/utils/authUtils";
 import { ChatService } from "@/services/chatService";
+import { useTokenTracking } from "@/hooks/useTokenTracking";
 
 interface UseMessageSubmitProps {
   input: string;
@@ -31,6 +32,7 @@ export function useMessageSubmit({
 }: UseMessageSubmitProps) {
   const { toast } = useToast();
   const chatService = new ChatService();
+  const { trackTokenUsage, estimateTokens } = useTokenTracking();
 
   const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
@@ -134,6 +136,24 @@ export function useMessageSubmit({
       if (assistantMessageError) throw assistantMessageError;
 
       await updateSession(sessionId, assistantMessage.content);
+
+      // Track token usage
+      try {
+        const inputTokens = estimateTokens(currentInput);
+        const outputTokens = estimateTokens(result.response);
+        
+        await trackTokenUsage({
+          model: "agentic-rag-nlq",
+          input_tokens: inputTokens,
+          output_tokens: outputTokens,
+          total_tokens: inputTokens + outputTokens,
+          estimated_cost: 0, // Will be calculated in the hook
+          message_content_preview: currentInput.slice(0, 100),
+          session_id: sessionId
+        });
+      } catch (tokenError) {
+        console.error('Error tracking token usage:', tokenError);
+      }
 
     } catch (error) {
       console.error('Error in handleSubmit:', error);

@@ -1,6 +1,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { getCurrentAuthenticatedSession } from "@/utils/authUtils";
+import { useTokenTracking } from "@/hooks/useTokenTracking";
 
 export class ChatService {
   async processMessage(

@@ -12,6 +12,7 @@ interface AgenticRAGRequest {
   userRole?: string;
   sessionId?: string;
   userId?: string;
+  model?: string;
 }
 
 interface AgenticRAGResponse {
