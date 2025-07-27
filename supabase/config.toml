@@ -1,1 +1,30 @@
 project_id = "ngrqwmvuhvjkeohesbxs"
+
+[api]
+enabled = true
+port = 54321
+
+[db]
+port = 54322
+
+[studio]
+enabled = true
+port = 54323
+
+[functions.agentic-rag]
+verify_jwt = true
+
+[functions.query-analyzer]
+verify_jwt = true
+
+[functions.sql-generator]
+verify_jwt = true
+
+[functions.enhanced-vector-search]
+verify_jwt = true
+
+[functions.response-synthesizer]
+verify_jwt = true
+
+[functions.match-documents]
+verify_jwt = true
