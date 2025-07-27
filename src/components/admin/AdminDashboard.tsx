@@ -9,6 +9,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { QADashboard } from "./QADashboard";
 
 interface AdminDashboardProps {
   startDate: Date;
@@ -104,10 +105,11 @@ export function AdminDashboard({ startDate, endDate, onDateRangeChange }: AdminD
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="overview">Visão Geral</TabsTrigger>
           <TabsTrigger value="models">Modelos</TabsTrigger>
           <TabsTrigger value="feedback">Feedback</TabsTrigger>
+          <TabsTrigger value="qa">Validação QA</TabsTrigger>
           <TabsTrigger value="users">Usuários</TabsTrigger>
           <TabsTrigger value="conversations">Conversas</TabsTrigger>
         </TabsList>
@@ -282,6 +284,10 @@ export function AdminDashboard({ startDate, endDate, onDateRangeChange }: AdminD
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="qa" className="space-y-6">
+          <QADashboard />
         </TabsContent>
 
         <TabsContent value="users" className="space-y-6">

@@ -386,6 +386,134 @@ export type Database = {
         }
         Relationships: []
       }
+      qa_test_cases: {
+        Row: {
+          category: string
+          created_at: string
+          difficulty: string | null
+          expected_answer: string
+          id: string
+          is_active: boolean
+          question: string
+          tags: string[] | null
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          difficulty?: string | null
+          expected_answer: string
+          id?: string
+          is_active?: boolean
+          question: string
+          tags?: string[] | null
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          difficulty?: string | null
+          expected_answer?: string
+          id?: string
+          is_active?: boolean
+          question?: string
+          tags?: string[] | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      qa_validation_results: {
+        Row: {
+          accuracy_score: number | null
+          actual_answer: string
+          created_at: string
+          error_details: string | null
+          error_type: string | null
+          id: string
+          is_correct: boolean
+          model: string
+          response_time_ms: number | null
+          session_id: string | null
+          test_case_id: string
+          validation_run_id: string
+        }
+        Insert: {
+          accuracy_score?: number | null
+          actual_answer: string
+          created_at?: string
+          error_details?: string | null
+          error_type?: string | null
+          id?: string
+          is_correct: boolean
+          model: string
+          response_time_ms?: number | null
+          session_id?: string | null
+          test_case_id: string
+          validation_run_id: string
+        }
+        Update: {
+          accuracy_score?: number | null
+          actual_answer?: string
+          created_at?: string
+          error_details?: string | null
+          error_type?: string | null
+          id?: string
+          is_correct?: boolean
+          model?: string
+          response_time_ms?: number | null
+          session_id?: string | null
+          test_case_id?: string
+          validation_run_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "qa_validation_results_test_case_id_fkey"
+            columns: ["test_case_id"]
+            isOneToOne: false
+            referencedRelation: "qa_test_cases"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      qa_validation_runs: {
+        Row: {
+          avg_response_time_ms: number | null
+          completed_at: string | null
+          error_message: string | null
+          id: string
+          model: string
+          overall_accuracy: number | null
+          passed_tests: number
+          started_at: string
+          status: string | null
+          total_tests: number
+        }
+        Insert: {
+          avg_response_time_ms?: number | null
+          completed_at?: string | null
+          error_message?: string | null
+          id?: string
+          model: string
+          overall_accuracy?: number | null
+          passed_tests?: number
+          started_at?: string
+          status?: string | null
+          total_tests?: number
+        }
+        Update: {
+          avg_response_time_ms?: number | null
+          completed_at?: string | null
+          error_message?: string | null
+          id?: string
+          model?: string
+          overall_accuracy?: number | null
+          passed_tests?: number
+          started_at?: string
+          status?: string | null
+          total_tests?: number
+        }
+        Relationships: []
+      }
       secrets: {
         Row: {
           created_at: string
