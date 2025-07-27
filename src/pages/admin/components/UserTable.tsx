@@ -56,8 +56,8 @@ const UserTable = ({ users, onUserUpdated, onUserDeleted }: UserTableProps) => {
                   </Badge>
                 </TableCell>
                 <TableCell>
-                  <Badge variant={user.active ? "success" : "secondary"}>
-                    {user.active ? "Ativo" : "Inativo"}
+                  <Badge variant={user.is_active ? "default" : "secondary"}>
+                    {user.is_active ? "Ativo" : "Inativo"}
                   </Badge>
                 </TableCell>
                 <TableCell className="text-right">

@@ -37,7 +37,7 @@ export function UsersAnalytics({ timeRange }: UsersAnalyticsProps) {
 
         // Calculate stats
         const totalUsers = users.length;
-        const activeUsers = users.filter(user => user.active).length;
+        const activeUsers = users.filter(user => user.is_active).length;
         
         // Count by role
         const byRole = users.reduce((acc, user) => {

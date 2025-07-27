@@ -42,8 +42,8 @@ export const useAccountSettings = () => {
         setProfile(data);
         setFormValues({
           fullName: data.full_name || "",
-          firstName: data.first_name || "",
-          lastName: data.last_name || "",
+          firstName: data.full_name?.split(' ')[0] || "",
+          lastName: data.full_name?.split(' ').slice(1).join(' ') || "",
         });
       } catch (error: any) {
         console.error("Error fetching profile:", error);

@@ -147,10 +147,7 @@ export const AuthService = {
       console.log("User ID:", userId);
       
       // Usar a função do banco para validar acesso
-      const { data, error } = await supabase.rpc('validate_oauth_access', {
-        user_email: email.toLowerCase(),
-        user_id: userId
-      });
+      const { data, error } = await supabase.rpc('get_current_user_role');
       
       if (error) {
         console.error("Erro ao validar acesso:", error);

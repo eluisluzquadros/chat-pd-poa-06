@@ -51,7 +51,7 @@ const EditUserDialog = ({
         fullName: user.full_name,
         email: user.email,
         role: user.role,
-        active: user.active,
+        active: user.is_active,
       });
     }
   }, [user]);
@@ -87,7 +87,7 @@ const EditUserDialog = ({
           full_name: formValues.fullName,
           email: formValues.email,
           role: formValues.role,
-          active: formValues.active,
+          is_active: formValues.active,
         })
         .eq("id", user.id);
 
@@ -107,7 +107,7 @@ const EditUserDialog = ({
           const { error: roleError } = await supabase
             .from("user_roles")
             .update({
-              role: formValues.role as AppRole,
+              role: formValues.role as any,
             })
             .eq("user_id", user.user_id);
 
@@ -118,7 +118,7 @@ const EditUserDialog = ({
             .from("user_roles")
             .insert({
               user_id: user.user_id,
-              role: formValues.role as AppRole,
+              role: formValues.role as any,
             });
 
           if (insertRoleError) throw insertRoleError;

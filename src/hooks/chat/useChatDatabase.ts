@@ -102,10 +102,10 @@ export function useChatDatabase() {
 
       return history.map(msg => ({
         id: msg.id,
-        content: msg.message,
-        role: msg.role as "user" | "assistant",
+        content: typeof msg.message === 'string' ? msg.message : JSON.stringify(msg.message),
+        role: (typeof msg.message === 'object' && msg.message && 'role' in msg.message ? msg.message.role : 'user') as "user" | "assistant",
         timestamp: new Date(msg.created_at),
-        model: msg.model,
+        model: typeof msg.message === 'object' && msg.message && 'model' in msg.message ? String(msg.message.model) : undefined,
       }));
     } catch (error) {
       console.error('Error loading chat history:', error);

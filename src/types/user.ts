@@ -6,19 +6,17 @@ export interface UserAccount {
   user_id: string;
   full_name: string;
   email: string;
-  organization: string;
   role: string;
-  active: boolean;
+  is_active: boolean;
   created_at: string;
-  updated_at?: string;
-  profile_id?: string;
+  updated_at: string;
 }
 
 export interface UserProfile {
   id: string;
   full_name: string;
-  first_name?: string;
-  last_name?: string;
+  email?: string;
+  avatar_url?: string;
   created_at: string;
   updated_at: string;
 }
