@@ -2,7 +2,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
-import { Users, FileText, MessageCircle, TrendingUp } from 'lucide-react';
+import { Users, FileText, MessageCircle, TrendingUp, BarChart3 } from 'lucide-react';
 import { TokenStatsButton } from '@/components/chat/TokenStatsButton';
 
 export const MainNavigation = () => {
@@ -34,12 +34,20 @@ export const MainNavigation = () => {
         )}
         
         {isAdmin && (
-          <li>
-            <Link to="/admin/users" className="hover:underline flex items-center">
-              <Users className="h-4 w-4 mr-1" />
-              Usuários
-            </Link>
-          </li>
+          <>
+            <li>
+              <Link to="/admin/dashboard" className="hover:underline flex items-center">
+                <BarChart3 className="h-4 w-4 mr-1" />
+                Dashboard
+              </Link>
+            </li>
+            <li>
+              <Link to="/admin/users" className="hover:underline flex items-center">
+                <Users className="h-4 w-4 mr-1" />
+                Usuários
+              </Link>
+            </li>
+          </>
         )}
       </ul>
     </nav>

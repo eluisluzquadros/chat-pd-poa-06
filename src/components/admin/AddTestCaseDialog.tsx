@@ -29,12 +29,14 @@ export function AddTestCaseDialog({ onTestCaseAdded }: AddTestCaseDialogProps) {
   const [tagInput, setTagInput] = useState("");
 
   const categories = [
-    "sql-query",
-    "data-analysis", 
-    "business-rules",
-    "error-handling",
-    "complex-joins",
-    "aggregations"
+    "zoneamento",
+    "mobilidade",
+    "habitacao",
+    "meio-ambiente",
+    "uso-solo",
+    "patrimonio-historico",
+    "infraestrutura",
+    "participacao-social"
   ];
 
   const difficulties = [
@@ -131,7 +133,7 @@ export function AddTestCaseDialog({ onTestCaseAdded }: AddTestCaseDialogProps) {
             <Label htmlFor="question">Pergunta *</Label>
             <Textarea
               id="question"
-              placeholder="Ex: Qual é o total de vendas por região no último trimestre?"
+              placeholder="Ex: Quais são as diretrizes para habitação de interesse social no Plano Diretor?"
               value={formData.question}
               onChange={(e) => setFormData(prev => ({ ...prev, question: e.target.value }))}
               rows={3}
@@ -143,7 +145,7 @@ export function AddTestCaseDialog({ onTestCaseAdded }: AddTestCaseDialogProps) {
             <Label htmlFor="expected_answer">Resposta Esperada *</Label>
             <Textarea
               id="expected_answer"
-              placeholder="Ex: SELECT regiao, SUM(valor_venda) FROM vendas WHERE data >= '2024-01-01' GROUP BY regiao"
+              placeholder="Ex: O Plano Diretor estabelece diretrizes para promoção de habitação de interesse social através de..."
               value={formData.expected_answer}
               onChange={(e) => setFormData(prev => ({ ...prev, expected_answer: e.target.value }))}
               rows={4}
@@ -196,7 +198,7 @@ export function AddTestCaseDialog({ onTestCaseAdded }: AddTestCaseDialogProps) {
             <div className="flex gap-2">
               <Input
                 id="tags"
-                placeholder="Ex: joins, agregacao, filtros"
+                placeholder="Ex: legislacao, diretrizes, normas"
                 value={tagInput}
                 onChange={(e) => setTagInput(e.target.value)}
                 onKeyPress={handleTagKeyPress}

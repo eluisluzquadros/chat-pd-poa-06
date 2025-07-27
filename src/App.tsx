@@ -11,6 +11,7 @@ import DemoLogin from "./pages/DemoLogin";
 import Chat from "./pages/Chat";
 import NotFound from "./pages/NotFound";
 import UserManagement from "./pages/admin/UserManagement";
+import AdminDashboard from "./pages/admin/AdminDashboard";
 import UserSettings from "./pages/UserSettings";
 import Reports from "./pages/Reports";
 
@@ -57,6 +58,13 @@ function App() {
               <Route path="/settings" element={<SimpleAuthGuard><UserSettings /></SimpleAuthGuard>} />
               
               {/* Admin routes */}
+              <Route path="/admin/dashboard" element={
+                <SimpleAuthGuard>
+                  <SimpleRoleGuard adminOnly={true}>
+                    <AdminDashboard />
+                  </SimpleRoleGuard>
+                </SimpleAuthGuard>
+              } />
               <Route path="/admin/users" element={
                 <SimpleAuthGuard>
                   <SimpleRoleGuard adminOnly={true}>
