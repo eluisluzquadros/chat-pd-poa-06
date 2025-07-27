@@ -40,7 +40,8 @@ function App() {
               <Route path="/" element={<Navigate to="/auth" replace />} />
               
               {/* Página de autenticação como página principal */}
-              <Route path="/auth" element={<Auth />} />
+          <Route path="/demo" element={<DemoLogin />} />
+          <Route path="/auth" element={<Auth />} />
               
               {/* Página de callback para OAuth */}
               <Route path="/auth/callback" element={<AuthCallback />} />
