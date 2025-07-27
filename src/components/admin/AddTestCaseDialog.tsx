@@ -62,7 +62,7 @@ export function AddTestCaseDialog({ onTestCaseAdded }: AddTestCaseDialogProps) {
     setLoading(true);
 
     try {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('qa_test_cases')
         .insert({
           question: formData.question.trim(),
@@ -71,9 +71,21 @@ export function AddTestCaseDialog({ onTestCaseAdded }: AddTestCaseDialogProps) {
           difficulty: formData.difficulty,
           tags: tags,
           is_active: formData.is_active
-        });
+        })
+        .select();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase error:', error);
+        
+        // Handle specific permission errors
+        if (error.code === '42501' || error.message.includes('permission denied') || error.message.includes('row-level security')) {
+          throw new Error('Você não tem permissão para criar casos de teste. Entre em contato com um administrador.');
+        }
+        
+        throw error;
+      }
+
+      console.log('Test case created successfully:', data);
 
       toast({
         title: "Sucesso",
@@ -95,9 +107,10 @@ export function AddTestCaseDialog({ onTestCaseAdded }: AddTestCaseDialogProps) {
       
     } catch (error) {
       console.error('Error adding test case:', error);
+      const errorMessage = error instanceof Error ? error.message : "Erro ao adicionar caso de teste";
       toast({
         title: "Erro",
-        description: "Erro ao adicionar caso de teste",
+        description: errorMessage,
         variant: "destructive"
       });
     } finally {
