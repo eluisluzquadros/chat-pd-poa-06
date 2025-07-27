@@ -14,6 +14,62 @@ export type Database = {
   }
   public: {
     Tables: {
+      chat_history: {
+        Row: {
+          created_at: string
+          id: string
+          message: Json
+          session_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          message: Json
+          session_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message?: Json
+          session_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_history_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "chat_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chat_sessions: {
+        Row: {
+          created_at: string
+          id: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       document_metadata: {
         Row: {
           created_at: string | null
@@ -21,6 +77,7 @@ export type Database = {
           schema: string | null
           title: string | null
           url: string | null
+          user_id: string | null
         }
         Insert: {
           created_at?: string | null
@@ -28,6 +85,7 @@ export type Database = {
           schema?: string | null
           title?: string | null
           url?: string | null
+          user_id?: string | null
         }
         Update: {
           created_at?: string | null
@@ -35,6 +93,7 @@ export type Database = {
           schema?: string | null
           title?: string | null
           url?: string | null
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -43,16 +102,19 @@ export type Database = {
           dataset_id: string | null
           id: number
           row_data: Json | null
+          user_id: string | null
         }
         Insert: {
           dataset_id?: string | null
           id?: number
           row_data?: Json | null
+          user_id?: string | null
         }
         Update: {
           dataset_id?: string | null
           id?: number
           row_data?: Json | null
+          user_id?: string | null
         }
         Relationships: [
           {
@@ -70,18 +132,21 @@ export type Database = {
           embedding: string | null
           id: number
           metadata: Json | null
+          user_id: string | null
         }
         Insert: {
           content?: string | null
           embedding?: string | null
           id?: number
           metadata?: Json | null
+          user_id?: string | null
         }
         Update: {
           content?: string | null
           embedding?: string | null
           id?: number
           metadata?: Json | null
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -90,16 +155,127 @@ export type Database = {
           id: number
           message: Json
           session_id: string
+          user_id: string | null
         }
         Insert: {
           id?: number
           message: Json
           session_id: string
+          user_id?: string | null
         }
         Update: {
           id?: number
           message?: Json
           session_id?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          email: string | null
+          full_name: string | null
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id: string
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      secrets: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          secret_value: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          secret_value: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          secret_value?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      user_accounts: {
+        Row: {
+          created_at: string
+          email: string
+          full_name: string | null
+          id: string
+          is_active: boolean
+          role: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          full_name?: string | null
+          id?: string
+          is_active?: boolean
+          role?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          full_name?: string | null
+          id?: string
+          is_active?: boolean
+          role?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -111,6 +287,10 @@ export type Database = {
       binary_quantize: {
         Args: { "": string } | { "": unknown }
         Returns: unknown
+      }
+      get_current_user_role: {
+        Args: Record<PropertyKey, never>
+        Returns: string
       }
       halfvec_avg: {
         Args: { "": number[] }
@@ -143,6 +323,14 @@ export type Database = {
       hnswhandler: {
         Args: { "": unknown }
         Returns: unknown
+      }
+      is_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
+      is_supervisor_or_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
       }
       ivfflat_bit_support: {
         Args: { "": unknown }
@@ -211,7 +399,7 @@ export type Database = {
       }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "supervisor" | "user" | "analyst"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -338,6 +526,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "supervisor", "user", "analyst"],
+    },
   },
 } as const
