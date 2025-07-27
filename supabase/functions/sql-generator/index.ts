@@ -41,7 +41,7 @@ serve(async (req) => {
     const { data: metadata } = await supabaseClient
       .from('document_metadata')
       .select('*')
-      .in('dataset_id', analysisResult.requiredDatasets || []);
+      .in('id', analysisResult.requiredDatasets || []);
 
     const systemPrompt = `Você é um especialista em geração de consultas SQL para o banco de dados do PDUS 2025.
 
@@ -52,11 +52,17 @@ ESTRUTURA DO BANCO:
 
 DATASETS DISPONÍVEIS:
 ${metadata?.map(m => `
-- Dataset: ${m.dataset_id}
-- Nome: ${m.name}
-- Descrição: ${m.description}
-- Colunas: ${JSON.stringify(m.columns_info)}
+- Dataset: ${m.id}
+- Nome: ${m.title}
+- Schema: ${JSON.stringify(m.schema)}
 `).join('\n') || 'Nenhum dataset encontrado'}
+
+SCHEMAS ESPECÍFICOS:
+- Dataset ZOTs vs Bairros (1FTENHpX4aLxmAoxvrEeGQn0fej-wxTMQRQs_XBjPQPY):
+  Colunas: ["id","Bairro","Zona","Total_Zonas_no_Bairro","Tem_Zona_Especial"]
+  
+- Dataset Regime Urbanístico (17_GMWnJC1sKff-YS0wesgxsvo3tnZdgSSb4JZ0ZjpCk):
+  Colunas: ["id","Bairro","Zona","Área Mínima do Lote",...] (muitas colunas de parâmetros urbanísticos)
 
 REGRAS DE GERAÇÃO:
 1. SEMPRE use document_rows como tabela base

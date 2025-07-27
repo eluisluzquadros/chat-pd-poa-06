@@ -70,8 +70,8 @@ Analise a consulta do usuário e determine:
    - Parâmetros urbanísticos (ex: "coeficiente de aproveitamento", "altura máxima")
 
 3. REQUIRED_DATASETS - Quais datasets são necessários:
-   - "17_GMWnJCteKfFYS0vwsgxvo3InZdgS5kJZWZjpCk" para regime urbanístico
-   - "1FTENHpX4sLxmAawirEcCQn0fej-wnTMQfGz_XBjPQPY" para ZOTs vs Bairros
+   - "17_GMWnJC1sKff-YS0wesgxsvo3tnZdgSSb4JZ0ZjpCk" para regime urbanístico
+   - "1FTENHpX4aLxmAoxvrEeGQn0fej-wxTMQRQs_XBjPQPY" para ZOTs vs Bairros
 
 4. STRATEGY - Estratégia de processamento:
    - "structured_only": Apenas dados tabulares
@@ -126,7 +126,7 @@ Responda APENAS com JSON válido no formato especificado.`;
       analysisResult = {
         intent: 'hybrid',
         entities: {},
-        requiredDatasets: ['17_GMWnJCteKfFYS0vwsgxvo3InZdgS5kJZWZjpCk', '1FTENHpX4sLxmAawirEcCQn0fej-wnTMQfGz_XBjPQPY'],
+        requiredDatasets: ['17_GMWnJC1sKff-YS0wesgxsvo3tnZdgSSb4JZ0ZjpCk', '1FTENHpX4aLxmAoxvrEeGQn0fej-wxTMQRQs_XBjPQPY'],
         confidence: 0.7,
         strategy: 'hybrid'
       };
@@ -155,7 +155,7 @@ Responda APENAS com JSON válido no formato especificado.`;
       fallback: {
         intent: 'hybrid',
         entities: {},
-        requiredDatasets: ['17_GMWnJCteKfFYS0vwsgxvo3InZdgS5kJZWZjpCk', '1FTENHpX4sLxmAawirEcCQn0fej-wnTMQfGz_XBjPQPY'],
+        requiredDatasets: ['17_GMWnJC1sKff-YS0wesgxsvo3tnZdgSSb4JZ0ZjpCk', '1FTENHpX4aLxmAoxvrEeGQn0fej-wxTMQRQs_XBjPQPY'],
         confidence: 0.5,
         strategy: 'hybrid'
       }
