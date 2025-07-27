@@ -1,0 +1,101 @@
+
+#root {
+  max-width: 1440px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.logo {
+  height: 6em;
+  padding: 1.5em;
+  will-change: filter;
+  transition: filter 300ms;
+}
+.logo:hover {
+  filter: drop-shadow(0 0 2em rgba(100, 108, 255, 0.7));
+}
+.logo.react:hover {
+  filter: drop-shadow(0 0 2em rgba(97, 218, 251, 0.7));
+}
+
+@keyframes logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  a:nth-of-type(2) .logo {
+    animation: logo-spin infinite 20s linear;
+  }
+}
+
+.section {
+  padding: 5rem 2rem;
+}
+
+.section-tight {
+  padding: 3rem 2rem;
+}
+
+.card {
+  padding: 2.5em;
+  border-radius: 1.25rem;
+  background: var(--card-bg, white);
+  box-shadow: 0 4px 24px -6px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 30px -10px rgba(0, 0, 0, 0.15);
+}
+
+.button-fancy {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.button-fancy::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(45deg, transparent 25%, rgba(255,255,255,0.1) 50%, transparent 75%);
+  transform: translateX(-100%);
+  transition: transform 0.6s ease;
+}
+
+.button-fancy:hover::before {
+  transform: translateX(100%);
+}
+
+.heading-xl {
+  font-size: clamp(2.5rem, 5vw, 4rem);
+  line-height: 1.1;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.container-xl {
+  max-width: 1400px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 2rem;
+  padding-right: 2rem;
+}
+
+.prose {
+  max-width: 65ch;
+  line-height: 1.7;
+}
+
+.image-fade {
+  mask-image: linear-gradient(to bottom, black 60%, transparent 100%);
+}
