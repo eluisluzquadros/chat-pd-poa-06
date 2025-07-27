@@ -9,13 +9,14 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { X, Plus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
+import { useToast } from "@/hooks/use-toast";
 
 interface AddTestCaseDialogProps {
   onTestCaseAdded: () => void;
 }
 
 export function AddTestCaseDialog({ onTestCaseAdded }: AddTestCaseDialogProps) {
+  const { toast } = useToast();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -49,7 +50,11 @@ export function AddTestCaseDialog({ onTestCaseAdded }: AddTestCaseDialogProps) {
     e.preventDefault();
     
     if (!formData.question.trim() || !formData.expected_answer.trim() || !formData.category) {
-      toast.error("Preencha todos os campos obrigatórios");
+      toast({
+        title: "Erro",
+        description: "Preencha todos os campos obrigatórios",
+        variant: "destructive"
+      });
       return;
     }
 
@@ -69,7 +74,10 @@ export function AddTestCaseDialog({ onTestCaseAdded }: AddTestCaseDialogProps) {
 
       if (error) throw error;
 
-      toast.success("Caso de teste adicionado com sucesso!");
+      toast({
+        title: "Sucesso",
+        description: "Caso de teste adicionado com sucesso!"
+      });
       
       // Reset form
       setFormData({
@@ -86,7 +94,11 @@ export function AddTestCaseDialog({ onTestCaseAdded }: AddTestCaseDialogProps) {
       
     } catch (error) {
       console.error('Error adding test case:', error);
-      toast.error("Erro ao adicionar caso de teste");
+      toast({
+        title: "Erro",
+        description: "Erro ao adicionar caso de teste",
+        variant: "destructive"
+      });
     } finally {
       setLoading(false);
     }
