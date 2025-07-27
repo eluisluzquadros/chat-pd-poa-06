@@ -7,7 +7,8 @@ import { AuthProvider } from "./context/AuthContext";
 
 // Pages
 import Auth from "./pages/Auth";
-import AuthCallback from "./pages/AuthCallback";
+import AuthCallback from "@/pages/AuthCallback";
+import DemoLogin from "@/pages/DemoLogin";
 import Chat from "./pages/Chat";
 import NotFound from "./pages/NotFound";
 import UserManagement from "./pages/admin/UserManagement";
