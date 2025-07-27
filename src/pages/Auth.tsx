@@ -11,6 +11,7 @@ import { Loader2, UserPlus, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { AuthService } from '@/services/authService';
 import { toast } from 'sonner';
+import { DemoSetupButton } from '@/components/DemoSetupButton';
 
 
 const AuthPage = () => {
@@ -155,20 +156,22 @@ const AuthPage = () => {
                     </div>
                   </div>
                   
-                  <Button 
-                    type="button" 
-                    variant="outline" 
-                    onClick={handleDemoLogin}
-                    disabled={demoLoading}
-                    className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white border-blue-600"
-                  >
-                    {demoLoading ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <Shield className="h-4 w-4" />
-                    )}
-                    {demoLoading ? 'Ativando...' : 'Acesso Supervisor Demo'}
-                  </Button>
+                   <DemoSetupButton />
+                   
+                   <Button 
+                     type="button" 
+                     variant="outline" 
+                     onClick={handleDemoLogin}
+                     disabled={demoLoading}
+                     className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white border-blue-600"
+                   >
+                     {demoLoading ? (
+                       <Loader2 className="h-4 w-4 animate-spin" />
+                     ) : (
+                       <Shield className="h-4 w-4" />
+                     )}
+                     {demoLoading ? 'Ativando...' : 'Acesso Supervisor Demo'}
+                   </Button>
                 </>
               )}
               
