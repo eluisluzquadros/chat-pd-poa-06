@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Message } from "@/types/chat";
 import { useToast } from "@/hooks/use-toast";
 import { getCurrentAuthenticatedSession } from "@/utils/authUtils";
-import { webhookService } from "@/services/webhookService";
+import { ChatService } from "@/services/chatService";
 
 interface UseMessageSubmitProps {
   input: string;
@@ -30,6 +30,7 @@ export function useMessageSubmit({
   updateSession,
 }: UseMessageSubmitProps) {
   const { toast } = useToast();
+  const chatService = new ChatService();
 
   const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
@@ -63,7 +64,7 @@ export function useMessageSubmit({
         content: currentInput,
         role: "user",
         timestamp: new Date(),
-        model: "webhook",
+        model: "agentic-rag-nlq",
       };
 
       addMessage(userMessage);
@@ -76,30 +77,36 @@ export function useMessageSubmit({
           role: "user",
           session_id: sessionId,
           user_id: session.user.id,
-          model: "webhook",
+        model: "agentic-rag-nlq",
         });
 
       if (userMessageError) throw userMessageError;
 
-      // Get user role for webhook context - use user metadata or default
-      const userRole = session.user.user_metadata?.role || 'citizen';
+      // Get user role for context
+      const { data: roleData } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', session.user.id)
+        .maybeSingle();
 
-      console.log('Calling N8N webhook...');
-      const assistantContent = await webhookService.sendMessage(
+      const userRole = roleData?.role || 'citizen';
+
+      console.log('🚀 Processing message via Agentic RAG...');
+      const result = await chatService.processMessage(
         currentInput,
-        sessionId,
-        userRole
+        userRole,
+        sessionId
       );
 
-      console.log('Webhook response received');
+      console.log('✅ Agentic RAG response received:', result);
 
       console.log('Creating assistant message...');
       const assistantMessage: Message = {
         id: crypto.randomUUID(),
-        content: assistantContent,
+        content: result.response,
         role: "assistant",
         timestamp: new Date(),
-        model: "webhook",
+        model: "agentic-rag-nlq",
       };
 
       addMessage(assistantMessage);
@@ -108,11 +115,11 @@ export function useMessageSubmit({
       const { error: assistantMessageError } = await supabase
         .from('chat_history')
         .insert({
-          message: assistantContent,
+          message: result.response,
           role: "assistant",
           session_id: sessionId,
           user_id: session.user.id,
-          model: "webhook",
+          model: "agentic-rag-nlq",
         });
 
       if (assistantMessageError) throw assistantMessageError;

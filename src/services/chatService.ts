@@ -1,97 +1,72 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import type { AgentMessage, AgentState, EmbeddingSearchResult } from "@/types/agents";
+import { getCurrentAuthenticatedSession } from "@/utils/authUtils";
 
 export class ChatService {
-  private async getDocumentContext(query: string, userRole: AgentState['userRole']): Promise<string[]> {
+  async processMessage(
+    message: string, 
+    userRole?: string, 
+    sessionId?: string
+  ): Promise<{
+    response: string;
+    confidence: number;
+    sources: { tabular: number; conceptual: number };
+    executionTime: number;
+  }> {
     try {
-      // Get embedding for query
-      const { data: queryEmbedding } = await supabase.functions.invoke('generate-embedding', {
-        body: { text: query }
-      });
+      // Get current authenticated user
+      const session = await getCurrentAuthenticatedSession();
+      if (!session?.user) {
+        throw new Error("User not authenticated");
+      }
 
-      // Get relevant documents based on user role
-      const { data: documents } = await supabase
-        .from('documents_test')
-        .select('id')
-        .eq('is_default', userRole === 'citizen');
+      console.log('🚀 Starting Agentic RAG processing for message:', message);
 
-      if (!documents?.length) return [];
-
-      const documentIds = documents.map(doc => doc.id.toString());
-
-      // Search for relevant content using the match_documents function
-      const { data: matches } = await supabase.rpc('match_documents', {
-        query_embedding: queryEmbedding,
-        match_count: 5,
-        document_ids: documentIds
-      });
-
-      return (matches as any[])?.map(match => match.content_chunk || match.content) || [];
-    } catch (error) {
-      console.error('Error getting document context:', error);
-      return [];
-    }
-  }
-
-  async processMessage(message: string, state: AgentState): Promise<AgentState> {
-    try {
-      // Get the current user
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("User not authenticated");
-
-      // Start with reasoning agent to determine approach
-      const reasoningResponse = await supabase.functions.invoke('agent-reasoning', {
+      // Call the main Agentic RAG orchestrator
+      const { data: ragResult, error } = await supabase.functions.invoke('agentic-rag', {
         body: {
           message,
-          userRole: state.userRole,
-          context: state.context
+          userRole: userRole || 'citizen',
+          sessionId,
+          userId: session.user.id
         }
       });
 
-      // Get relevant document context
-      const context = await this.getDocumentContext(message, state.userRole);
+      if (error) {
+        console.error('Agentic RAG error:', error);
+        throw new Error(`Agentic RAG processing failed: ${error.message}`);
+      }
+
+      console.log('✅ Agentic RAG completed successfully');
       
-      // Use RAG agent to generate response
-      const ragResponse = await supabase.functions.invoke('agent-rag', {
-        body: {
-          message,
-          context,
-          reasoningOutput: reasoningResponse.data
-        }
-      });
+      return {
+        response: ragResult.response,
+        confidence: ragResult.confidence,
+        sources: ragResult.sources,
+        executionTime: ragResult.executionTime
+      };
 
-      // Use evaluation agent to assess response
-      const evaluationResponse = await supabase.functions.invoke('agent-evaluation', {
-        body: {
-          originalMessage: message,
-          response: ragResponse.data,
-          context
-        }
-      });
+    } catch (error) {
+      console.error('Error in ChatService.processMessage:', error);
+      
+      // Return fallback PDUS response
+      const fallbackResponse = `Desculpe, sou uma versão Beta e ainda não consigo responder a essa pergunta.
 
-      // Store conversation in history
-      await supabase.from('chat_history').insert({
-        user_id: user.id,
-        role: 'user',
-        message,
-        model: 'gpt-4-turbo',
-        session_id: state.currentSessionId
-      });
+📍 **Explore mais:**
+- [Mapa Interativo PDUS](https://bit.ly/3ILdXRA)
+- [Contribua com sugestões](https://bit.ly/4oefZKm)
+- [Audiência Pública](https://bit.ly/4o7AWqb)
+
+💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br
+
+💬 **Sua pergunta é importante!** Considere enviá-la pelos canais oficiais para contribuir com o aperfeiçoamento do plano.`;
 
       return {
-        ...state,
-        messages: [
-          ...state.messages,
-          { role: 'user', content: message },
-          { role: 'assistant', content: ragResponse.data.response }
-        ],
-        context,
-        evaluation: evaluationResponse.data
+        response: fallbackResponse,
+        confidence: 0.1,
+        sources: { tabular: 0, conceptual: 0 },
+        executionTime: 0
       };
-    } catch (error) {
-      console.error('Error processing message:', error);
-      throw error;
     }
   }
 }

@@ -1,8 +1,8 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
-const SUPABASE_URL = "https://xmsnlikpmmhzmuemxtrk.supabase.co";
-const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhtc25saWtwbW1oem11ZW14dHJrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzg3MDI1NjUsImV4cCI6MjA1NDI3ODU2NX0.Y3sQBu3jBDbIt_UejmbF6kHqbTeBbas6fhHfEf7xiRg";
+const SUPABASE_URL = "https://ngrqwmvuhvjkeohesbxs.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5ncnF3bXZ1aHZqa2VvaGVzYnhzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM2MDkwMTcsImV4cCI6MjA2OTE4NTAxN30.Q8V8Dm5HQD1xH5VZ6iKqjzC7mTGT4D3X0Z_fqc3i5LY";
 
 // Use a simpler client setup focused on reliable auth
 export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
