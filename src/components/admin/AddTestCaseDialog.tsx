@@ -48,6 +48,7 @@ export function AddTestCaseDialog({ onTestCaseAdded }: AddTestCaseDialogProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('Form submitted with data:', formData, 'tags:', tags);
     
     if (!formData.question.trim() || !formData.expected_answer.trim() || !formData.category) {
       toast({
