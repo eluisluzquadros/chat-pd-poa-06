@@ -302,6 +302,42 @@ export type Database = {
         }
         Relationships: []
       }
+      message_feedback: {
+        Row: {
+          comment: string | null
+          created_at: string
+          helpful: boolean | null
+          id: string
+          message_id: string
+          model: string
+          session_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string
+          helpful?: boolean | null
+          id?: string
+          message_id: string
+          model: string
+          session_id: string
+          updated_at?: string
+          user_id?: string
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string
+          helpful?: boolean | null
+          id?: string
+          message_id?: string
+          model?: string
+          session_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       n8n_chat_histories: {
         Row: {
           id: number
