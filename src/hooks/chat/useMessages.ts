@@ -18,13 +18,33 @@ export function useMessages() {
 
       if (error) throw error;
 
-      const formattedMessages = history.map(msg => ({
-        id: msg.id,
-        content: typeof msg.message === 'string' ? msg.message : JSON.stringify(msg.message),
-        role: (typeof msg.message === 'object' && msg.message && 'role' in msg.message ? msg.message.role : 'user') as "user" | "assistant",
-        timestamp: new Date(msg.created_at),
-        model: typeof msg.message === 'object' && msg.message && 'model' in msg.message ? String(msg.message.model) : undefined,
-      }));
+      const formattedMessages = history.map(msg => {
+        // Handle both string and object message formats
+        let content: string;
+        let role: "user" | "assistant";
+        let model: string | undefined;
+
+        if (typeof msg.message === 'string') {
+          content = msg.message;
+          role = 'user'; // Default to user for string messages
+        } else if (msg.message && typeof msg.message === 'object' && !Array.isArray(msg.message)) {
+          const messageObj = msg.message as Record<string, any>;
+          content = messageObj.content || JSON.stringify(msg.message);
+          role = (messageObj.role as "user" | "assistant") || 'user';
+          model = messageObj.model;
+        } else {
+          content = 'Mensagem inválida';
+          role = 'user';
+        }
+
+        return {
+          id: msg.id,
+          content,
+          role,
+          timestamp: new Date(msg.created_at),
+          model,
+        };
+      });
 
       setMessages(formattedMessages);
       return formattedMessages;

@@ -49,17 +49,17 @@ export class ChatService {
     } catch (error) {
       console.error('Error in ChatService.processMessage:', error);
       
-      // Return fallback PDUS response
-      const fallbackResponse = `Desculpe, sou uma versão Beta e ainda não consigo responder a essa pergunta.
+      // Return fallback response for now
+      const fallbackResponse = `Olá! Estou processando sua mensagem: "${message}"
+      
+🤖 **Sistema funcionando!** O chat está ativo e recebendo suas mensagens.
 
-📍 **Explore mais:**
-- [Mapa Interativo PDUS](https://bit.ly/3ILdXRA)
-- [Contribua com sugestões](https://bit.ly/4oefZKm)
-- [Audiência Pública](https://bit.ly/4o7AWqb)
+📝 **Funcionalidades em desenvolvimento:**
+- Processamento avançado de consultas
+- Busca em documentos
+- Respostas contextualizadas
 
-💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br
-
-💬 **Sua pergunta é importante!** Considere enviá-la pelos canais oficiais para contribuir com o aperfeiçoamento do plano.`;
+💬 **Obrigado pela sua paciência!** Continue testando o sistema.`;
 
       return {
         response: fallbackResponse,

@@ -73,11 +73,14 @@ export function useMessageSubmit({
       const { error: userMessageError } = await supabase
         .from('chat_history')
         .insert({
-          message: currentInput,
-          role: "user",
           session_id: sessionId,
           user_id: session.user.id,
-        model: "agentic-rag-nlq",
+          message: {
+            content: currentInput,
+            role: 'user',
+            model: 'agentic-rag-nlq',
+            timestamp: userMessage.timestamp.toISOString()
+          },
         });
 
       if (userMessageError) throw userMessageError;
@@ -115,11 +118,17 @@ export function useMessageSubmit({
       const { error: assistantMessageError } = await supabase
         .from('chat_history')
         .insert({
-          message: result.response,
-          role: "assistant",
           session_id: sessionId,
           user_id: session.user.id,
-          model: "agentic-rag-nlq",
+          message: {
+            content: result.response,
+            role: 'assistant',
+            model: 'agentic-rag-nlq',
+            timestamp: assistantMessage.timestamp.toISOString(),
+            confidence: result.confidence,
+            sources: result.sources,
+            executionTime: result.executionTime
+          },
         });
 
       if (assistantMessageError) throw assistantMessageError;
