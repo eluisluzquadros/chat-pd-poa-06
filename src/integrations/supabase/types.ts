@@ -14,6 +14,56 @@ export type Database = {
   }
   public: {
     Tables: {
+      agent_executions: {
+        Row: {
+          agent_type: string
+          created_at: string
+          error_message: string | null
+          execution_time_ms: number | null
+          id: string
+          input_data: Json | null
+          output_data: Json | null
+          session_id: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          agent_type: string
+          created_at?: string
+          error_message?: string | null
+          execution_time_ms?: number | null
+          id?: string
+          input_data?: Json | null
+          output_data?: Json | null
+          session_id?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          agent_type?: string
+          created_at?: string
+          error_message?: string | null
+          execution_time_ms?: number | null
+          id?: string
+          input_data?: Json | null
+          output_data?: Json | null
+          session_id?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_executions_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "chat_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       audit_log: {
         Row: {
           action: string
@@ -114,6 +164,7 @@ export type Database = {
           created_at: string
           id: string
           last_message: string | null
+          model: string | null
           title: string
           updated_at: string
           user_id: string
@@ -122,6 +173,7 @@ export type Database = {
           created_at?: string
           id?: string
           last_message?: string | null
+          model?: string | null
           title: string
           updated_at?: string
           user_id: string
@@ -130,6 +182,7 @@ export type Database = {
           created_at?: string
           id?: string
           last_message?: string | null
+          model?: string | null
           title?: string
           updated_at?: string
           user_id?: string
@@ -394,6 +447,10 @@ export type Database = {
           window_minutes?: number
         }
         Returns: boolean
+      }
+      execute_sql_query: {
+        Args: { query_text: string }
+        Returns: Json
       }
       get_current_user_role: {
         Args: Record<PropertyKey, never>
