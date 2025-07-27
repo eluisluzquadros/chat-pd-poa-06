@@ -192,17 +192,25 @@ export const AuthService = {
         return 'supervisor';
       }
       
-      // Tentar obter papel da tabela user_roles
-      const { data, error } = await supabase
+      // Buscar todos os roles do usuário e pegar o de maior privilégio
+      const { data: roleData, error: roleError } = await supabase
         .from('user_roles')
         .select('role')
-        .eq('user_id', userId)
-        .maybeSingle();
+        .eq('user_id', userId);
       
-      if (error) throw error;
+      if (roleError) {
+        console.error("Erro ao buscar roles:", roleError);
+      }
       
-      if (data?.role) {
-        return data.role;
+      // Se tiver roles, pegar o de maior privilégio
+      if (roleData && roleData.length > 0) {
+        const roles = roleData.map(r => r.role);
+        
+        // Ordem de prioridade: admin > supervisor > analyst > user
+        if (roles.includes('admin')) return 'admin';
+        if (roles.includes('supervisor')) return 'supervisor';  
+        if (roles.includes('analyst')) return 'analyst';
+        if (roles.includes('user')) return 'user';
       }
       
       // Caso não encontre na user_roles, tentar na user_accounts
@@ -212,7 +220,9 @@ export const AuthService = {
         .eq('user_id', userId)
         .maybeSingle();
       
-      if (accountError) throw accountError;
+      if (accountError) {
+        console.error("Erro ao buscar account:", accountError);
+      }
       
       return accountData?.role || 'citizen';
     } catch (error) {
