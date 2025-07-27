@@ -1,4 +1,3 @@
-
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Toaster } from "sonner";
 import { ThemeProvider } from "./components/ui/theme-provider";
@@ -7,8 +6,8 @@ import { AuthProvider } from "./context/AuthContext";
 
 // Pages
 import Auth from "./pages/Auth";
-import AuthCallback from "@/pages/AuthCallback";
-import DemoLogin from "@/pages/DemoLogin";
+import AuthCallback from "./pages/AuthCallback";
+import DemoLogin from "./pages/DemoLogin";
 import Chat from "./pages/Chat";
 import NotFound from "./pages/NotFound";
 import UserManagement from "./pages/admin/UserManagement";
@@ -40,9 +39,11 @@ function App() {
               {/* Redirecionar a rota inicial para a autenticação */}
               <Route path="/" element={<Navigate to="/auth" replace />} />
               
+              {/* Modo demo para testes */}
+              <Route path="/demo" element={<DemoLogin />} />
+              
               {/* Página de autenticação como página principal */}
-          <Route path="/demo" element={<DemoLogin />} />
-          <Route path="/auth" element={<Auth />} />
+              <Route path="/auth" element={<Auth />} />
               
               {/* Página de callback para OAuth */}
               <Route path="/auth/callback" element={<AuthCallback />} />
