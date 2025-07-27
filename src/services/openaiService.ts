@@ -8,13 +8,46 @@ interface ThreadMessage {
 }
 
 export class OpenAIService {
-  private assistantId: string;
-  private vectorStoreId: string;
+  private assistantId: string | null = null;
+  private vectorStoreId: string | null = null;
   private threadId: string | null = null;
 
   constructor() {
-    this.assistantId = "asst_W3sHReYxtgfbdL3ahMvE9uCO";
-    this.vectorStoreId = "vs_67a63571cd7c8191906f40a7e6b0a727";
+    // IDs will be loaded from secrets table
+  }
+
+  private async getAssistantId(): Promise<string> {
+    if (this.assistantId) return this.assistantId;
+    
+    const { data, error } = await supabase
+      .from('secrets')
+      .select('secret_value')
+      .eq('name', 'OPENAI_ASSISTANT_ID')
+      .single();
+    
+    if (error || !data) {
+      throw new Error('OpenAI Assistant ID not found in secrets table');
+    }
+    
+    this.assistantId = data.secret_value;
+    return this.assistantId;
+  }
+
+  private async getVectorStoreId(): Promise<string> {
+    if (this.vectorStoreId) return this.vectorStoreId;
+    
+    const { data, error } = await supabase
+      .from('secrets')
+      .select('secret_value')
+      .eq('name', 'OPENAI_VECTOR_STORE_ID')
+      .single();
+    
+    if (error || !data) {
+      throw new Error('OpenAI Vector Store ID not found in secrets table');
+    }
+    
+    this.vectorStoreId = data.secret_value;
+    return this.vectorStoreId;
   }
 
   private async getHeaders() {
@@ -76,11 +109,12 @@ export class OpenAIService {
 
   private async runAssistant() {
     const headers = await this.getHeaders();
+    const assistantId = await this.getAssistantId();
     const response = await fetch(`https://api.openai.com/v1/threads/${this.threadId}/runs`, {
       method: 'POST',
       headers,
       body: JSON.stringify({
-        assistant_id: this.assistantId
+        assistant_id: assistantId
       })
     });
 

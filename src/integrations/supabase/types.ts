@@ -14,6 +14,69 @@ export type Database = {
   }
   public: {
     Tables: {
+      audit_log: {
+        Row: {
+          action: string
+          created_at: string | null
+          id: string
+          ip_address: unknown | null
+          new_values: Json | null
+          old_values: Json | null
+          record_id: string | null
+          table_name: string | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string | null
+          id?: string
+          ip_address?: unknown | null
+          new_values?: Json | null
+          old_values?: Json | null
+          record_id?: string | null
+          table_name?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string | null
+          id?: string
+          ip_address?: unknown | null
+          new_values?: Json | null
+          old_values?: Json | null
+          record_id?: string | null
+          table_name?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      auth_attempts: {
+        Row: {
+          created_at: string | null
+          email: string | null
+          id: string
+          ip_address: unknown
+          success: boolean | null
+        }
+        Insert: {
+          created_at?: string | null
+          email?: string | null
+          id?: string
+          ip_address: unknown
+          success?: boolean | null
+        }
+        Update: {
+          created_at?: string | null
+          email?: string | null
+          id?: string
+          ip_address?: unknown
+          success?: boolean | null
+        }
+        Relationships: []
+      }
       chat_history: {
         Row: {
           created_at: string
@@ -288,6 +351,14 @@ export type Database = {
         Args: { "": string } | { "": unknown }
         Returns: unknown
       }
+      check_auth_rate_limit: {
+        Args: {
+          user_ip: unknown
+          max_attempts?: number
+          window_minutes?: number
+        }
+        Returns: boolean
+      }
       get_current_user_role: {
         Args: Record<PropertyKey, never>
         Returns: string
@@ -351,6 +422,16 @@ export type Database = {
       l2_normalize: {
         Args: { "": string } | { "": unknown } | { "": unknown }
         Returns: unknown
+      }
+      log_user_action: {
+        Args: {
+          action_name: string
+          table_name?: string
+          record_id?: string
+          old_values?: Json
+          new_values?: Json
+        }
+        Returns: undefined
       }
       match_documents: {
         Args: { query_embedding: string; match_count?: number; filter?: Json }
