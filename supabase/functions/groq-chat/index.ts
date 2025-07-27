@@ -11,60 +11,56 @@ serve(async (req) => {
   }
 
   try {
-    const apiKey = Deno.env.get('DASHSCOPE_API_KEY');
+    const apiKey = Deno.env.get('GROQ_API_KEY');
     if (!apiKey) {
-      throw new Error('DASHSCOPE_API_KEY não encontrada');
+      throw new Error('GROQ_API_KEY não encontrada');
     }
 
     const { message, userRole = 'user' } = await req.json();
 
-    const response = await fetch('https://dashscope.aliyuncs.com/api/v1/services/aigc/text-generation/generation', {
+    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${apiKey}`
       },
       body: JSON.stringify({
-        model: 'qwen-turbo',
-        input: {
-          messages: [
-            {
-              role: 'system',
-              content: `Você é um assistente especializado no Plano Diretor de Desenvolvimento Urbano Sustentável (PDUS) de Porto Alegre 2025. O usuário tem papel: ${userRole}`
-            },
-            {
-              role: 'user',
-              content: message
-            }
-          ]
-        },
-        parameters: {
-          temperature: 0.7,
-          max_tokens: 4000
-        }
+        model: 'llama-3.1-70b-versatile',
+        messages: [
+          {
+            role: 'system',
+            content: `Você é um assistente especializado no Plano Diretor de Desenvolvimento Urbano Sustentável (PDUS) de Porto Alegre 2025. O usuário tem papel: ${userRole}`
+          },
+          {
+            role: 'user',
+            content: message
+          }
+        ],
+        temperature: 0.7,
+        max_tokens: 4000
       })
     });
 
     if (!response.ok) {
-      throw new Error(`Erro na API Qwen: ${response.status}`);
+      throw new Error(`Erro na API Groq: ${response.status}`);
     }
 
     const data = await response.json();
-    const content = data.output?.text || 'Resposta não disponível';
+    const content = data.choices?.[0]?.message?.content || 'Resposta não disponível';
 
     return new Response(
       JSON.stringify({
         response: content,
-        confidence: 0.75,
+        confidence: 0.8,
         sources: { tabular: 0, conceptual: 1 },
-        executionTime: 2500,
-        model: 'qwen-turbo'
+        executionTime: 1500,
+        model: 'llama-3.1-70b-versatile'
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
   } catch (error) {
-    console.error('Erro no Qwen:', error);
+    console.error('Erro no Groq:', error);
     return new Response(
       JSON.stringify({
         response: 'Desculpe, ocorreu um erro ao processar sua solicitação.',

@@ -20,7 +20,7 @@ const models: { id: LLMProvider; name: string }[] = [
   { id: "gemini", name: "Google Gemini" },
   { id: "llama", name: "Meta Llama" },
   { id: "deepseek", name: "DeepSeek" },
-  { id: "qwen", name: "Alibaba Qwen" },
+  { id: "groq", name: "Groq" },
 ];
 
 export function ModelSelector({ selectedModel, onModelSelect }: ModelSelectorProps) {

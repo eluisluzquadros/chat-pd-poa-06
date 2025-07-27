@@ -7,7 +7,7 @@ export type LLMProvider =
   | "gemini" 
   | "llama" 
   | "deepseek" 
-  | "qwen";
+  | "groq";
 
 export interface Message {
   id: string;

@@ -73,14 +73,14 @@ export class MultiLLMService {
         };
         break;
         
-      case "qwen":
-        functionName = "qwen-chat";
+      case "groq":
+        functionName = "groq-chat";
         defaultResponse = {
-          response: "Resposta do Qwen indisponível. Tente novamente.",
+          response: "Resposta do Groq indisponível. Tente novamente.",
           confidence: 0,
           sources: { tabular: 0, conceptual: 0 },
           executionTime: 0,
-          model: "qwen"
+          model: "groq"
         };
         break;
         
