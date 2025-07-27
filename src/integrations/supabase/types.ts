@@ -213,6 +213,39 @@ export type Database = {
         }
         Relationships: []
       }
+      interest_manifestations: {
+        Row: {
+          account_created: boolean
+          created_at: string
+          email: string
+          full_name: string
+          id: string
+          newsletter_opt_in: boolean
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          account_created?: boolean
+          created_at?: string
+          email: string
+          full_name: string
+          id?: string
+          newsletter_opt_in?: boolean
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          account_created?: boolean
+          created_at?: string
+          email?: string
+          full_name?: string
+          id?: string
+          newsletter_opt_in?: boolean
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       n8n_chat_histories: {
         Row: {
           id: number

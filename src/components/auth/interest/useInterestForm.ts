@@ -79,7 +79,6 @@ export const useInterestForm = (onClose: () => void) => {
         throw new Error(`Este email já está cadastrado em ${destination}`);
       }
 
-
       // Insert the new interest manifestation
       const { error: insertError } = await supabase
         .from('interest_manifestations')

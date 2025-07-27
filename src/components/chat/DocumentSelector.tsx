@@ -31,12 +31,15 @@ export function DocumentSelector({
     queryKey: ['documents'],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('documents_test')
-        .select('id, title')
-        .order('title');
+        .from('documents')
+        .select('id, content')
+        .order('id');
       
       if (error) throw error;
-      return data;
+      return data?.map(doc => ({
+        id: doc.id,
+        title: `Document ${doc.id}` // Generate a simple title since documents table doesn't have title
+      })) || [];
     },
     enabled: isCustomMode,
   });
@@ -45,12 +48,12 @@ export function DocumentSelector({
     queryKey: ['collections'],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('collections')
+        .from('document_metadata')
         .select('id, title')
         .order('title');
       
       if (error) throw error;
-      return data;
+      return data || [];
     },
     enabled: isCustomMode,
   });

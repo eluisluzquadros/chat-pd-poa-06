@@ -19,9 +19,10 @@ export function useDocumentEdit(id: string) {
       const updateData = { ...updatedDoc };
       delete updateData.id; // Remove id from update data since it's in the where clause
       
+      // Update only content field since that's what exists in the table
       const { data, error } = await supabase
-        .from('documents_test')
-        .update(updateData)
+        .from('documents')
+        .update({ content: updateData.content || updateData.title || "" })
         .eq('id', parseInt(id) as any)
         .select()
         .single();
@@ -66,7 +67,7 @@ export function useDocumentEdit(id: string) {
 
       // Delete from database
       const { error: dbError } = await supabase
-        .from('documents_test')
+        .from('documents')
         .delete()
         .eq('id', parseInt(id) as any);
 

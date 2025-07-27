@@ -81,7 +81,7 @@ export const createDocument = async (data: {
   console.log("Creating document in database:", data.title);
   
   const { data: document, error } = await supabase
-    .from('documents_test')
+    .from('documents')
     .insert({
       content: '',
       ...data,
@@ -100,7 +100,7 @@ export const createDocument = async (data: {
 
 export const getDocument = async (id: string) => {
   const { data, error } = await supabase
-    .from('documents_test')
+    .from('documents')
     .select('*')
     .eq('id', parseInt(id) as any)
     .single();
@@ -127,7 +127,7 @@ export const deleteDocument = async (document: { id: string, file_path?: string,
 
   // Delete document from database
   const { error: dbError } = await supabase
-    .from('documents_test')
+    .from('documents')
     .delete()
     .eq('id', parseInt(document.id) as any);
 

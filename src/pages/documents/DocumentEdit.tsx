@@ -41,7 +41,7 @@ export default function DocumentEdit() {
       console.log("Fetching document details for:", id);
       
       const { data, error } = await supabase
-        .from('documents_test')
+        .from('documents')
         .select('*')
         .eq('id', parseInt(id!) as any)
         .single();
@@ -51,16 +51,28 @@ export default function DocumentEdit() {
         throw error;
       }
       
-      // Set form values
-      setTitle(data.title);
-      setDescription(data.description || "");
-      setDomain(data.domain);
-      setUrl(data.url || "");
-      setTags(data.tags || []);
+      // Set form values - using temporary defaults since table structure is different
+      setTitle(`Document ${data.id}`);
+      setDescription(data.content?.substring(0, 100) || "");
+      setDomain("documents");
+      setUrl("");
+      setTags([]);
       
       return {
-        ...data,
-        id: data.id.toString()
+        id: data.id.toString(),
+        title: `Document ${data.id}`,
+        description: data.content?.substring(0, 100) || "",
+        type: "PDF" as const,
+        domain: "documents",
+        tags: [],
+        size: 0,
+        file_path: "",
+        owner_id: data.user_id || "",
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        url: "",
+        url_content: "",
+        content: data.content || ""
       } as Document;
     },
     retry: 1

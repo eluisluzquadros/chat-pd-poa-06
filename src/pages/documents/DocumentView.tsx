@@ -20,15 +20,27 @@ export default function DocumentView() {
     queryKey: ['document', id],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('documents_test')
+        .from('documents')
         .select('*')
         .eq('id', parseInt(id!) as any)
         .single();
 
       if (error) throw error;
       return {
-        ...data,
-        id: data.id.toString()
+        id: data.id.toString(),
+        title: `Document ${data.id}`,
+        description: data.content?.substring(0, 100) || "",
+        type: "PDF" as const,
+        domain: "documents",
+        tags: [],
+        size: 0,
+        file_path: "",
+        owner_id: data.user_id || "",
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        url: "",
+        url_content: "",
+        content: data.content || ""
       } as Document;
     },
   });

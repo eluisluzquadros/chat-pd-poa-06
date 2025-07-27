@@ -33,8 +33,8 @@ export default function Explorer() {
     queryFn: async () => {
       console.log('Fetching documents...');
       try {
-        const { data, error } = await supabase
-          .from('documents_test')
+    const { data, error } = await supabase
+      .from('documents')
           .select('*')
           .order('created_at', { ascending: false });
           
@@ -51,18 +51,18 @@ export default function Explorer() {
         
         return data.map(doc => ({
           id: doc.id.toString(),
-          title: doc.title,
-          description: doc.description || '',
-          type: doc.type || 'PDF',
-          tags: doc.tags || [],
-          size: doc.size || 0,
-          file_path: doc.file_path || '',
-          domain: doc.domain || '',
-          owner_id: doc.owner_id,
-          created_at: doc.created_at,
-          updated_at: doc.updated_at,
-          url: doc.url || '',
-          content: doc.url_content || ''
+          title: `Document ${doc.id}`,
+          description: doc.content?.substring(0, 100) || '',
+          type: 'PDF' as const,
+          tags: [],
+          size: 0,
+          file_path: '',
+          domain: 'documents',
+          owner_id: doc.user_id || '',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          url: '',
+          content: doc.content || ''
         })) as Document[];
       } catch (error) {
         console.error('Error fetching documents:', error);
