@@ -147,7 +147,7 @@ export function useMessageSubmit({
         const outputTokens = estimateTokens(result.response);
         
         await trackTokenUsage({
-          model: selectedModel,
+          model: result.model || selectedModel,
           input_tokens: inputTokens,
           output_tokens: outputTokens,
           total_tokens: inputTokens + outputTokens,

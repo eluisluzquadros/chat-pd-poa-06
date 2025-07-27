@@ -12,15 +12,36 @@ interface TokenUsage {
   session_id?: string;
 }
 
-// Token pricing per 1K tokens (as of 2024)
+// Token pricing per 1K tokens (updated for multi-LLM support)
 const TOKEN_PRICING = {
+  // OpenAI models
+  'openai': { input: 0.0015, output: 0.002 },
   'gpt-4o-mini': { input: 0.00015, output: 0.0006 },
   'gpt-4o': { input: 0.005, output: 0.015 },
+  
+  // Anthropic models
+  'claude': { input: 0.003, output: 0.015 },
+  'claude-sonnet-4-20250514': { input: 0.003, output: 0.015 },
   'claude-3-haiku': { input: 0.00025, output: 0.00125 },
   'claude-3-sonnet': { input: 0.003, output: 0.015 },
+  
+  // Google models
+  'gemini': { input: 0.0005, output: 0.0015 },
+  'gemini-pro': { input: 0.0005, output: 0.0015 },
   'gemini-1.5-flash': { input: 0.000075, output: 0.0003 },
   'gemini-1.5-pro': { input: 0.00125, output: 0.005 },
+  
+  // Meta models (via Groq/Replicate)
+  'llama': { input: 0.0008, output: 0.0008 },
+  'llama-3.1-70b-versatile': { input: 0.0008, output: 0.0008 },
+  'llama-3-70b-instruct': { input: 0.0008, output: 0.0008 },
+  
+  // DeepSeek
+  'deepseek': { input: 0.00014, output: 0.00028 },
   'deepseek-chat': { input: 0.00014, output: 0.00028 },
+  
+  // Groq
+  'groq': { input: 0.0008, output: 0.0008 },
 } as const;
 
 export function useTokenTracking() {
