@@ -1,11 +1,15 @@
 import { parseMarkdown } from "@/utils/markdownUtils";
+import { MessageFeedback } from "./MessageFeedback";
 
 interface MessageContentProps {
   content: string;
   role: "user" | "assistant";
+  messageId?: string;
+  sessionId?: string;
+  model?: string;
 }
 
-export function MessageContent({ content, role }: MessageContentProps) {
+export function MessageContent({ content, role, messageId, sessionId, model }: MessageContentProps) {
   if (role === "user") {
     // For user messages, keep simple formatting
     return (
@@ -19,9 +23,18 @@ export function MessageContent({ content, role }: MessageContentProps) {
   const htmlContent = parseMarkdown(content);
 
   return (
-    <div 
-      className="text-sm leading-relaxed space-y-0 [&>*:first-child]:mt-0"
-      dangerouslySetInnerHTML={{ __html: htmlContent }}
-    />
+    <div className="space-y-2">
+      <div 
+        className="text-sm leading-relaxed space-y-0 [&>*:first-child]:mt-0"
+        dangerouslySetInnerHTML={{ __html: htmlContent }}
+      />
+      {messageId && sessionId && model && (
+        <MessageFeedback 
+          messageId={messageId}
+          sessionId={sessionId}
+          model={model}
+        />
+      )}
+    </div>
   );
 }

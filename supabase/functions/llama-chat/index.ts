@@ -25,13 +25,9 @@ serve(async (req) => {
         'Authorization': `Token ${apiKey}`
       },
       body: JSON.stringify({
-        version: "2d19859030ff705a87c746f7e96eea03aefb71f166725aee39692f1476566d48",
+        version: "meta/meta-llama-3-70b-instruct",
         input: {
-          prompt: `Contexto: Você é um assistente especializado no Plano Diretor de Desenvolvimento Urbano Sustentável (PDUS) de Porto Alegre 2025.
-          
-Papel do usuário: ${userRole}
-
-Pergunta: ${message}`,
+          prompt: `Você é um assistente especializado no Plano Diretor de Desenvolvimento Urbano Sustentável (PDUS) de Porto Alegre 2025. O usuário tem papel: ${userRole}\n\n${message}`,
           max_tokens: 4000,
           temperature: 0.7
         }
@@ -39,19 +35,19 @@ Pergunta: ${message}`,
     });
 
     if (!response.ok) {
-      throw new Error(`Erro na API Replicate: ${response.status}`);
+      throw new Error(`Erro na API Llama: ${response.status}`);
     }
 
-    const prediction = await response.json();
+    const data = await response.json();
     
-    // Aguardar conclusão da predição
-    let result = prediction;
+    // Para Replicate, precisamos aguardar o resultado
+    let result = data;
     while (result.status === 'starting' || result.status === 'processing') {
       await new Promise(resolve => setTimeout(resolve, 1000));
-      const pollResponse = await fetch(result.urls.get, {
+      const statusResponse = await fetch(result.urls.get, {
         headers: { 'Authorization': `Token ${apiKey}` }
       });
-      result = await pollResponse.json();
+      result = await statusResponse.json();
     }
 
     const content = result.output?.join('') || 'Resposta não disponível';
@@ -59,10 +55,10 @@ Pergunta: ${message}`,
     return new Response(
       JSON.stringify({
         response: content,
-        confidence: 0.78,
+        confidence: 0.75,
         sources: { tabular: 0, conceptual: 1 },
         executionTime: 3000,
-        model: 'llama-3.1-70b'
+        model: 'llama-3-70b-instruct'
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );

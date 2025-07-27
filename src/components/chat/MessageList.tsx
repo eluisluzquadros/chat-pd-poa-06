@@ -6,13 +6,20 @@ import { useEffect, useRef, memo } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { MessageContent } from "./MessageContent";
 import { cn } from "@/lib/utils";
+import { LLMProvider } from "@/types/chat";
+
 interface MessageListProps {
   messages: Message[];
   isLoading: boolean;
+  currentSessionId?: string | null;
+  selectedModel?: LLMProvider;
 }
+
 export const MessageList = memo(function MessageList({
   messages,
-  isLoading
+  isLoading,
+  currentSessionId,
+  selectedModel
 }: MessageListProps) {
   const { toast } = useToast();
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -93,10 +100,16 @@ export const MessageList = memo(function MessageList({
                     <Copy className="h-3 w-3" />
                   </Button>
 
-                  {/* Conteúdo da mensagem */}
-                  <div className="pr-8">
-                    <MessageContent content={message.content} role={message.role} />
-                  </div>
+                   {/* Conteúdo da mensagem */}
+                   <div className="pr-8">
+                     <MessageContent 
+                       content={message.content} 
+                       role={message.role}
+                       messageId={message.role === "assistant" ? message.id : undefined}
+                       sessionId={message.role === "assistant" && currentSessionId ? currentSessionId : undefined}
+                       model={message.role === "assistant" ? (message.model || selectedModel) : undefined}
+                     />
+                   </div>
 
                   {/* Timestamp */}
                   <div className={cn(

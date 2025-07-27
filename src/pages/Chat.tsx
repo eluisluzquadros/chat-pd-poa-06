@@ -50,6 +50,7 @@ export default function Chat() {
                 onNewChat={handleNewChat}
                 selectedModel={selectedModel}
                 onModelSelect={handleModelSelect}
+                currentSessionId={currentSessionId}
               />
             </SidebarInset>
           </div>

@@ -18,6 +18,7 @@ interface ChatMainProps {
   onNewChat: () => void;
   selectedModel: LLMProvider;
   onModelSelect: (model: LLMProvider) => void;
+  currentSessionId?: string | null;
 }
 
 export function ChatMain({
@@ -28,7 +29,8 @@ export function ChatMain({
   isLoading,
   onNewChat,
   selectedModel,
-  onModelSelect
+  onModelSelect,
+  currentSessionId
 }: ChatMainProps) {
   
   const { theme } = useTheme();
@@ -67,7 +69,12 @@ export function ChatMain({
           <>
             {/* Lista de mensagens com scroll próprio */}
             <div className="flex-1 min-h-0 overflow-hidden pt-16">
-              <MessageList messages={messages} isLoading={isLoading} />
+              <MessageList 
+                messages={messages} 
+                isLoading={isLoading} 
+                currentSessionId={currentSessionId}
+                selectedModel={selectedModel}
+              />
             </div>
             
             {/* Input sempre presente */}

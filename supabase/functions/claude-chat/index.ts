@@ -22,20 +22,17 @@ serve(async (req) => {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-api-key': apiKey,
+        'Authorization': `Bearer ${apiKey}`,
         'anthropic-version': '2023-06-01'
       },
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
         max_tokens: 4000,
+        temperature: 0.7,
         messages: [
           {
             role: 'user',
-            content: `Contexto: Você é um assistente especializado no Plano Diretor de Desenvolvimento Urbano Sustentável (PDUS) de Porto Alegre 2025.
-            
-Papel do usuário: ${userRole}
-
-Pergunta: ${message}`
+            content: `Você é um assistente especializado no Plano Diretor de Desenvolvimento Urbano Sustentável (PDUS) de Porto Alegre 2025. O usuário tem papel: ${userRole}\n\n${message}`
           }
         ]
       })
@@ -46,7 +43,7 @@ Pergunta: ${message}`
     }
 
     const data = await response.json();
-    const content = data.content[0]?.text || 'Resposta não disponível';
+    const content = data.content?.[0]?.text || 'Resposta não disponível';
 
     return new Response(
       JSON.stringify({
@@ -54,7 +51,7 @@ Pergunta: ${message}`
         confidence: 0.85,
         sources: { tabular: 0, conceptual: 1 },
         executionTime: 2000,
-        model: 'claude-sonnet-4'
+        model: 'claude-sonnet-4-20250514'
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );

@@ -11,33 +11,31 @@ serve(async (req) => {
   }
 
   try {
-    const apiKey = Deno.env.get('GEMINI_API_KEY');
+    const apiKey = Deno.env.get('GOOGLE_API_KEY');
     if (!apiKey) {
-      throw new Error('GEMINI_API_KEY não encontrada');
+      throw new Error('GOOGLE_API_KEY não encontrada');
     }
 
     const { message, userRole = 'user' } = await req.json();
 
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${apiKey}`, {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        contents: [{
-          parts: [{
-            text: `Contexto: Você é um assistente especializado no Plano Diretor de Desenvolvimento Urbano Sustentável (PDUS) de Porto Alegre 2025.
-            
-Papel do usuário: ${userRole}
-
-Pergunta: ${message}`
-          }]
-        }],
+        contents: [
+          {
+            parts: [
+              {
+                text: `Você é um assistente especializado no Plano Diretor de Desenvolvimento Urbano Sustentável (PDUS) de Porto Alegre 2025. O usuário tem papel: ${userRole}\n\n${message}`
+              }
+            ]
+          }
+        ],
         generationConfig: {
           temperature: 0.7,
-          topK: 40,
-          topP: 0.95,
-          maxOutputTokens: 4000,
+          maxOutputTokens: 4000
         }
       })
     });
@@ -52,10 +50,10 @@ Pergunta: ${message}`
     return new Response(
       JSON.stringify({
         response: content,
-        confidence: 0.80,
+        confidence: 0.8,
         sources: { tabular: 0, conceptual: 1 },
         executionTime: 1800,
-        model: 'gemini-2.0-flash'
+        model: 'gemini-pro'
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
