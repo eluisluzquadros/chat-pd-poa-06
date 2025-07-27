@@ -1,7 +1,9 @@
 
 import { MessageList } from "@/components/chat/MessageList";
 import { ChatInput } from "@/components/chat/ChatInput";
-import { Message } from "@/types/chat";
+import { ModelSelector } from "@/components/chat/ModelSelector";
+import { TokenStatsButton } from "@/components/chat/TokenStatsButton";
+import { Message, LLMProvider } from "@/types/chat";
 import { cn } from "@/lib/utils";
 import { TypewriterEffect } from "@/components/ui/typewriter-effect";
 import { useTheme } from "@/components/ui/theme-provider";
@@ -14,6 +16,8 @@ interface ChatMainProps {
   onSubmit: (e: React.FormEvent) => void;
   isLoading: boolean;
   onNewChat: () => void;
+  selectedModel: LLMProvider;
+  onModelSelect: (model: LLMProvider) => void;
 }
 
 export function ChatMain({
@@ -22,7 +26,9 @@ export function ChatMain({
   setInput,
   onSubmit,
   isLoading,
-  onNewChat
+  onNewChat,
+  selectedModel,
+  onModelSelect
 }: ChatMainProps) {
   
   const { theme } = useTheme();
@@ -45,9 +51,17 @@ export function ChatMain({
     <div className="flex flex-col h-full bg-background">
       {/* Container principal do chat */}
       <div className="flex flex-col flex-1 min-h-0 relative">
-        {/* Floating sidebar trigger */}
+        {/* Floating controls */}
         <div className="absolute top-4 left-4 z-30">
           <SidebarTrigger className="text-foreground hover:bg-accent" />
+        </div>
+        
+        <div className="absolute top-4 right-4 z-30 flex gap-2">
+          <ModelSelector 
+            selectedModel={selectedModel} 
+            onModelSelect={onModelSelect}
+          />
+          <TokenStatsButton />
         </div>
         {hasMessages ? (
           <>

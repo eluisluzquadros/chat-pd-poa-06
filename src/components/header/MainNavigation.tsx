@@ -2,7 +2,8 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
-import { Users, FileText, MessageCircle } from 'lucide-react';
+import { Users, FileText, MessageCircle, TrendingUp } from 'lucide-react';
+import { TokenStatsButton } from '@/components/chat/TokenStatsButton';
 
 export const MainNavigation = () => {
   const { isAdmin, isSupervisor } = useAuth();
@@ -19,12 +20,17 @@ export const MainNavigation = () => {
         
         {/* Links condicionais baseados no papel do usuário */}
         {isSupervisor && (
-          <li>
-            <Link to="/reports" className="hover:underline flex items-center">
-              <FileText className="h-4 w-4 mr-1" />
-              Relatórios
-            </Link>
-          </li>
+          <>
+            <li>
+              <Link to="/reports" className="hover:underline flex items-center">
+                <FileText className="h-4 w-4 mr-1" />
+                Relatórios
+              </Link>
+            </li>
+            <li>
+              <TokenStatsButton />
+            </li>
+          </>
         )}
         
         {isAdmin && (

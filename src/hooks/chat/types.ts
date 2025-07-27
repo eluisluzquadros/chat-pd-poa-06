@@ -1,5 +1,5 @@
 
-import { Message, ChatSession } from "@/types/chat";
+import { Message, ChatSession, LLMProvider } from "@/types/chat";
 
 export type UseChatHookReturn = {
   messages: Message[];
@@ -14,6 +14,8 @@ export type UseChatHookReturn = {
   handleSelectSession: (sessionId: string) => void;
   handleDeleteSession: (sessionId: string) => void;
   isConnectionError?: boolean;
+  selectedModel: LLMProvider;
+  handleModelSelect: (model: LLMProvider) => void;
 };
 
 export type RefetchFunction = () => Promise<void>;

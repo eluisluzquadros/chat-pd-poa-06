@@ -6,6 +6,7 @@ import { useSessionManagement } from "./useSessionManagement";
 import { useInputState } from "./useInputState";
 import { useMessageSubmit } from "./useMessageSubmit";
 import { useSessionHandling } from "./useSessionHandling";
+import { useModelSelection } from "./useModelSelection";
 import { RefetchFunction } from "./types";
 
 export function useChatOperations(refetchSessions: RefetchFunction) {
@@ -31,6 +32,11 @@ export function useChatOperations(refetchSessions: RefetchFunction) {
     updateSession,
   } = useSessionManagement(refetchSessions);
 
+  const {
+    selectedModel,
+    handleModelSelect,
+  } = useModelSelection();
+
   const handleNewChat = useCallback(() => {
     clearMessages();
     setInput("");
@@ -47,6 +53,7 @@ export function useChatOperations(refetchSessions: RefetchFunction) {
     addMessage,
     createSession,
     updateSession,
+    selectedModel,
   });
 
   const { handleSelectSession, handleDeleteSession } = useSessionHandling({
@@ -69,5 +76,7 @@ export function useChatOperations(refetchSessions: RefetchFunction) {
     handleNewChat,
     handleSelectSession,
     handleDeleteSession,
+    selectedModel,
+    handleModelSelect,
   };
 }

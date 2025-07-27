@@ -17,6 +17,8 @@ export function useChat(): UseChatHookReturn {
     refetchSessions,
   } = useChatDatabase();
 
+  const chatOperations = useChatOperations(refetchSessions);
+  
   const {
     messages,
     input,
@@ -27,7 +29,9 @@ export function useChat(): UseChatHookReturn {
     handleNewChat,
     handleSelectSession,
     handleDeleteSession,
-  } = useChatOperations(refetchSessions);
+    selectedModel,
+    handleModelSelect,
+  } = chatOperations;
 
   // Check for initial query from localStorage
   useEffect(() => {
@@ -128,5 +132,7 @@ export function useChat(): UseChatHookReturn {
     handleSelectSession,
     handleDeleteSession,
     isConnectionError,
+    selectedModel,
+    handleModelSelect,
   };
 }

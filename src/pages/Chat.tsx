@@ -19,6 +19,8 @@ export default function Chat() {
     handleNewChat,
     handleSelectSession,
     handleDeleteSession,
+    selectedModel,
+    handleModelSelect,
   } = useChat();
 
   return (
@@ -46,6 +48,8 @@ export default function Chat() {
                 onSubmit={handleSubmit}
                 isLoading={chatLoading}
                 onNewChat={handleNewChat}
+                selectedModel={selectedModel}
+                onModelSelect={handleModelSelect}
               />
             </SidebarInset>
           </div>

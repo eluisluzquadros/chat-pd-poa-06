@@ -1,10 +1,11 @@
 
 import { useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Message } from "@/types/chat";
+import { Message, LLMProvider } from "@/types/chat";
 import { useToast } from "@/hooks/use-toast";
 import { getCurrentAuthenticatedSession } from "@/utils/authUtils";
 import { ChatService } from "@/services/chatService";
+import { multiLLMService } from "@/services/multiLLMService";
 import { useTokenTracking } from "@/hooks/useTokenTracking";
 
 interface UseMessageSubmitProps {
@@ -17,6 +18,7 @@ interface UseMessageSubmitProps {
   addMessage: (message: Message) => void;
   createSession: (userId: string, title: string, model: string, message: string) => Promise<string>;
   updateSession: (sessionId: string, lastMessage: string) => Promise<void>;
+  selectedModel: LLMProvider;
 }
 
 export function useMessageSubmit({
@@ -29,6 +31,7 @@ export function useMessageSubmit({
   addMessage,
   createSession,
   updateSession,
+  selectedModel,
 }: UseMessageSubmitProps) {
   const { toast } = useToast();
   const chatService = new ChatService();
@@ -56,7 +59,7 @@ export function useMessageSubmit({
       let sessionId = currentSessionId;
       
       if (!sessionId) {
-        sessionId = await createSession(session.user.id, currentInput, "gpt-4", currentInput);
+        sessionId = await createSession(session.user.id, currentInput, selectedModel, currentInput);
         setCurrentSessionId(sessionId);
       }
 
@@ -66,7 +69,7 @@ export function useMessageSubmit({
         content: currentInput,
         role: "user",
         timestamp: new Date(),
-        model: "agentic-rag-nlq",
+        model: selectedModel,
       };
 
       addMessage(userMessage);
@@ -80,7 +83,7 @@ export function useMessageSubmit({
           message: {
             content: currentInput,
             role: 'user',
-            model: 'agentic-rag-nlq',
+            model: selectedModel,
             timestamp: userMessage.timestamp.toISOString()
           },
         });
@@ -96,14 +99,15 @@ export function useMessageSubmit({
 
       const userRole = roleData?.role || 'citizen';
 
-      console.log('🚀 Processing message via Agentic RAG...');
-      const result = await chatService.processMessage(
+      console.log(`🚀 Processing message via ${selectedModel}...`);
+      const result = await multiLLMService.processMessage(
         currentInput,
+        selectedModel,
         userRole,
         sessionId
       );
 
-      console.log('✅ Agentic RAG response received:', result);
+      console.log(`✅ ${selectedModel} response received:`, result);
 
       console.log('Creating assistant message...');
       const assistantMessage: Message = {
@@ -111,7 +115,7 @@ export function useMessageSubmit({
         content: result.response,
         role: "assistant",
         timestamp: new Date(),
-        model: "agentic-rag-nlq",
+        model: selectedModel,
       };
 
       addMessage(assistantMessage);
@@ -125,7 +129,7 @@ export function useMessageSubmit({
           message: {
             content: result.response,
             role: 'assistant',
-            model: 'agentic-rag-nlq',
+            model: selectedModel,
             timestamp: assistantMessage.timestamp.toISOString(),
             confidence: result.confidence,
             sources: result.sources,
@@ -143,7 +147,7 @@ export function useMessageSubmit({
         const outputTokens = estimateTokens(result.response);
         
         await trackTokenUsage({
-          model: "agentic-rag-nlq",
+          model: selectedModel,
           input_tokens: inputTokens,
           output_tokens: outputTokens,
           total_tokens: inputTokens + outputTokens,
