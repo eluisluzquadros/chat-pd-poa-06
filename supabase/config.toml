@@ -1,14 +1,1 @@
-
-project_id = "xmsnlikpmmhzmuemxtrk"
-
-[functions.chat]
-verify_jwt = true
-
-[functions.process-document]
-verify_jwt = true
-
-[functions.match-documents]
-verify_jwt = true
-
-[functions.set-user-role]
-verify_jwt = true
+project_id = "ngrqwmvuhvjkeohesbxs"
