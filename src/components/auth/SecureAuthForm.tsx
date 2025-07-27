@@ -9,6 +9,7 @@ import { toast } from 'sonner';
 import { AuthService } from '@/services/authService';
 import { useAuth } from '@/context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
 
 interface SecureAuthFormProps {
   mode: 'login' | 'signup';
@@ -128,8 +129,29 @@ export const SecureAuthForm = ({ mode, onModeChange }: SecureAuthFormProps) => {
           toast.error(result.error || 'Erro no login');
         }
       } else {
-        // For signup, you would implement the signup logic here
-        toast.info('Funcionalidade de cadastro em desenvolvimento');
+        // Signup logic
+        const { data, error } = await supabase.auth.signUp({
+          email: sanitizedEmail,
+          password: password,
+          options: {
+            emailRedirectTo: `${window.location.origin}/`,
+            data: {
+              full_name: sanitizedFullName
+            }
+          }
+        });
+
+        if (error) {
+          setAttemptCount(prev => prev + 1);
+          toast.error(error.message || 'Erro no cadastro');
+        } else if (data.user) {
+          toast.success('Conta criada com sucesso! Você já pode fazer login.');
+          onModeChange('login');
+          setEmail(sanitizedEmail);
+          setPassword('');
+          setConfirmPassword('');
+          setFullName('');
+        }
       }
     } catch (error) {
       console.error('Erro na autenticação:', error);

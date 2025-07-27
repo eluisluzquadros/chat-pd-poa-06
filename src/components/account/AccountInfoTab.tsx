@@ -56,7 +56,7 @@ const AccountInfoTab = ({
         .update({
           full_name: formValues.fullName,
         })
-        .eq("profile_id", profile.id);
+        .eq("user_id", profile.id);
       
       toast.success("Perfil atualizado com sucesso");
     } catch (error: any) {
