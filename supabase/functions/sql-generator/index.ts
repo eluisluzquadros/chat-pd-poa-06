@@ -106,7 +106,7 @@ Gere consultas SQL otimizadas e seguras. Responda APENAS com JSON válido.`;
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: 'gpt-4.1-2025-04-14',
         messages: [
           { role: 'system', content: systemPrompt },
           { 
