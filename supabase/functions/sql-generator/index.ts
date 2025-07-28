@@ -97,15 +97,17 @@ Se isConstructionQuery = true, SEMPRE inclua estas colunas no resultado:
 
 REGRA CRÍTICA PARA ZOTs COM SUBDIVISÕES:
 Para ZOTs como 08.3 que possuem subdivisões A, B, C:
-- SEMPRE buscar TODAS as subdivisões: WHERE row_data->>'Zona' LIKE 'ZOT 08.3%'
-- NUNCA fazer match exato em apenas uma subdivisão
-- Ordenar por subdivisão: ORDER BY row_data->>'Zona'
-- Incluir TODAS as subdivisões no resultado para comparação completa
+- IMPORTANTE: Só retornar as subdivisões que EXISTEM no bairro específico
+- NUNCA criar dados fictícios - apenas mostrar o que existe na base
+- Se o bairro tem apenas ZOT 08.3-C, retornar APENAS essa
+- Se o bairro tem todas (A, B, C), retornar todas
+- Usar: WHERE row_data->>'Bairro' = 'BAIRRO_EXATO' AND row_data->>'Zona' LIKE 'ZOT 08.3%'
 
 VALIDAÇÃO OBRIGATÓRIA:
 - Para bairros, use correspondência EXATA: row_data->>'Bairro' = 'NOME_EXATO'
-- Nunca use ILIKE '%nome%' para bairros - isso causa confusão entre similares
-- Sempre normalize para maiúsculas: 'BOA VISTA', 'BOA VISTA DO SUL', etc.
+- NUNCA retornar dados de ZOTs que não existem no bairro
+- Sempre validar se a ZOT existe no bairro antes de incluir
+- Exemplo: BOA VISTA só tem ZOT 08.3-C, não tem A nem B
 
 CONTEXTO: ${analysisResult?.entities ? JSON.stringify(analysisResult.entities) : 'Nenhuma entidade específica'}
 É consulta de construção: ${analysisResult?.isConstructionQuery || false}
@@ -141,9 +143,10 @@ row_data->>'Bairro' = 'NOME_BAIRRO_MAIUSCULO'
 NÃO use ILIKE - evita confusão entre "BOA VISTA" e "BOA VISTA DO SUL"
 
 PARA ZOTs COM SUBDIVISÕES (como ZOT 08.3):
-- Use LIKE para capturar todas as subdivisões: row_data->>'Zona' LIKE 'ZOT 08.3%'
-- SEMPRE ordernar por Zona para mostrar A, B, C em ordem
-- NUNCA filtrar apenas uma subdivisão - mostre TODAS
+- CRÍTICO: Use correspondência EXATA de bairro + LIKE para ZOT
+- Exemplo: WHERE row_data->>'Bairro' = 'BOA VISTA' AND row_data->>'Zona' LIKE 'ZOT 08.3%'
+- Só retornar as que realmente EXISTEM no bairro (não inventar dados)
+- BOA VISTA tem apenas ZOT 08.3-C, não tem A nem B
 
 RECONHECIMENTO DE VARIAÇÕES LINGUÍSTICAS:
 Se o usuário perguntar por qualquer variação de:
