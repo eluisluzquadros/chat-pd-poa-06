@@ -34,7 +34,7 @@ Esse objetivo geral se desdobra em cinco objetivos estratégicos, que norteiam t
 ---
 
 📍 **Explore mais:**
-- [Mapa Interativo PDUS](https://bit.ly/3ILdXRA)
+- [Mapa com Regras Construtivas:](https://bit.ly/3ILdXRA)
 - [Contribua com sugestões](https://bit.ly/4oefZKm) 
 - [Audiência Pública](https://bit.ly/4o7AWqb)
 

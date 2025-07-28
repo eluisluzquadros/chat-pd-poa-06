@@ -62,7 +62,7 @@ Antes de formular sua resposta final, execute as seguintes:
 SEMPRE termine sua resposta com os links oficiais:
 
 📍 **Explore mais:**
-- [Mapa Interativo PDUS](https://bit.ly/3ILdXRA)
+- [Mapa com Regras Construtivas:](https://bit.ly/3ILdXRA)
 - [Contribua com sugestões](https://bit.ly/4oefZKm)
 - [Audiência Pública](https://bit.ly/4o7AWqb)
 
@@ -148,7 +148,7 @@ Sintetize uma resposta seguindo rigorosamente as diretrizes do sistema. Máximo 
     const fallbackResponse = `Desculpe, sou uma versão Beta e ainda não consigo responder a essa pergunta.
 
 📍 **Explore mais:**
-- [Mapa Interativo PDUS](https://bit.ly/3ILdXRA)
+- [Mapa com Regras Construtivas:](https://bit.ly/3ILdXRA)
 - [Contribua com sugestões](https://bit.ly/4oefZKm)
 - [Audiência Pública](https://bit.ly/4o7AWqb)
 
