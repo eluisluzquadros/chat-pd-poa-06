@@ -386,39 +386,176 @@ export type Database = {
         }
         Relationships: []
       }
+      qa_learning_insights: {
+        Row: {
+          category: string
+          confidence_score: number | null
+          created_at: string | null
+          id: string
+          insight_data: Json
+          insight_type: string
+          is_applied: boolean | null
+          model: string
+        }
+        Insert: {
+          category: string
+          confidence_score?: number | null
+          created_at?: string | null
+          id?: string
+          insight_data: Json
+          insight_type: string
+          is_applied?: boolean | null
+          model: string
+        }
+        Update: {
+          category?: string
+          confidence_score?: number | null
+          created_at?: string | null
+          id?: string
+          insight_data?: Json
+          insight_type?: string
+          is_applied?: boolean | null
+          model?: string
+        }
+        Relationships: []
+      }
+      qa_test_case_history: {
+        Row: {
+          category: string
+          change_reason: string | null
+          changed_at: string | null
+          changed_by: string | null
+          difficulty: string
+          expected_answer: string
+          expected_sql: string | null
+          id: string
+          is_sql_related: boolean | null
+          question: string
+          sql_complexity: string | null
+          tags: string[] | null
+          test_case_id: string
+          version: number
+        }
+        Insert: {
+          category: string
+          change_reason?: string | null
+          changed_at?: string | null
+          changed_by?: string | null
+          difficulty: string
+          expected_answer: string
+          expected_sql?: string | null
+          id?: string
+          is_sql_related?: boolean | null
+          question: string
+          sql_complexity?: string | null
+          tags?: string[] | null
+          test_case_id: string
+          version: number
+        }
+        Update: {
+          category?: string
+          change_reason?: string | null
+          changed_at?: string | null
+          changed_by?: string | null
+          difficulty?: string
+          expected_answer?: string
+          expected_sql?: string | null
+          id?: string
+          is_sql_related?: boolean | null
+          question?: string
+          sql_complexity?: string | null
+          tags?: string[] | null
+          test_case_id?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "qa_test_case_history_test_case_id_fkey"
+            columns: ["test_case_id"]
+            isOneToOne: false
+            referencedRelation: "qa_test_cases"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       qa_test_cases: {
         Row: {
           category: string
           created_at: string
           difficulty: string | null
           expected_answer: string
+          expected_sql: string | null
           id: string
           is_active: boolean
+          is_sql_related: boolean | null
           question: string
+          sql_complexity: string | null
           tags: string[] | null
           updated_at: string
+          version: number | null
         }
         Insert: {
           category: string
           created_at?: string
           difficulty?: string | null
           expected_answer: string
+          expected_sql?: string | null
           id?: string
           is_active?: boolean
+          is_sql_related?: boolean | null
           question: string
+          sql_complexity?: string | null
           tags?: string[] | null
           updated_at?: string
+          version?: number | null
         }
         Update: {
           category?: string
           created_at?: string
           difficulty?: string | null
           expected_answer?: string
+          expected_sql?: string | null
           id?: string
           is_active?: boolean
+          is_sql_related?: boolean | null
           question?: string
+          sql_complexity?: string | null
           tags?: string[] | null
           updated_at?: string
+          version?: number | null
+        }
+        Relationships: []
+      }
+      qa_validation_preferences: {
+        Row: {
+          auto_generate_insights: boolean | null
+          created_at: string | null
+          default_batch_size: number | null
+          default_execution_mode: string | null
+          id: string
+          preferred_categories: string[] | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          auto_generate_insights?: boolean | null
+          created_at?: string | null
+          default_batch_size?: number | null
+          default_execution_mode?: string | null
+          id?: string
+          preferred_categories?: string[] | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          auto_generate_insights?: boolean | null
+          created_at?: string | null
+          default_batch_size?: number | null
+          default_execution_mode?: string | null
+          id?: string
+          preferred_categories?: string[] | null
+          updated_at?: string | null
+          user_id?: string
         }
         Relationships: []
       }
@@ -429,11 +566,15 @@ export type Database = {
           created_at: string
           error_details: string | null
           error_type: string | null
+          generated_sql: string | null
           id: string
           is_correct: boolean
           model: string
           response_time_ms: number | null
           session_id: string | null
+          sql_executed: boolean | null
+          sql_result_match: boolean | null
+          sql_syntax_valid: boolean | null
           test_case_id: string
           validation_run_id: string
         }
@@ -443,11 +584,15 @@ export type Database = {
           created_at?: string
           error_details?: string | null
           error_type?: string | null
+          generated_sql?: string | null
           id?: string
           is_correct: boolean
           model: string
           response_time_ms?: number | null
           session_id?: string | null
+          sql_executed?: boolean | null
+          sql_result_match?: boolean | null
+          sql_syntax_valid?: boolean | null
           test_case_id: string
           validation_run_id: string
         }
@@ -457,11 +602,15 @@ export type Database = {
           created_at?: string
           error_details?: string | null
           error_type?: string | null
+          generated_sql?: string | null
           id?: string
           is_correct?: boolean
           model?: string
           response_time_ms?: number | null
           session_id?: string | null
+          sql_executed?: boolean | null
+          sql_result_match?: boolean | null
+          sql_syntax_valid?: boolean | null
           test_case_id?: string
           validation_run_id?: string
         }
