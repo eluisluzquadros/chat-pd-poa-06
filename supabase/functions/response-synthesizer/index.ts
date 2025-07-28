@@ -230,17 +230,31 @@ Sintetize uma resposta completa e detalhada seguindo rigorosamente as diretrizes
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4.1-2025-04-14',
+        model: 'gpt-4o-mini',
         messages: [
           { role: 'system', content: pdusSystemPrompt },
           { role: 'user', content: userPrompt }
         ],
         temperature: 0.7,
-        max_tokens: 4046
+        max_tokens: 4000
       }),
     });
 
+    if (!response.ok) {
+      throw new Error(`OpenAI API error: ${response.status} ${response.statusText}`);
+    }
+
     const data = await response.json();
+    console.log('DEBUG - OpenAI response structure:', { 
+      hasChoices: !!data.choices, 
+      choicesLength: data.choices?.length,
+      error: data.error 
+    });
+    
+    if (!data.choices || data.choices.length === 0) {
+      throw new Error(`Invalid OpenAI response: ${JSON.stringify(data)}`);
+    }
+    
     const synthesizedResponse = data.choices[0].message.content;
 
     // Calculate confidence based on data availability

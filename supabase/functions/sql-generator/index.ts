@@ -123,7 +123,7 @@ Gere consultas SQL otimizadas e seguras. Responda APENAS com JSON válido.`;
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4.1-2025-04-14',
+        model: 'gpt-4o-mini',
         messages: [
           { role: 'system', content: systemPrompt },
           { 
@@ -179,7 +179,16 @@ Responda com JSON válido seguindo esta estrutura:
       }),
     });
 
+    if (!response.ok) {
+      throw new Error(`OpenAI API error: ${response.status} ${response.statusText}`);
+    }
+
     const data = await response.json();
+    
+    if (!data.choices || data.choices.length === 0) {
+      throw new Error(`Invalid OpenAI response: ${JSON.stringify(data)}`);
+    }
+    
     let sqlResult: SQLGenerationResponse;
 
     try {
