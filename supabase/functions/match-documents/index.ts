@@ -1,7 +1,7 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.0"
-import { Configuration, OpenAIApi } from "https://esm.sh/openai@4.24.1"
+import OpenAI from "https://esm.sh/openai@4.24.1"
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -27,18 +27,20 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const configuration = new Configuration({
-      apiKey: Deno.env.get('OPENAI_API_KEY'),
-    });
-    const openai = new OpenAIApi(configuration);
+    const openaiKey = Deno.env.get('OPENAI_API_KEY');
+    if (!openaiKey) {
+      throw new Error('OpenAI API key not configured');
+    }
+    
+    const openai = new OpenAI({ apiKey: openaiKey });
 
     // Generate embedding for the query
     console.log('Generating query embedding...');
-    const embeddingResponse = await openai.createEmbedding({
+    const embeddingResponse = await openai.embeddings.create({
       model: "text-embedding-3-small",
       input: query,
     });
-    const queryEmbedding = embeddingResponse.data.data[0].embedding;
+    const queryEmbedding = embeddingResponse.data[0].embedding;
 
     // Match documents using the embedding
     console.log('Matching documents...');

@@ -27,7 +27,7 @@ serve(async (req) => {
     );
 
     // Generate embedding for the query
-    const { data: embeddingData, error: embeddingError } = await supabaseClient.functions.invoke('generate-embedding', {
+    const { data: embeddingData, error: embeddingError } = await supabaseClient.functions.invoke('generate-text-embedding', {
       body: { text: message }
     });
 

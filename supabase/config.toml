@@ -28,3 +28,9 @@ verify_jwt = true
 
 [functions.match-documents]
 verify_jwt = true
+
+[functions.generate-text-embedding]
+verify_jwt = true
+
+[functions.qa-validator]
+verify_jwt = true
