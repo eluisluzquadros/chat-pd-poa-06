@@ -63,6 +63,74 @@ serve(async (req) => {
     let sqlResults = null;
     let vectorResults = null;
 
+    // Handle predefined responses
+    if (analysisResult.intent === 'predefined_objectives') {
+      console.log('🎯 Using predefined response for objectives...');
+      
+      const predefinedResponse = await fetch(`${supabaseUrl}/functions/v1/predefined-responses`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${Deno.env.get('SUPABASE_ANON_KEY')}`,
+        },
+        body: JSON.stringify({
+          responseType: 'objectives',
+          query: message
+        }),
+      });
+
+      const predefinedResult = await predefinedResponse.json();
+      
+      const finalResponse: AgenticRAGResponse = {
+        response: predefinedResult.response,
+        confidence: 1.0,
+        sources: { tabular: 0, conceptual: 0 },
+        executionTime: Date.now() - startTime,
+        agentTrace: [
+          { step: 'query_analysis', timestamp: Date.now(), status: 'completed', result: analysisResult },
+          { step: 'predefined_response', timestamp: Date.now(), status: 'completed', result: predefinedResult }
+        ]
+      };
+
+      // Store in chat history
+      if (sessionId && userId) {
+        const supabaseClient = createClient(
+          Deno.env.get("SUPABASE_URL") ?? "",
+          Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+        );
+
+        // Store user message
+        await supabaseClient
+          .from('chat_history')
+          .insert({
+            user_id: userId,
+            session_id: sessionId,
+            role: 'user',
+            message,
+            model: 'agentic-rag-nlq',
+            created_at: new Date().toISOString()
+          });
+
+        // Store assistant response
+        await supabaseClient
+          .from('chat_history')
+          .insert({
+            user_id: userId,
+            session_id: sessionId,
+            role: 'assistant',
+            message: predefinedResult.response,
+            model: 'agentic-rag-nlq',
+            created_at: new Date().toISOString()
+          });
+      }
+
+      console.log(`✅ Predefined response completed in ${Date.now() - startTime}ms`);
+      
+      return new Response(JSON.stringify(finalResponse), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     // Step 2: Execute based on strategy
     if (analysisResult.strategy === 'structured_only' || analysisResult.strategy === 'hybrid') {
       console.log('🔧 Executing SQL Generation...');

@@ -34,3 +34,6 @@ verify_jwt = true
 
 [functions.qa-validator]
 verify_jwt = true
+
+[functions.predefined-responses]
+verify_jwt = true

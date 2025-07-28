@@ -14,7 +14,7 @@ interface QueryAnalysisRequest {
 }
 
 interface QueryAnalysisResponse {
-  intent: 'conceptual' | 'tabular' | 'hybrid';
+  intent: 'conceptual' | 'tabular' | 'hybrid' | 'predefined_objectives';
   entities: {
     zots?: string[];
     bairros?: string[];
@@ -22,7 +22,7 @@ interface QueryAnalysisResponse {
   };
   requiredDatasets: string[];
   confidence: number;
-  strategy: 'structured_only' | 'unstructured_only' | 'hybrid';
+  strategy: 'structured_only' | 'unstructured_only' | 'hybrid' | 'predefined';
 }
 
 serve(async (req) => {
@@ -53,6 +53,44 @@ serve(async (req) => {
       if (!secrets?.secret_value) {
         throw new Error('OpenAI API key not found in secrets');
       }
+    }
+
+    // Check for predefined objectives questions first
+    const objectivesKeywords = [
+      'objetivos', 'objetivo', 'cinco principais', 'principais objetivos',
+      'quais os objetivos', 'me fale sobre os objetivos', 'objetivos do plano diretor',
+      'cinco principais objetivos', 'quais são os objetivos'
+    ];
+    
+    const queryLower = query.toLowerCase();
+    const hasObjectivesKeyword = objectivesKeywords.some(keyword => 
+      queryLower.includes(keyword.toLowerCase())
+    );
+
+    if (hasObjectivesKeyword) {
+      const predefinedResult: QueryAnalysisResponse = {
+        intent: 'predefined_objectives',
+        entities: {},
+        requiredDatasets: [],
+        confidence: 1.0,
+        strategy: 'predefined'
+      };
+      
+      // Store analysis result for tracking
+      if (sessionId) {
+        await supabaseClient
+          .from('agent_executions')
+          .insert({
+            session_id: sessionId,
+            user_query: query,
+            intent_classification: predefinedResult,
+            created_at: new Date().toISOString()
+          });
+      }
+
+      return new Response(JSON.stringify(predefinedResult), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
     const systemPrompt = `Você é um analisador de consultas especializado no Plano Diretor Urbano Sustentável (PDUS 2025) de Porto Alegre.
