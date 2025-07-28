@@ -236,18 +236,32 @@ Responda APENAS com JSON válido no formato especificado.`;
     let analysisResult: QueryAnalysisResponse;
 
     try {
-      analysisResult = JSON.parse(data.choices[0].message.content);
+      let contentToParse = data.choices[0].message.content;
+      
+      // Extract JSON from markdown code blocks if present
+      const jsonMatch = contentToParse.match(/```(?:json)?\s*(\{[\s\S]*?\})\s*```/);
+      if (jsonMatch) {
+        contentToParse = jsonMatch[1];
+        console.log('DEBUG - Extracted JSON from markdown:', contentToParse);
+      }
+      
+      analysisResult = JSON.parse(contentToParse);
+      console.log('DEBUG - Successfully parsed JSON:', JSON.stringify(analysisResult, null, 2));
     } catch (parseError) {
-      // Fallback if JSON parsing fails
-      console.error('Failed to parse analysis result:', parseError);
+      console.error('Failed to parse analysis result:', parseError, 'Raw content:', data.choices[0].message.content);
+      
+      // Enhanced fallback with construction detection
       analysisResult = {
-        intent: 'hybrid',
-        entities: {},
+        intent: isConstructionQuery ? 'tabular' : 'hybrid',
+        entities: isConstructionQuery ? {
+          parametros: ['altura', 'coeficiente de aproveitamento', 'zona']
+        } : {},
         requiredDatasets: ['17_GMWnJC1sKff-YS0wesgxsvo3tnZdgSSb4JZ0ZjpCk', '1FTENHpX4aLxmAoxvrEeGQn0fej-wxTMQRQs_XBjPQPY'],
         confidence: 0.7,
-        strategy: 'hybrid',
+        strategy: isConstructionQuery ? 'structured_only' : 'hybrid',
         isConstructionQuery
       };
+      console.log('DEBUG - Used enhanced fallback:', JSON.stringify(analysisResult, null, 2));
     }
 
     // FORÇA a inclusão do dataset de regime urbanístico para consultas de construção

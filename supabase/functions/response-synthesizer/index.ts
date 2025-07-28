@@ -148,10 +148,35 @@ Se a pergunta estiver fora do escopo do PDUS 2025 ou do planejamento urbano de P
             result.data[0].hasOwnProperty("Coeficiente de Aproveitamento - Máximo")
           );
           
-          console.log(`DEBUG - Dataset ${index + 1}:`, JSON.stringify(result.data.slice(0, 3), null, 2));
+          // Enhanced data validation for construction queries
+          const hasValidData = result.data.length > 0;
+          const sampleRow = hasValidData ? result.data[0] : {};
+          const availableColumns = hasValidData ? Object.keys(sampleRow) : [];
+          
+          // Check for X.X or missing values that should be filtered out
+          const cleanedData = result.data.filter(row => {
+            const altura = row["Altura Máxima - Edificação Isolada"];
+            const caBasico = row["Coeficiente de Aproveitamento - Básico"];
+            const caMaximo = row["Coeficiente de Aproveitamento - Máximo"];
+            
+            // Filter out rows with X.X or undefined critical values
+            return altura !== "X.X" && altura !== undefined && altura !== null &&
+                   caBasico !== "X.X" && caBasico !== undefined && caBasico !== null &&
+                   caMaximo !== "X.X" && caMaximo !== undefined && caMaximo !== null;
+          });
+          
+          console.log(`DEBUG - Dataset ${index + 1}: ${result.data.length} total rows, ${cleanedData.length} clean rows`);
           console.log(`DEBUG - Has ZOT subdivisions:`, hasZotSubdivisions);
           console.log(`DEBUG - Has correct column names:`, hasCorrectColumns);
-          console.log(`DEBUG - Available columns:`, result.data.length > 0 ? Object.keys(result.data[0]) : 'No data');
+          console.log(`DEBUG - Available columns:`, availableColumns);
+          console.log(`DEBUG - Sample data validation:`, {
+            altura: sampleRow["Altura Máxima - Edificação Isolada"],
+            caBasico: sampleRow["Coeficiente de Aproveitamento - Básico"],
+            caMaximo: sampleRow["Coeficiente de Aproveitamento - Máximo"]
+          });
+          
+          // Use cleaned data for further processing
+          result.data = cleanedData;
           
           if (hasZotSubdivisions) {
             hasSubdivisionData = true;
@@ -220,12 +245,9 @@ VALIDAÇÃO CRÍTICA ABSOLUTA:
 - FILTRO RIGOROSO: Verifique se TODOS os dados são do bairro EXATO solicitado
 - PETRÓPOLIS: só aceitar dados onde campo 'Bairro' = 'PETRÓPOLIS'
 - NUNCA misturar dados de bairros similares ou diferentes
-- VERIFICAÇÃO DE EXISTÊNCIA: Para Petrópolis, só mostrar ZOTs que EXISTEM:
-  * ZOT 07 (existe)
-  * ZOT 08.3-B (existe) 
-  * ZOT 08.3-C (existe)
-  * NUNCA mostrar ZOT 08.1, 08.2, 08.3-A (não existem em Petrópolis)
-- CRÍTICO: Se os 4 campos obrigatórios estão nas tabelas, NUNCA dizer que estão indisponíveis
+- VERIFICAÇÃO DE EXISTÊNCIA: Só mostrar ZOTs que REALMENTE EXISTEM no bairro específico
+- CRÍTICO: Se os 4 campos obrigatórios estão nas tabelas com valores válidos, NUNCA dizer que estão indisponíveis
+- ABSOLUTO: NUNCA mostrar valores "X.X" - estes devem ser filtrados como dados indisponíveis
 - Campos: "Zona", "Altura Máxima - Edificação Isolada", "Coeficiente de Aproveitamento - Básico", "Coeficiente de Aproveitamento - Máximo"
 - VALIDAÇÃO FINAL: Conferir se tabela só mostra ZOTs que realmente existem no bairro` : ''}
 

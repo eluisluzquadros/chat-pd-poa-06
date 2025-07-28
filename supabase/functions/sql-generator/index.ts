@@ -203,21 +203,43 @@ Responda com JSON válido seguindo esta estrutura:
     let sqlResult: SQLGenerationResponse;
 
     try {
-      sqlResult = JSON.parse(data.choices[0].message.content);
+      let contentToParse = data.choices[0].message.content;
+      
+      // Extract JSON from markdown code blocks if present
+      const jsonMatch = contentToParse.match(/```(?:json)?\s*(\{[\s\S]*?\})\s*```/);
+      if (jsonMatch) {
+        contentToParse = jsonMatch[1];
+        console.log('DEBUG - SQL Generator extracted JSON from markdown');
+      }
+      
+      sqlResult = JSON.parse(contentToParse);
+      console.log('DEBUG - Successfully parsed SQL JSON, queries count:', sqlResult.sqlQueries?.length);
     } catch (parseError) {
-      console.error('Failed to parse SQL result:', parseError);
-      // Fallback query
+      console.error('Failed to parse SQL result:', parseError, 'Raw content:', data.choices[0].message.content);
+      
+      // Enhanced fallback with better queries for construction
+      const isConstruction = analysisResult.isConstructionQuery;
+      const constructionFields = `
+        row_data->>'Zona' as zona,
+        row_data->>'Altura Máxima - Edificação Isolada' as altura_maxima,
+        row_data->>'Coeficiente de Aproveitamento - Básico' as ca_basico,
+        row_data->>'Coeficiente de Aproveitamento - Máximo' as ca_maximo
+      `;
+      
       sqlResult = {
         sqlQueries: [
           {
-            query: `SELECT row_data FROM document_rows WHERE dataset_id IN ('${analysisResult.requiredDatasets?.join("', '") || ''}') LIMIT 10`,
-            dataset_id: analysisResult.requiredDatasets?.[0] || '',
-            purpose: 'Consulta genérica de fallback'
+            query: isConstruction 
+              ? `SELECT ${constructionFields} FROM document_rows WHERE dataset_id = '17_GMWnJC1sKff-YS0wesgxsvo3tnZdgSSb4JZ0ZjpCk' LIMIT 20`
+              : `SELECT row_data FROM document_rows WHERE dataset_id IN ('${analysisResult.requiredDatasets?.join("', '") || ''}') LIMIT 10`,
+            dataset_id: analysisResult.requiredDatasets?.[0] || '17_GMWnJC1sKff-YS0wesgxsvo3tnZdgSSb4JZ0ZjpCk',
+            purpose: isConstruction ? 'Consulta de parâmetros construtivos (fallback)' : 'Consulta genérica de fallback'
           }
         ],
-        confidence: 0.5,
-        executionPlan: 'Executar consulta simples como fallback'
+        confidence: 0.6,
+        executionPlan: isConstruction ? 'Buscar dados construtivos essenciais' : 'Executar consulta simples como fallback'
       };
+      console.log('DEBUG - Used enhanced SQL fallback for construction:', isConstruction);
     }
 
     // Validate and execute queries
