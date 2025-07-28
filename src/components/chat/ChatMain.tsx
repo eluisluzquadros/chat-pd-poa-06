@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 import { TypewriterEffect } from "@/components/ui/typewriter-effect";
 import { useTheme } from "@/components/ui/theme-provider";
 import { SidebarTrigger } from "@/components/ui/sidebar";
+import { useAuth } from "@/context/AuthContext";
 
 interface ChatMainProps {
   messages: Message[];
@@ -34,6 +35,7 @@ export function ChatMain({
 }: ChatMainProps) {
   
   const { theme } = useTheme();
+  const { isAdmin } = useAuth();
   const hasMessages = messages.length > 0;
   
   const welcomeWords = [{
@@ -58,13 +60,15 @@ export function ChatMain({
           <SidebarTrigger className="text-foreground hover:bg-accent" />
         </div>
         
-        <div className="absolute top-4 right-4 z-30 flex gap-2">
-          <ModelSelector 
-            selectedModel={selectedModel} 
-            onModelSelect={onModelSelect}
-          />
-          <TokenStatsButton />
-        </div>
+        {isAdmin && (
+          <div className="absolute top-4 right-4 z-30 flex gap-2">
+            <ModelSelector 
+              selectedModel={selectedModel} 
+              onModelSelect={onModelSelect}
+            />
+            <TokenStatsButton />
+          </div>
+        )}
         {hasMessages ? (
           <>
             {/* Lista de mensagens com scroll próprio */}

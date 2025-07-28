@@ -4,7 +4,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { UsersAnalytics } from "@/components/reports/UsersAnalytics";
 import { ConversationsAnalytics } from "@/components/reports/ConversationsAnalytics";
 import { InterestAnalytics } from "@/components/reports/InterestAnalytics";
-import { BarChart, Users, MessageSquare, TrendingUp, Brain, Star, AlertTriangle } from "lucide-react";
+import { TokenStats } from "@/components/chat/TokenStats";
+import { BarChart, Users, MessageSquare, TrendingUp, Brain, Star, AlertTriangle, BarChart3, UserPlus } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
@@ -105,13 +106,15 @@ export function AdminDashboard({ startDate, endDate, onDateRangeChange }: AdminD
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-6">
+        <TabsList className="grid w-full grid-cols-7">
           <TabsTrigger value="overview">Visão Geral</TabsTrigger>
+          <TabsTrigger value="tokens">Tokens</TabsTrigger>
           <TabsTrigger value="models">Modelos</TabsTrigger>
           <TabsTrigger value="feedback">Feedback</TabsTrigger>
           <TabsTrigger value="qa">Validação QA</TabsTrigger>
           <TabsTrigger value="users">Usuários</TabsTrigger>
           <TabsTrigger value="conversations">Conversas</TabsTrigger>
+          <TabsTrigger value="interests">Manifestações</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-6">
@@ -299,9 +302,24 @@ export function AdminDashboard({ startDate, endDate, onDateRangeChange }: AdminD
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="text-muted-foreground">
-                Dashboard de usuários em desenvolvimento
-              </p>
+              <UsersAnalytics timeRange="month" />
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="tokens" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <BarChart3 className="h-5 w-5" />
+                Estatísticas de Uso de Tokens
+              </CardTitle>
+              <CardDescription>
+                Análise detalhada do consumo de tokens por modelo e custos estimados
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <TokenStats />
             </CardContent>
           </Card>
         </TabsContent>
@@ -311,13 +329,28 @@ export function AdminDashboard({ startDate, endDate, onDateRangeChange }: AdminD
             <CardHeader>
               <CardTitle>Análise de Conversas</CardTitle>
               <CardDescription>
-                Métricas e estatísticas das conversas
+                Métricas detalhadas sobre as conversas no sistema
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="text-muted-foreground">
-                Dashboard de conversas em desenvolvimento
-              </p>
+              <ConversationsAnalytics timeRange="month" />
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="interests" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <UserPlus className="h-5 w-5" />
+                Manifestações de Interesse
+              </CardTitle>
+              <CardDescription>
+                Análise das manifestações de interesse no sistema
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <InterestAnalytics timeRange="month" />
             </CardContent>
           </Card>
         </TabsContent>

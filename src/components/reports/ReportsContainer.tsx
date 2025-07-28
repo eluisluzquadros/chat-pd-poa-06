@@ -9,7 +9,6 @@ import { TimeRangeSelector } from "@/components/reports/TimeRangeSelector";
 import { ReportSidebar } from "@/components/reports/ReportSidebar";
 import { UsersAnalytics } from "@/components/reports/UsersAnalytics";
 import { ConversationsAnalytics } from "@/components/reports/ConversationsAnalytics";
-import { InterestAnalytics } from "@/components/reports/InterestAnalytics";
 
 export function ReportsContainer() {
   const [timeRange, setTimeRange] = useState<TimeRange>("7days");
@@ -62,10 +61,6 @@ export function ReportsContainer() {
                 
                 {(activeTab === "all" || activeTab === "conversations") && (
                   <ConversationsAnalytics timeRange={timeRange} />
-                )}
-                
-                {(activeTab === "all" || activeTab === "interests") && (
-                  <InterestAnalytics timeRange={timeRange} />
                 )}
               </div>
             </CardContent>

@@ -29,12 +29,12 @@ export function ModelSelector({ selectedModel, onModelSelect }: ModelSelectorPro
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" className="w-[200px] justify-between bg-white">
+        <Button variant="outline" className="w-[200px] justify-between">
           {selectedModelName}
           <ChevronDown className="ml-2 h-4 w-4" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-[200px] bg-white">
+      <DropdownMenuContent className="w-[200px]">
         {models.map((model) => (
           <DropdownMenuItem
             key={model.id}

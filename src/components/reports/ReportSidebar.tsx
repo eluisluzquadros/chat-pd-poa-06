@@ -1,7 +1,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { UsersIcon, MessageSquareIcon, BarChart2Icon, UserPlusIcon } from "lucide-react";
+import { UsersIcon, MessageSquareIcon, BarChart2Icon } from "lucide-react";
 
 interface ReportSidebarProps {
   activeTab: string;
@@ -27,12 +27,6 @@ export function ReportSidebar({ activeTab, onTabChange }: ReportSidebarProps) {
               <div className="flex items-center gap-2">
                 <MessageSquareIcon className="h-4 w-4" />
                 <span>Conversas</span>
-              </div>
-            </TabsTrigger>
-            <TabsTrigger value="interests" className="w-full justify-start mb-1">
-              <div className="flex items-center gap-2">
-                <UserPlusIcon className="h-4 w-4" />
-                <span>Manifestações</span>
               </div>
             </TabsTrigger>
             <TabsTrigger value="all" className="w-full justify-start">
