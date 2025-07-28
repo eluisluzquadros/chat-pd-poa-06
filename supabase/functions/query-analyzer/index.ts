@@ -82,7 +82,7 @@ serve(async (req) => {
       'autorizado', 'estabelecido', 'definido'
     ];
 
-    // Check for construction-related questions with expanded coverage
+    // Enhanced construction detection - now includes specific neighborhood/ZOT queries
     const constructionKeywords = [
       'o que posso construir', 'posso construir', 'construir', 'edificar',
       ...coeficienteAproveitamentoTerms,
@@ -92,16 +92,32 @@ serve(async (req) => {
       'parâmetros urbanísticos', 'índices urbanísticos', 'área construída', 'terreno', 'lote'
     ];
     
+    // Enhanced bairro/ZOT detection
+    const bairroZotPatterns = [
+      /\bbairro\s+[a-záàâãéêíóôõúç\s]+/gi,
+      /\bzot\s*\d+(\.\d+)?([abc])?/gi,
+      /\bzona\s+de\s+ordenamento/gi
+    ];
+    
     const queryLower = query.toLowerCase();
     const hasObjectivesKeyword = objectivesKeywords.some(keyword => 
       queryLower.includes(keyword.toLowerCase())
     );
     
-    const isConstructionQuery = constructionKeywords.some(keyword => 
+    // More precise construction query detection
+    const hasConstructionTerms = constructionKeywords.some(keyword => 
       queryLower.includes(keyword.toLowerCase())
-    ) && (queryLower.includes('bairro') || queryLower.includes('zot'));
+    );
+    const hasBairroOrZot = bairroZotPatterns.some(pattern => pattern.test(query)) ||
+                          queryLower.includes('bairro') || 
+                          queryLower.includes('zot') ||
+                          queryLower.includes('zona');
+    
+    const isConstructionQuery = hasConstructionTerms && hasBairroOrZot;
 
     console.log('DEBUG - Construction query detected:', isConstructionQuery);
+    console.log('DEBUG - Has construction terms:', hasConstructionTerms);
+    console.log('DEBUG - Has bairro/ZOT:', hasBairroOrZot);
 
     if (hasObjectivesKeyword) {
       const predefinedResult: QueryAnalysisResponse = {

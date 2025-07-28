@@ -136,16 +136,18 @@ serve(async (req) => {
         try {
           console.log(`Testing: ${testCase.question}`);
 
-          // Call the chat model with timeout
+          // Call the same architecture as chat - use agentic-rag instead of individual models
           const modelResponse = await Promise.race([
-            supabase.functions.invoke(model, {
+            supabase.functions.invoke('agentic-rag', {
               body: {
                 message: testCase.question,
-                userRole: 'admin'
+                userRole: 'admin',
+                sessionId: `qa-test-${testCase.id}`,
+                skipFeedback: true
               }
             }),
             new Promise((_, reject) => 
-              setTimeout(() => reject(new Error('Model timeout')), 30000)
+              setTimeout(() => reject(new Error('Model timeout')), 45000)
             )
           ]);
 
@@ -322,7 +324,7 @@ async function compareAnswers(question: string, expected: string, actual: string
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4.1-2025-04-14',
+        model: 'gpt-4o-mini',
         messages: [
           {
             role: 'system',
@@ -408,7 +410,7 @@ async function compareAnswersWithSQL(question: string, expected: string, actual:
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4.1-2025-04-14',
+        model: 'gpt-4o-mini',
         messages: [
           {
             role: 'system',

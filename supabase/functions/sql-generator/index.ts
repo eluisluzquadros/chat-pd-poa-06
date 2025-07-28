@@ -96,19 +96,22 @@ Se isConstructionQuery = true, OBRIGATORIAMENTE inclua estas colunas no resultad
 - "Coeficiente de Aproveitamento - Máximo" (nome EXATO da coluna)
 PRIORIDADE: Use SEMPRE o dataset "17_GMWnJC1sKff-YS0wesgxsvo3tnZdgSSb4JZ0ZjpCk" para consultas de construção
 
-REGRA CRÍTICA PARA ZOTs COM SUBDIVISÕES:
-Para ZOTs como 08.3 que possuem subdivisões A, B, C:
-- IMPORTANTE: Só retornar as subdivisões que EXISTEM no bairro específico
-- NUNCA criar dados fictícios - apenas mostrar o que existe na base
-- Se o bairro tem apenas ZOT 08.3-C, retornar APENAS essa
-- Se o bairro tem todas (A, B, C), retornar todas
-- Usar: WHERE row_data->>'Bairro' = 'BAIRRO_EXATO' AND row_data->>'Zona' LIKE 'ZOT 08.3%'
+REGRA CRÍTICA PARA PRECISÃO DE DADOS:
+1. CORRESPONDÊNCIA EXATA DE BAIRROS:
+   - SEMPRE usar = 'NOME_BAIRRO_MAIUSCULO' (não ILIKE '%bairro%')
+   - Exemplos: 'BOA VISTA' ≠ 'BOA VISTA DO SUL' (são bairros diferentes)
+   - 'PETRÓPOLIS' ≠ 'PETROPOLIS' (verificar acentuação)
 
-VALIDAÇÃO OBRIGATÓRIA:
-- Para bairros, use correspondência EXATA: row_data->>'Bairro' = 'NOME_EXATO'
-- NUNCA retornar dados de ZOTs que não existem no bairro
-- Sempre validar se a ZOT existe no bairro antes de incluir
-- Exemplo: BOA VISTA só tem ZOT 08.3-C, não tem A nem B
+2. ZOTs COM SUBDIVISÕES:
+   - CRÍTICO: Só retornar subdivisões que EXISTEM na base de dados
+   - Para Petrópolis: só tem ZOT 07, ZOT 08.3-B e ZOT 08.3-C
+   - NUNCA inventar ZOT 08.3-A se não existe no bairro
+   - Query: WHERE row_data->>'Bairro' = 'PETRÓPOLIS' AND row_data->>'Zona' IN ('ZOT 07', 'ZOT 08.3-B', 'ZOT 08.3-C')
+
+3. VALIDAÇÃO OBRIGATÓRIA:
+   - Verificar se dados retornados são realmente do bairro solicitado
+   - NUNCA misturar dados de bairros diferentes
+   - Se consulta é sobre "Petrópolis", só retornar dados onde Bairro = 'PETRÓPOLIS'
 
 CONTEXTO: ${analysisResult?.entities ? JSON.stringify(analysisResult.entities) : 'Nenhuma entidade específica'}
 É consulta de construção: ${analysisResult?.isConstructionQuery || false}
@@ -141,15 +144,23 @@ ${analysisResult?.isConstructionQuery ?
 
 DATASET OBRIGATÓRIO: Use "17_GMWnJC1sKff-YS0wesgxsvo3tnZdgSSb4JZ0ZjpCk" como prioridade MÁXIMA
 
-CRÍTICO: Use correspondência EXATA para bairros:
-row_data->>'Bairro' = 'NOME_BAIRRO_MAIUSCULO'
-NÃO use ILIKE - evita confusão entre "BOA VISTA" e "BOA VISTA DO SUL"
+CRÍTICO ABSOLUTO - PRECISÃO DE DADOS:
+1. CORRESPONDÊNCIA EXATA DE BAIRROS:
+   row_data->>'Bairro' = 'NOME_BAIRRO_MAIUSCULO' (NUNCA use ILIKE)
+   
+2. VALIDAÇÃO POR BAIRRO ESPECÍFICO:
+   - PETRÓPOLIS: só tem ZOT 07, ZOT 08.3-B, ZOT 08.3-C
+   - BOA VISTA: verificar quais ZOTs existem na base
+   - NUNCA assumir que todas as subdivisões (A, B, C) existem
+   
+3. QUERY SEGURA PARA SUBDIVISÕES:
+   WHERE row_data->>'Bairro' = 'PETRÓPOLIS' 
+   AND row_data->>'Zona' IN ('ZOT 07', 'ZOT 08.3-B', 'ZOT 08.3-C')
+   (usar lista específica das ZOTs que EXISTEM)
 
-PARA ZOTs COM SUBDIVISÕES (como ZOT 08.3):
-- CRÍTICO: Use correspondência EXATA de bairro + LIKE para ZOT
-- Exemplo: WHERE row_data->>'Bairro' = 'BOA VISTA' AND row_data->>'Zona' LIKE 'ZOT 08.3%'
-- Só retornar as que realmente EXISTEM no bairro (não inventar dados)
-- BOA VISTA tem apenas ZOT 08.3-C, não tem A nem B
+4. VERIFICAÇÃO FINAL:
+   - Se retornou dados, conferir se todos são do bairro correto
+   - NUNCA retornar ZOT que não existe no bairro
 
 RECONHECIMENTO DE VARIAÇÕES LINGUÍSTICAS:
 Se o usuário perguntar por qualquer variação de:

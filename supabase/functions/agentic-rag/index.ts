@@ -38,8 +38,10 @@ serve(async (req) => {
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
     const agentTrace: any[] = [];
 
-    // Step 1: Query Analysis
+    // Step 1: Query Analysis with Enhanced Logging
     console.log('🔍 Starting Query Analysis...');
+    console.log('📝 User Message:', message);
+    console.log('👤 User Role:', userRole);
     agentTrace.push({ step: 'query_analysis', timestamp: Date.now(), status: 'started' });
     
     const analysisResponse = await fetch(`${supabaseUrl}/functions/v1/query-analyzer`, {
@@ -58,7 +60,9 @@ serve(async (req) => {
     const analysisResult = await analysisResponse.json();
     agentTrace.push({ step: 'query_analysis', timestamp: Date.now(), status: 'completed', result: analysisResult });
     
-    console.log('Analysis result:', analysisResult);
+    console.log('📊 Analysis result:', JSON.stringify(analysisResult, null, 2));
+    console.log('🏗️ Is construction query:', analysisResult.isConstructionQuery);
+    console.log('📋 Required datasets:', analysisResult.requiredDatasets);
 
     let sqlResults = null;
     let vectorResults = null;
@@ -151,7 +155,52 @@ serve(async (req) => {
 
       sqlResults = await sqlResponse.json();
       agentTrace.push({ step: 'sql_generation', timestamp: Date.now(), status: 'completed', result: sqlResults });
-      console.log('SQL results:', sqlResults);
+      
+      // Enhanced SQL Results Logging with Data Validation
+      console.log('🔧 SQL Generation completed');
+      console.log('📊 SQL queries generated:', sqlResults.sqlQueries?.length || 0);
+      
+      if (sqlResults.executionResults) {
+        console.log('📈 Execution results:', sqlResults.executionResults.length);
+        sqlResults.executionResults.forEach((result, index) => {
+          if (result.data && result.data.length > 0) {
+            console.log(`Dataset ${index + 1}:`, {
+              purpose: result.purpose,
+              rows: result.data.length,
+              hasZona: result.data[0]?.hasOwnProperty?.('Zona') || result.data[0]?.zona,
+              hasBairro: result.data[0]?.hasOwnProperty?.('Bairro') || result.data[0]?.bairro,
+              hasAltura: result.data[0]?.hasOwnProperty?.('Altura Máxima - Edificação Isolada'),
+              hasCA: result.data[0]?.hasOwnProperty?.('Coeficiente de Aproveitamento - Básico'),
+              sampleZonas: result.data.slice(0, 3).map(row => row.Zona || row.zona).filter(Boolean),
+              sampleBairros: result.data.slice(0, 3).map(row => row.Bairro || row.bairro).filter(Boolean)
+            });
+            
+            // Validate data accuracy for construction queries
+            if (analysisResult.isConstructionQuery) {
+              const requiredFields = ['Zona', 'Altura Máxima - Edificação Isolada', 'Coeficiente de Aproveitamento - Básico', 'Coeficiente de Aproveitamento - Máximo'];
+              const missingFields = requiredFields.filter(field => !result.data[0]?.hasOwnProperty?.(field));
+              
+              if (missingFields.length > 0) {
+                console.log('⚠️ VALIDATION WARNING: Missing required fields:', missingFields);
+              } else {
+                console.log('✅ VALIDATION OK: All required fields present');
+              }
+              
+              // Check for specific neighborhood accuracy
+              const requestedBairro = extractBairroFromQuery(message);
+              if (requestedBairro) {
+                const wrongBairros = result.data.filter(row => 
+                  row.Bairro && row.Bairro !== requestedBairro
+                );
+                if (wrongBairros.length > 0) {
+                  console.log('⚠️ DATA CONTAMINATION WARNING: Found wrong neighborhoods:', 
+                    wrongBairros.map(row => row.Bairro).slice(0, 3));
+                }
+              }
+            }
+          }
+        });
+      }
     }
 
     if (analysisResult.strategy === 'unstructured_only' || analysisResult.strategy === 'hybrid') {
@@ -217,6 +266,28 @@ serve(async (req) => {
 
     const synthesisResult = await synthesisResponse.json();
     agentTrace.push({ step: 'response_synthesis', timestamp: Date.now(), status: 'completed', result: synthesisResult });
+    
+    // Enhanced Response Logging
+    console.log('📝 Response Synthesis completed');
+    console.log('💯 Final confidence:', synthesisResult.confidence);
+    console.log('📊 Sources used:', synthesisResult.sources);
+    console.log('📄 Response length:', synthesisResult.response?.length || 0);
+    
+    // Validate final response for construction queries
+    if (analysisResult.isConstructionQuery) {
+      const hasTable = synthesisResult.response?.includes('|') || synthesisResult.response?.includes('Zona');
+      const hasRequiredTerms = ['Altura', 'Coeficiente'].every(term => 
+        synthesisResult.response?.includes(term)
+      );
+      
+      console.log('🏗️ Construction Query Validation:');
+      console.log('  - Has table format:', hasTable);
+      console.log('  - Has required terms:', hasRequiredTerms);
+      
+      if (!hasTable || !hasRequiredTerms) {
+        console.log('⚠️ RESPONSE QUALITY WARNING: Construction query missing expected format');
+      }
+    }
     
     const executionTime = Date.now() - startTime;
 
@@ -313,3 +384,39 @@ serve(async (req) => {
     });
   }
 });
+
+// Helper function to extract neighborhood from user query
+function extractBairroFromQuery(query: string): string | null {
+  const bairroPatterns = [
+    /bairro\s+([a-záàâãéêíóôõúç\s]+)/gi,
+    /\b([A-ZÁÀÂÃÉÊÍÓÔÕÚÇ\s]{3,})\b/g
+  ];
+  
+  const commonBairros = [
+    'PETRÓPOLIS', 'BOA VISTA', 'BOA VISTA DO SUL', 'CENTRO', 'CIDADE BAIXA',
+    'MENINO DEUS', 'AZENHA', 'PRAIA DE BELAS', 'CRISTAL', 'JARDIM SÃO PEDRO',
+    'LOMBA DO PINHEIRO', 'COSTA E SILVA', 'VILA NOVA', 'MEDIANEIRA'
+  ];
+  
+  const queryUpper = query.toUpperCase();
+  
+  // Try direct neighborhood match first
+  for (const bairro of commonBairros) {
+    if (queryUpper.includes(bairro)) {
+      return bairro;
+    }
+  }
+  
+  // Try pattern matching
+  for (const pattern of bairroPatterns) {
+    const matches = query.match(pattern);
+    if (matches) {
+      const candidate = matches[0].replace(/bairro\s+/gi, '').trim().toUpperCase();
+      if (commonBairros.includes(candidate)) {
+        return candidate;
+      }
+    }
+  }
+  
+  return null;
+}

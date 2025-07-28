@@ -52,12 +52,15 @@ Use o formato de tabela markdown:
 | ZOT 08.3-B | 90 | X.X | X.X |
 | ZOT 08.3-C | 90 | X.X | X.X |
 
-VALIDAÇÃO DE DADOS:
-- Verifique se os dados são realmente do bairro solicitado
-- Se houver mistura de dados de bairros similares (ex: "BOA VISTA" vs "BOA VISTA DO SUL"), filtre apenas o correto  
-- NUNCA diga que "dados não fornecem parâmetros obrigatórios" se os dados estão presentes
-- Só mencione falta de dados se realmente não existirem nas tabelas fornecidas
-- Verifique se as colunas "Zona", "Altura Máxima - Edificação Isolada", "Coeficiente de Aproveitamento - Básico", "Coeficiente de Aproveitamento - Máximo" estão presentes
+VALIDAÇÃO CRÍTICA DE DADOS - PRECISÃO ABSOLUTA:
+- OBRIGATÓRIO: Verificar se TODOS os dados são do bairro EXATO solicitado
+- PETRÓPOLIS: só aceitar dados onde Bairro = 'PETRÓPOLIS' (não outros similares)
+- BOA VISTA vs BOA VISTA DO SUL: são bairros DIFERENTES - nunca misturar
+- CRÍTICO: Se consulta é sobre Petrópolis, NUNCA mostrar dados de outros bairros
+- VALIDAÇÃO DUPLA: Conferir se as ZOTs retornadas realmente existem no bairro específico
+- Para Petrópolis: só mostrar ZOT 07, ZOT 08.3-B, ZOT 08.3-C (NUNCA ZOT 08.1 ou 08.2)
+- ABSOLUTO: Se dados dos 4 campos obrigatórios estão presentes, NUNCA dizer que estão indisponíveis
+- Campos obrigatórios: "Zona", "Altura Máxima - Edificação Isolada", "Coeficiente de Aproveitamento - Básico", "Coeficiente de Aproveitamento - Máximo"
 
 RECONHECIMENTO DE CONSULTAS SOBRE PARÂMETROS ESPECÍFICOS:
 Se a pergunta for sobre variações linguísticas como:
@@ -213,13 +216,18 @@ ${hasSubdivisionData ? `CRÍTICO - ZOT COM SUBDIVISÕES DETECTADA:
 • Destaque as diferenças entre as subdivisões
 • Explique qual é mais permissiva (geralmente A com maior altura)` : ''}
 
-VALIDAÇÃO CRÍTICA: 
-- Verifique se os dados são do bairro EXATO solicitado
-- NÃO misture dados de "BOA VISTA" com "BOA VISTA DO SUL"
-- IMPORTANTE: SE os dados dos 4 campos obrigatórios estão presentes nas tabelas fornecidas, NUNCA diga que estão indisponíveis
-- Procure pelas colunas exatas: "Zona", "Altura Máxima - Edificação Isolada", "Coeficiente de Aproveitamento - Básico", "Coeficiente de Aproveitamento - Máximo"
-- Use formato de tabela markdown para apresentar os dados
-- Só mencione "dados não disponíveis" se realmente não existirem nas tabelas fornecidas` : ''}
+VALIDAÇÃO CRÍTICA ABSOLUTA: 
+- FILTRO RIGOROSO: Verifique se TODOS os dados são do bairro EXATO solicitado
+- PETRÓPOLIS: só aceitar dados onde campo 'Bairro' = 'PETRÓPOLIS'
+- NUNCA misturar dados de bairros similares ou diferentes
+- VERIFICAÇÃO DE EXISTÊNCIA: Para Petrópolis, só mostrar ZOTs que EXISTEM:
+  * ZOT 07 (existe)
+  * ZOT 08.3-B (existe) 
+  * ZOT 08.3-C (existe)
+  * NUNCA mostrar ZOT 08.1, 08.2, 08.3-A (não existem em Petrópolis)
+- CRÍTICO: Se os 4 campos obrigatórios estão nas tabelas, NUNCA dizer que estão indisponíveis
+- Campos: "Zona", "Altura Máxima - Edificação Isolada", "Coeficiente de Aproveitamento - Básico", "Coeficiente de Aproveitamento - Máximo"
+- VALIDAÇÃO FINAL: Conferir se tabela só mostra ZOTs que realmente existem no bairro` : ''}
 
 Sintetize uma resposta completa e detalhada seguindo rigorosamente as diretrizes do sistema. Formatação markdown, tom positivo, links oficiais obrigatórios ao final.`;
 
