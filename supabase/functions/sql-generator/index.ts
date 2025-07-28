@@ -76,6 +76,12 @@ REGRAS DE GERAÇÃO:
 9. CUIDADO: "BOA VISTA" ≠ "BOA VISTA DO SUL" - são bairros diferentes
 10. SEMPRE incluir a coluna "Zona" para identificar ZOTs nas consultas
 
+MAPEAMENTO DE TERMOS DO USUÁRIO PARA CAMPOS DA BASE:
+- "CA", "coeficiente", "índice de aproveitamento", "potencial construtivo" → "Coeficiente de Aproveitamento Básico", "Coeficiente de Aproveitamento Máximo"
+- "taxa de ocupação", "TO", "ocupação" → colunas relacionadas à ocupação
+- "altura máxima", "gabarito", "altura" → "Altura máxima de edificação (m)"
+- "maior", "máximo", "superior", "teto", "limite máximo" → buscar campos com valores máximos
+
 REGRA ESPECIAL PARA CONSULTAS DE CONSTRUÇÃO:
 Se isConstructionQuery = true, SEMPRE inclua estas colunas no resultado:
 - "Zona" (para identificar a ZOT)
@@ -118,7 +124,14 @@ ${analysisResult?.isConstructionQuery ?
 
 CRÍTICO: Use correspondência EXATA para bairros:
 row_data->>'Bairro' = 'NOME_BAIRRO_MAIUSCULO'
-NÃO use ILIKE - evita confusão entre "BOA VISTA" e "BOA VISTA DO SUL"` : ''}
+NÃO use ILIKE - evita confusão entre "BOA VISTA" e "BOA VISTA DO SUL"
+
+RECONHECIMENTO DE VARIAÇÕES LINGUÍSTICAS:
+Se o usuário perguntar por qualquer variação de:
+- "CA", "coeficiente", "índice de aproveitamento", "potencial construtivo" → busque campos de coeficiente
+- "taxa de ocupação", "TO" → busque campos de ocupação  
+- "altura máxima", "gabarito" → busque "Altura máxima de edificação"
+- "maior", "máximo", "superior", "teto" → identifique que quer valores máximos` : ''}
 
 Responda com JSON válido seguindo esta estrutura:
 {

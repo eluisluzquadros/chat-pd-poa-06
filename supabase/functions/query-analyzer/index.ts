@@ -63,11 +63,33 @@ serve(async (req) => {
       'cinco principais objetivos', 'quais são os objetivos'
     ];
     
-    // Check for construction-related questions
+    // Comprehensive synonym arrays for urban parameters
+    const coeficienteAproveitamentoTerms = [
+      'coeficiente de aproveitamento', 'ca', 'índice de aproveitamento', 'potencial construtivo',
+      'índice construtivo', 'aproveitamento', 'coeficiente', 'índice', 'ca máximo', 'ca mínimo'
+    ];
+
+    const taxaOcupacaoTerms = [
+      'taxa de ocupação', 'índice de ocupação', 'to', 'ocupação', 'taxa máxima de ocupação'
+    ];
+
+    const alturaMaximaTerms = [
+      'altura máxima', 'gabarito', 'limite de altura', 'altura', 'altura permitida'
+    ];
+
+    const maximoTerms = [
+      'maior', 'máximo', 'superior', 'teto', 'limite máximo', 'mais alto', 'previsto', 'permitido',
+      'autorizado', 'estabelecido', 'definido'
+    ];
+
+    // Check for construction-related questions with expanded coverage
     const constructionKeywords = [
       'o que posso construir', 'posso construir', 'construir', 'edificar',
-      'altura máxima', 'coeficiente de aproveitamento', 'regime urbanístico',
-      'parâmetros construtivos', 'regras de construção', 'edificação'
+      ...coeficienteAproveitamentoTerms,
+      ...taxaOcupacaoTerms,
+      ...alturaMaximaTerms,
+      'regime urbanístico', 'parâmetros construtivos', 'regras de construção', 'edificação',
+      'parâmetros urbanísticos', 'índices urbanísticos', 'área construída', 'terreno', 'lote'
     ];
     
     const queryLower = query.toLowerCase();
@@ -117,7 +139,11 @@ Analise a consulta do usuário e determine:
 2. ENTITIES - Extraia entidades específicas com PRECISÃO:
    - ZOTs (ex: "ZOT 01", "ZOT 07", normalize para formato "ZOT XX")
    - Bairros (IMPORTANTE: diferencie "BOA VISTA" de "BOA VISTA DO SUL" - são bairros distintos)
-   - Parâmetros urbanísticos (ex: "coeficiente de aproveitamento", "altura máxima")
+   - Parâmetros urbanísticos: reconheça todas estas variações equivalentes:
+     * Coeficiente/CA/índice de aproveitamento/potencial construtivo/índice construtivo
+     * Taxa/índice de ocupação/TO
+     * Altura máxima/gabarito/limite de altura
+     * Maior/máximo/superior/teto/limite máximo/previsto/permitido/autorizado
 
 3. REQUIRED_DATASETS - Quais datasets são necessários:
    - "17_GMWnJC1sKff-YS0wesgxsvo3tnZdgSSb4JZ0ZjpCk" para regime urbanístico

@@ -46,6 +46,14 @@ VALIDAÇÃO DE DADOS:
 - Se houver mistura de dados de bairros similares (ex: "BOA VISTA" vs "BOA VISTA DO SUL"), filtre apenas o correto
 - Mencione explicitamente se algum dado obrigatório não estiver disponível
 
+RECONHECIMENTO DE CONSULTAS SOBRE PARÂMETROS ESPECÍFICOS:
+Se a pergunta for sobre variações linguísticas como:
+- "CA máximo", "coeficiente máximo", "índice de aproveitamento máximo", "potencial construtivo máximo"
+- "taxa de ocupação máxima", "TO máximo"
+- "altura máxima", "gabarito máximo", "limite de altura"
+- "maior", "máximo", "superior", "teto", "limite máximo"
+→ Identifique que é uma consulta focada em parâmetros específicos e forneça resposta direcionada
+
 Antes de formular sua resposta final, execute as seguintes:
 1. Determine se a pergunta requer informações conceituais ou dados tabulares.
 2. Se for conceitual:
