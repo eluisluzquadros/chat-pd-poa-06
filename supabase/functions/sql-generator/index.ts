@@ -74,7 +74,14 @@ REGRAS DE GERAÇÃO:
 7. Use ILIKE para busca case-insensitive
 8. Normalize ZOTs para formato "ZOT XX"
 
+REGRA ESPECIAL PARA CONSULTAS DE CONSTRUÇÃO:
+Se isConstructionQuery = true, SEMPRE inclua estas colunas no resultado:
+- "Altura máxima de edificação (m)" ou campos similares de altura
+- "Coeficiente de Aproveitamento Básico" (coeficiente mínimo)
+- "Coeficiente de Aproveitamento Máximo" (coeficiente máximo)
+
 CONTEXTO: ${analysisResult?.entities ? JSON.stringify(analysisResult.entities) : 'Nenhuma entidade específica'}
+É consulta de construção: ${analysisResult?.isConstructionQuery || false}
 
 Gere consultas SQL otimizadas e seguras. Responda APENAS com JSON válido.`;
 
@@ -93,6 +100,13 @@ Gere consultas SQL otimizadas e seguras. Responda APENAS com JSON válido.`;
             content: `Gere consultas SQL para: "${query}"
 
 Análise prévia: ${JSON.stringify(analysisResult)}
+
+${analysisResult?.isConstructionQuery ? 
+`ATENÇÃO: Esta é uma consulta sobre construção. OBRIGATORIAMENTE inclua:
+- Altura máxima de edificação
+- Coeficiente de aproveitamento básico (mínimo)  
+- Coeficiente de aproveitamento máximo
+Use o dataset de regime urbanístico.` : ''}
 
 Responda com JSON válido seguindo esta estrutura:
 {

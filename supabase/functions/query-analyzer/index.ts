@@ -23,6 +23,7 @@ interface QueryAnalysisResponse {
   requiredDatasets: string[];
   confidence: number;
   strategy: 'structured_only' | 'unstructured_only' | 'hybrid' | 'predefined';
+  isConstructionQuery?: boolean;
 }
 
 serve(async (req) => {
@@ -62,10 +63,21 @@ serve(async (req) => {
       'cinco principais objetivos', 'quais são os objetivos'
     ];
     
+    // Check for construction-related questions
+    const constructionKeywords = [
+      'o que posso construir', 'posso construir', 'construir', 'edificar',
+      'altura máxima', 'coeficiente de aproveitamento', 'regime urbanístico',
+      'parâmetros construtivos', 'regras de construção', 'edificação'
+    ];
+    
     const queryLower = query.toLowerCase();
     const hasObjectivesKeyword = objectivesKeywords.some(keyword => 
       queryLower.includes(keyword.toLowerCase())
     );
+    
+    const isConstructionQuery = constructionKeywords.some(keyword => 
+      queryLower.includes(keyword.toLowerCase())
+    ) && (queryLower.includes('bairro') || queryLower.includes('zot'));
 
     if (hasObjectivesKeyword) {
       const predefinedResult: QueryAnalysisResponse = {
@@ -116,6 +128,11 @@ Analise a consulta do usuário e determine:
    - "unstructured_only": Apenas documentos conceituais
    - "hybrid": Ambos necessários
 
+5. CONSTRUCTION QUERIES - Identifique se é uma pergunta sobre construção:
+   - Se contém palavras como "construir", "edificar" + menção a "bairro" ou "zot"
+   - Marque como isConstructionQuery: true
+   - SEMPRE solicite dataset de regime urbanístico para essas consultas
+
 Responda APENAS com JSON válido no formato especificado.`;
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -133,6 +150,7 @@ Responda APENAS com JSON válido no formato especificado.`;
             content: `Analise esta consulta: "${query}"
 
             Contexto do usuário: ${userRole || 'citizen'}
+            É uma consulta sobre construção: ${isConstructionQuery}
             
             Responda com JSON válido seguindo exatamente esta estrutura:
             {
@@ -144,7 +162,8 @@ Responda APENAS com JSON válido no formato especificado.`;
               },
               "requiredDatasets": ["lista de dataset IDs necessários"],
               "confidence": 0.95,
-              "strategy": "structured_only|unstructured_only|hybrid"
+              "strategy": "structured_only|unstructured_only|hybrid",
+              "isConstructionQuery": ${isConstructionQuery}
             }`
           }
         ],
@@ -166,7 +185,8 @@ Responda APENAS com JSON válido no formato especificado.`;
         entities: {},
         requiredDatasets: ['17_GMWnJC1sKff-YS0wesgxsvo3tnZdgSSb4JZ0ZjpCk', '1FTENHpX4aLxmAoxvrEeGQn0fej-wxTMQRQs_XBjPQPY'],
         confidence: 0.7,
-        strategy: 'hybrid'
+        strategy: 'hybrid',
+        isConstructionQuery
       };
     }
 
@@ -190,13 +210,14 @@ Responda APENAS com JSON válido no formato especificado.`;
     console.error('Query analysis error:', error);
     return new Response(JSON.stringify({ 
       error: error.message,
-      fallback: {
-        intent: 'hybrid',
-        entities: {},
-        requiredDatasets: ['17_GMWnJC1sKff-YS0wesgxsvo3tnZdgSSb4JZ0ZjpCk', '1FTENHpX4aLxmAoxvrEeGQn0fej-wxTMQRQs_XBjPQPY'],
-        confidence: 0.5,
-        strategy: 'hybrid'
-      }
+        fallback: {
+          intent: 'hybrid',
+          entities: {},
+          requiredDatasets: ['17_GMWnJC1sKff-YS0wesgxsvo3tnZdgSSb4JZ0ZjpCk', '1FTENHpX4aLxmAoxvrEeGQn0fej-wxTMQRQs_XBjPQPY'],
+          confidence: 0.5,
+          strategy: 'hybrid',
+          isConstructionQuery: false
+        }
     }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
