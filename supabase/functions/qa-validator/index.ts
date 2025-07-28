@@ -27,25 +27,40 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  try {
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    );
+  const supabase = createClient(
+    Deno.env.get('SUPABASE_URL') ?? '',
+    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+  );
 
+  let validationRunId: string | null = null;
+
+  try {
     const { model = 'agentic-rag', testCaseIds, categories }: ValidationRequest = await req.json();
+
+    // Clean up old stuck runs first
+    await supabase
+      .from('qa_validation_runs')
+      .update({
+        status: 'failed',
+        error_message: 'Auto-cleanup: validation timeout',
+        completed_at: new Date().toISOString()
+      })
+      .eq('status', 'running')
+      .lt('started_at', new Date(Date.now() - 30 * 60 * 1000).toISOString());
 
     // Create validation run
     const { data: validationRun, error: runError } = await supabase
       .from('qa_validation_runs')
       .insert({
         model,
-        status: 'running'
+        status: 'running',
+        started_at: new Date().toISOString()
       })
       .select()
       .single();
 
     if (runError) throw runError;
+    validationRunId = validationRun.id;
 
     console.log(`Starting QA validation run ${validationRun.id} for model ${model}`);
 
@@ -206,6 +221,23 @@ serve(async (req) => {
 
   } catch (error) {
     console.error('QA validation error:', error);
+    
+    // Always update the validation run status on error
+    if (validationRunId) {
+      try {
+        await supabase
+          .from('qa_validation_runs')
+          .update({
+            status: 'failed',
+            error_message: error.message,
+            completed_at: new Date().toISOString()
+          })
+          .eq('id', validationRunId);
+      } catch (updateError) {
+        console.error('Failed to update validation run status on error:', updateError);
+      }
+    }
+    
     return new Response(JSON.stringify({ 
       error: error.message,
       details: error.stack
