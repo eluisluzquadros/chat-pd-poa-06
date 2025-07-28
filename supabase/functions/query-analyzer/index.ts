@@ -222,16 +222,21 @@ Responda APENAS com JSON válido no formato especificado.`;
       };
     }
 
-    // Enhanced ZOT detection and subdivision handling
+    // Enhanced ZOT detection and subdivision handling with improved logging
+    console.log('DEBUG - Original ZOTs detected:', analysisResult.entities?.zots);
+    
     if (analysisResult.entities && analysisResult.entities.zots) {
       analysisResult.entities.zots = analysisResult.entities.zots.map(zot => {
         // Detect ZOTs with subdivisions (like ZOT 08.3 which has A, B, C)
         const hasSubdivisions = /ZOT\s*\d+\.\d+$/i.test(zot);
+        console.log(`DEBUG - ZOT "${zot}" has subdivisions:`, hasSubdivisions);
+        
         if (hasSubdivisions) {
           return {
             code: zot,
             hasSubdivisions: true,
-            note: "Esta ZOT possui subdivisões (A, B, C) com parâmetros diferentes"
+            requiresAllSubdivisions: true,
+            note: "Esta ZOT possui subdivisões (A, B, C) com parâmetros diferentes - TODAS devem ser consultadas"
           };
         }
         return zot;
@@ -239,10 +244,33 @@ Responda APENAS com JSON válido no formato especificado.`;
     }
     
     // Mark queries that need comprehensive subdivision data
-    if (analysisResult.entities?.zots?.some(zot => typeof zot === 'object' && zot.hasSubdivisions)) {
+    const hasSubdivisionQuery = analysisResult.entities?.zots?.some(zot => 
+      typeof zot === 'object' && zot.hasSubdivisions
+    );
+    
+    if (hasSubdivisionQuery) {
       analysisResult.processingStrategy = "comprehensive_subdivision_query";
-      analysisResult.note = "Query requires all subdivision data for complete response";
+      analysisResult.requiresAllSubdivisions = true;
+      analysisResult.note = "Query requires ALL subdivision data (A, B, C) for complete response";
+      console.log('DEBUG - Marked as comprehensive subdivision query');
     }
+    
+    // Additional validation for column name consistency
+    analysisResult.validationRules = {
+      exactColumnNames: {
+        altura: "Altura Máxima - Edificação Isolada",
+        caBasico: "Coeficiente de Aproveitamento - Básico", 
+        caMaximo: "Coeficiente de Aproveitamento - Máximo",
+        zona: "Zona"
+      },
+      subdivisionHandling: {
+        detectSubdivisions: true,
+        requireAllSubdivisions: hasSubdivisionQuery,
+        sortByZone: true
+      }
+    };
+    
+    console.log('DEBUG - Final analysis result:', JSON.stringify(analysisResult, null, 2));
 
     // Store analysis result for tracking
     if (sessionId) {
