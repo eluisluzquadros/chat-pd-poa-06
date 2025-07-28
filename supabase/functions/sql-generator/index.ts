@@ -76,11 +76,17 @@ REGRAS DE GERAÇÃO:
 9. CUIDADO: "BOA VISTA" ≠ "BOA VISTA DO SUL" - são bairros diferentes
 10. SEMPRE incluir a coluna "Zona" para identificar ZOTs nas consultas
 
-MAPEAMENTO DE TERMOS DO USUÁRIO PARA CAMPOS DA BASE:
-- "CA", "coeficiente", "índice de aproveitamento", "potencial construtivo" → "Coeficiente de Aproveitamento Básico", "Coeficiente de Aproveitamento Máximo"
+MAPEAMENTO DE TERMOS DO USUÁRIO PARA CAMPOS DA BASE (NOMES EXATOS):
+- "CA", "coeficiente", "índice de aproveitamento", "potencial construtivo" → "Coeficiente de Aproveitamento - Básico", "Coeficiente de Aproveitamento - Máximo"
 - "taxa de ocupação", "TO", "ocupação" → colunas relacionadas à ocupação
-- "altura máxima", "gabarito", "altura" → "Altura máxima de edificação (m)"
+- "altura máxima", "gabarito", "altura" → "Altura Máxima - Edificação Isolada"
 - "maior", "máximo", "superior", "teto", "limite máximo" → buscar campos com valores máximos
+
+CAMPOS CORRETOS DO DATASET:
+- Zona: "Zona"
+- Altura máxima: "Altura Máxima - Edificação Isolada" 
+- CA Básico: "Coeficiente de Aproveitamento - Básico"
+- CA Máximo: "Coeficiente de Aproveitamento - Máximo"
 
 REGRA ESPECIAL PARA CONSULTAS DE CONSTRUÇÃO:
 Se isConstructionQuery = true, SEMPRE inclua estas colunas no resultado:
@@ -126,19 +132,24 @@ Análise prévia: ${JSON.stringify(analysisResult)}
 ${analysisResult?.isConstructionQuery ? 
 `ATENÇÃO: Esta é uma consulta sobre construção. OBRIGATORIAMENTE inclua:
 - Campo "Zona" para identificar a ZOT
-- Altura máxima de edificação
-- Coeficiente de aproveitamento básico (mínimo)  
-- Coeficiente de aproveitamento máximo
+- Campo "Altura Máxima - Edificação Isolada" (nome exato da coluna)
+- Campo "Coeficiente de Aproveitamento - Básico" (nome exato da coluna)
+- Campo "Coeficiente de Aproveitamento - Máximo" (nome exato da coluna)
 
 CRÍTICO: Use correspondência EXATA para bairros:
 row_data->>'Bairro' = 'NOME_BAIRRO_MAIUSCULO'
 NÃO use ILIKE - evita confusão entre "BOA VISTA" e "BOA VISTA DO SUL"
 
+PARA ZOTs COM SUBDIVISÕES (como ZOT 08.3):
+- Use LIKE para capturar todas as subdivisões: row_data->>'Zona' LIKE 'ZOT 08.3%'
+- SEMPRE ordernar por Zona para mostrar A, B, C em ordem
+- NUNCA filtrar apenas uma subdivisão - mostre TODAS
+
 RECONHECIMENTO DE VARIAÇÕES LINGUÍSTICAS:
 Se o usuário perguntar por qualquer variação de:
-- "CA", "coeficiente", "índice de aproveitamento", "potencial construtivo" → busque campos de coeficiente
+- "CA", "coeficiente", "índice de aproveitamento", "potencial construtivo" → busque "Coeficiente de Aproveitamento - Básico/Máximo"
 - "taxa de ocupação", "TO" → busque campos de ocupação  
-- "altura máxima", "gabarito" → busque "Altura máxima de edificação"
+- "altura máxima", "gabarito" → busque "Altura Máxima - Edificação Isolada"
 - "maior", "máximo", "superior", "teto" → identifique que quer valores máximos` : ''}
 
 Responda com JSON válido seguindo esta estrutura:
