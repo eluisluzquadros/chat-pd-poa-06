@@ -93,6 +93,44 @@ export function AdminDashboard({ startDate, endDate, onDateRangeChange }: AdminD
     }
   });
 
+  // Query para estatísticas de QA validation
+  const { data: qaStats } = useQuery({
+    queryKey: ['qa-validation-stats'],
+    queryFn: async () => {
+      // Get only completed validation runs (filter out stuck 'running' ones)
+      const { data: runs, error } = await supabase
+        .from('qa_validation_runs')
+        .select('*')
+        .eq('status', 'completed')
+        .order('completed_at', { ascending: false })
+        .limit(1);
+      
+      if (error) throw error;
+      
+      const latestRun = runs?.[0];
+      
+      // Get active test cases count
+      const { count: testCasesCount } = await supabase
+        .from('qa_test_cases')
+        .select('*', { count: 'exact', head: true })
+        .eq('is_active', true);
+      
+      // Check for any running validations
+      const { count: runningCount } = await supabase
+        .from('qa_validation_runs')
+        .select('*', { count: 'exact', head: true })
+        .eq('status', 'running');
+      
+      return {
+        lastValidationAccuracy: latestRun?.overall_accuracy ? (latestRun.overall_accuracy * 100) : null,
+        avgResponseTime: latestRun?.avg_response_time_ms || null,
+        totalTestCases: testCasesCount || 0,
+        lastValidationStatus: latestRun?.status || 'never_run',
+        hasRunningValidation: (runningCount || 0) > 0
+      };
+    }
+  });
+
   return (
     <div className="space-y-8">
       {/* Header elegante */}

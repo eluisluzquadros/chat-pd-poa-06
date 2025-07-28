@@ -53,7 +53,8 @@ serve(async (req) => {
     let query = supabase
       .from('qa_test_cases')
       .select('*')
-      .eq('is_active', true);
+      .eq('is_active', true)
+      .limit(10); // Limit to 10 test cases to prevent timeout
 
     if (testCaseIds?.length) {
       query = query.in('id', testCaseIds);
@@ -72,67 +73,95 @@ serve(async (req) => {
     const totalTests = testCases.length;
     const results = [];
 
-    // Process each test case
-    for (const testCase of testCases) {
-      const startTime = Date.now();
+    // Process test cases in batches of 3 to prevent timeouts
+    const batchSize = 3;
+    for (let i = 0; i < testCases.length; i += batchSize) {
+      const batch = testCases.slice(i, i + batchSize);
       
-      try {
-        console.log(`Testing: ${testCase.question}`);
-
-        // Call the chat model
-        const modelResponse = await supabase.functions.invoke(model, {
-          body: {
-            message: testCase.question,
-            userRole: 'admin'
-          }
-        });
-
-        const responseTime = Date.now() - startTime;
-        const actualAnswer = modelResponse.data?.response || '';
-
-        // Use OpenAI to compare answers
-        const comparisonResult = await compareAnswers(
-          testCase.question,
-          testCase.expected_answer,
-          actualAnswer
-        );
-
-        const isCorrect = comparisonResult.accuracy >= 0.7;
-        if (isCorrect) passedTests++;
-
-        // Store result
-        const result = {
-          test_case_id: testCase.id,
-          model,
-          actual_answer: actualAnswer,
-          is_correct: isCorrect,
-          accuracy_score: comparisonResult.accuracy,
-          response_time_ms: responseTime,
-          error_type: comparisonResult.error_type,
-          error_details: comparisonResult.error_details,
-          validation_run_id: validationRun.id
-        };
-
-        results.push(result);
-
-        console.log(`Test ${testCase.id}: ${isCorrect ? 'PASSED' : 'FAILED'} (${comparisonResult.accuracy})`);
-
-      } catch (error) {
-        console.error(`Error testing case ${testCase.id}:`, error);
+      const batchPromises = batch.map(async (testCase) => {
+        const startTime = Date.now();
         
-        const result = {
-          test_case_id: testCase.id,
-          model,
-          actual_answer: '',
-          is_correct: false,
-          accuracy_score: 0,
-          response_time_ms: Date.now() - startTime,
-          error_type: 'execution_error',
-          error_details: error.message,
-          validation_run_id: validationRun.id
-        };
+        try {
+          console.log(`Testing: ${testCase.question}`);
 
-        results.push(result);
+          // Call the chat model with timeout
+          const modelResponse = await Promise.race([
+            supabase.functions.invoke(model, {
+              body: {
+                message: testCase.question,
+                userRole: 'admin'
+              }
+            }),
+            new Promise((_, reject) => 
+              setTimeout(() => reject(new Error('Model timeout')), 30000)
+            )
+          ]);
+
+          const responseTime = Date.now() - startTime;
+          
+          if (modelResponse.error) {
+            throw new Error(`Model error: ${modelResponse.error.message}`);
+          }
+          
+          const actualAnswer = modelResponse.data?.response || '';
+
+          // Use OpenAI to compare answers with timeout
+          const comparisonResult = await Promise.race([
+            compareAnswers(testCase.question, testCase.expected_answer, actualAnswer),
+            new Promise((_, reject) => 
+              setTimeout(() => reject(new Error('Comparison timeout')), 15000)
+            )
+          ]);
+
+          const isCorrect = comparisonResult.accuracy >= 0.7;
+
+          // Store result
+          return {
+            test_case_id: testCase.id,
+            model,
+            actual_answer: actualAnswer,
+            is_correct: isCorrect,
+            accuracy_score: comparisonResult.accuracy,
+            response_time_ms: responseTime,
+            error_type: comparisonResult.error_type,
+            error_details: comparisonResult.error_details,
+            validation_run_id: validationRun.id
+          };
+
+        } catch (error) {
+          console.error(`Error testing case ${testCase.id}:`, error);
+          
+          return {
+            test_case_id: testCase.id,
+            model,
+            actual_answer: '',
+            is_correct: false,
+            accuracy_score: 0,
+            response_time_ms: Date.now() - startTime,
+            error_type: 'execution_error',
+            error_details: error.message,
+            validation_run_id: validationRun.id
+          };
+        }
+      });
+
+      // Wait for batch to complete
+      const batchResults = await Promise.allSettled(batchPromises);
+      
+      // Process batch results
+      for (const result of batchResults) {
+        if (result.status === 'fulfilled') {
+          results.push(result.value);
+          if (result.value.is_correct) passedTests++;
+          console.log(`Test ${result.value.test_case_id}: ${result.value.is_correct ? 'PASSED' : 'FAILED'} (${result.value.accuracy_score})`);
+        } else {
+          console.error('Batch promise rejected:', result.reason);
+        }
+      }
+      
+      // Small delay between batches to prevent overwhelming the system
+      if (i + batchSize < testCases.length) {
+        await new Promise(resolve => setTimeout(resolve, 1000));
       }
     }
 
