@@ -231,8 +231,8 @@ Sintetize uma resposta completa e detalhada seguindo rigorosamente as diretrizes
           { role: 'system', content: pdusSystemPrompt },
           { role: 'user', content: userPrompt }
         ],
-        temperature: 0.3,
-        max_tokens: 800
+        temperature: 0.7,
+        max_tokens: 4046
       }),
     });
 
