@@ -71,14 +71,22 @@ REGRAS DE GERAÇÃO:
 4. Para números: (row_data->>'campo')::numeric
 5. Para JOINs entre datasets, use subqueries ou CTEs
 6. Limite resultados com LIMIT quando apropriado
-7. Use ILIKE para busca case-insensitive
+7. CORRESPONDÊNCIA EXATA DE BAIRROS: Use = 'BAIRRO' (não ILIKE '%bairro%')
 8. Normalize ZOTs para formato "ZOT XX"
+9. CUIDADO: "BOA VISTA" ≠ "BOA VISTA DO SUL" - são bairros diferentes
+10. SEMPRE incluir a coluna "Zona" para identificar ZOTs nas consultas
 
 REGRA ESPECIAL PARA CONSULTAS DE CONSTRUÇÃO:
 Se isConstructionQuery = true, SEMPRE inclua estas colunas no resultado:
+- "Zona" (para identificar a ZOT)
 - "Altura máxima de edificação (m)" ou campos similares de altura
 - "Coeficiente de Aproveitamento Básico" (coeficiente mínimo)
 - "Coeficiente de Aproveitamento Máximo" (coeficiente máximo)
+
+VALIDAÇÃO OBRIGATÓRIA:
+- Para bairros, use correspondência EXATA: row_data->>'Bairro' = 'NOME_EXATO'
+- Nunca use ILIKE '%nome%' para bairros - isso causa confusão entre similares
+- Sempre normalize para maiúsculas: 'BOA VISTA', 'BOA VISTA DO SUL', etc.
 
 CONTEXTO: ${analysisResult?.entities ? JSON.stringify(analysisResult.entities) : 'Nenhuma entidade específica'}
 É consulta de construção: ${analysisResult?.isConstructionQuery || false}
@@ -103,10 +111,14 @@ Análise prévia: ${JSON.stringify(analysisResult)}
 
 ${analysisResult?.isConstructionQuery ? 
 `ATENÇÃO: Esta é uma consulta sobre construção. OBRIGATORIAMENTE inclua:
+- Campo "Zona" para identificar a ZOT
 - Altura máxima de edificação
 - Coeficiente de aproveitamento básico (mínimo)  
 - Coeficiente de aproveitamento máximo
-Use o dataset de regime urbanístico.` : ''}
+
+CRÍTICO: Use correspondência EXATA para bairros:
+row_data->>'Bairro' = 'NOME_BAIRRO_MAIUSCULO'
+NÃO use ILIKE - evita confusão entre "BOA VISTA" e "BOA VISTA DO SUL"` : ''}
 
 Responda com JSON válido seguindo esta estrutura:
 {

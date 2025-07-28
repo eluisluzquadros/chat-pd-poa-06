@@ -114,9 +114,9 @@ Analise a consulta do usuário e determine:
    - "tabular": Dados específicos de tabelas (ZOTs, regimes, bairros)
    - "hybrid": Combinação de ambos
 
-2. ENTITIES - Extraia entidades específicas:
+2. ENTITIES - Extraia entidades específicas com PRECISÃO:
    - ZOTs (ex: "ZOT 01", "ZOT 07", normalize para formato "ZOT XX")
-   - Bairros (ex: "Centro Histórico", "Cidade Baixa")
+   - Bairros (IMPORTANTE: diferencie "BOA VISTA" de "BOA VISTA DO SUL" - são bairros distintos)
    - Parâmetros urbanísticos (ex: "coeficiente de aproveitamento", "altura máxima")
 
 3. REQUIRED_DATASETS - Quais datasets são necessários:
@@ -132,6 +132,12 @@ Analise a consulta do usuário e determine:
    - Se contém palavras como "construir", "edificar" + menção a "bairro" ou "zot"
    - Marque como isConstructionQuery: true
    - SEMPRE solicite dataset de regime urbanístico para essas consultas
+
+6. NORMALIZAÇÃO DE BAIRROS:
+   - "Boa Vista" → "BOA VISTA"
+   - "Boa Vista do Sul" → "BOA VISTA DO SUL"
+   - Sempre em maiúsculas para correspondência exata
+   - NÃO confunda bairros similares
 
 Responda APENAS com JSON válido no formato especificado.`;
 

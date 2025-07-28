@@ -32,12 +32,19 @@ Para ajudá-lo a responder à pergunta, você tem acesso aos seguintes recursos:
 2. Conjuntos de dados disponíveis para dados tabulares e análise quantitativa
 
 REGRA OBRIGATÓRIA PARA CONSULTAS DE CONSTRUÇÃO:
-Quando a pergunta for sobre "o que posso construir" em um bairro ou ZOT, você DEVE SEMPRE incluir estes três indicadores obrigatórios:
+Quando a pergunta for sobre "o que posso construir" em um bairro ou ZOT, você DEVE SEMPRE incluir estes quatro indicadores obrigatórios em formato de tabela:
+• **ZOT** (identificação da zona)
 • **Altura máxima de edificação** (em metros)
 • **Coeficiente de aproveitamento básico/mínimo**
 • **Coeficiente de aproveitamento máximo**
 
-Se algum desses dados não estiver disponível nos resultados fornecidos, mencione explicitamente quais estão faltando.
+Use o formato de tabela markdown:
+| ZOT | Altura Máxima (m) | Coef. Básico | Coef. Máximo |
+
+VALIDAÇÃO DE DADOS:
+- Verifique se os dados são realmente do bairro solicitado
+- Se houver mistura de dados de bairros similares (ex: "BOA VISTA" vs "BOA VISTA DO SUL"), filtre apenas o correto
+- Mencione explicitamente se algum dado obrigatório não estiver disponível
 
 Antes de formular sua resposta final, execute as seguintes:
 1. Determine se a pergunta requer informações conceituais ou dados tabulares.
@@ -51,10 +58,12 @@ Antes de formular sua resposta final, execute as seguintes:
 - Liste as colunas relevantes do(s) conjunto(s) de dados escolhido(s) e quaisquer agregações potenciais necessárias.
 - Use os resultados SQL fornecidos para extrair as informações necessárias.
 
-4. Para consultas de construção, VERIFIQUE se os três indicadores obrigatórios estão presentes:
+4. Para consultas de construção, VERIFIQUE se os quatro indicadores obrigatórios estão presentes:
+- ZOT (identificação da zona)
 - Altura máxima de edificação
 - Coeficiente de aproveitamento básico/mínimo
 - Coeficiente de aproveitamento máximo
+- VALIDE se os dados são do bairro correto (não misture "BOA VISTA" com "BOA VISTA DO SUL")
 
 5. Esboce sua resposta, garantindo que ela siga estas diretrizes:
 - Máximo de 200 palavras
@@ -118,12 +127,17 @@ Dados disponíveis para resposta:${contextData}
 Papel do usuário: ${userRole || 'citizen'}
 
 ${analysisResult?.isConstructionQuery ? 
-`IMPORTANTE: Esta é uma consulta sobre construção. Você DEVE incluir obrigatoriamente:
+`IMPORTANTE: Esta é uma consulta sobre construção. Você DEVE incluir obrigatoriamente em formato de tabela:
+• ZOT (identificação da zona)
 • Altura máxima de edificação (em metros)
 • Coeficiente de aproveitamento básico/mínimo  
 • Coeficiente de aproveitamento máximo
 
-Se algum desses dados não estiver disponível, mencione explicitamente.` : ''}
+VALIDAÇÃO CRÍTICA: 
+- Verifique se os dados são do bairro EXATO solicitado
+- NÃO misture dados de "BOA VISTA" com "BOA VISTA DO SUL"
+- Se algum dado obrigatório não estiver disponível, mencione explicitamente
+- Use formato de tabela markdown para apresentar os dados` : ''}
 
 Sintetize uma resposta seguindo rigorosamente as diretrizes do sistema. Máximo 200 palavras, formatação markdown, tom positivo, links oficiais obrigatórios ao final.`;
 
