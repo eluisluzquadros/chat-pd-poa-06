@@ -120,7 +120,7 @@ export const MessageList = memo(function MessageList({
                   )}>
                     <span>{message.timestamp.toLocaleTimeString('pt-BR')}</span>
                     {message.role === "assistant" && (
-                      <span className="ml-2 hidden sm:inline">via N8N Webhook</span>
+                      <span className="ml-2 hidden sm:inline">via Chat-PD-POA:</span>
                     )}
                   </div>
                 </div>
