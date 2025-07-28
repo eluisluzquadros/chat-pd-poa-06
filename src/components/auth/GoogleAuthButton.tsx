@@ -17,17 +17,6 @@ export const GoogleAuthButton = ({ disabled = false }: GoogleAuthButtonProps) =>
     setIsLoading(true);
     
     try {
-      console.log("=== DIAGNÓSTICO GOOGLE OAUTH ===");
-      console.log("Current origin:", window.location.origin);
-      console.log("Redirect URL:", `${window.location.origin}/`);
-      console.log("Supabase URL:", "https://xmsnlikpmmhzmuemxtrk.supabase.co");
-      console.log("Current path:", window.location.pathname);
-      console.log("URL params:", window.location.search);
-      console.log("URL hash:", window.location.hash);
-      
-      // Teste de conectividade
-      console.log("Testando conectividade com Google...");
-      
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
@@ -39,56 +28,22 @@ export const GoogleAuthButton = ({ disabled = false }: GoogleAuthButtonProps) =>
         }
       });
       
-      console.log("Resposta OAuth completa:", { data, error });
-      
       if (error) {
-        console.error("Erro OAuth detalhado:", {
-          message: error.message,
-          status: error.status,
-          details: error
-        });
+        console.error("Erro OAuth:", error);
         
-        // Mensagens específicas baseadas no erro
-        if (error.message?.includes('connection refused')) {
-          toast.error("Conexão recusada. Verifique configurações no Google Cloud Console.");
-        } else if (error.message?.includes('popup')) {
+        if (error.message?.includes('popup')) {
           toast.error("Popup bloqueado. Permita popups e tente novamente.");
         } else {
-          toast.error(`Erro OAuth: ${error.message}`);
+          toast.error(`Erro ao conectar com Google: ${error.message}`);
         }
       } else {
-        console.log("OAuth iniciado com sucesso:", data);
         toast.success("Redirecionando para Google...");
-        
-        // Aguardar um pouco para ver se o redirecionamento acontece
-        setTimeout(() => {
-          console.log("Redirecionamento deveria ter acontecido...");
-        }, 2000);
       }
     } catch (error: any) {
-      console.error("Erro crítico capturado:", {
-        name: error.name,
-        message: error.message,
-        stack: error.stack,
-        details: error
-      });
-      
-      toast.error(`Erro crítico: ${error.message}`);
+      console.error("Erro crítico ao conectar com Google:", error);
+      toast.error("Erro ao conectar com Google. Tente novamente.");
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  // Função de teste direto para diagnóstico
-  const handleDirectTest = () => {
-    console.log("=== TESTE DIRETO GOOGLE OAUTH ===");
-    const googleAuthUrl = `https://xmsnlikpmmhzmuemxtrk.supabase.co/auth/v1/authorize?provider=google&redirect_to=${encodeURIComponent(window.location.origin + '/auth')}`;
-    console.log("URL direta:", googleAuthUrl);
-    
-    try {
-      window.location.href = googleAuthUrl;
-    } catch (e) {
-      console.error("Erro no redirecionamento direto:", e);
     }
   };
 

@@ -28,10 +28,7 @@ const AuthCallback = () => {
         processedRef.current = true;
         const sessionId = sessionIdRef.current;
         
-        console.log(`=== PROCESSANDO CALLBACK OAUTH [${sessionId}] ===`);
-        console.log("URL atual:", window.location.href);
-        console.log("Hash:", window.location.hash);
-        console.log("Search:", window.location.search);
+        console.log(`Processando callback OAuth [${sessionId}]`);
         
         // Aguardar um pouco para o Supabase processar
         await new Promise(resolve => setTimeout(resolve, 1500));
@@ -49,24 +46,23 @@ const AuthCallback = () => {
           throw new Error("Usuário não encontrado após OAuth");
         }
         
-        console.log(`[${sessionId}] Validando acesso para usuário:`, user.email);
+        console.log(`Validando acesso para usuário: ${user.email}`);
         
         // Validar se o usuário tem acesso à plataforma
         const { AuthService } = await import('@/services/authService');
         const accessValidation = await AuthService.validateUserAccess(user.email, user.id);
         
         if (!accessValidation.hasAccess) {
-          console.log(`[${sessionId}] Acesso negado:`, accessValidation.reason);
+          console.log(`Acesso negado: ${accessValidation.reason}`);
           
           // Limpeza completa antes do logout
           AuthService.cleanupAuthState();
           
           // Fazer logout com escopo global
           try {
-            console.log(`[${sessionId}] Fazendo logout global...`);
             await supabase.auth.signOut({ scope: 'global' });
           } catch (logoutError) {
-            console.error(`[${sessionId}] Erro no logout:`, logoutError);
+            console.error("Erro no logout:", logoutError);
             // Continuar mesmo com erro no logout
           }
           
@@ -80,35 +76,25 @@ const AuthCallback = () => {
           setMessage(accessValidation.message || 'Acesso restrito a usuários previamente cadastrados.');
           toast.error(accessValidation.message || 'Acesso restrito');
           
-          // Registrar tentativa de acesso não autorizada
-          console.warn(`[${sessionId}] Tentativa de acesso OAuth não autorizada:`, {
-            email: user.email,
-            userId: user.id,
-            reason: accessValidation.reason,
-            timestamp: new Date().toISOString()
-          });
-          
           // Redirecionar para auth após um delay
           setTimeout(() => {
-            console.log(`[${sessionId}] Redirecionando para /auth...`);
-            window.location.href = '/auth'; // Usar href para garantir limpeza completa
+            window.location.href = '/auth';
           }, 3000);
           return;
         }
         
-        console.log(`[${sessionId}] Usuário validado com sucesso:`, accessValidation.userData?.full_name);
+        console.log(`Usuário validado com sucesso: ${accessValidation.userData?.full_name}`);
         setStatus('success');
         setMessage('Login realizado com sucesso!');
         toast.success("Login com Google realizado com sucesso!");
         
         // Redirecionar para chat
         setTimeout(() => {
-          console.log(`[${sessionId}] Redirecionando para /chat...`);
           navigate('/chat', { replace: true });
         }, 1000);
         
       } catch (error: any) {
-        console.error(`[${sessionIdRef.current}] Erro ao processar callback:`, error);
+        console.error("Erro ao processar callback OAuth:", error);
         setStatus('error');
         setMessage('Erro ao processar login. Tente novamente.');
         toast.error("Erro ao processar login");
@@ -124,8 +110,7 @@ const AuthCallback = () => {
         
         // Redirecionar para auth em caso de erro
         setTimeout(() => {
-          console.log(`[${sessionIdRef.current}] Redirecionando para /auth após erro...`);
-          window.location.href = '/auth'; // Usar href para garantir limpeza completa
+          window.location.href = '/auth';
         }, 2000);
       }
     };
