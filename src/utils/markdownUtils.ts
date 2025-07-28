@@ -109,7 +109,7 @@ function convertTablesToHTML(text: string): string {
 }
 
 function convertURLsToLinks(text: string): string {
-  // Convert URLs to clickable links, including bit.ly and www links
+  // Convert URLs to clickable links with simplified HTML
   const urlRegex = /(https?:\/\/[^\s,]+|www\.[^\s,]+|bit\.ly\/[^\s,]+)/g;
   
   return text.replace(urlRegex, (url) => {
@@ -120,10 +120,7 @@ function convertURLsToLinks(text: string): string {
     // Add https:// to bit.ly and www links if missing
     const fullUrl = cleanUrl.startsWith('bit.ly/') || cleanUrl.startsWith('www.') ? `https://${cleanUrl}` : cleanUrl;
     
-    return `<a href="${fullUrl}" target="_blank" rel="noopener noreferrer" 
-      class="inline-flex items-center gap-1 text-primary hover:text-primary/80 underline underline-offset-2 transition-colors font-medium">
-      ${cleanUrl}
-      <span class="text-xs">↗</span>
-    </a>${punctuation}`;
+    // Use simpler HTML to avoid escaping issues
+    return `<a href="${fullUrl}" target="_blank" rel="noopener noreferrer" class="text-primary underline hover:text-primary/80">${cleanUrl} ↗</a>${punctuation}`;
   });
 }
