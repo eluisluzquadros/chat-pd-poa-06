@@ -13,6 +13,8 @@ interface PredefinedRequest {
 
 const OBJECTIVES_RESPONSE = `# Objetivo Central do Novo Plano Diretor de Porto Alegre
 
+O objetivo central do novo Plano Diretor de Porto Alegre é:
+
 Tornar Porto Alegre uma cidade mais **atraente**, **competitiva**, **resiliente** e **sustentável**, com qualidade de vida, justiça urbana e oportunidades para todos — especialmente para os mais vulneráveis.
 
 ## Cinco Objetivos Estratégicos
@@ -27,7 +29,16 @@ Esse objetivo geral se desdobra em cinco objetivos estratégicos, que norteiam t
 
 4. **Adaptar a cidade às mudanças climáticas** e zerar emissões de gases de efeito estufa.
 
-5. **Fortalecer o planejamento urbano** com base na economia urbana, dados e capacidade de financiamento.`;
+5. **Fortalecer o planejamento urbano** com base na economia urbana, dados e capacidade de financiamento.
+
+---
+
+📍 **Explore mais:**
+- [Mapa Interativo PDUS](https://bit.ly/3ILdXRA)
+- [Contribua com sugestões](https://bit.ly/4oefZKm) 
+- [Audiência Pública](https://bit.ly/4o7AWqb)
+
+💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br`;
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {

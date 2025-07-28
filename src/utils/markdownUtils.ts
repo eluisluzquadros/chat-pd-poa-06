@@ -109,16 +109,16 @@ function convertTablesToHTML(text: string): string {
 }
 
 function convertURLsToLinks(text: string): string {
-  // Convert URLs to clickable links, including bit.ly links
-  const urlRegex = /(https?:\/\/[^\s,]+|bit\.ly\/[^\s,]+)/g;
+  // Convert URLs to clickable links, including bit.ly and www links
+  const urlRegex = /(https?:\/\/[^\s,]+|www\.[^\s,]+|bit\.ly\/[^\s,]+)/g;
   
   return text.replace(urlRegex, (url) => {
     // Clean up URL if it ends with punctuation
     const cleanUrl = url.replace(/[.,;:!?]$/, '');
     const punctuation = url.slice(cleanUrl.length);
     
-    // Add https:// to bit.ly links if missing
-    const fullUrl = cleanUrl.startsWith('bit.ly/') ? `https://${cleanUrl}` : cleanUrl;
+    // Add https:// to bit.ly and www links if missing
+    const fullUrl = cleanUrl.startsWith('bit.ly/') || cleanUrl.startsWith('www.') ? `https://${cleanUrl}` : cleanUrl;
     
     return `<a href="${fullUrl}" target="_blank" rel="noopener noreferrer" 
       class="inline-flex items-center gap-1 text-primary hover:text-primary/80 underline underline-offset-2 transition-colors font-medium">
