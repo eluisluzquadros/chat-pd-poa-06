@@ -113,6 +113,9 @@ Se a pergunta estiver fora do escopo do PDUS 2025 ou do planejamento urbano de P
         if (result.data && result.data.length > 0) {
           contextData += `\\nConjunto ${index + 1} (${result.purpose}):\\n`;
           contextData += JSON.stringify(result.data.slice(0, 10), null, 2); // Limit data size
+          
+          // Log para debug - verificar se os dados estão corretos
+          console.log(`DEBUG - Dataset ${index + 1}:`, JSON.stringify(result.data.slice(0, 3), null, 2));
         }
       });
     }
