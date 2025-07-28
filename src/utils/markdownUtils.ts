@@ -109,6 +109,9 @@ function convertTablesToHTML(text: string): string {
 }
 
 function convertURLsToLinks(text: string): string {
+  // First convert markdown-style links [text](url) to text:url format
+  text = text.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '$1:$2');
+  
   // Convert URLs to clickable links with simplified HTML
   const urlRegex = /(https?:\/\/[^\s,]+|www\.[^\s,]+|bit\.ly\/[^\s,]+)/g;
   
