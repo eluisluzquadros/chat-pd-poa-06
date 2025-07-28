@@ -14,14 +14,7 @@ export default function AdminDashboardPage() {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      <main className="container mx-auto px-4 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold tracking-tight">Dashboard Administrativo</h1>
-          <p className="text-muted-foreground mt-2">
-            Monitore métricas do sistema, validação QA e qualidade das respostas
-          </p>
-        </div>
-        
+      <main className="container mx-auto px-6 py-8 max-w-7xl">
         <AdminDashboard 
           startDate={startDate}
           endDate={endDate}

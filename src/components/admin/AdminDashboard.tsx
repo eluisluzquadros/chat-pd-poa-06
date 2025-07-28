@@ -94,107 +94,153 @@ export function AdminDashboard({ startDate, endDate, onDateRangeChange }: AdminD
   });
 
   return (
-    <div className="space-y-6">
-      {/* Header com filtros */}
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Dashboard Administrativo</h1>
-          <p className="text-muted-foreground">
+    <div className="space-y-8">
+      {/* Header elegante */}
+      <div className="border-b border-border pb-6">
+        <div className="flex flex-col gap-2">
+          <h1 className="text-4xl font-bold tracking-tight">Dashboard Administrativo</h1>
+          <p className="text-lg text-muted-foreground">
             Monitoramento e análise do sistema Multi-LLM
           </p>
         </div>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-7">
-          <TabsTrigger value="overview">Visão Geral</TabsTrigger>
-          <TabsTrigger value="tokens">Tokens</TabsTrigger>
-          <TabsTrigger value="models">Modelos</TabsTrigger>
-          <TabsTrigger value="feedback">Feedback</TabsTrigger>
-          <TabsTrigger value="qa">Validação QA</TabsTrigger>
-          <TabsTrigger value="users">Usuários</TabsTrigger>
-          <TabsTrigger value="conversations">Conversas</TabsTrigger>
-          <TabsTrigger value="interests">Manifestações</TabsTrigger>
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
+        <TabsList className="grid w-full grid-cols-4 lg:grid-cols-8 gap-1 h-auto p-1 bg-muted/50">
+          <TabsTrigger value="overview" className="text-sm py-3">Visão Geral</TabsTrigger>
+          <TabsTrigger value="tokens" className="text-sm py-3">Tokens</TabsTrigger>
+          <TabsTrigger value="models" className="text-sm py-3">Modelos</TabsTrigger>
+          <TabsTrigger value="feedback" className="text-sm py-3">Feedback</TabsTrigger>
+          <TabsTrigger value="qa" className="text-sm py-3">Validação QA</TabsTrigger>
+          <TabsTrigger value="users" className="text-sm py-3">Usuários</TabsTrigger>
+          <TabsTrigger value="conversations" className="text-sm py-3">Conversas</TabsTrigger>
+          <TabsTrigger value="interests" className="text-sm py-3">Manifestações</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="overview" className="space-y-6">
-          {/* Cards de métricas principais */}
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total de Tokens</CardTitle>
-                <Brain className="h-4 w-4 text-muted-foreground" />
+        <TabsContent value="overview" className="space-y-8">
+          {/* Cards de métricas principais com design elegante */}
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+            <Card className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900 border-blue-200 dark:border-blue-800">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+                <CardTitle className="text-sm font-semibold text-blue-700 dark:text-blue-300">Total de Tokens</CardTitle>
+                <Brain className="h-5 w-5 text-blue-600 dark:text-blue-400" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">
+                <div className="text-3xl font-bold text-blue-800 dark:text-blue-200">
                   {tokenStats?.totalTokens?.toLocaleString() || '0'}
                 </div>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-sm text-blue-600 dark:text-blue-400 mt-1">
                   Em {tokenStats?.totalCalls || 0} chamadas
                 </p>
               </CardContent>
             </Card>
 
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Custo Estimado</CardTitle>
-                <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            <Card className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950 dark:to-green-900 border-green-200 dark:border-green-800">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+                <CardTitle className="text-sm font-semibold text-green-700 dark:text-green-300">Custo Estimado</CardTitle>
+                <TrendingUp className="h-5 w-5 text-green-600 dark:text-green-400" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">
+                <div className="text-3xl font-bold text-green-800 dark:text-green-200">
                   ${tokenStats?.totalCost?.toFixed(4) || '0.0000'}
                 </div>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-sm text-green-600 dark:text-green-400 mt-1">
                   Período selecionado
                 </p>
               </CardContent>
             </Card>
 
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Taxa de Satisfação</CardTitle>
-                <Star className="h-4 w-4 text-muted-foreground" />
+            <Card className="bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-950 dark:to-amber-900 border-amber-200 dark:border-amber-800">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+                <CardTitle className="text-sm font-semibold text-amber-700 dark:text-amber-300">Taxa de Satisfação</CardTitle>
+                <Star className="h-5 w-5 text-amber-600 dark:text-amber-400" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">
+                <div className="text-3xl font-bold text-amber-800 dark:text-amber-200">
                   {feedbackStats?.satisfactionRate?.toFixed(1) || '0'}%
                 </div>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-sm text-amber-600 dark:text-amber-400 mt-1">
                   {feedbackStats?.totalFeedback || 0} avaliações
                 </p>
               </CardContent>
             </Card>
 
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Feedback Negativo</CardTitle>
-                <AlertTriangle className="h-4 w-4 text-muted-foreground" />
+            <Card className="bg-gradient-to-br from-red-50 to-red-100 dark:from-red-950 dark:to-red-900 border-red-200 dark:border-red-800">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+                <CardTitle className="text-sm font-semibold text-red-700 dark:text-red-300">Feedback Negativo</CardTitle>
+                <AlertTriangle className="h-5 w-5 text-red-600 dark:text-red-400" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">
+                <div className="text-3xl font-bold text-red-800 dark:text-red-200">
                   {feedbackStats?.unhelpfulCount || 0}
                 </div>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-sm text-red-600 dark:text-red-400 mt-1">
                   Requer atenção
                 </p>
               </CardContent>
             </Card>
           </div>
 
-          {/* Componentes de análise existentes */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Análise de Usuários e Conversas</CardTitle>
-              <CardDescription>
-                Estatísticas gerais do período selecionado
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">
-                Análises detalhadas disponíveis nas outras abas
-              </p>
-            </CardContent>
-          </Card>
+          {/* Resumo executivo */}
+          <div className="grid gap-6 md:grid-cols-2">
+            <Card className="border-l-4 border-l-primary">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <BarChart className="h-5 w-5" />
+                  Resumo Operacional
+                </CardTitle>
+                <CardDescription>
+                  Indicadores-chave de performance do sistema
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm font-medium">Modelos Ativos</span>
+                    <span className="text-lg font-bold">{Object.keys(tokenStats?.modelUsage || {}).length}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm font-medium">Média de Satisfação</span>
+                    <span className="text-lg font-bold">{feedbackStats?.satisfactionRate?.toFixed(1) || '0'}%</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm font-medium">Custo por Token</span>
+                    <span className="text-lg font-bold">
+                      ${((tokenStats?.totalCost || 0) / (tokenStats?.totalTokens || 1)).toFixed(6)}
+                    </span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="border-l-4 border-l-secondary">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Users className="h-5 w-5" />
+                  Atividade do Sistema
+                </CardTitle>
+                <CardDescription>
+                  Métricas de uso e engajamento
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm font-medium">Total de Chamadas</span>
+                    <span className="text-lg font-bold">{tokenStats?.totalCalls || 0}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm font-medium">Feedback Positivo</span>
+                    <span className="text-lg font-bold text-green-600">{feedbackStats?.helpfulCount || 0}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm font-medium">Necessita Melhoria</span>
+                    <span className="text-lg font-bold text-red-600">{feedbackStats?.unhelpfulCount || 0}</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
 
         <TabsContent value="models" className="space-y-6">
