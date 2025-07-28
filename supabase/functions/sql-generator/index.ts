@@ -89,11 +89,12 @@ CAMPOS CORRETOS DO DATASET:
 - CA Máximo: "Coeficiente de Aproveitamento - Máximo"
 
 REGRA ESPECIAL PARA CONSULTAS DE CONSTRUÇÃO:
-Se isConstructionQuery = true, SEMPRE inclua estas colunas no resultado:
-- "Zona" (para identificar a ZOT)
-- "Altura máxima de edificação (m)" ou campos similares de altura
-- "Coeficiente de Aproveitamento Básico" (coeficiente mínimo)
-- "Coeficiente de Aproveitamento Máximo" (coeficiente máximo)
+Se isConstructionQuery = true, OBRIGATORIAMENTE inclua estas colunas no resultado:
+- "Zona" (para identificar a ZOT) 
+- "Altura Máxima - Edificação Isolada" (nome EXATO da coluna)
+- "Coeficiente de Aproveitamento - Básico" (nome EXATO da coluna)
+- "Coeficiente de Aproveitamento - Máximo" (nome EXATO da coluna)
+PRIORIDADE: Use SEMPRE o dataset "17_GMWnJC1sKff-YS0wesgxsvo3tnZdgSSb4JZ0ZjpCk" para consultas de construção
 
 REGRA CRÍTICA PARA ZOTs COM SUBDIVISÕES:
 Para ZOTs como 08.3 que possuem subdivisões A, B, C:
@@ -135,8 +136,10 @@ ${analysisResult?.isConstructionQuery ?
 `ATENÇÃO: Esta é uma consulta sobre construção. OBRIGATORIAMENTE inclua:
 - Campo "Zona" para identificar a ZOT
 - Campo "Altura Máxima - Edificação Isolada" (nome exato da coluna)
-- Campo "Coeficiente de Aproveitamento - Básico" (nome exato da coluna)
+- Campo "Coeficiente de Aproveitamento - Básico" (nome exato da coluna)  
 - Campo "Coeficiente de Aproveitamento - Máximo" (nome exato da coluna)
+
+DATASET OBRIGATÓRIO: Use "17_GMWnJC1sKff-YS0wesgxsvo3tnZdgSSb4JZ0ZjpCk" como prioridade MÁXIMA
 
 CRÍTICO: Use correspondência EXATA para bairros:
 row_data->>'Bairro' = 'NOME_BAIRRO_MAIUSCULO'
@@ -153,7 +156,9 @@ Se o usuário perguntar por qualquer variação de:
 - "CA", "coeficiente", "índice de aproveitamento", "potencial construtivo" → busque "Coeficiente de Aproveitamento - Básico/Máximo"
 - "taxa de ocupação", "TO" → busque campos de ocupação  
 - "altura máxima", "gabarito" → busque "Altura Máxima - Edificação Isolada"
-- "maior", "máximo", "superior", "teto" → identifique que quer valores máximos` : ''}
+- "maior", "máximo", "superior", "teto" → identifique que quer valores máximos
+
+VALIDAÇÃO FINAL: Sempre verifique se retornou dados válidos dos 4 campos obrigatórios para construção` : ''}
 
 Responda com JSON válido seguindo esta estrutura:
 {

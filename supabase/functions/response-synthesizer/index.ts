@@ -54,8 +54,10 @@ Use o formato de tabela markdown:
 
 VALIDAÇÃO DE DADOS:
 - Verifique se os dados são realmente do bairro solicitado
-- Se houver mistura de dados de bairros similares (ex: "BOA VISTA" vs "BOA VISTA DO SUL"), filtre apenas o correto
-- Mencione explicitamente se algum dado obrigatório não estiver disponível
+- Se houver mistura de dados de bairros similares (ex: "BOA VISTA" vs "BOA VISTA DO SUL"), filtre apenas o correto  
+- NUNCA diga que "dados não fornecem parâmetros obrigatórios" se os dados estão presentes
+- Só mencione falta de dados se realmente não existirem nas tabelas fornecidas
+- Verifique se as colunas "Zona", "Altura Máxima - Edificação Isolada", "Coeficiente de Aproveitamento - Básico", "Coeficiente de Aproveitamento - Máximo" estão presentes
 
 RECONHECIMENTO DE CONSULTAS SOBRE PARÂMETROS ESPECÍFICOS:
 Se a pergunta for sobre variações linguísticas como:
@@ -78,11 +80,12 @@ Antes de formular sua resposta final, execute as seguintes:
 - Use os resultados SQL fornecidos para extrair as informações necessárias.
 
 4. Para consultas de construção, VERIFIQUE se os quatro indicadores obrigatórios estão presentes:
-- ZOT (identificação da zona)
-- Altura máxima de edificação
-- Coeficiente de aproveitamento básico/mínimo
-- Coeficiente de aproveitamento máximo
+- ZOT (identificação da zona) - campo "Zona"
+- Altura máxima de edificação - campo "Altura Máxima - Edificação Isolada"  
+- Coeficiente de aproveitamento básico/mínimo - campo "Coeficiente de Aproveitamento - Básico"
+- Coeficiente de aproveitamento máximo - campo "Coeficiente de Aproveitamento - Máximo"
 - VALIDE se os dados são do bairro correto (não misture "BOA VISTA" com "BOA VISTA DO SUL")
+- SE os dados estão presentes nas tabelas, NUNCA diga que não estão disponíveis
 
 5. Esboce sua resposta, garantindo que ela siga estas diretrizes:
 - Forneça uma resposta completa e detalhada
@@ -213,9 +216,10 @@ ${hasSubdivisionData ? `CRÍTICO - ZOT COM SUBDIVISÕES DETECTADA:
 VALIDAÇÃO CRÍTICA: 
 - Verifique se os dados são do bairro EXATO solicitado
 - NÃO misture dados de "BOA VISTA" com "BOA VISTA DO SUL"
-- Se algum dado obrigatório não estiver disponível, mencione explicitamente
+- IMPORTANTE: SE os dados dos 4 campos obrigatórios estão presentes nas tabelas fornecidas, NUNCA diga que estão indisponíveis
+- Procure pelas colunas exatas: "Zona", "Altura Máxima - Edificação Isolada", "Coeficiente de Aproveitamento - Básico", "Coeficiente de Aproveitamento - Máximo"
 - Use formato de tabela markdown para apresentar os dados
-- VERIFIQUE se os nomes das colunas estão corretos: "Altura Máxima - Edificação Isolada"` : ''}
+- Só mencione "dados não disponíveis" se realmente não existirem nas tabelas fornecidas` : ''}
 
 Sintetize uma resposta completa e detalhada seguindo rigorosamente as diretrizes do sistema. Formatação markdown, tom positivo, links oficiais obrigatórios ao final.`;
 

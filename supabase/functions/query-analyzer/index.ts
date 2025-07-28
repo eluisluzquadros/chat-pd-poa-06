@@ -101,6 +101,8 @@ serve(async (req) => {
       queryLower.includes(keyword.toLowerCase())
     ) && (queryLower.includes('bairro') || queryLower.includes('zot'));
 
+    console.log('DEBUG - Construction query detected:', isConstructionQuery);
+
     if (hasObjectivesKeyword) {
       const predefinedResult: QueryAnalysisResponse = {
         intent: 'predefined_objectives',
@@ -146,7 +148,7 @@ Analise a consulta do usuário e determine:
      * Maior/máximo/superior/teto/limite máximo/previsto/permitido/autorizado
 
 3. REQUIRED_DATASETS - Quais datasets são necessários:
-   - "17_GMWnJC1sKff-YS0wesgxsvo3tnZdgSSb4JZ0ZjpCk" para regime urbanístico
+   - "17_GMWnJC1sKff-YS0wesgxsvo3tnZdgSSb4JZ0ZjpCk" para regime urbanístico (OBRIGATÓRIO para consultas de construção)
    - "1FTENHpX4aLxmAoxvrEeGQn0fej-wxTMQRQs_XBjPQPY" para ZOTs vs Bairros
 
 4. STRATEGY - Estratégia de processamento:
@@ -157,7 +159,8 @@ Analise a consulta do usuário e determine:
 5. CONSTRUCTION QUERIES - Identifique se é uma pergunta sobre construção:
    - Se contém palavras como "construir", "edificar" + menção a "bairro" ou "zot"
    - Marque como isConstructionQuery: true
-   - SEMPRE solicite dataset de regime urbanístico para essas consultas
+   - SEMPRE solicite dataset "17_GMWnJC1sKff-YS0wesgxsvo3tnZdgSSb4JZ0ZjpCk" para essas consultas
+   - CRÍTICO: Dataset de regime urbanístico deve SEMPRE estar presente para consultas de construção
 
 6. NORMALIZAÇÃO DE BAIRROS:
    - "Boa Vista" → "BOA VISTA"
@@ -220,6 +223,20 @@ Responda APENAS com JSON válido no formato especificado.`;
         strategy: 'hybrid',
         isConstructionQuery
       };
+    }
+
+    // FORÇA a inclusão do dataset de regime urbanístico para consultas de construção
+    if (isConstructionQuery) {
+      const regimeDataset = '17_GMWnJC1sKff-YS0wesgxsvo3tnZdgSSb4JZ0ZjpCk';
+      if (!analysisResult.requiredDatasets) {
+        analysisResult.requiredDatasets = [];
+      }
+      if (!analysisResult.requiredDatasets.includes(regimeDataset)) {
+        analysisResult.requiredDatasets.unshift(regimeDataset); // Adiciona no início da lista
+        console.log('DEBUG - Forçou inclusão do dataset de regime urbanístico');
+      }
+      analysisResult.strategy = 'structured_only'; // Força estratégia estruturada
+      console.log('DEBUG - Datasets após forçar regime:', analysisResult.requiredDatasets);
     }
 
     // Enhanced ZOT detection and subdivision handling with improved logging
