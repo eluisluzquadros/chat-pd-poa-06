@@ -114,8 +114,19 @@ Se a pergunta estiver fora do escopo do PDUS 2025 ou do planejamento urbano de P
           contextData += `\\nConjunto ${index + 1} (${result.purpose}):\\n`;
           contextData += JSON.stringify(result.data.slice(0, 10), null, 2); // Limit data size
           
-          // Log para debug - verificar se os dados estão corretos
+          // Log para debug - verificar subdivisões em ZOTs
+          const hasZotSubdivisions = result.data.some(row => 
+            row.Zona && /ZOT\s*\d+\.\d+[ABC]/.test(row.Zona)
+          );
           console.log(`DEBUG - Dataset ${index + 1}:`, JSON.stringify(result.data.slice(0, 3), null, 2));
+          console.log(`DEBUG - Has ZOT subdivisions:`, hasZotSubdivisions);
+          
+          if (hasZotSubdivisions) {
+            const subdivisions = result.data.filter(row => 
+              row.Zona && /ZOT\s*\d+\.\d+[ABC]/.test(row.Zona)
+            );
+            console.log(`DEBUG - Found subdivisions:`, subdivisions.map(s => s.Zona));
+          }
         }
       });
     }

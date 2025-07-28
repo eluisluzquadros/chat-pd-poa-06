@@ -89,6 +89,13 @@ Se isConstructionQuery = true, SEMPRE inclua estas colunas no resultado:
 - "Coeficiente de Aproveitamento Básico" (coeficiente mínimo)
 - "Coeficiente de Aproveitamento Máximo" (coeficiente máximo)
 
+REGRA CRÍTICA PARA ZOTs COM SUBDIVISÕES:
+Para ZOTs como 08.3 que possuem subdivisões A, B, C:
+- SEMPRE buscar TODAS as subdivisões: WHERE row_data->>'Zona' LIKE 'ZOT 08.3%'
+- NUNCA fazer match exato em apenas uma subdivisão
+- Ordenar por subdivisão: ORDER BY row_data->>'Zona'
+- Incluir TODAS as subdivisões no resultado para comparação completa
+
 VALIDAÇÃO OBRIGATÓRIA:
 - Para bairros, use correspondência EXATA: row_data->>'Bairro' = 'NOME_EXATO'
 - Nunca use ILIKE '%nome%' para bairros - isso causa confusão entre similares
@@ -96,6 +103,7 @@ VALIDAÇÃO OBRIGATÓRIA:
 
 CONTEXTO: ${analysisResult?.entities ? JSON.stringify(analysisResult.entities) : 'Nenhuma entidade específica'}
 É consulta de construção: ${analysisResult?.isConstructionQuery || false}
+Estratégia especial: ${analysisResult?.processingStrategy || 'standard'}
 
 Gere consultas SQL otimizadas e seguras. Responda APENAS com JSON válido.`;
 

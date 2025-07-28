@@ -222,6 +222,28 @@ Responda APENAS com JSON válido no formato especificado.`;
       };
     }
 
+    // Enhanced ZOT detection and subdivision handling
+    if (analysisResult.entities && analysisResult.entities.zots) {
+      analysisResult.entities.zots = analysisResult.entities.zots.map(zot => {
+        // Detect ZOTs with subdivisions (like ZOT 08.3 which has A, B, C)
+        const hasSubdivisions = /ZOT\s*\d+\.\d+$/i.test(zot);
+        if (hasSubdivisions) {
+          return {
+            code: zot,
+            hasSubdivisions: true,
+            note: "Esta ZOT possui subdivisões (A, B, C) com parâmetros diferentes"
+          };
+        }
+        return zot;
+      });
+    }
+    
+    // Mark queries that need comprehensive subdivision data
+    if (analysisResult.entities?.zots?.some(zot => typeof zot === 'object' && zot.hasSubdivisions)) {
+      analysisResult.processingStrategy = "comprehensive_subdivision_query";
+      analysisResult.note = "Query requires all subdivision data for complete response";
+    }
+
     // Store analysis result for tracking
     if (sessionId) {
       await supabaseClient
