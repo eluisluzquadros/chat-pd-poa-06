@@ -11,7 +11,7 @@ import { Loader2, UserPlus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { SecureAuthService } from '@/services/secureAuthService';
 import { toast } from 'sonner';
-import { DemoSetupButton } from '@/components/DemoSetupButton';
+
 
 
 const AuthPage = () => {
@@ -75,16 +75,6 @@ const AuthPage = () => {
               
               {isDevelopment && (
                 <>
-                  <div className="relative">
-                    <div className="absolute inset-0 flex items-center">
-                      <div className="w-full border-t border-gray-300 dark:border-gray-600"></div>
-                    </div>
-                    <div className="relative flex justify-center text-xs">
-                      <span className="px-2 bg-card text-muted-foreground">acesso de teste</span>
-                    </div>
-                  </div>
-                  
-                   <DemoSetupButton />
                 </>
               )}
               
