@@ -11,15 +11,23 @@ interface QATestCase {
   id: string;
   question: string;
   expected_answer: string;
+  expected_sql?: string;
   category: string;
   difficulty: string;
   tags: string[];
+  is_sql_related: boolean;
+  sql_complexity?: string;
 }
 
 interface ValidationRequest {
   model?: string;
   testCaseIds?: string[];
   categories?: string[];
+  difficulties?: string[];
+  randomCount?: number;
+  includeSQL?: boolean;
+  excludeSQL?: boolean;
+  mode?: 'all' | 'random' | 'selected' | 'category' | 'difficulty' | 'sql_only';
 }
 
 serve(async (req) => {
@@ -35,7 +43,16 @@ serve(async (req) => {
   let validationRunId: string | null = null;
 
   try {
-    const { model = 'agentic-rag', testCaseIds, categories }: ValidationRequest = await req.json();
+    const { 
+      model = 'agentic-rag', 
+      testCaseIds, 
+      categories, 
+      difficulties,
+      randomCount,
+      includeSQL = true,
+      excludeSQL = false,
+      mode = 'all'
+    }: ValidationRequest = await req.json();
 
     // Clean up old stuck runs first
     await supabase
@@ -68,9 +85,9 @@ serve(async (req) => {
     let query = supabase
       .from('qa_test_cases')
       .select('*')
-      .eq('is_active', true)
-      .limit(10); // Limit to 10 test cases to prevent timeout
+      .eq('is_active', true);
 
+    // Apply filters based on mode and options
     if (testCaseIds?.length) {
       query = query.in('id', testCaseIds);
     }
@@ -79,8 +96,28 @@ serve(async (req) => {
       query = query.in('category', categories);
     }
 
-    const { data: testCases, error: testCasesError } = await query;
+    if (difficulties?.length) {
+      query = query.in('difficulty', difficulties);
+    }
+
+    // SQL filtering
+    if (mode === 'sql_only' || excludeSQL) {
+      query = query.eq('is_sql_related', mode === 'sql_only');
+    } else if (!includeSQL) {
+      query = query.eq('is_sql_related', false);
+    }
+
+    const { data: allTestCases, error: testCasesError } = await query;
     if (testCasesError) throw testCasesError;
+
+    // Apply random selection or limit
+    let testCases = allTestCases;
+    if (mode === 'random' && randomCount && randomCount < allTestCases.length) {
+      testCases = allTestCases.sort(() => 0.5 - Math.random()).slice(0, randomCount);
+    } else if (mode !== 'random') {
+      // Limit to prevent timeout for non-random modes
+      testCases = allTestCases.slice(0, 25);
+    }
 
     console.log(`Found ${testCases.length} test cases to validate`);
 
@@ -120,18 +157,31 @@ serve(async (req) => {
           
           const actualAnswer = modelResponse.data?.response || '';
 
-          // Use OpenAI to compare answers with timeout
-          const comparisonResult = await Promise.race([
-            compareAnswers(testCase.question, testCase.expected_answer, actualAnswer),
-            new Promise((_, reject) => 
-              setTimeout(() => reject(new Error('Comparison timeout')), 15000)
-            )
-          ]);
+          // Enhanced comparison for SQL-related test cases
+          let comparisonResult;
+          let sqlValidation = null;
+          
+          if (testCase.is_sql_related) {
+            comparisonResult = await Promise.race([
+              compareAnswersWithSQL(testCase.question, testCase.expected_answer, actualAnswer, testCase.expected_sql),
+              new Promise((_, reject) => 
+                setTimeout(() => reject(new Error('Comparison timeout')), 15000)
+              )
+            ]);
+            sqlValidation = comparisonResult.sqlValidation;
+          } else {
+            comparisonResult = await Promise.race([
+              compareAnswers(testCase.question, testCase.expected_answer, actualAnswer),
+              new Promise((_, reject) => 
+                setTimeout(() => reject(new Error('Comparison timeout')), 15000)
+              )
+            ]);
+          }
 
           const isCorrect = comparisonResult.accuracy >= 0.7;
 
-          // Store result
-          return {
+          // Store result with enhanced SQL data
+          const result: any = {
             test_case_id: testCase.id,
             model,
             actual_answer: actualAnswer,
@@ -142,6 +192,16 @@ serve(async (req) => {
             error_details: comparisonResult.error_details,
             validation_run_id: validationRun.id
           };
+
+          // Add SQL-specific fields if applicable
+          if (sqlValidation) {
+            result.sql_executed = sqlValidation.executed;
+            result.sql_syntax_valid = sqlValidation.syntaxValid;
+            result.sql_result_match = sqlValidation.resultMatch;
+            result.generated_sql = sqlValidation.generatedSQL;
+          }
+
+          return result;
 
         } catch (error) {
           console.error(`Error testing case ${testCase.id}:`, error);
@@ -325,6 +385,126 @@ Please evaluate the accuracy:`
       error_type: 'comparison_error',
       error_details: error.message,
       explanation: 'Failed to compare answers'
+    };
+  }
+}
+
+async function compareAnswersWithSQL(question: string, expected: string, actual: string, expectedSQL?: string) {
+  try {
+    const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
+    if (!openAIApiKey) {
+      throw new Error('OpenAI API key not configured');
+    }
+
+    // Extract SQL from the actual answer
+    const sqlRegex = /```sql\n([\s\S]*?)\n```|```\n([\s\S]*?)\n```|SELECT[\s\S]*?(?=\n\n|\n$|$)/i;
+    const sqlMatch = actual.match(sqlRegex);
+    const generatedSQL = sqlMatch ? (sqlMatch[1] || sqlMatch[2] || sqlMatch[0]).trim() : '';
+
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${openAIApiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'gpt-4o-mini',
+        messages: [
+          {
+            role: 'system',
+            content: `You are an expert QA validator specializing in SQL queries. Compare the actual answer with the expected answer for the given question.
+
+Rate the accuracy from 0.0 to 1.0 based on:
+- Factual correctness of the text response
+- SQL query correctness and syntax
+- Logic and structure of the SQL
+- Whether the SQL would produce correct results
+
+Return a JSON object with:
+{
+  "accuracy": number (0.0-1.0),
+  "error_type": string or null,
+  "error_details": string or null,
+  "explanation": string,
+  "sqlValidation": {
+    "executed": boolean,
+    "syntaxValid": boolean,
+    "resultMatch": boolean,
+    "generatedSQL": string,
+    "sqlQuality": number (0.0-1.0)
+  }
+}`
+          },
+          {
+            role: 'user',
+            content: `Question: ${question}
+
+Expected Answer: ${expected}
+${expectedSQL ? `Expected SQL: ${expectedSQL}` : ''}
+
+Actual Answer: ${actual}
+Generated SQL: ${generatedSQL || 'No SQL found'}
+
+Please evaluate the accuracy and SQL quality:`
+          }
+        ],
+        temperature: 0.1
+      }),
+    });
+
+    const data = await response.json();
+    const content = data.choices[0].message.content;
+    
+    try {
+      const result = JSON.parse(content);
+      // Ensure sqlValidation exists
+      if (!result.sqlValidation) {
+        result.sqlValidation = {
+          executed: !!generatedSQL,
+          syntaxValid: !!generatedSQL,
+          resultMatch: false,
+          generatedSQL: generatedSQL,
+          sqlQuality: generatedSQL ? 0.5 : 0.0
+        };
+      }
+      return result;
+    } catch {
+      // Fallback parsing for SQL cases
+      const accuracy = content.includes('1.0') ? 1.0 : 
+                      content.includes('0.9') ? 0.9 :
+                      content.includes('0.8') ? 0.8 :
+                      content.includes('0.7') ? 0.7 :
+                      content.includes('0.6') ? 0.6 : 0.5;
+                      
+      return {
+        accuracy,
+        error_type: accuracy < 0.7 ? 'low_accuracy' : null,
+        error_details: accuracy < 0.7 ? 'Answer quality below threshold' : null,
+        explanation: content,
+        sqlValidation: {
+          executed: !!generatedSQL,
+          syntaxValid: !!generatedSQL,
+          resultMatch: false,
+          generatedSQL: generatedSQL,
+          sqlQuality: generatedSQL ? 0.5 : 0.0
+        }
+      };
+    }
+
+  } catch (error) {
+    console.error('SQL answer comparison error:', error);
+    return {
+      accuracy: 0.0,
+      error_type: 'comparison_error',
+      error_details: error.message,
+      explanation: 'Failed to compare SQL answers',
+      sqlValidation: {
+        executed: false,
+        syntaxValid: false,
+        resultMatch: false,
+        generatedSQL: '',
+        sqlQuality: 0.0
+      }
     };
   }
 }

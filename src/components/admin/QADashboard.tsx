@@ -6,9 +6,11 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { AlertTriangle, CheckCircle, XCircle, Play, BarChart3, FileText } from "lucide-react";
+import { AlertTriangle, CheckCircle, XCircle, Play, BarChart3, FileText, Edit, Settings2, Database } from "lucide-react";
 import { toast } from "sonner";
 import { AddTestCaseDialog } from "./AddTestCaseDialog";
+import { EditTestCaseDialog } from "./EditTestCaseDialog";
+import { ValidationOptionsDialog, ValidationExecutionOptions } from "./ValidationOptionsDialog";
 
 interface QAValidationRun {
   id: string;
@@ -26,10 +28,14 @@ interface QATestCase {
   id: string;
   question: string;
   expected_answer: string;
+  expected_sql?: string;
   category: string;
   difficulty: string;
   tags: string[];
   is_active: boolean;
+  is_sql_related: boolean;
+  sql_complexity?: string;
+  version: number;
 }
 
 interface QAValidationResult {
@@ -42,6 +48,10 @@ interface QAValidationResult {
   response_time_ms: number;
   error_type: string;
   error_details: string;
+  sql_executed?: boolean;
+  sql_syntax_valid?: boolean;
+  sql_result_match?: boolean;
+  generated_sql?: string;
   qa_test_cases: QATestCase;
 }
 
@@ -52,6 +62,8 @@ export function QADashboard() {
   const [selectedModel, setSelectedModel] = useState<string>("agentic-rag");
   const [isRunning, setIsRunning] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [editingTestCase, setEditingTestCase] = useState<QATestCase | null>(null);
+  const [showValidationOptions, setShowValidationOptions] = useState(false);
 
   const models = [
     "agentic-rag", "claude-chat", "gemini-chat", 
@@ -89,14 +101,44 @@ export function QADashboard() {
   };
 
   const runValidation = async () => {
+    setShowValidationOptions(true);
+  };
+
+  const executeValidation = async (options: ValidationExecutionOptions) => {
     if (isRunning) return;
     
     setIsRunning(true);
-    toast.info("Iniciando validação QA...");
+    toast.info("Iniciando validação QA personalizada...");
 
     try {
+      const body: any = { model: selectedModel };
+      
+      // Add options to the request body
+      if (options.mode !== 'all') {
+        body.mode = options.mode;
+      }
+      
+      if (options.selectedIds?.length) {
+        body.testCaseIds = options.selectedIds;
+      }
+      
+      if (options.categories?.length) {
+        body.categories = options.categories;
+      }
+      
+      if (options.difficulties?.length) {
+        body.difficulties = options.difficulties;
+      }
+      
+      if (options.randomCount) {
+        body.randomCount = options.randomCount;
+      }
+      
+      body.includeSQL = options.includeSQL;
+      body.excludeSQL = options.excludeSQL;
+
       const { data, error } = await supabase.functions.invoke('qa-validator', {
-        body: { model: selectedModel }
+        body
       });
 
       if (error) {
@@ -333,11 +375,26 @@ export function QADashboard() {
                           >
                             {testCase.difficulty}
                           </Badge>
+                          {testCase.is_sql_related && (
+                            <Badge variant="outline" className="bg-blue-50 text-blue-700">
+                              <Database className="h-3 w-3 mr-1" />
+                              SQL
+                            </Badge>
+                          )}
+                          <Badge variant="outline" className="text-xs">
+                            v{testCase.version}
+                          </Badge>
                         </div>
                         <h4 className="font-medium">{testCase.question}</h4>
                         <p className="text-sm text-muted-foreground">
                           {testCase.expected_answer}
                         </p>
+                        {testCase.expected_sql && (
+                          <div className="bg-muted/50 p-2 rounded text-xs font-mono">
+                            <strong>SQL esperado:</strong>
+                            <pre className="mt-1 text-muted-foreground">{testCase.expected_sql}</pre>
+                          </div>
+                        )}
                         <div className="flex gap-1">
                           {testCase.tags.map(tag => (
                             <Badge key={tag} variant="outline" className="text-xs">
@@ -346,6 +403,15 @@ export function QADashboard() {
                           ))}
                         </div>
                       </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setEditingTestCase(testCase)}
+                        className="flex items-center gap-1"
+                      >
+                        <Edit className="h-4 w-4" />
+                        Editar
+                      </Button>
                     </div>
                   </div>
                 ))}
@@ -402,6 +468,27 @@ export function QADashboard() {
                           </p>
                         </div>
                         
+                         {result.generated_sql && (
+                          <div>
+                            <strong>SQL Gerado:</strong>
+                            <pre className="text-muted-foreground mt-1 bg-muted/50 p-2 rounded text-xs font-mono">
+                              {result.generated_sql}
+                            </pre>
+                            <div className="flex gap-2 mt-1">
+                              {result.sql_syntax_valid !== null && (
+                                <Badge variant={result.sql_syntax_valid ? "default" : "destructive"} className="text-xs">
+                                  {result.sql_syntax_valid ? "Sintaxe válida" : "Sintaxe inválida"}
+                                </Badge>
+                              )}
+                              {result.sql_result_match !== null && (
+                                <Badge variant={result.sql_result_match ? "default" : "secondary"} className="text-xs">
+                                  {result.sql_result_match ? "Resultado correto" : "Resultado incorreto"}
+                                </Badge>
+                              )}
+                            </div>
+                          </div>
+                        )}
+                        
                         {result.error_details && (
                           <div>
                             <strong>Erro:</strong>
@@ -423,6 +510,22 @@ export function QADashboard() {
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Enhanced Dialogs */}
+      <ValidationOptionsDialog
+        testCases={testCases}
+        open={showValidationOptions}
+        onOpenChange={setShowValidationOptions}
+        onExecute={executeValidation}
+        selectedModel={selectedModel}
+      />
+
+      <EditTestCaseDialog
+        testCase={editingTestCase}
+        open={!!editingTestCase}
+        onOpenChange={() => setEditingTestCase(null)}
+        onTestCaseUpdated={fetchData}
+      />
     </div>
   );
 }
