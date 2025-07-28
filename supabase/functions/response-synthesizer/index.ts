@@ -85,7 +85,7 @@ Antes de formular sua resposta final, execute as seguintes:
 - VALIDE se os dados são do bairro correto (não misture "BOA VISTA" com "BOA VISTA DO SUL")
 
 5. Esboce sua resposta, garantindo que ela siga estas diretrizes:
-- Máximo de 200 palavras
+- Forneça uma resposta completa e detalhada
 - Use formatação markdown rica
 - Organize com títulos e estrutura claros
 - Use tabelas para apresentação de dados quando apropriado
@@ -217,7 +217,7 @@ VALIDAÇÃO CRÍTICA:
 - Use formato de tabela markdown para apresentar os dados
 - VERIFIQUE se os nomes das colunas estão corretos: "Altura Máxima - Edificação Isolada"` : ''}
 
-Sintetize uma resposta seguindo rigorosamente as diretrizes do sistema. Máximo 200 palavras, formatação markdown, tom positivo, links oficiais obrigatórios ao final.`;
+Sintetize uma resposta completa e detalhada seguindo rigorosamente as diretrizes do sistema. Formatação markdown, tom positivo, links oficiais obrigatórios ao final.`;
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
