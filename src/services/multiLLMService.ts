@@ -101,11 +101,15 @@ export class MultiLLMService {
     try {
       const startTime = Date.now();
       
+      console.log(`📤 Calling edge function: ${functionName}`, requestData);
+      
       const { data, error } = await supabase.functions.invoke(functionName, {
         body: requestData,
       });
 
       const executionTime = Date.now() - startTime;
+
+      console.log(`📥 Response from ${functionName}:`, { data, error, executionTime });
 
       if (error) {
         console.error(`Error calling ${functionName}:`, error);

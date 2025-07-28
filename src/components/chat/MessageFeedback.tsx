@@ -21,6 +21,8 @@ export function MessageFeedback({ messageId, sessionId, model }: MessageFeedback
   const { user } = useAuthContext();
 
   const handleFeedback = async (isHelpful: boolean) => {
+    console.log('Feedback clicked:', { isHelpful, messageId, sessionId, model, user });
+    
     if (!user) {
       toast({
         title: "Erro",
@@ -43,16 +45,20 @@ export function MessageFeedback({ messageId, sessionId, model }: MessageFeedback
   const submitFeedback = async (feedbackValue: boolean, commentValue?: string) => {
     setIsSubmitting(true);
     
+    const feedbackData = {
+      message_id: messageId,
+      session_id: sessionId,
+      model: model,
+      helpful: feedbackValue,
+      comment: commentValue || null,
+    };
+    
+    console.log('Submitting feedback:', feedbackData);
+    
     try {
       const { error } = await supabase
         .from('message_feedback')
-        .insert({
-          message_id: messageId,
-          session_id: sessionId,
-          model: model,
-          helpful: feedbackValue,
-          comment: commentValue || null,
-        });
+        .insert(feedbackData);
 
       if (error) throw error;
 

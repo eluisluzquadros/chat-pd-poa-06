@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste Edge Functions</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        button {
+            background: #0066cc;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0052cc;
+        }
+        .result {
+            margin-top: 10px;
+            padding: 10px;
+            background: #f5f5f5;
+            border-radius: 4px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .error {
+            background: #ffe0e0;
+            color: #cc0000;
+        }
+        .success {
+            background: #e0ffe0;
+            color: #008800;
+        }
+    </style>
+</head>
+<body>
+    <h1>Teste Direto das Edge Functions</h1>
+    
+    <div class="test-section">
+        <h2>Configuração</h2>
+        <p>URL do Supabase: <code id="supabaseUrl"></code></p>
+        <p>Anon Key: <code id="anonKey"></code></p>
+    </div>
+
+    <div class="test-section">
+        <h2>1. Teste Query Analyzer</h2>
+        <button onclick="testQueryAnalyzer()">Testar Query Analyzer</button>
+        <div id="queryAnalyzerResult" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>2. Teste SQL Generator</h2>
+        <button onclick="testSqlGenerator()">Testar SQL Generator</button>
+        <div id="sqlGeneratorResult" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>3. Teste Agentic RAG</h2>
+        <button onclick="testAgenticRag()">Testar Agentic RAG</button>
+        <div id="agenticRagResult" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>4. Teste Completo: "Quantos bairros tem Porto Alegre?"</h2>
+        <button onclick="testFullFlow()">Testar Fluxo Completo</button>
+        <div id="fullFlowResult" class="result"></div>
+    </div>
+
+    <script>
+        // Configuração do Supabase
+        const SUPABASE_URL = 'https://ngrqwmvuhvjkeohesbxs.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5ncnF3bXZ1aHZqa2VvaGVzYnhzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM2MDkwMTcsImV4cCI6MjA2OTE4NTAxN30.K3uyyzjyAQ17ohQGCUFx_RiMufblLyQzvxEZHakqKrg';
+
+        document.getElementById('supabaseUrl').textContent = SUPABASE_URL;
+        document.getElementById('anonKey').textContent = SUPABASE_ANON_KEY.substring(0, 20) + '...';
+
+        async function callEdgeFunction(functionName, payload) {
+            const url = `${SUPABASE_URL}/functions/v1/${functionName}`;
+            
+            console.log(`Calling ${functionName} with:`, payload);
+            
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+                        'apikey': SUPABASE_ANON_KEY
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${JSON.stringify(data)}`);
+                }
+
+                return { success: true, data };
+            } catch (error) {
+                return { success: false, error: error.message };
+            }
+        }
+
+        async function testQueryAnalyzer() {
+            const resultDiv = document.getElementById('queryAnalyzerResult');
+            resultDiv.textContent = 'Testando...';
+            
+            const result = await callEdgeFunction('query-analyzer', {
+                query: "Quantos bairros tem Porto Alegre?"
+            });
+            
+            if (result.success) {
+                resultDiv.className = 'result success';
+                resultDiv.textContent = JSON.stringify(result.data, null, 2);
+            } else {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = 'ERRO: ' + result.error;
+            }
+        }
+
+        async function testSqlGenerator() {
+            const resultDiv = document.getElementById('sqlGeneratorResult');
+            resultDiv.textContent = 'Testando...';
+            
+            const analysisResult = {
+                intent: 'tabular',
+                strategy: 'structured_only',
+                requiredDatasets: ['1FTENHpX4aLxmAoxvrEeGQn0fej-wxTMQRQs_XBjPQPY']
+            };
+            
+            const result = await callEdgeFunction('sql-generator', {
+                query: "Quantos bairros tem Porto Alegre?",
+                analysisResult: analysisResult
+            });
+            
+            if (result.success) {
+                resultDiv.className = 'result success';
+                resultDiv.textContent = JSON.stringify(result.data, null, 2);
+            } else {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = 'ERRO: ' + result.error;
+            }
+        }
+
+        async function testAgenticRag() {
+            const resultDiv = document.getElementById('agenticRagResult');
+            resultDiv.textContent = 'Testando...';
+            
+            const result = await callEdgeFunction('agentic-rag', {
+                message: "Quantos bairros tem Porto Alegre?",
+                userRole: 'citizen',
+                sessionId: 'test-session-' + Date.now()
+            });
+            
+            if (result.success) {
+                resultDiv.className = 'result success';
+                resultDiv.textContent = JSON.stringify(result.data, null, 2);
+            } else {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = 'ERRO: ' + result.error;
+            }
+        }
+
+        async function testFullFlow() {
+            const resultDiv = document.getElementById('fullFlowResult');
+            resultDiv.textContent = 'Executando fluxo completo...\n\n';
+            
+            // 1. Query Analyzer
+            resultDiv.textContent += '1. Analisando query...\n';
+            const analysisResult = await callEdgeFunction('query-analyzer', {
+                query: "Quantos bairros tem Porto Alegre?"
+            });
+            
+            if (!analysisResult.success) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent += 'ERRO no Query Analyzer: ' + analysisResult.error;
+                return;
+            }
+            
+            resultDiv.textContent += 'Análise: ' + JSON.stringify(analysisResult.data, null, 2) + '\n\n';
+            
+            // 2. SQL Generator
+            resultDiv.textContent += '2. Gerando SQL...\n';
+            const sqlResult = await callEdgeFunction('sql-generator', {
+                query: "Quantos bairros tem Porto Alegre?",
+                analysisResult: analysisResult.data
+            });
+            
+            if (!sqlResult.success) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent += 'ERRO no SQL Generator: ' + sqlResult.error;
+                return;
+            }
+            
+            resultDiv.textContent += 'SQL: ' + JSON.stringify(sqlResult.data, null, 2) + '\n\n';
+            
+            // 3. Response Synthesizer
+            resultDiv.textContent += '3. Sintetizando resposta...\n';
+            const synthesisResult = await callEdgeFunction('response-synthesizer', {
+                query: "Quantos bairros tem Porto Alegre?",
+                analysisResult: analysisResult.data,
+                sqlResults: sqlResult.data,
+                vectorResults: null
+            });
+            
+            if (!synthesisResult.success) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent += 'ERRO no Response Synthesizer: ' + synthesisResult.error;
+                return;
+            }
+            
+            resultDiv.className = 'result success';
+            resultDiv.textContent += 'RESPOSTA FINAL: ' + JSON.stringify(synthesisResult.data, null, 2);
+        }
+    </script>
+</body>
+</html>

@@ -1,69 +1,161 @@
-# Welcome to your Lovable project
+# Chat PD POA - Assistente Virtual do Plano Diretor de Porto Alegre
 
-## Project info
+## 📋 Visão Geral
 
-**URL**: https://lovable.dev/projects/f3574fb9-0fbe-491f-85eb-d0f11f90687e
+O Chat PD POA é um assistente virtual baseado em IA desenvolvido para facilitar o acesso às informações do Plano Diretor Urbano Sustentável (PDUS 2025) de Porto Alegre. A plataforma utiliza tecnologias de processamento de linguagem natural e busca vetorial para responder perguntas sobre zoneamento urbano, parâmetros construtivos e diretrizes urbanísticas.
 
-## How can I edit this code?
+## 🏗️ Arquitetura do Sistema
 
-There are several ways of editing your application.
+### Componentes Principais
 
-**Use Lovable**
+1. **Frontend (Next.js + React)**
+   - Interface de chat responsiva
+   - Sistema de autenticação
+   - Dashboard administrativo
+   - Componentes de visualização de dados
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/f3574fb9-0fbe-491f-85eb-d0f11f90687e) and start prompting.
+2. **Backend (Supabase Edge Functions)**
+   - `agentic-rag`: Orquestrador principal do processamento de consultas
+   - `query-analyzer`: Analisa e classifica as intenções das perguntas
+   - `sql-generator`: Gera consultas SQL para dados tabulares
+   - `enhanced-vector-search`: Busca em documentos conceituais
+   - `response-synthesizer`: Sintetiza respostas finais
+   - `multiLLMService`: Gerencia interações com diferentes modelos de IA
 
-Changes made via Lovable will be committed automatically to this repo.
+3. **Banco de Dados (PostgreSQL + pgvector)**
+   - Armazenamento de dados tabulares (ZOTs, bairros, parâmetros)
+   - Embeddings vetoriais para busca semântica
+   - Histórico de conversas e analytics
 
-**Use your preferred IDE**
+### Fluxo de Processamento
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+```
+Usuário → Frontend → multiLLMService → agentic-rag
+                                           ↓
+                                    query-analyzer
+                                           ↓
+                              ┌────────────┴────────────┐
+                              ↓                        ↓
+                        sql-generator          enhanced-vector-search
+                              ↓                        ↓
+                         Execução SQL          Busca Vetorial
+                              ↓                        ↓
+                              └────────────┬────────────┘
+                                           ↓
+                                  response-synthesizer
+                                           ↓
+                                      Resposta Final
+```
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+## 🚀 Instalação e Configuração
 
-Follow these steps:
+### Pré-requisitos
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+- Node.js 18+
+- PostgreSQL com extensão pgvector
+- Conta Supabase
+- Chaves de API OpenAI
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+### Configuração do Ambiente
 
-# Step 3: Install the necessary dependencies.
-npm i
+1. Clone o repositório:
+```bash
+git clone https://github.com/seu-usuario/chat-pd-poa-06.git
+cd chat-pd-poa-06
+```
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+2. Instale as dependências:
+```bash
+npm install
+```
+
+3. Configure as variáveis de ambiente:
+```bash
+cp .env.example .env.local
+```
+
+4. Preencha o `.env.local` com suas credenciais:
+```env
+NEXT_PUBLIC_SUPABASE_URL=sua_url_supabase
+NEXT_PUBLIC_SUPABASE_ANON_KEY=sua_chave_anonima
+SUPABASE_SERVICE_ROLE_KEY=sua_chave_servico
+OPENAI_API_KEY=sua_chave_openai
+```
+
+5. Execute as migrações do banco de dados:
+```bash
+npm run db:migrate
+```
+
+6. Inicie o servidor de desenvolvimento:
+```bash
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+## 🔧 Desenvolvimento
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+### Estrutura de Diretórios
 
-**Use GitHub Codespaces**
+```
+chat-pd-poa-06/
+├── app/                    # Aplicação Next.js (App Router)
+├── components/             # Componentes React reutilizáveis
+├── lib/                   # Utilitários e configurações
+├── supabase/
+│   ├── functions/         # Edge Functions
+│   └── migrations/        # Migrações do banco de dados
+├── public/               # Assets estáticos
+└── tests/               # Testes automatizados
+```
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+### Comandos Úteis
 
-## What technologies are used for this project?
+- `npm run dev` - Inicia servidor de desenvolvimento
+- `npm run build` - Build de produção
+- `npm run test` - Executa testes
+- `npm run lint` - Verifica código
+- `npm run type-check` - Verifica tipos TypeScript
 
-This project is built with .
+## 📊 Funcionalidades Principais
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+### Para Usuários
+- ✅ Consultas sobre zoneamento e parâmetros construtivos
+- ✅ Informações sobre o que pode ser construído em cada zona
+- ✅ Dados sobre altura máxima e coeficientes de aproveitamento
+- ✅ Pesquisa por bairro ou ZOT
+- ✅ Links para recursos oficiais
 
-## How can I deploy this project?
+### Para Administradores
+- ✅ Dashboard de analytics
+- ✅ Monitoramento de uso
+- ✅ Gestão de dados
+- ✅ Logs de sistema
+- ✅ Métricas de desempenho
 
-Simply open [Lovable](https://lovable.dev/projects/f3574fb9-0fbe-491f-85eb-d0f11f90687e) and click on Share -> Publish.
+## 🔒 Segurança
 
-## I want to use a custom domain - is that possible?
+- Autenticação via Supabase Auth
+- Rate limiting em APIs
+- Validação de entrada
+- Sanitização de dados
+- Logs de auditoria
 
-We don't support custom domains (yet). If you want to deploy your project under your own domain then we recommend using Netlify. Visit our docs for more details: [Custom domains](https://docs.lovable.dev/tips-tricks/custom-domain/)
+## 🤝 Contribuindo
+
+1. Fork o projeto
+2. Crie uma branch: `git checkout -b feature/nova-funcionalidade`
+3. Commit suas mudanças: `git commit -m 'Adiciona nova funcionalidade'`
+4. Push: `git push origin feature/nova-funcionalidade`
+5. Abra um Pull Request
+
+## 📝 Licença
+
+Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
+
+## 📞 Contato
+
+Para dúvidas sobre o sistema: [planodiretor@portoalegre.rs.gov.br](mailto:planodiretor@portoalegre.rs.gov.br)
+
+---
+
+Desenvolvido com ❤️ para a cidade de Porto Alegre

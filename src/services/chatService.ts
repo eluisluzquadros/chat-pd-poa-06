@@ -17,6 +17,13 @@ export class ChatService {
     try {
       // Get current authenticated user
       const session = await getCurrentAuthenticatedSession();
+      console.log('🔍 Debug - Session check:', { 
+        hasSession: !!session, 
+        hasUser: !!session?.user,
+        userId: session?.user?.id,
+        isDemoMode: (await import("@/services/authService")).AuthService.isDemoMode()
+      });
+      
       if (!session?.user) {
         throw new Error("User not authenticated");
       }
@@ -29,7 +36,7 @@ export class ChatService {
           message,
           userRole: userRole || 'citizen',
           sessionId,
-          userId: session.user.id
+          userId: session.user.id || undefined  // Make userId optional
         }
       });
 
@@ -48,26 +55,14 @@ export class ChatService {
       };
 
     } catch (error) {
-      console.error('Error in ChatService.processMessage:', error);
+      console.error('❌ Error in ChatService.processMessage:', error);
+      console.error('Full error details:', {
+        message: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : undefined
+      });
       
-      // Return fallback response for now
-      const fallbackResponse = `Olá! Estou processando sua mensagem: "${message}"
-      
-🤖 **Sistema funcionando!** O chat está ativo e recebendo suas mensagens.
-
-📝 **Funcionalidades em desenvolvimento:**
-- Processamento avançado de consultas
-- Busca em documentos
-- Respostas contextualizadas
-
-💬 **Obrigado pela sua paciência!** Continue testando o sistema.`;
-
-      return {
-        response: fallbackResponse,
-        confidence: 0.1,
-        sources: { tabular: 0, conceptual: 0 },
-        executionTime: 0
-      };
+      // Rethrow the error to let the caller handle it
+      throw error;
     }
   }
 }

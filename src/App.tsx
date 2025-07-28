@@ -12,6 +12,7 @@ import Chat from "./pages/Chat";
 import NotFound from "./pages/NotFound";
 import UserManagement from "./pages/admin/UserManagement";
 import AdminDashboard from "./pages/admin/AdminDashboard";
+import Quality from "./pages/admin/Quality";
 import UserSettings from "./pages/UserSettings";
 import Reports from "./pages/Reports";
 
@@ -69,6 +70,13 @@ function App() {
                 <SimpleAuthGuard>
                   <SimpleRoleGuard adminOnly={true}>
                     <UserManagement />
+                  </SimpleRoleGuard>
+                </SimpleAuthGuard>
+              } />
+              <Route path="/admin/quality" element={
+                <SimpleAuthGuard>
+                  <SimpleRoleGuard adminOnly={true}>
+                    <Quality />
                   </SimpleRoleGuard>
                 </SimpleAuthGuard>
               } />

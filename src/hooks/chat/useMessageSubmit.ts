@@ -100,6 +100,14 @@ export function useMessageSubmit({
       const userRole = roleData?.role || 'citizen';
 
       console.log(`🚀 Processing message via ${selectedModel}...`);
+      console.log('📝 Message details:', {
+        message: currentInput,
+        model: selectedModel,
+        userRole,
+        sessionId,
+        userId: session.user.id
+      });
+      
       const result = await multiLLMService.processMessage(
         currentInput,
         selectedModel,

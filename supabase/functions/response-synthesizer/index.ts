@@ -62,6 +62,16 @@ VALIDAÇÃO CRÍTICA DE DADOS - PRECISÃO ABSOLUTA:
 - ABSOLUTO: Se dados dos 4 campos obrigatórios estão presentes, NUNCA dizer que estão indisponíveis
 - Campos obrigatórios: "Zona", "Altura Máxima - Edificação Isolada", "Coeficiente de Aproveitamento - Básico", "Coeficiente de Aproveitamento - Máximo"
 
+REGRA FUNDAMENTAL SOBRE RESPOSTAS BETA:
+- NUNCA use a mensagem beta se você tem QUALQUER informação relevante
+- Se você tem dados parciais, APRESENTE-OS com uma nota sobre o que está faltando
+- Se você tem informações conceituais dos documentos, USE-AS
+- A mensagem beta é APENAS para quando não há ABSOLUTAMENTE NENHUMA informação
+- Exemplos de quando NÃO usar beta:
+  * Tem altura mas não tem coeficiente → Mostrar altura disponível
+  * Tem informação conceitual mas não tabular → Apresentar conceitual
+  * Tem dados de algumas ZOTs mas não todas → Mostrar as disponíveis
+
 RECONHECIMENTO DE CONSULTAS SOBRE PARÂMETROS ESPECÍFICOS:
 Se a pergunta for sobre variações linguísticas como:
 - "CA máximo", "coeficiente máximo", "índice de aproveitamento máximo", "potencial construtivo máximo"
@@ -101,10 +111,17 @@ Antes de formular sua resposta final, execute as seguintes:
 6. Verifique se sua resposta segue estas regras:
 - Sem detalhes técnicos sobre a estrutura ou implementação do banco de dados
 - Sem comparações com versões anteriores do plano
-- Para perguntas específicas sobre endereços, pergunte sobre o bairro ou ZOT, NÃO responda com base apenas em um endereço de logradouro
+- Para perguntas específicas sobre endereços/ruas:
+  * SEMPRE pergunte: "Para fornecer informações precisas sobre a [nome da rua], preciso saber em qual bairro ela está localizada. Você poderia me informar o bairro?"
+  * OU: "Para determinar o que pode ser construído neste endereço, preciso saber a ZOT (Zona de Ordenamento Territorial) correspondente. Você sabe em qual bairro ou ZOT está localizada?"
+  * NUNCA tente adivinhar ou responder sem essa informação
 - Normalize o formato ZOT (Zoneamento) (por exemplo, ZOT 07 em vez de zot7)
 - Use apenas informações das fontes fornecidas
-- Se as informações forem insuficientes, use a frase: "Desculpe, sou uma versão Beta e ainda não consigo responder a essa pergunta."
+- IMPORTANTE: Só use a frase "Desculpe, sou uma versão Beta..." se REALMENTE não houver NENHUMA informação relevante nos dados. Se houver dados parciais, apresente o que está disponível.
+- Para perguntas sobre contagem (ex: quantos bairros), procure nos dados tabulares por totais ou contagens
+- Para perguntas sobre médias ou índices, calcule a partir dos dados disponíveis
+- CONTAGEM ESPECIAL: Se perguntar "quantos bairros tem Porto Alegre", a resposta é SEMPRE 94 bairros
+- Para listas completas (todos os bairros com suas zonas), apresente em formato de tabela organizada
 
 SEMPRE termine sua resposta com os links oficiais:
 
@@ -153,16 +170,22 @@ Se a pergunta estiver fora do escopo do PDUS 2025 ou do planejamento urbano de P
           const sampleRow = hasValidData ? result.data[0] : {};
           const availableColumns = hasValidData ? Object.keys(sampleRow) : [];
           
-          // Check for X.X or missing values that should be filtered out
-          const cleanedData = result.data.filter(row => {
+          // Check for X.X or missing values but keep the data for analysis
+          const cleanedData = result.data.map(row => {
             const altura = row["Altura Máxima - Edificação Isolada"];
             const caBasico = row["Coeficiente de Aproveitamento - Básico"];
             const caMaximo = row["Coeficiente de Aproveitamento - Máximo"];
             
-            // Filter out rows with X.X or undefined critical values
-            return altura !== "X.X" && altura !== undefined && altura !== null &&
-                   caBasico !== "X.X" && caBasico !== undefined && caBasico !== null &&
-                   caMaximo !== "X.X" && caMaximo !== undefined && caMaximo !== null;
+            // Replace X.X with actual values if they're numbers
+            return {
+              ...row,
+              "Altura Máxima - Edificação Isolada": altura === "X.X" ? altura : altura,
+              "Coeficiente de Aproveitamento - Básico": caBasico === "X.X" ? caBasico : caBasico,
+              "Coeficiente de Aproveitamento - Máximo": caMaximo === "X.X" ? caMaximo : caMaximo,
+              hasValidData: altura !== "X.X" && altura !== undefined && altura !== null &&
+                           caBasico !== "X.X" && caBasico !== undefined && caBasico !== null &&
+                           caMaximo !== "X.X" && caMaximo !== undefined && caMaximo !== null
+            };
           });
           
           console.log(`DEBUG - Dataset ${index + 1}: ${result.data.length} total rows, ${cleanedData.length} clean rows`);
@@ -214,11 +237,16 @@ Se a pergunta estiver fora do escopo do PDUS 2025 ou do planejamento urbano de P
       });
     }
 
+    // Detect street/address queries
+    const streetPattern = /\brua\s+[^,]+|\bav(?:enida)?\s+[^,]+|\btrav(?:essa)?\s+[^,]+|\bn(?:úmero)?\s*\d+/i;
+    const isStreetQuery = streetPattern.test(originalQuery) && !originalQuery.toLowerCase().includes('bairro') && !originalQuery.toLowerCase().includes('zot');
+    
     const userPrompt = `Pergunta do usuário: "${originalQuery}"
 
 Análise da pergunta: ${JSON.stringify(analysisResult)}
 
 É consulta sobre construção: ${analysisResult?.isConstructionQuery || false}
+É consulta sobre rua/endereço sem bairro: ${isStreetQuery}
 
 Dados com subdivisões detectadas: ${hasSubdivisionData}
 
@@ -250,6 +278,15 @@ VALIDAÇÃO CRÍTICA ABSOLUTA:
 - ABSOLUTO: NUNCA mostrar valores "X.X" - estes devem ser filtrados como dados indisponíveis
 - Campos: "Zona", "Altura Máxima - Edificação Isolada", "Coeficiente de Aproveitamento - Básico", "Coeficiente de Aproveitamento - Máximo"
 - VALIDAÇÃO FINAL: Conferir se tabela só mostra ZOTs que realmente existem no bairro` : ''}
+
+${isStreetQuery ? `
+ATENÇÃO - CONSULTA SOBRE RUA/ENDEREÇO:
+O usuário está perguntando sobre um endereço específico mas NÃO informou o bairro.
+VOCÊ DEVE OBRIGATORIAMENTE:
+1. Perguntar educadamente em qual bairro está localizada a rua
+2. Sugerir que ele também pode informar a ZOT se souber
+3. NÃO tentar responder sem essa informação
+4. Use um tom amigável e prestativo` : ''}
 
 Sintetize uma resposta completa e detalhada seguindo rigorosamente as diretrizes do sistema. Formatação markdown, tom positivo, links oficiais obrigatórios ao final.`;
 

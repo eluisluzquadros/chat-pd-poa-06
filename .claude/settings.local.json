@@ -1,0 +1,27 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install:*)",
+      "Bash(mkdir:*)",
+      "Bash(mv:*)",
+      "Bash(docker:*)",
+      "Bash(powershell:*)",
+      "Bash(scoop:*)",
+      "Bash(curl:*)",
+      "Bash(npm run dev:*)",
+      "Bash(supabase:*)",
+      "Bash(unzip:*)",
+      "Bash(node:*)",
+      "Bash(dir test-function.ts)",
+      "Bash(npm run build:*)",
+      "Bash(cp:*)",
+      "Bash(start chrome \"file:///C:/Users/User/Documents/GitHub/chat-pd-poa-06/test-edge-functions.html\")",
+      "Bash(explorer test-edge-functions.html)",
+      "Bash(npx supabase login:*)",
+      "Bash(npx supabase functions deploy:*)",
+      "Bash(copy deployquery-analyzer.ts supabasefunctionsquery-analyzerindex.ts)",
+      "Bash(git add:*)"
+    ],
+    "deny": []
+  }
+}
