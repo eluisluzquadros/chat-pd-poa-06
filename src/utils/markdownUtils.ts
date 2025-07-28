@@ -39,7 +39,7 @@ export function parseMarkdown(text: string): string {
     
     if (hasNumberedList) {
       processed = processed.replace(/^\d+\.\s+.+$/gm, '');
-      const listHtml = `<ol class="list-decimal list-inside space-y-2 my-4 ml-4 bg-muted/30 rounded-lg p-4 border-l-4 border-primary">${numberedItems.map(item => `<li class="text-muted-foreground leading-relaxed">${item}</li>`).join('')}</ol>`;
+      const listHtml = `<ol class="space-y-2 my-4 ml-4 bg-muted/30 rounded-lg p-4 border-l-4 border-primary" style="counter-reset: list-counter; list-style: none;">${numberedItems.map((item, index) => `<li class="text-muted-foreground leading-relaxed" style="counter-increment: list-counter; position: relative; padding-left: 2rem;"><span style="position: absolute; left: 0; font-weight: 600; color: hsl(var(--primary));">${index + 1}.</span>${item}</li>`).join('')}</ol>`;
       processed = processed + listHtml;
     }
 
