@@ -99,13 +99,22 @@ export function QADashboard() {
         body: { model: selectedModel }
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase function error:', error);
+        throw error;
+      }
+
+      if (data.error) {
+        console.error('QA validator error:', data);
+        throw new Error(data.error);
+      }
 
       toast.success(`Validação concluída: ${data.passedTests}/${data.totalTests} testes passaram`);
       await fetchData();
     } catch (error) {
       console.error('Validation error:', error);
-      toast.error("Erro na validação QA");
+      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido na validação QA';
+      toast.error(`Erro na validação QA: ${errorMessage}`);
     } finally {
       setIsRunning(false);
     }
