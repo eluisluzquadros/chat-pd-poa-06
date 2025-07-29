@@ -86,7 +86,7 @@ serve(async (req) => {
 
     // Enhanced construction detection - now includes specific neighborhood/ZOT queries
     const constructionKeywords = [
-      'o que posso construir', 'posso construir', 'construir', 'edificar',
+      'o que pode ser construído', 'o que posso construir', 'posso construir', 'construir', 'construído', 'edificar',
       ...coeficienteAproveitamentoTerms,
       ...taxaOcupacaoTerms,
       ...alturaMaximaTerms,

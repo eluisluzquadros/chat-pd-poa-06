@@ -201,6 +201,7 @@ REGRAS CRÍTICAS:
 4. NUNCA retorne resultado vazio sem tentar variações do nome do bairro
 5. Para "Três Figueiras", SEMPRE gere queries que tentam: "TRÊS FIGUEIRAS", "TRES FIGUEIRAS", "três figueiras", "tres figueiras"
 6. Para "liste todos os bairros", use: SELECT DISTINCT row_data->>'Bairro' FROM document_rows WHERE dataset_id = '17_GMWnJC1sKff-YS0wesgxsvo3tnZdgSSb4JZ0ZjpCk' ORDER BY 1
+7. Para "o que pode ser construído", SEMPRE retorne TODAS as ZOTs do bairro (sem LIMIT), pois um bairro pode ter múltiplas ZOTs
 
 ${analysisResult?.isConstructionQuery ? 
 `ATENÇÃO: Esta é uma consulta sobre construção. OBRIGATORIAMENTE inclua:
