@@ -125,6 +125,9 @@ Antes de formular sua resposta final, execute as seguintes:
 - CONTAGEM ESPECIAL: Se perguntar "quantos bairros tem Porto Alegre", a resposta é SEMPRE 94 bairros
 - BAIRROS SEMPRE NO ESCOPO: Cristal, Três Figueiras, Petrópolis, Centro Histórico e TODOS os 94 bairros de Porto Alegre estão no PDUS
 - Para listas completas (todos os bairros com suas zonas), apresente em formato de tabela organizada
+- REGRA CRÍTICA PARA LISTAS: Se perguntar "liste todos os bairros" ou "todos os bairros de Porto Alegre" e você tiver a lista completa nos dados, SEMPRE mostre TODOS os 94 bairros. NUNCA corte a lista ou mostre apenas exemplos. LISTE TODOS!
+- REGRA PARA ZOT-BAIRRO: Se perguntar "zot X pertence a que bairro", SEMPRE liste TODOS os bairros encontrados nos dados. Se há 38 bairros com ZOT 8, mostre TODOS os 38, não apenas 10 exemplos!
+- NUNCA use "..." ou "entre outros" quando pedir lista completa. SEMPRE mostre TUDO!
 
 SEMPRE termine sua resposta com os links oficiais:
 
@@ -228,7 +231,7 @@ Se a pergunta estiver fora do escopo do PDUS 2025 ou do planejamento urbano de P
             contextData += `\\n=== DADOS COMPLETOS ===\\n`;
           }
           
-          contextData += JSON.stringify(result.data.slice(0, 10), null, 2); // Limit data size
+          contextData += JSON.stringify(result.data, null, 2); // Include all data
         }
       });
     }
@@ -261,7 +264,9 @@ REGRAS ESPECÍFICAS PARA PERGUNTAS PROBLEMÁTICAS:
 1. Se perguntar "índice de aproveitamento médio do bairro X": SE JÁ HOUVER O CAMPO "indice_medio" ou "indice_aproveitamento_medio" NOS DADOS SQL, USE ESSE VALOR EXATO (ex: 3.3125 para Cristal). NÃO RECALCULE!
 2. Se perguntar "ZOTs com coeficiente maior que 4": Liste TODAS as ZOTs encontradas com CA Máximo > 4
 3. Se perguntar sobre bairro "Cristal": Este bairro EXISTE e FAZ PARTE do PDUS
-4. Se perguntar "zot 8 pertence a que bairro": Liste TODOS os bairros, não apenas 3
+4. Se perguntar "zot 8 pertence a que bairro": Liste TODOS os bairros encontrados nos dados (são 38 bairros!), não apenas 3
+5. Se perguntar "liste todos os bairros de porto alegre": SEMPRE mostre a lista completa dos 94 bairros que estão nos dados
+6. Se perguntar sobre construção em "Três Figueiras": Este bairro TEM dados de ZOTs (como ZOT 08.3-C) - mostre a tabela com altura, CA básico e máximo
 
 Papel do usuário: ${userRole || 'citizen'}
 
@@ -312,7 +317,7 @@ Sintetize uma resposta completa e detalhada seguindo rigorosamente as diretrizes
           { role: 'user', content: userPrompt }
         ],
         temperature: 0.7,
-        max_tokens: 4000
+        max_tokens: 8000
       }),
     });
 

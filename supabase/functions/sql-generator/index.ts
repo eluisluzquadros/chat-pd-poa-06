@@ -171,7 +171,8 @@ Estratégia especial: ${analysisResult?.processingStrategy || 'standard'}
 DICAS PARA NOMES DE BAIRROS:
 - SEMPRE use UPPER() para comparação: UPPER(row_data->>'Bairro') = UPPER('nome')
 - Bairros com acentos: tente ambas as versões (com e sem acento)
-- "Três Figueiras" pode estar como "TRES FIGUEIRAS" ou "TRÊS FIGUEIRAS"
+- "Três Figueiras" pode estar como "TRES FIGUEIRAS" ou "TRÊS FIGUEIRAS" - SEMPRE tente ambas variações
+- Para bairros com acentos, SEMPRE gere queries com e sem acentos (ex: "TRÊS FIGUEIRAS" e "TRES FIGUEIRAS")
 - "Cristal" deve estar como "CRISTAL"
 - NUNCA diga que um bairro não existe sem verificar variações do nome
 
@@ -198,6 +199,8 @@ REGRAS CRÍTICAS:
 2. Se pergunta por "ZOTs com coeficiente maior que", filtre por ca_maximo > valor
 3. Para bairros, SEMPRE tente múltiplas variações do nome (com/sem acento, maiúsculo)
 4. NUNCA retorne resultado vazio sem tentar variações do nome do bairro
+5. Para "Três Figueiras", SEMPRE gere queries que tentam: "TRÊS FIGUEIRAS", "TRES FIGUEIRAS", "três figueiras", "tres figueiras"
+6. Para "liste todos os bairros", use: SELECT DISTINCT row_data->>'Bairro' FROM document_rows WHERE dataset_id = '17_GMWnJC1sKff-YS0wesgxsvo3tnZdgSSb4JZ0ZjpCk' ORDER BY 1
 
 ${analysisResult?.isConstructionQuery ? 
 `ATENÇÃO: Esta é uma consulta sobre construção. OBRIGATORIAMENTE inclua:
