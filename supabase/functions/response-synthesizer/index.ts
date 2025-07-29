@@ -45,12 +45,14 @@ Quando os dados incluem ZOTs com subdivisões (ex: ZOT 08.3-A, ZOT 08.3-B, ZOT 0
 • Destaque as diferenças entre as subdivisões
 • Explique qual subdivisão é mais permissiva (geralmente A)
 
-Use o formato de tabela markdown:
+Use o formato de tabela markdown COM OS VALORES EXATOS DOS DADOS:
 | ZOT | Altura Máxima (m) | Coef. Básico | Coef. Máximo |
 |-----|------------------|--------------|--------------|
-| ZOT 08.3-A | 130 | X.X | X.X |
-| ZOT 08.3-B | 90 | X.X | X.X |
-| ZOT 08.3-C | 90 | X.X | X.X |
+| ZOT 08.3-A | 130 | 3.6 | 7.5 |
+| ZOT 08.3-B | 90 | 3.6 | 7.5 |
+| ZOT 08.3-C | 90 | 3.6 | 7.5 |
+
+ATENÇÃO: Os valores acima são EXEMPLOS. USE SEMPRE OS VALORES REAIS DOS DADOS SQL, NUNCA invente valores como 1.0!
 
 VALIDAÇÃO CRÍTICA DE DADOS - PRECISÃO ABSOLUTA:
 - OBRIGATÓRIO: Verificar se TODOS os dados são do bairro EXATO solicitado
@@ -249,6 +251,8 @@ Se a pergunta estiver fora do escopo do PDUS 2025 ou do planejamento urbano de P
     
     const userPrompt = `Pergunta do usuário: "${originalQuery}"
 
+AVISO CRÍTICO: Os dados SQL fornecidos são a ÚNICA fonte de verdade. Se os dados mostram CA básico = 3.6, você DEVE usar 3.6, NUNCA substitua por 1.0 ou qualquer outro valor!
+
 Análise da pergunta: ${JSON.stringify(analysisResult)}
 
 É consulta sobre construção: ${analysisResult?.isConstructionQuery || false}
@@ -267,6 +271,8 @@ REGRAS ESPECÍFICAS PARA PERGUNTAS PROBLEMÁTICAS:
 4. Se perguntar "zot 8 pertence a que bairro": Liste TODOS os bairros encontrados nos dados (são 38 bairros!), não apenas 3
 5. Se perguntar "liste todos os bairros de porto alegre": SEMPRE mostre a lista completa dos 94 bairros que estão nos dados
 6. Se perguntar sobre construção em "Três Figueiras": Este bairro TEM dados de ZOTs (como ZOT 08.3-C) - mostre a tabela com altura, CA básico e máximo
+7. NUNCA MISTURE BAIRROS: Se perguntou sobre Petrópolis, responda APENAS sobre Petrópolis. Se perguntou sobre Três Figueiras, responda APENAS sobre Três Figueiras
+8. USE OS VALORES REAIS: Petrópolis tem CA básico 3.6, NÃO 1.0. Use SEMPRE os valores que estão nos dados SQL
 
 Papel do usuário: ${userRole || 'citizen'}
 
@@ -290,6 +296,8 @@ VALIDAÇÃO CRÍTICA ABSOLUTA:
 - VERIFICAÇÃO DE EXISTÊNCIA: Só mostrar ZOTs que REALMENTE EXISTEM no bairro específico
 - CRÍTICO: Se os 4 campos obrigatórios estão nas tabelas com valores válidos, NUNCA dizer que estão indisponíveis
 - ABSOLUTO: NUNCA mostrar valores "X.X" - estes devem ser filtrados como dados indisponíveis
+- CRÍTICO: NUNCA invente valores como "1.0" se não estiverem nos dados. Use APENAS os valores reais dos dados SQL
+- Se o dado real é "3.6", NUNCA substitua por "1.0" ou qualquer outro valor
 - Campos: "Zona", "Altura Máxima - Edificação Isolada", "Coeficiente de Aproveitamento - Básico", "Coeficiente de Aproveitamento - Máximo"
 - VALIDAÇÃO FINAL: Conferir se tabela só mostra ZOTs que realmente existem no bairro` : ''}
 
