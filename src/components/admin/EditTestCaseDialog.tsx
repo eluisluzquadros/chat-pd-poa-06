@@ -1,13 +1,14 @@
 import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
-import { X, Save, History } from "lucide-react";
+import { X, Save, History, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -34,6 +35,7 @@ interface EditTestCaseDialogProps {
 
 export function EditTestCaseDialog({ testCase, open, onOpenChange, onTestCaseUpdated }: EditTestCaseDialogProps) {
   const [loading, setLoading] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [formData, setFormData] = useState({
     question: "",
     expected_answer: "",
@@ -145,6 +147,30 @@ export function EditTestCaseDialog({ testCase, open, onOpenChange, onTestCaseUpd
     if (e.key === 'Enter') {
       e.preventDefault();
       addTag();
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!testCase) return;
+    
+    setLoading(true);
+    try {
+      const { error } = await supabase
+        .from('qa_test_cases')
+        .delete()
+        .eq('id', testCase.id);
+
+      if (error) throw error;
+
+      toast.success("Caso de teste excluído com sucesso!");
+      setShowDeleteConfirm(false);
+      onOpenChange(false);
+      onTestCaseUpdated();
+    } catch (error) {
+      console.error('Error deleting test case:', error);
+      toast.error("Erro ao excluir caso de teste");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -309,16 +335,51 @@ export function EditTestCaseDialog({ testCase, open, onOpenChange, onTestCaseUpd
             <Label htmlFor="is_active">Caso ativo (será incluído nas validações)</Label>
           </div>
 
-          <div className="flex justify-end gap-3">
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              Cancelar
+          <div className="flex justify-between">
+            <Button 
+              type="button" 
+              variant="destructive" 
+              onClick={() => setShowDeleteConfirm(true)}
+              disabled={loading}
+            >
+              <Trash2 className="h-4 w-4 mr-2" />
+              Excluir Caso
             </Button>
-            <Button type="submit" disabled={loading}>
-              {loading ? "Salvando..." : "Salvar Alterações"}
-            </Button>
+            
+            <div className="flex gap-3">
+              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+                Cancelar
+              </Button>
+              <Button type="submit" disabled={loading}>
+                {loading ? "Salvando..." : "Salvar Alterações"}
+              </Button>
+            </div>
           </div>
         </form>
       </DialogContent>
+      
+      <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmar Exclusão</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja excluir este caso de teste? Esta ação não pode ser desfeita.
+              <div className="mt-2 p-3 bg-muted rounded-md">
+                <p className="font-medium">{testCase?.question}</p>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Dialog>
   );
 }

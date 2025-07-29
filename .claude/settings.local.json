@@ -20,7 +20,17 @@
       "Bash(npx supabase login:*)",
       "Bash(npx supabase functions deploy:*)",
       "Bash(copy deployquery-analyzer.ts supabasefunctionsquery-analyzerindex.ts)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(npx supabase:*)",
+      "Bash(copy supabasefunctionsqa-validatorindex_optimized.ts supabasefunctionsqa-validatorindex.ts)",
+      "Bash(npm run type-check:*)",
+      "Bash(taskkill:*)",
+      "Bash(rm:*)",
+      "Bash(copy:*)",
+      "Bash(ls:*)",
+      "Bash(npm ls:*)"
     ],
     "deny": []
   }

@@ -4,9 +4,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Progress } from "@/components/ui/progress";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle, TrendingUp, TrendingDown, Clock, CheckCircle } from "lucide-react";
-import { useAuthContext } from "@/context/auth/useAuthContext";
-import { useNavigate } from "react-router-dom";
-import { SimpleRoleGuard } from "@/components/SimpleRoleGuard";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { QADashboard } from "@/components/admin/QADashboard";
+import { QAKnowledgeGaps } from "@/components/admin/QAKnowledgeGaps";
 
 interface QualityMetrics {
   betaRate: number;
@@ -18,19 +18,13 @@ interface QualityMetrics {
 }
 
 export default function Quality() {
-  const { user } = useAuthContext();
-  const navigate = useNavigate();
   const [metrics, setMetrics] = useState<QualityMetrics | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!user) {
-      navigate("/login");
-      return;
-    }
     loadMetrics();
-  }, [user, navigate]);
+  }, []);
 
   const loadMetrics = async () => {
     try {
@@ -88,12 +82,11 @@ export default function Quality() {
   };
 
   return (
-    <SimpleRoleGuard requiredRole="admin">
-      <div className="container mx-auto p-6 space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold">Dashboard de Qualidade</h1>
-          <p className="text-muted-foreground">Métricas em tempo real do sistema</p>
-        </div>
+    <div className="container mx-auto p-6 space-y-6">
+      <div>
+        <h1 className="text-3xl font-bold">Dashboard de Qualidade</h1>
+        <p className="text-muted-foreground">Métricas em tempo real do sistema</p>
+      </div>
 
         {loading && (
           <div className="animate-pulse space-y-4">
@@ -114,29 +107,36 @@ export default function Quality() {
         )}
 
         {!loading && !error && metrics && (
-          <>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {/* Beta Rate */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg">Taxa de Respostas Beta</CardTitle>
-                  <CardDescription>Meta: {'<'}5%</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-2xl font-bold">{metrics.betaRate.toFixed(1)}%</span>
-                      <div className={getMetricStatus(metrics.betaRate, 5, true).color}>
-                        {getMetricStatus(metrics.betaRate, 5, true).icon}
+          <Tabs defaultValue="overview" className="space-y-4">
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="overview">Visão Geral</TabsTrigger>
+              <TabsTrigger value="qa-validation">Validação QA</TabsTrigger>
+              <TabsTrigger value="knowledge-gaps">Gaps de Conhecimento</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="overview" className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {/* Beta Rate */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">Taxa de Respostas Beta</CardTitle>
+                    <CardDescription>Meta: {'<'}5%</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-2xl font-bold">{metrics.betaRate.toFixed(1)}%</span>
+                        <div className={getMetricStatus(metrics.betaRate, 5, true).color}>
+                          {getMetricStatus(metrics.betaRate, 5, true).icon}
+                        </div>
                       </div>
+                      <Progress value={metrics.betaRate} className="h-2" />
+                      <p className={`text-sm ${getMetricStatus(metrics.betaRate, 5, true).color}`}>
+                        {getMetricStatus(metrics.betaRate, 5, true).status}
+                      </p>
                     </div>
-                    <Progress value={metrics.betaRate} className="h-2" />
-                    <p className={`text-sm ${getMetricStatus(metrics.betaRate, 5, true).color}`}>
-                      {getMetricStatus(metrics.betaRate, 5, true).status}
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
 
               {/* Response Time */}
               <Card>
@@ -218,18 +218,26 @@ export default function Quality() {
               </Card>
             </div>
 
-            {/* Summary Alert */}
-            <Alert className={metrics.betaRate < 5 && metrics.avgResponseTime < 3 && metrics.successRate > 80 ? "border-green-500" : "border-yellow-500"}>
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>
-                {metrics.betaRate < 5 && metrics.avgResponseTime < 3 && metrics.successRate > 80
-                  ? "✅ Todas as métricas estão dentro das metas estabelecidas!"
-                  : "⚠️ Algumas métricas precisam de atenção."}
-              </AlertDescription>
-            </Alert>
-          </>
+              {/* Summary Alert */}
+              <Alert className={metrics.betaRate < 5 && metrics.avgResponseTime < 3 && metrics.successRate > 80 ? "border-green-500" : "border-yellow-500"}>
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>
+                  {metrics.betaRate < 5 && metrics.avgResponseTime < 3 && metrics.successRate > 80
+                    ? "✅ Todas as métricas estão dentro das metas estabelecidas!"
+                    : "⚠️ Algumas métricas precisam de atenção."}
+                </AlertDescription>
+              </Alert>
+            </TabsContent>
+            
+            <TabsContent value="qa-validation">
+              <QADashboard />
+            </TabsContent>
+            
+            <TabsContent value="knowledge-gaps">
+              <QAKnowledgeGaps />
+            </TabsContent>
+          </Tabs>
         )}
-      </div>
-    </SimpleRoleGuard>
+    </div>
   );
 }

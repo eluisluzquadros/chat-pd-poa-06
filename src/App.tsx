@@ -13,6 +13,9 @@ import NotFound from "./pages/NotFound";
 import UserManagement from "./pages/admin/UserManagement";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import Quality from "./pages/admin/Quality";
+import QualityTest from "./pages/admin/QualityTest";
+import TestQA from "./pages/admin/TestQA";
+import TestQACases from "./pages/admin/TestQACases";
 import UserSettings from "./pages/UserSettings";
 import Reports from "./pages/Reports";
 
@@ -77,6 +80,27 @@ function App() {
                 <SimpleAuthGuard>
                   <SimpleRoleGuard adminOnly={true}>
                     <Quality />
+                  </SimpleRoleGuard>
+                </SimpleAuthGuard>
+              } />
+              <Route path="/admin/quality-test" element={
+                <SimpleAuthGuard>
+                  <SimpleRoleGuard adminOnly={true}>
+                    <QualityTest />
+                  </SimpleRoleGuard>
+                </SimpleAuthGuard>
+              } />
+              <Route path="/admin/test-qa" element={
+                <SimpleAuthGuard>
+                  <SimpleRoleGuard adminOnly={true}>
+                    <TestQA />
+                  </SimpleRoleGuard>
+                </SimpleAuthGuard>
+              } />
+              <Route path="/admin/test-qa-cases" element={
+                <SimpleAuthGuard>
+                  <SimpleRoleGuard adminOnly={true}>
+                    <TestQACases />
                   </SimpleRoleGuard>
                 </SimpleAuthGuard>
               } />

@@ -1,9 +1,28 @@
 import { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useTokenTracking } from '@/hooks/useTokenTracking';
-import { Activity, DollarSign, MessageSquare, Zap } from 'lucide-react';
+import { Activity, DollarSign, MessageSquare, Zap, TrendingUp, Calculator, Users } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import {
+  LineChart,
+  Line,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell
+} from 'recharts';
 
 interface TokenStatsData {
   user_id: string;
@@ -19,6 +38,10 @@ interface TokenStatsData {
 export function TokenStats() {
   const [stats, setStats] = useState<TokenStatsData[]>([]);
   const [loading, setLoading] = useState(true);
+  const [customUsers, setCustomUsers] = useState<string>('100');
+  const [selectedModel, setSelectedModel] = useState<string>('gpt-4o-mini');
+  const [currentProjection, setCurrentProjection] = useState<any>(null);
+  const [qaTokenStats, setQaTokenStats] = useState<any>([]);
   const { getTokenUsageStats, TOKEN_PRICING } = useTokenTracking();
 
   useEffect(() => {
@@ -27,9 +50,31 @@ export function TokenStats() {
 
   const loadStats = async () => {
     try {
+      // Load chat token stats
       const data = await getTokenUsageStats();
       if (data) {
         setStats(data);
+      }
+      
+      // Load cost projections
+      const { data: projection } = await supabase
+        .from('cost_projections')
+        .select('*')
+        .single();
+      
+      if (projection) {
+        setCurrentProjection(projection);
+      }
+      
+      // Load QA token stats
+      const { data: qaStats } = await supabase
+        .from('qa_validation_token_stats')
+        .select('*')
+        .order('started_at', { ascending: false })
+        .limit(5);
+      
+      if (qaStats) {
+        setQaTokenStats(qaStats);
       }
     } catch (error) {
       console.error('Error loading token stats:', error);
@@ -130,9 +175,11 @@ export function TokenStats() {
 
       {/* Detailed Stats */}
       <Tabs defaultValue="models" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="models">Por Modelo</TabsTrigger>
-          <TabsTrigger value="pricing">Preços</TabsTrigger>
+          <TabsTrigger value="projections">Projeções</TabsTrigger>
+          <TabsTrigger value="qa-costs">Custos QA</TabsTrigger>
+          <TabsTrigger value="pricing">Tabela de Preços</TabsTrigger>
         </TabsList>
         
         <TabsContent value="models" className="space-y-4">
@@ -191,7 +238,198 @@ export function TokenStats() {
             </CardContent>
           </Card>
         </TabsContent>
+        
+        <TabsContent value="projections" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <TrendingUp className="h-5 w-5" />
+                Projeção de Custos
+              </CardTitle>
+              <CardDescription>
+                Estimativas baseadas no uso atual (Chat + QA)
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Custom Calculator */}
+              <div className="grid gap-4 md:grid-cols-2 p-4 bg-muted/50 rounded-lg">
+                <div className="space-y-2">
+                  <Label htmlFor="users">Número de Usuários</Label>
+                  <Input
+                    id="users"
+                    type="number"
+                    value={customUsers}
+                    onChange={(e) => setCustomUsers(e.target.value)}
+                    placeholder="Ex: 500"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="model">Modelo Principal</Label>
+                  <Select value={selectedModel} onValueChange={setSelectedModel}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Object.keys(TOKEN_PRICING).map(model => (
+                        <SelectItem key={model} value={model}>
+                          {model}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              
+              {/* Projections */}
+              <div className="grid gap-4 md:grid-cols-2">
+                <Card className="bg-primary/5">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-lg">Projeção Mensal</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-3xl font-bold text-primary">
+                      ${calculateProjection(parseInt(customUsers) || 100).monthly.toFixed(2)}
+                    </div>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Para {customUsers} usuários ativos
+                    </p>
+                  </CardContent>
+                </Card>
+                
+                <Card className="bg-primary/5">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-lg">Projeção Anual</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-3xl font-bold text-primary">
+                      ${calculateProjection(parseInt(customUsers) || 100).yearly.toFixed(2)}
+                    </div>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Economia em escala incluída
+                    </p>
+                  </CardContent>
+                </Card>
+              </div>
+              
+              {/* Quick Projections */}
+              <div className="space-y-3">
+                <h4 className="font-semibold">Projeções Rápidas</h4>
+                <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
+                  {[10, 100, 1000, 10000].map(users => {
+                    const proj = calculateProjection(users);
+                    return (
+                      <div key={users} className="p-3 border rounded-lg">
+                        <div className="font-medium">{users} usuários</div>
+                        <div className="text-sm text-muted-foreground">
+                          Mensal: ${proj.monthly.toFixed(2)}
+                        </div>
+                        <div className="text-sm text-muted-foreground">
+                          Anual: ${proj.yearly.toFixed(2)}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="qa-costs" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Calculator className="h-5 w-5" />
+                Custos de Validação QA
+              </CardTitle>
+              <CardDescription>
+                Gastos com testes automatizados do sistema
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {qaTokenStats.length > 0 ? (
+                  qaTokenStats.map((stat: any) => (
+                    <div key={stat.validation_run_id} className="p-4 border rounded-lg">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="font-medium">{stat.model}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {new Date(stat.started_at).toLocaleString('pt-BR')}
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-semibold">${stat.total_estimated_cost?.toFixed(4) || '0.00'}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {stat.total_tests} testes • {stat.total_tokens} tokens
+                          </p>
+                        </div>
+                      </div>
+                      <div className="mt-2 flex items-center gap-4 text-sm">
+                        <span>Acurácia: {(stat.overall_accuracy * 100).toFixed(1)}%</span>
+                        <span>Custo/teste: ${stat.avg_cost_per_test?.toFixed(4) || '0.00'}</span>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-center text-muted-foreground py-8">
+                    Nenhuma validação QA executada ainda
+                  </p>
+                )}
+              </div>
+              
+              {/* QA Cost Summary */}
+              {qaTokenStats.length > 0 && (
+                <div className="mt-6 p-4 bg-muted/50 rounded-lg">
+                  <h4 className="font-semibold mb-2">Resumo de Custos QA</h4>
+                  <div className="grid gap-2 text-sm">
+                    <div className="flex justify-between">
+                      <span>Total gasto em QA:</span>
+                      <span className="font-medium">
+                        ${qaTokenStats.reduce((sum: number, stat: any) => sum + (stat.total_estimated_cost || 0), 0).toFixed(4)}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Média por validação:</span>
+                      <span className="font-medium">
+                        ${(qaTokenStats.reduce((sum: number, stat: any) => sum + (stat.total_estimated_cost || 0), 0) / qaTokenStats.length).toFixed(4)}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
       </Tabs>
     </div>
   );
+  
+  function calculateProjection(users: number) {
+    if (currentProjection) {
+      const costPerUser = (currentProjection.avg_daily_cost / currentProjection.avg_daily_users) * 30;
+      return {
+        monthly: costPerUser * users,
+        yearly: costPerUser * users * 12
+      };
+    }
+    
+    // Fallback calculation
+    const avgQueriesPerDay = 5;
+    const avgTokensPerQuery = 500;
+    const workingDaysPerMonth = 22;
+    
+    const monthlyQueries = users * avgQueriesPerDay * workingDaysPerMonth;
+    const monthlyTokens = monthlyQueries * avgTokensPerQuery;
+    
+    const pricing = TOKEN_PRICING[selectedModel as keyof typeof TOKEN_PRICING] || TOKEN_PRICING['gpt-4o-mini'];
+    const costPer1kTokens = pricing.input + pricing.output;
+    const monthlyCost = (monthlyTokens / 1000) * costPer1kTokens;
+    
+    return {
+      monthly: monthlyCost,
+      yearly: monthlyCost * 12
+    };
+  }
 }

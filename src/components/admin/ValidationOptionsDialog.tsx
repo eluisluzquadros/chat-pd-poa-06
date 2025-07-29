@@ -28,7 +28,7 @@ interface ValidationOptionsDialogProps {
 }
 
 export interface ValidationExecutionOptions {
-  mode: 'all' | 'random' | 'selected' | 'category' | 'difficulty' | 'sql_only';
+  mode: 'all' | 'random' | 'selected' | 'category' | 'difficulty' | 'sql_only' | 'filtered';
   selectedIds?: string[];
   categories?: string[];
   difficulties?: string[];
@@ -136,6 +136,7 @@ export function ValidationOptionsDialog({
           toast.error("Selecione pelo menos uma categoria");
           return;
         }
+        options.mode = 'filtered';
         options.categories = selectedCategories;
         break;
       case 'difficulty':
@@ -143,10 +144,16 @@ export function ValidationOptionsDialog({
           toast.error("Selecione pelo menos uma dificuldade");
           return;
         }
+        options.mode = 'filtered';
         options.difficulties = selectedDifficulties;
         break;
       case 'random':
         options.randomCount = randomCount;
+        break;
+      case 'sql_only':
+        options.mode = 'filtered';
+        options.includeSQL = true;
+        options.excludeSQL = false;
         break;
     }
 

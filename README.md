@@ -1,5 +1,12 @@
 # Chat PD POA - Assistente Virtual do Plano Diretor de Porto Alegre
 
+## 📚 Documentação Importante
+
+- [**Guia Supabase CLI**](./SUPABASE_CLI_GUIDE.md) - Comandos essenciais e deploy
+- [**Plano de Melhoria Contínua**](./PLANO_MELHORIA_CONTINUA.md) - Roadmap do projeto
+- [**Relatório de Status**](./RELATORIO_STATUS.md) - Status atual do sistema
+- [**Plano de Ação Emergencial**](./PLANO_ACAO_EMERGENCIAL.md) - Correções críticas
+
 ## 📋 Visão Geral
 
 O Chat PD POA é um assistente virtual baseado em IA desenvolvido para facilitar o acesso às informações do Plano Diretor Urbano Sustentável (PDUS 2025) de Porto Alegre. A plataforma utiliza tecnologias de processamento de linguagem natural e busca vetorial para responder perguntas sobre zoneamento urbano, parâmetros construtivos e diretrizes urbanísticas.

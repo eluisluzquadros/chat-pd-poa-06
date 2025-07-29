@@ -2,7 +2,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
-import { Users, FileText, MessageCircle, BarChart3 } from 'lucide-react';
+import { Users, FileText, MessageCircle, BarChart3, Shield } from 'lucide-react';
 
 export const MainNavigation = () => {
   const { isAdmin, isSupervisor } = useAuth();
@@ -39,6 +39,12 @@ export const MainNavigation = () => {
               <Link to="/admin/users" className="hover:underline flex items-center">
                 <Users className="h-4 w-4 mr-1" />
                 Usuários
+              </Link>
+            </li>
+            <li>
+              <Link to="/admin/quality" className="hover:underline flex items-center">
+                <Shield className="h-4 w-4 mr-1" />
+                Qualidade
               </Link>
             </li>
           </>

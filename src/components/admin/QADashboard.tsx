@@ -6,11 +6,13 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { AlertTriangle, CheckCircle, XCircle, Play, BarChart3, FileText, Edit, Settings2, Database } from "lucide-react";
+import { AlertTriangle, CheckCircle, XCircle, Play, BarChart3, FileText, Edit, Settings2, Database, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { AddTestCaseDialog } from "./AddTestCaseDialog";
 import { EditTestCaseDialog } from "./EditTestCaseDialog";
 import { ValidationOptionsDialog, ValidationExecutionOptions } from "./ValidationOptionsDialog";
+import { QAErrorAnalysis } from "./QAErrorAnalysis";
+import { QAModelComparison } from "./QAModelComparison";
 
 interface QAValidationRun {
   id: string;
@@ -64,6 +66,12 @@ export function QADashboard() {
   const [loading, setLoading] = useState(true);
   const [editingTestCase, setEditingTestCase] = useState<QATestCase | null>(null);
   const [showValidationOptions, setShowValidationOptions] = useState(false);
+  const [currentRunId, setCurrentRunId] = useState<string | null>(null);
+  const [validationProgress, setValidationProgress] = useState<{
+    current: number;
+    total: number;
+    percentage: number;
+  } | null>(null);
 
   const models = [
     "agentic-rag", "claude-chat", "gemini-chat", 
@@ -73,6 +81,43 @@ export function QADashboard() {
   useEffect(() => {
     fetchData();
   }, []);
+
+  // Auto-refresh when validation is running
+  useEffect(() => {
+    console.log('Progress monitoring useEffect - isRunning:', isRunning, 'currentRunId:', currentRunId);
+    let interval: NodeJS.Timeout;
+    let minDisplayTimeout: NodeJS.Timeout;
+    
+    if (isRunning && currentRunId) {
+      console.log('Starting progress monitoring interval');
+      
+      // Ensure progress bar shows for at least 3 seconds
+      minDisplayTimeout = setTimeout(() => {
+        console.log('Minimum display time reached');
+      }, 3000);
+      
+      interval = setInterval(async () => {
+        console.log('Interval tick - checking status');
+        const stillRunning = await checkRunStatus(currentRunId);
+        if (!stillRunning) {
+          console.log('Validation completed, waiting for minimum display time');
+          // Wait for minimum display time before hiding
+          setTimeout(() => {
+            setIsRunning(false);
+            setCurrentRunId(null);
+            setValidationProgress(null);
+            toast.success('Validação QA concluída! Dashboard atualizado.');
+          }, 500);
+          await fetchData();
+        }
+      }, 500); // Check every 500ms for smoother updates
+    }
+    
+    return () => {
+      if (interval) clearInterval(interval);
+      if (minDisplayTimeout) clearTimeout(minDisplayTimeout);
+    };
+  }, [isRunning, currentRunId]);
 
   const fetchData = async () => {
     try {
@@ -100,23 +145,103 @@ export function QADashboard() {
     }
   };
 
+  const checkRunStatus = async (runId: string): Promise<boolean> => {
+    console.log('checkRunStatus called for runId:', runId);
+    
+    // Don't check status for temporary IDs
+    if (runId.startsWith('temp-')) {
+      console.log('Skipping status check for temporary ID');
+      return true; // Keep running
+    }
+    
+    try {
+      const { data, error } = await supabase
+        .from('qa_validation_runs')
+        .select('status, overall_accuracy, passed_tests, total_tests')
+        .eq('id', runId)
+        .single();
+      
+      console.log('Run status data:', data);
+      
+      if (error || !data) {
+        console.error('Error checking run status:', error);
+        return false;
+      }
+      
+      // Update progress if still running
+      if (data.status === 'running' && data.total_tests > 0) {
+        // Get completed tests count
+        const { count } = await supabase
+          .from('qa_validation_results')
+          .select('*', { count: 'exact', head: true })
+          .eq('validation_run_id', runId);
+        
+        const completed = count || 0;
+        console.log(`Progress update: ${completed}/${data.total_tests} tests completed`);
+        
+        setValidationProgress({
+          current: completed,
+          total: data.total_tests,
+          percentage: Math.round((completed / data.total_tests) * 100)
+        });
+      } else if (data.status === 'running') {
+        // Still running but no total tests yet
+        console.log('Running but no total tests info yet');
+        setValidationProgress({
+          current: 0,
+          total: 0,
+          percentage: 0
+        });
+      }
+      
+      if (data.status === 'completed' || data.status === 'failed') {
+        // Run finished, update local state immediately for better UX
+        setValidationRuns(prev => 
+          prev.map(run => run.id === runId ? { ...run, ...data } : run)
+        );
+        return false; // Not running anymore
+      }
+      
+      return data.status === 'running';
+    } catch (error) {
+      console.error('Error in checkRunStatus:', error);
+      return false;
+    }
+  };
+
   const runValidation = async () => {
     setShowValidationOptions(true);
   };
 
-  const executeValidation = async (options: ValidationExecutionOptions) => {
-    if (isRunning) return;
+  const executeValidation = async (options: ValidationExecutionOptions, runId?: string, startIdx?: number) => {
+    console.log('executeValidation called with options:', options, 'runId:', runId, 'startIdx:', startIdx);
+    if (isRunning && !runId) return;
     
-    setIsRunning(true);
-    toast.info("Iniciando validação QA personalizada...");
+    if (!runId) {
+      setIsRunning(true);
+      console.log('isRunning set to true');
+      toast.info("Iniciando validação QA personalizada...");
+      
+      // Initialize progress immediately with estimated values
+      const estimatedTotal = options.selectedIds?.length || testCases.length || 38;
+      const tempRunId = `temp-${Date.now()}`;
+      
+      setCurrentRunId(tempRunId);
+      setValidationProgress({
+        current: 0,
+        total: estimatedTotal,
+        percentage: 0
+      });
+      console.log('Initial progress set:', { current: 0, total: estimatedTotal, tempRunId });
+    }
 
     try {
-      const body: any = { model: selectedModel };
-      
-      // Add options to the request body
-      if (options.mode !== 'all') {
-        body.mode = options.mode;
-      }
+      const body: any = { 
+        model: selectedModel,
+        mode: options.mode || 'all',
+        validationRunId: runId || null,
+        startIndex: startIdx || 0
+      };
       
       if (options.selectedIds?.length) {
         body.testCaseIds = options.selectedIds;
@@ -137,27 +262,112 @@ export function QADashboard() {
       body.includeSQL = options.includeSQL;
       body.excludeSQL = options.excludeSQL;
 
-      const { data, error } = await supabase.functions.invoke('qa-validator', {
-        body
-      });
+      console.log('Calling qa-validator with body:', body);
+      
+      // Add timeout to function call
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => {
+        console.log('Function call timeout - aborting');
+        controller.abort();
+      }, 300000); // 300 second timeout (5 minutes) to allow processing all tests
+      
+      let response;
+      try {
+        console.log('Making supabase.functions.invoke call...');
+        console.log('Supabase URL:', (supabase as any).supabaseUrl);
+        console.log('Function name: qa-validator');
+        
+        // Use the original qa-validator that calls the main chat edge functions
+        const functionName = 'qa-validator';
+        console.log('Calling function:', functionName);
+        
+        response = await supabase.functions.invoke(functionName, {
+          body,
+          signal: controller.signal
+        });
+        clearTimeout(timeoutId);
+        console.log('Function call completed');
+        console.log('Raw response:', response);
+      } catch (invokeError) {
+        clearTimeout(timeoutId);
+        console.error('Error during invoke:', invokeError);
+        if (invokeError.name === 'AbortError') {
+          throw new Error('Validação excedeu o tempo limite (30s)');
+        }
+        throw invokeError;
+      }
+      
+      console.log('qa-validator raw response:', response);
+      const { data, error } = response || { data: null, error: null };
+      console.log('qa-validator response data:', JSON.stringify(data, null, 2));
+      console.log('qa-validator response error:', error);
 
       if (error) {
         console.error('Supabase function error:', error);
         throw error;
       }
 
-      if (data.error) {
+      if (data && data.error) {
         console.error('QA validator error:', data);
         throw new Error(data.error);
       }
+      
+      // Handle both direct response and nested data
+      const responseData = data?.data || data;
 
-      toast.success(`Validação concluída: ${data.passedTests}/${data.totalTests} testes passaram`);
-      await fetchData();
+      // Set current run ID for tracking
+      if (responseData && responseData.validationRunId) {
+        console.log('Setting currentRunId:', responseData.validationRunId);
+        setCurrentRunId(responseData.validationRunId); // Replace temp ID with real ID
+        
+        // Initialize or update progress
+        const totalTests = responseData.totalTests || options.selectedIds?.length || testCases.length;
+        console.log('Progress update:', {
+          current: responseData.processedTests,
+          total: totalTests,
+          percentage: Math.round((responseData.processedTests / totalTests) * 100)
+        });
+        
+        setValidationProgress({
+          current: responseData.processedTests || 0,
+          total: totalTests,
+          percentage: Math.round((responseData.processedTests / totalTests) * 100)
+        });
+        
+        // Check if there are more tests to process
+        if (responseData.batchInfo?.hasMoreTests) {
+          console.log('More tests to process, continuing with next batch...');
+          toast.info(`Lote processado: ${responseData.processedTests}/${totalTests} testes. Continuando...`);
+          
+          // Continue with next batch after a short delay
+          setTimeout(() => {
+            executeValidation(options, responseData.validationRunId, responseData.batchInfo.nextStartIndex);
+          }, 1000);
+        } else {
+          // All tests completed
+          console.log('All tests completed');
+          setIsRunning(false);
+          setCurrentRunId(null);
+          setValidationProgress(null);
+          toast.success(`Validação QA concluída! ${responseData.processedTests} testes processados.`);
+          
+          // Refresh data
+          await fetchData();
+        }
+      } else {
+        console.warn('No validationRunId in response, data structure:', responseData);
+        setIsRunning(false);
+      }
+      
     } catch (error) {
       console.error('Validation error:', error);
+      console.error('Error details:', {
+        message: error instanceof Error ? error.message : 'Unknown',
+        stack: error instanceof Error ? error.stack : 'No stack',
+        error
+      });
       const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido na validação QA';
       toast.error(`Erro na validação QA: ${errorMessage}`);
-    } finally {
       setIsRunning(false);
     }
   };
@@ -211,14 +421,43 @@ export function QADashboard() {
             </SelectContent>
           </Select>
           
-          <Button 
-            onClick={runValidation} 
-            disabled={isRunning}
-            className="flex items-center gap-2"
-          >
-            <Play className="h-4 w-4" />
-            {isRunning ? "Executando..." : "Executar Validação"}
-          </Button>
+          <div className="flex items-center gap-4">
+            <Button 
+              onClick={runValidation} 
+              disabled={isRunning}
+              className="flex items-center gap-2"
+            >
+              {isRunning ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Play className="h-4 w-4" />
+              )}
+              {isRunning ? "Executando..." : "Executar Validação"}
+            </Button>
+            
+            {isRunning && (
+              <div className="flex items-center gap-3 bg-muted px-4 py-2 rounded-lg min-w-[300px]">
+                {validationProgress && validationProgress.total > 0 ? (
+                  <>
+                    <div className="text-sm font-medium whitespace-nowrap">
+                      {validationProgress.current}/{validationProgress.total} testes
+                    </div>
+                    <Progress value={validationProgress.percentage} className="w-48" />
+                    <div className="text-sm text-muted-foreground whitespace-nowrap">
+                      {validationProgress.percentage}%
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <div className="text-sm text-muted-foreground">
+                      Preparando validação...
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
@@ -290,10 +529,12 @@ export function QADashboard() {
       </div>
 
       <Tabs defaultValue="runs" className="space-y-4">
-        <TabsList>
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="runs">Execuções</TabsTrigger>
           <TabsTrigger value="cases">Casos de Teste</TabsTrigger>
-          <TabsTrigger value="results">Resultados Detalhados</TabsTrigger>
+          <TabsTrigger value="results">Resultados</TabsTrigger>
+          <TabsTrigger value="errors">Análise de Erros</TabsTrigger>
+          <TabsTrigger value="comparison">Comparação</TabsTrigger>
         </TabsList>
 
         <TabsContent value="runs" className="space-y-4">
@@ -508,6 +749,14 @@ export function QADashboard() {
               )}
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="errors" className="space-y-4">
+          <QAErrorAnalysis />
+        </TabsContent>
+
+        <TabsContent value="comparison" className="space-y-4">
+          <QAModelComparison />
         </TabsContent>
       </Tabs>
 

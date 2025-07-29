@@ -5,7 +5,7 @@ import { UsersAnalytics } from "@/components/reports/UsersAnalytics";
 import { ConversationsAnalytics } from "@/components/reports/ConversationsAnalytics";
 import { InterestAnalytics } from "@/components/reports/InterestAnalytics";
 import { TokenStats } from "@/components/chat/TokenStats";
-import { BarChart, Users, MessageSquare, TrendingUp, Brain, Star, AlertTriangle, BarChart3, UserPlus } from "lucide-react";
+import { BarChart, Users, MessageSquare, TrendingUp, Brain, Star, AlertTriangle, BarChart3, UserPlus, DollarSign } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
@@ -146,7 +146,7 @@ export function AdminDashboard({ startDate, endDate, onDateRangeChange }: AdminD
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
         <TabsList className="grid w-full grid-cols-4 lg:grid-cols-8 gap-1 h-auto p-1 bg-muted/50">
           <TabsTrigger value="overview" className="text-sm py-3">Visão Geral</TabsTrigger>
-          <TabsTrigger value="tokens" className="text-sm py-3">Tokens</TabsTrigger>
+          <TabsTrigger value="tokens" className="text-sm py-3">Tokens & Custos</TabsTrigger>
           <TabsTrigger value="models" className="text-sm py-3">Modelos</TabsTrigger>
           <TabsTrigger value="feedback" className="text-sm py-3">Feedback</TabsTrigger>
           <TabsTrigger value="qa" className="text-sm py-3">Validação QA</TabsTrigger>

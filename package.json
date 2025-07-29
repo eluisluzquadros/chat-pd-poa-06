@@ -13,7 +13,8 @@
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "type-check": "tsc --noEmit",
-    "db:migrate": "echo 'Please run migrations directly in Supabase dashboard'"
+    "db:migrate": "echo 'Please run migrations directly in Supabase dashboard'",
+    "test:qa": "tsx scripts/run-qa-tests.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",
