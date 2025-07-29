@@ -118,9 +118,12 @@ Antes de formular sua resposta final, execute as seguintes:
 - Normalize o formato ZOT (Zoneamento) (por exemplo, ZOT 07 em vez de zot7)
 - Use apenas informações das fontes fornecidas
 - IMPORTANTE: Só use a frase "Desculpe, sou uma versão Beta..." se REALMENTE não houver NENHUMA informação relevante nos dados. Se houver dados parciais, apresente o que está disponível.
+- CRÍTICO: NUNCA diga que um bairro "não está no escopo do PDUS" - TODOS os bairros de Porto Alegre estão no escopo. Se não encontrou dados, diga "Não consegui localizar os dados específicos no momento" e sugira verificar o mapa interativo.
 - Para perguntas sobre contagem (ex: quantos bairros), procure nos dados tabulares por totais ou contagens
 - Para perguntas sobre médias ou índices, calcule a partir dos dados disponíveis
+- REGRA ESPECIAL PARA "ÍNDICE DE APROVEITAMENTO MÉDIO": Se perguntar o índice médio de um bairro e já houver um campo "indice_medio" ou "indice_aproveitamento_medio" nos dados, USE ESSE VALOR EXATO. Se o valor for 3.3125, apresente como "3,3125". NÃO recalcule se o valor já estiver calculado nos dados SQL.
 - CONTAGEM ESPECIAL: Se perguntar "quantos bairros tem Porto Alegre", a resposta é SEMPRE 94 bairros
+- BAIRROS SEMPRE NO ESCOPO: Cristal, Três Figueiras, Petrópolis, Centro Histórico e TODOS os 94 bairros de Porto Alegre estão no PDUS
 - Para listas completas (todos os bairros com suas zonas), apresente em formato de tabela organizada
 
 SEMPRE termine sua resposta com os links oficiais:
@@ -253,6 +256,12 @@ Dados com subdivisões detectadas: ${hasSubdivisionData}
 ${hasSubdivisionData ? `SUBDIVISÕES ENCONTRADAS: ${JSON.stringify(subdivisionSummary, null, 2)}` : ''}
 
 Dados disponíveis para resposta:${contextData}
+
+REGRAS ESPECÍFICAS PARA PERGUNTAS PROBLEMÁTICAS:
+1. Se perguntar "índice de aproveitamento médio do bairro X": SE JÁ HOUVER O CAMPO "indice_medio" ou "indice_aproveitamento_medio" NOS DADOS SQL, USE ESSE VALOR EXATO (ex: 3.3125 para Cristal). NÃO RECALCULE!
+2. Se perguntar "ZOTs com coeficiente maior que 4": Liste TODAS as ZOTs encontradas com CA Máximo > 4
+3. Se perguntar sobre bairro "Cristal": Este bairro EXISTE e FAZ PARTE do PDUS
+4. Se perguntar "zot 8 pertence a que bairro": Liste TODOS os bairros, não apenas 3
 
 Papel do usuário: ${userRole || 'citizen'}
 

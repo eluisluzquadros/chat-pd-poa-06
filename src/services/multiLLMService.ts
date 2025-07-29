@@ -104,7 +104,10 @@ export class MultiLLMService {
       console.log(`📤 Calling edge function: ${functionName}`, requestData);
       
       const { data, error } = await supabase.functions.invoke(functionName, {
-        body: requestData,
+        body: {
+          ...requestData,
+          bypassCache: true // Force bypass cache to get fresh results
+        },
       });
 
       const executionTime = Date.now() - startTime;

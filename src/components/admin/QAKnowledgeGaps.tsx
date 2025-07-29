@@ -8,6 +8,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Brain, AlertTriangle, Lightbulb, FileText, Database, RefreshCw } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { KnowledgeUpdateDialog } from "./KnowledgeUpdateDialog";
 
 interface FailedTestCase {
   id: string;
@@ -35,6 +36,8 @@ export function QAKnowledgeGaps() {
   const [gaps, setGaps] = useState<KnowledgeGap[]>([]);
   const [selectedGap, setSelectedGap] = useState<KnowledgeGap | null>(null);
   const [analysisInProgress, setAnalysisInProgress] = useState(false);
+  const [showUpdateDialog, setShowUpdateDialog] = useState(false);
+  const [updateAnalysisData, setUpdateAnalysisData] = useState<any>(null);
 
   useEffect(() => {
     analyzeKnowledgeGaps();
@@ -207,9 +210,11 @@ export function QAKnowledgeGaps() {
 
       if (error) throw error;
 
-      toast.success("Análise de atualização iniciada");
+      toast.success("Análise de atualização concluída");
       
-      // TODO: Show results in a modal
+      // Show results in modal
+      setUpdateAnalysisData(data);
+      setShowUpdateDialog(true);
       console.log('Knowledge update analysis:', data);
 
     } catch (error) {
@@ -406,6 +411,14 @@ export function QAKnowledgeGaps() {
           </CardContent>
         </Card>
       )}
+      
+      {/* Knowledge Update Dialog */}
+      <KnowledgeUpdateDialog
+        open={showUpdateDialog}
+        onOpenChange={setShowUpdateDialog}
+        analysisData={updateAnalysisData}
+        gap={selectedGap}
+      />
     </div>
   );
 }

@@ -114,6 +114,39 @@ Se isConstructionQuery = true, OBRIGATORIAMENTE inclua estas colunas no resultad
 - "Coeficiente de Aproveitamento - Máximo" (nome EXATO da coluna)
 PRIORIDADE: Use SEMPRE o dataset "17_GMWnJC1sKff-YS0wesgxsvo3tnZdgSSb4JZ0ZjpCk" para consultas de construção
 
+QUERIES ESPECÍFICAS CRÍTICAS:
+1. Para "índice de aproveitamento médio" de um bairro - USE DUAS QUERIES SEPARADAS:
+   
+   Query 1 - Calcular APENAS a média:
+   SELECT AVG(((row_data->>'Coeficiente de Aproveitamento - Básico')::numeric + 
+               (row_data->>'Coeficiente de Aproveitamento - Máximo')::numeric) / 2) as indice_medio
+   FROM document_rows 
+   WHERE dataset_id = '17_GMWnJC1sKff-YS0wesgxsvo3tnZdgSSb4JZ0ZjpCk'
+   AND UPPER(row_data->>'Bairro') = 'NOME_BAIRRO'
+   
+   Query 2 - Listar as ZOTs com detalhes (SEM AVG):
+   SELECT row_data->>'Zona' as zona,
+          row_data->>'Altura Máxima - Edificação Isolada' as altura_maxima,
+          row_data->>'Coeficiente de Aproveitamento - Básico' as ca_basico,
+          row_data->>'Coeficiente de Aproveitamento - Máximo' as ca_maximo
+   FROM document_rows 
+   WHERE dataset_id = '17_GMWnJC1sKff-YS0wesgxsvo3tnZdgSSb4JZ0ZjpCk'
+   AND UPPER(row_data->>'Bairro') = 'NOME_BAIRRO'
+   ORDER BY row_data->>'Zona'
+   
+2. Para "ZOTs com coeficiente maior que X":
+   SELECT DISTINCT row_data->>'Zona' as zona,
+          (row_data->>'Coeficiente de Aproveitamento - Máximo')::numeric as ca_maximo
+   FROM document_rows 
+   WHERE dataset_id = '17_GMWnJC1sKff-YS0wesgxsvo3tnZdgSSb4JZ0ZjpCk'
+   AND (row_data->>'Coeficiente de Aproveitamento - Máximo')::numeric > X
+   
+3. Para "zot X pertence a que bairro":
+   SELECT DISTINCT row_data->>'Bairro' as bairro, row_data->>'Zona' as zona
+   FROM document_rows 
+   WHERE dataset_id = '1FTENHpX4aLxmAoxvrEeGQn0fej-wxTMQRQs_XBjPQPY'
+   AND row_data->>'Zona' LIKE 'ZOT X%'
+
 REGRA CRÍTICA PARA PRECISÃO DE DADOS:
 1. CORRESPONDÊNCIA EXATA DE BAIRROS:
    - SEMPRE usar = 'NOME_BAIRRO_MAIUSCULO' (não ILIKE '%bairro%')
@@ -135,6 +168,13 @@ CONTEXTO: ${analysisResult?.entities ? JSON.stringify(analysisResult.entities) :
 É consulta de construção: ${analysisResult?.isConstructionQuery || false}
 Estratégia especial: ${analysisResult?.processingStrategy || 'standard'}
 
+DICAS PARA NOMES DE BAIRROS:
+- SEMPRE use UPPER() para comparação: UPPER(row_data->>'Bairro') = UPPER('nome')
+- Bairros com acentos: tente ambas as versões (com e sem acento)
+- "Três Figueiras" pode estar como "TRES FIGUEIRAS" ou "TRÊS FIGUEIRAS"
+- "Cristal" deve estar como "CRISTAL"
+- NUNCA diga que um bairro não existe sem verificar variações do nome
+
 Gere consultas SQL otimizadas e seguras. Responda APENAS com JSON válido.`;
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -152,6 +192,12 @@ Gere consultas SQL otimizadas e seguras. Responda APENAS com JSON válido.`;
             content: `Gere consultas SQL para: "${query}"
 
 Análise prévia: ${JSON.stringify(analysisResult)}
+
+REGRAS CRÍTICAS:
+1. Se a pergunta menciona "índice de aproveitamento médio", use DUAS queries: uma para calcular APENAS o AVG (sem outros campos) e outra para listar as ZOTs com detalhes
+2. Se pergunta por "ZOTs com coeficiente maior que", filtre por ca_maximo > valor
+3. Para bairros, SEMPRE tente múltiplas variações do nome (com/sem acento, maiúsculo)
+4. NUNCA retorne resultado vazio sem tentar variações do nome do bairro
 
 ${analysisResult?.isConstructionQuery ? 
 `ATENÇÃO: Esta é uma consulta sobre construção. OBRIGATORIAMENTE inclua:
@@ -264,14 +310,21 @@ Responda com JSON válido seguindo esta estrutura:
     const executionResults = [];
     for (const sqlQuery of sqlResult.sqlQueries) {
       try {
+        console.log('SQL Query before cleaning:', sqlQuery.query);
+        
+        // Remove leading/trailing whitespace and newlines to fix RPC function
+        const cleanQuery = sqlQuery.query.trim().replace(/\s+/g, ' ');
+        console.log('SQL Query after cleaning:', cleanQuery);
+        
         // Basic SQL injection prevention
-        if (!/^SELECT/i.test(sqlQuery.query.trim())) {
+        if (!/^SELECT/i.test(cleanQuery)) {
           throw new Error('Apenas consultas SELECT são permitidas');
         }
-
+        
         const { data: queryResult, error } = await supabaseClient
-          .rpc('execute_sql_query', { query_text: sqlQuery.query })
-          .limit(100);
+          .rpc('execute_sql_query', { query_text: cleanQuery });
+        
+        console.log('RPC Result:', { data: queryResult, error });
 
         if (error) {
           console.error('SQL execution error:', error);
