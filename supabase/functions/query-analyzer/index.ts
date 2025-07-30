@@ -112,6 +112,21 @@ serve(async (req) => {
       queryLower.includes(keyword.toLowerCase())
     );
     
+    // Detect if query is short and might be just a neighborhood name
+    const isShortQuery = query.trim().split(/\s+/).length <= 3;
+    
+    // Detect common patterns that indicate user wants neighborhood info
+    const neighborhoodInfoPatterns = [
+      /^[a-záàâãéêíóôõúç\s]+\.?$/i, // Just a name (possibly with period)
+      /^bairro\s+[a-záàâãéêíóôõúç\s]+$/i, // "bairro X"
+      /^[a-záàâãéêíóôõúç\s]+\s*\?$/i, // Name with question mark
+      /^(o que|quais?|qual)\s+(é|são|tem|existe|há)\s+(em|no|na)\s+[a-záàâãéêíóôõúç\s]+\??$/i // "o que tem em X?"
+    ];
+    
+    const mightBeNeighborhoodQuery = neighborhoodInfoPatterns.some(pattern => 
+      pattern.test(query.trim())
+    ) || isShortQuery;
+    
     // More precise construction query detection
     const hasConstructionTerms = constructionKeywords.some(keyword => 
       queryLower.includes(keyword.toLowerCase())
@@ -127,13 +142,36 @@ serve(async (req) => {
     );
     const isCountingQuery = hasCountingTerms && (queryLower.includes('bairro') || queryLower.includes('zona') || queryLower.includes('zot'));
     
+    // Check if query asks for neighborhood data (zones, parameters)
+    const asksForNeighborhoodData = !isCountingQuery && (
+      // Explicit construction queries
+      (hasConstructionTerms && hasBairroOrZot) ||
+      // Short queries that might be neighborhood names
+      (mightBeNeighborhoodQuery && !hasObjectivesKeyword && !isCountingQuery) ||
+      // Queries asking about zones/parameters
+      (queryLower.includes('zona') || queryLower.includes('zot')) ||
+      // Queries with urbanistic terms
+      (queryLower.includes('regime') || queryLower.includes('urbanístico') || queryLower.includes('urbanistico')) ||
+      // Queries asking about parameters
+      (queryLower.includes('índice') || queryLower.includes('indice') || 
+       queryLower.includes('coeficiente') || queryLower.includes('altura') ||
+       queryLower.includes('potencial') || queryLower.includes('construtivo'))
+    );
+    
     // ONLY mark as construction if it's NOT a counting query
-    const isConstructionQuery = !isCountingQuery && hasConstructionTerms && hasBairroOrZot;
+    const isConstructionQuery = asksForNeighborhoodData;
 
-    console.log('DEBUG - Construction query detected:', isConstructionQuery);
-    console.log('DEBUG - Has construction terms:', hasConstructionTerms);
-    console.log('DEBUG - Has bairro/ZOT:', hasBairroOrZot);
-    console.log('DEBUG - Counting query detected:', isCountingQuery);
+    console.log('DEBUG - Query analysis:', {
+      originalQuery: query,
+      queryLower: queryLower,
+      isShortQuery: isShortQuery,
+      mightBeNeighborhoodQuery: mightBeNeighborhoodQuery,
+      hasConstructionTerms: hasConstructionTerms,
+      hasBairroOrZot: hasBairroOrZot,
+      isCountingQuery: isCountingQuery,
+      asksForNeighborhoodData: asksForNeighborhoodData,
+      isConstructionQuery: isConstructionQuery
+    });
 
     if (hasObjectivesKeyword) {
       const predefinedResult: QueryAnalysisResponse = {
@@ -165,8 +203,15 @@ serve(async (req) => {
 
 ORDEM DE ANÁLISE OBRIGATÓRIA:
 1º - Se contém "Quantos", "Quantas", "Total de" → É CONTAGEM (isConstructionQuery: false)
-2º - Se contém "construir", "edificar" + bairro/endereço → É CONSTRUÇÃO (isConstructionQuery: true)
-3º - Outras análises
+2º - Se contém "construir", "edificar" + bairro/endereço → É CONSTRUÇÃO (isConstructionQuery: true)  
+3º - SE A QUERY É CURTA (1-3 palavras) E PARECE SER NOME DE BAIRRO → É CONSULTA DE BAIRRO (isConstructionQuery: true)
+4º - Outras análises
+
+REGRA CRÍTICA PARA QUERIES CURTAS:
+- "três figueiras" → DEVE retornar dados do bairro (intent: tabular, isConstructionQuery: true)
+- "petrópolis." → DEVE retornar dados do bairro (intent: tabular, isConstructionQuery: true)
+- "cristal" → DEVE retornar dados do bairro (intent: tabular, isConstructionQuery: true)
+- Qualquer nome isolado que pode ser um bairro → SEMPRE assumir que quer dados tabulares
 
 Analise a consulta do usuário e determine:
 
@@ -199,7 +244,14 @@ Analise a consulta do usuário e determine:
    - SEMPRE solicite dataset "17_GMWnJC1sKff-YS0wesgxsvo3tnZdgSSb4JZ0ZjpCk" para essas consultas
    - CRÍTICO: Dataset de regime urbanístico deve SEMPRE estar presente para consultas de construção
 
-6. COUNTING/AGGREGATION QUERIES - Identifique PRIMEIRO se é uma pergunta de contagem:
+6. QUERIES CURTAS DE BAIRROS - REGRA ESPECIAL E CRÍTICA:
+   - Queries de 1-3 palavras que parecem nomes de lugares SÃO consultas sobre bairros
+   - Exemplos: "três figueiras", "petrópolis", "cristal", "boa vista"
+   - SEMPRE trate como: intent: "tabular", isConstructionQuery: true
+   - SEMPRE inclua os datasets de regime urbanístico e ZOTs vs Bairros
+   - O usuário QUER ver as zonas e parâmetros urbanísticos do bairro
+
+7. COUNTING/AGGREGATION QUERIES - Identifique PRIMEIRO se é uma pergunta de contagem:
    - "Quantos bairros tem..." → intent: "tabular", dataset: "1FTENHpX4aLxmAoxvrEeGQn0fej-wxTMQRQs_XBjPQPY", isConstructionQuery: false
    - "Quantos", "Quantas", "Total de" → são consultas de CONTAGEM, NÃO de construção
    - "Lista de zonas..." → intent: "tabular"
@@ -207,13 +259,13 @@ Analise a consulta do usuário e determine:
    - SEMPRE use strategy: "structured_only" para consultas de contagem
    - NUNCA marque consultas de contagem como isConstructionQuery: true
 
-7. NORMALIZAÇÃO DE BAIRROS:
+8. NORMALIZAÇÃO DE BAIRROS:
    - "Boa Vista" → "BOA VISTA"
    - "Boa Vista do Sul" → "BOA VISTA DO SUL"
    - Sempre em maiúsculas para correspondência exata
    - NÃO confunda bairros similares
 
-8. ENDEREÇOS SEM BAIRRO - Tratamento especial:
+9. ENDEREÇOS SEM BAIRRO - Tratamento especial:
    - Se a pergunta menciona um endereço (rua, avenida) mas NÃO especifica o bairro
    - Marque como: needsClarification: true
    - Adicione: clarificationMessage: "Para informações precisas sobre construção, por favor informe o bairro onde está localizado o endereço."
@@ -235,10 +287,20 @@ Responda APENAS com JSON válido no formato especificado.`;
             content: `Analise esta consulta: "${query}"
 
             Contexto do usuário: ${userRole || 'citizen'}
-            É uma consulta sobre construção: ${isConstructionQuery}
+            É uma consulta sobre construção/bairro: ${isConstructionQuery}
             É uma consulta de contagem/agregação: ${isCountingQuery}
+            Query é curta (possível nome de bairro): ${isShortQuery}
             
-            IMPORTANTE: Se isCountingQuery = true, SEMPRE defina isConstructionQuery: false no JSON
+            REGRAS CRÍTICAS:
+            1. Se isCountingQuery = true, SEMPRE defina isConstructionQuery: false no JSON
+            2. Se a query é CURTA (1-3 palavras) e NÃO é contagem, ASSUMA que é nome de bairro:
+               - intent: "tabular" 
+               - isConstructionQuery: true
+               - requiredDatasets: DEVE incluir "17_GMWnJC1sKff-YS0wesgxsvo3tnZdgSSb4JZ0ZjpCk" e "1FTENHpX4aLxmAoxvrEeGQn0fej-wxTMQRQs_XBjPQPY"
+               - strategy: "structured_only"
+            3. Para queries como "três figueiras", "petrópolis", "cristal":
+               - Extraia o nome como bairro em entities.bairros
+               - SEMPRE retorne dados tabulares do regime urbanístico
             
             Responda com JSON válido seguindo exatamente esta estrutura:
             {
