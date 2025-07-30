@@ -33,7 +33,8 @@ serve(async (req) => {
 
   try {
     const startTime = Date.now();
-    const { message, userRole, sessionId, userId }: AgenticRAGRequest = await req.json();
+    const requestBody = await req.json();
+    const { message, userRole, sessionId, userId, bypassCache }: AgenticRAGRequest & { bypassCache?: boolean } = requestBody;
     
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
     const agentTrace: any[] = [];
@@ -44,41 +45,43 @@ serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
 
-    // Step 0: Check Cache
-    console.log('📦 Checking cache...');
+    // Step 0: Check Cache (skip if bypassCache is true)
+    console.log('📦 Checking cache...', { bypassCache });
     
     try {
-      const { data: cachedResponse } = await supabaseClient
-        .from('query_cache')
-        .select('*')
-        .eq('query', message)
-        .single();
-      
-      if (cachedResponse && cachedResponse.confidence >= 0.7) {
-        console.log('✅ Cache hit!');
-        
-        // Update hit count
-        await supabaseClient
+      if (!bypassCache) {
+        const { data: cachedResponse } = await supabaseClient
           .from('query_cache')
-          .update({ 
-            hit_count: cachedResponse.hit_count + 1,
-            last_accessed: new Date()
-          })
-          .eq('key', cachedResponse.key);
+          .select('*')
+          .eq('query', message)
+          .single();
         
-        // Return cached response
-        const executionTime = Date.now() - startTime;
-        
-        return new Response(JSON.stringify({
-          response: cachedResponse.response,
-          confidence: cachedResponse.confidence,
-          sources: { cached: true, tabular: 0, conceptual: 0 },
-          model: 'agentic-rag-nlq',
-          executionTime,
-          agentTrace: [{ step: 'cache_hit', timestamp: Date.now() }]
-        }), {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
+        if (cachedResponse && cachedResponse.confidence >= 0.7) {
+          console.log('✅ Cache hit!');
+          
+          // Update hit count
+          await supabaseClient
+            .from('query_cache')
+            .update({ 
+              hit_count: cachedResponse.hit_count + 1,
+              last_accessed: new Date()
+            })
+            .eq('key', cachedResponse.key);
+          
+          // Return cached response
+          const executionTime = Date.now() - startTime;
+          
+          return new Response(JSON.stringify({
+            response: cachedResponse.response,
+            confidence: cachedResponse.confidence,
+            sources: { cached: true, tabular: 0, conceptual: 0 },
+            model: 'agentic-rag-nlq',
+            executionTime,
+            agentTrace: [{ step: 'cache_hit', timestamp: Date.now() }]
+          }), {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          });
+        }
       }
     } catch (error) {
       console.log('Cache check failed, proceeding without cache');

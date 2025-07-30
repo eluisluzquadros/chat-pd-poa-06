@@ -213,6 +213,15 @@ REGRA CRÍTICA PARA QUERIES CURTAS:
 - "cristal" → DEVE retornar dados do bairro (intent: tabular, isConstructionQuery: true)
 - Qualquer nome isolado que pode ser um bairro → SEMPRE assumir que quer dados tabulares
 
+REGRA ABSOLUTA SOBRE PORTO ALEGRE:
+- "Porto Alegre" é o NOME DA CIDADE, NÃO é um bairro
+- NUNCA adicione "PORTO ALEGRE" em entities.bairros
+- Se a query menciona "em porto alegre" ou "de porto alegre", isso indica contexto da cidade
+- Exemplos:
+  * "altura máxima em porto alegre" → consulta GENÉRICA sobre a cidade (intent: conceptual)
+  * "coeficiente de aproveitamento de porto alegre" → consulta GENÉRICA (intent: conceptual)
+  * "o que posso construir em porto alegre" → consulta GERAL (intent: conceptual)
+
 Analise a consulta do usuário e determine:
 
 1. INTENT - Tipo de informação necessária:
@@ -363,8 +372,28 @@ Responda APENAS com JSON válido no formato especificado.`;
       console.log('DEBUG - Used enhanced fallback:', JSON.stringify(analysisResult, null, 2));
     }
 
+    // PÓS-PROCESSAMENTO CRÍTICO: Remover "PORTO ALEGRE" dos bairros
+    if (analysisResult.entities?.bairros) {
+      const originalBairros = [...analysisResult.entities.bairros];
+      analysisResult.entities.bairros = analysisResult.entities.bairros.filter(
+        bairro => !bairro.toUpperCase().includes('PORTO ALEGRE')
+      );
+      
+      if (originalBairros.length !== analysisResult.entities.bairros.length) {
+        console.log('DEBUG - Removido "PORTO ALEGRE" da lista de bairros');
+        
+        // Se removemos Porto Alegre e não sobrou nenhum bairro, ajustar a análise
+        if (analysisResult.entities.bairros.length === 0 && isConstructionQuery) {
+          analysisResult.intent = 'conceptual';
+          analysisResult.strategy = 'unstructured_only';
+          analysisResult.isConstructionQuery = false;
+          console.log('DEBUG - Ajustado para consulta conceitual após remover Porto Alegre');
+        }
+      }
+    }
+
     // FORÇA a inclusão do dataset de regime urbanístico para consultas de construção
-    if (isConstructionQuery) {
+    if (isConstructionQuery && analysisResult.entities?.bairros?.length > 0) {
       const regimeDataset = '17_GMWnJC1sKff-YS0wesgxsvo3tnZdgSSb4JZ0ZjpCk';
       if (!analysisResult.requiredDatasets) {
         analysisResult.requiredDatasets = [];

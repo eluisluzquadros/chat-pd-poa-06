@@ -60,7 +60,7 @@ QUERIES ESPECÍFICAS IMPORTANTES:
    SELECT DISTINCT row_data->>'Zona' as zona 
    FROM document_rows 
    WHERE dataset_id = '1FTENHpX4aLxmAoxvrEeGQn0fej-wxTMQRQs_XBjPQPY' 
-   AND row_data->>'Bairro' = 'PETRÓPOLIS'
+   AND row_data->>'Bairro' = '[NOME_DO_BAIRRO]'
    
 3. Para altura máxima de uma ZOT:
    SELECT row_data->>'Altura Máxima - Edificação Isolada' as altura_maxima
@@ -151,18 +151,18 @@ REGRA CRÍTICA PARA PRECISÃO DE DADOS:
 1. CORRESPONDÊNCIA EXATA DE BAIRROS:
    - SEMPRE usar = 'NOME_BAIRRO_MAIUSCULO' (não ILIKE '%bairro%')
    - Exemplos: 'BOA VISTA' ≠ 'BOA VISTA DO SUL' (são bairros diferentes)
-   - 'PETRÓPOLIS' ≠ 'PETROPOLIS' (verificar acentuação)
+   - Sempre verificar acentuação correta dos nomes
 
 2. ZOTs COM SUBDIVISÕES:
    - CRÍTICO: Só retornar subdivisões que EXISTEM na base de dados
-   - Para Petrópolis: só tem ZOT 07, ZOT 08.3-B e ZOT 08.3-C
-   - NUNCA inventar ZOT 08.3-A se não existe no bairro
-   - Query: WHERE row_data->>'Bairro' = 'PETRÓPOLIS' AND row_data->>'Zona' IN ('ZOT 07', 'ZOT 08.3-B', 'ZOT 08.3-C')
+   - Cada bairro tem suas próprias ZOTs específicas
+   - NUNCA inventar subdivisões que não existem no bairro
+   - Query exemplo: WHERE row_data->>'Bairro' = '[NOME_BAIRRO]' AND row_data->>'Zona' IN (lista de ZOTs existentes)
 
 3. VALIDAÇÃO OBRIGATÓRIA:
    - Verificar se dados retornados são realmente do bairro solicitado
    - NUNCA misturar dados de bairros diferentes
-   - Se consulta é sobre "Petrópolis", só retornar dados onde Bairro = 'PETRÓPOLIS'
+   - Se consulta é sobre um bairro específico, só retornar dados desse bairro
 
 CONTEXTO: ${analysisResult?.entities ? JSON.stringify(analysisResult.entities) : 'Nenhuma entidade específica'}
 É consulta de construção: ${analysisResult?.isConstructionQuery || false}
@@ -195,6 +195,7 @@ Gere consultas SQL otimizadas e seguras. Responda APENAS com JSON válido.`;
 Análise prévia: ${JSON.stringify(analysisResult)}
 
 REGRAS CRÍTICAS:
+0. REGRA ABSOLUTA: Se NÃO há bairro especificado na consulta (analysisResult.entities.bairros está vazio), NUNCA gere queries com filtro de bairro específico. NÃO use WHERE row_data->>'Bairro' = 'QUALQUER_BAIRRO'
 1. Se a pergunta menciona "índice de aproveitamento médio", use DUAS queries: uma para calcular APENAS o AVG (sem outros campos) e outra para listar as ZOTs com detalhes
 2. Se pergunta por "ZOTs com coeficiente maior que", filtre por ca_maximo > valor
 3. Para bairros, SEMPRE tente múltiplas variações do nome (com/sem acento, maiúsculo)
@@ -202,6 +203,13 @@ REGRAS CRÍTICAS:
 5. Para "Três Figueiras", SEMPRE gere queries que tentam: "TRÊS FIGUEIRAS", "TRES FIGUEIRAS", "três figueiras", "tres figueiras"
 6. Para "liste todos os bairros", use: SELECT DISTINCT row_data->>'Bairro' FROM document_rows WHERE dataset_id = '17_GMWnJC1sKff-YS0wesgxsvo3tnZdgSSb4JZ0ZjpCk' ORDER BY 1
 7. Para "o que pode ser construído", SEMPRE retorne TODAS as ZOTs do bairro (sem LIMIT), pois um bairro pode ter múltiplas ZOTs
+
+REGRA FUNDAMENTAL - QUERIES GENÉRICAS:
+Se analysisResult.entities.bairros está vazio:
+- NÃO gere queries SQL para dados específicos
+- NÃO use filtros de bairro
+- NÃO mencione nomes de bairros específicos
+- Retorne sqlQueries vazio ou queries muito genéricas sem filtro de bairro
 
 ${analysisResult?.isConstructionQuery ? 
 `ATENÇÃO: Esta é uma consulta sobre construção. OBRIGATORIAMENTE inclua:
@@ -216,14 +224,14 @@ CRÍTICO ABSOLUTO - PRECISÃO DE DADOS:
 1. CORRESPONDÊNCIA EXATA DE BAIRROS:
    row_data->>'Bairro' = 'NOME_BAIRRO_MAIUSCULO' (NUNCA use ILIKE)
    
-2. VALIDAÇÃO POR BAIRRO ESPECÍFICO:
-   - PETRÓPOLIS: só tem ZOT 07, ZOT 08.3-B, ZOT 08.3-C
-   - BOA VISTA: verificar quais ZOTs existem na base
+2. VALIDAÇÃO POR BAIRRO ESPECÍFICO (APENAS SE HÁ BAIRRO NA CONSULTA):
+   - Cada bairro tem suas ZOTs específicas
    - NUNCA assumir que todas as subdivisões (A, B, C) existem
+   - ATENÇÃO: SÓ use filtros de bairro se analysisResult.entities.bairros NÃO está vazio
    
 3. QUERY SEGURA PARA SUBDIVISÕES:
-   WHERE row_data->>'Bairro' = 'PETRÓPOLIS' 
-   AND row_data->>'Zona' IN ('ZOT 07', 'ZOT 08.3-B', 'ZOT 08.3-C')
+   WHERE row_data->>'Bairro' = '[NOME_DO_BAIRRO_SOLICITADO]' 
+   AND row_data->>'Zona' IN (lista das ZOTs que existem no bairro)
    (usar lista específica das ZOTs que EXISTEM)
 
 4. VERIFICAÇÃO FINAL:

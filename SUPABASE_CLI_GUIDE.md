@@ -15,9 +15,14 @@
 npx supabase functions deploy [nome-da-funcao] --project-ref ngrqwmvuhvjkeohesbxs
 
 # Exemplos:
+npx supabase functions deploy query-analyzer --project-ref ngrqwmvuhvjkeohesbxs
+npx supabase functions deploy sql-generator --project-ref ngrqwmvuhvjkeohesbxs
 npx supabase functions deploy qa-validator --project-ref ngrqwmvuhvjkeohesbxs
 npx supabase functions deploy agentic-rag --project-ref ngrqwmvuhvjkeohesbxs
 npx supabase functions deploy response-synthesizer --project-ref ngrqwmvuhvjkeohesbxs
+
+# Deploy de todas as funções de uma vez
+npx supabase functions deploy --project-ref ngrqwmvuhvjkeohesbxs
 ```
 
 ### 2. Listar Functions Disponíveis
@@ -46,7 +51,29 @@ curl -L -X POST 'https://ngrqwmvuhvjkeohesbxs.supabase.co/functions/v1/[nome-da-
 
 ## 🗄️ Comandos de Banco de Dados
 
-### 1. Executar Migrações
+### 1. Executar Queries SQL
+
+```bash
+# Via Node.js com Supabase Client
+node -e "
+import { createClient } from '@supabase/supabase-js';
+const supabase = createClient(
+  'https://ngrqwmvuhvjkeohesbxs.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5ncnF3bXZ1aHZqa2VvaGVzYnhzIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1MzYwOTAxNywiZXhwIjoyMDY5MTg1MDE3fQ.7jVZP70RAjpfFPfehZt5Gr3vSxn8DZ3YyPJNjCwZXEo'
+);
+// Sua query aqui
+const { data, error } = await supabase
+  .from('document_rows')
+  .select('*')
+  .limit(5);
+console.log(data);
+"
+
+# Via Dashboard (Recomendado para queries complexas)
+# Acesse: https://supabase.com/dashboard/project/ngrqwmvuhvjkeohesbxs/sql
+```
+
+### 2. Executar Migrações
 
 ```bash
 # Via Dashboard (Recomendado)
@@ -56,7 +83,7 @@ curl -L -X POST 'https://ngrqwmvuhvjkeohesbxs.supabase.co/functions/v1/[nome-da-
 npx supabase db push --db-url "postgresql://[user]:[password]@[host]/[database]"
 ```
 
-### 2. Criar Nova Migração
+### 3. Criar Nova Migração
 
 ```bash
 # Criar arquivo de migração
@@ -64,6 +91,22 @@ npx supabase migration new [nome-da-migracao]
 
 # Exemplo:
 npx supabase migration new add_user_preferences
+```
+
+### 4. Limpar Cache de Queries
+
+```bash
+# Script para limpar cache
+node -e "
+import { createClient } from '@supabase/supabase-js';
+const supabase = createClient(
+  'https://ngrqwmvuhvjkeohesbxs.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5ncnF3bXZ1aHZqa2VvaGVzYnhzIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1MzYwOTAxNywiZXhwIjoyMDY5MTg1MDE3fQ.7jVZP70RAjpfFPfehZt5Gr3vSxn8DZ3YyPJNjCwZXEo'
+);
+// Limpar todo o cache
+const { error } = await supabase.from('query_cache').delete().gte('id', 0);
+console.log(error ? 'Erro: ' + error.message : 'Cache limpo com sucesso!');
+"
 ```
 
 ## 🚀 Workflow de Deploy Completo
@@ -90,6 +133,7 @@ npx supabase migration new add_user_preferences
 2. **Docker warning** pode ser ignorado para deploys simples
 3. **Para SQL complexo**, prefira o Dashboard para evitar erros
 4. **Guarde este arquivo** - contém informações críticas do projeto
+5. **Service role key** incluído neste arquivo tem acesso total - use com cuidado
 
 ## 📝 Checklist de Deploy
 
@@ -115,7 +159,56 @@ npx supabase migration new add_user_preferences
 - Verifique a sintaxe do comando
 - Use `npx supabase [comando] --help` para ver opções
 
+## 🎯 Comandos Úteis Recentes
+
+### Deploy Rápido de Funções Principais
+```bash
+# Deploy das 5 funções principais do sistema
+npx supabase functions deploy query-analyzer --project-ref ngrqwmvuhvjkeohesbxs
+npx supabase functions deploy sql-generator --project-ref ngrqwmvuhvjkeohesbxs
+npx supabase functions deploy qa-validator --project-ref ngrqwmvuhvjkeohesbxs
+npx supabase functions deploy agentic-rag --project-ref ngrqwmvuhvjkeohesbxs
+npx supabase functions deploy response-synthesizer --project-ref ngrqwmvuhvjkeohesbxs
+```
+
+### Verificar Dados de um Bairro
+```bash
+# Criar arquivo test_bairro.mjs com:
+node -e "
+import { createClient } from '@supabase/supabase-js';
+const supabase = createClient(
+  'https://ngrqwmvuhvjkeohesbxs.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5ncnF3bXZ1aHZqa2VvaGVzYnhzIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1MzYwOTAxNywiZXhwIjoyMDY5MTg1MDE3fQ.7jVZP70RAjpfFPfehZt5Gr3vSxn8DZ3YyPJNjCwZXEo'
+);
+const { data } = await supabase
+  .from('document_rows')
+  .select('row_data')
+  .eq('dataset_id', '17_GMWnJC1sKff-YS0wesgxsvo3tnZdgSSb4JZ0ZjpCk')
+  .ilike('row_data->>Bairro', '%CAVALHADA%')
+  .limit(5);
+console.log('Encontrados:', data?.length || 0, 'registros');
+data?.forEach(d => console.log(d.row_data));
+"
+```
+
+### Limpar Cache de Query Específica
+```bash
+# Limpar cache de uma query específica
+node -e "
+import { createClient } from '@supabase/supabase-js';
+const supabase = createClient(
+  'https://ngrqwmvuhvjkeohesbxs.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5ncnF3bXZ1aHZqa2VvaGVzYnhzIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1MzYwOTAxNywiZXhwIjoyMDY5MTg1MDE3fQ.7jVZP70RAjpfFPfehZt5Gr3vSxn8DZ3YyPJNjCwZXEo'
+);
+const { error } = await supabase
+  .from('query_cache')
+  .delete()
+  .ilike('query', '%cavalhada%');
+console.log(error ? 'Erro' : 'Cache limpo para queries com cavalhada');
+"
+```
+
 ---
 
-**Última atualização:** 29/07/2025
+**Última atualização:** 30/07/2025
 **Mantido por:** Claude & Team

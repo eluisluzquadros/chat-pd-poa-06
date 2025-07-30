@@ -56,11 +56,11 @@ ATENÇÃO: Os valores acima são EXEMPLOS. USE SEMPRE OS VALORES REAIS DOS DADOS
 
 VALIDAÇÃO CRÍTICA DE DADOS - PRECISÃO ABSOLUTA:
 - OBRIGATÓRIO: Verificar se TODOS os dados são do bairro EXATO solicitado
-- PETRÓPOLIS: só aceitar dados onde Bairro = 'PETRÓPOLIS' (não outros similares)
+- CORRESPONDÊNCIA EXATA: Verificar se TODOS os dados são do bairro EXATO solicitado
 - BOA VISTA vs BOA VISTA DO SUL: são bairros DIFERENTES - nunca misturar
-- CRÍTICO: Se consulta é sobre Petrópolis, NUNCA mostrar dados de outros bairros
+- CRÍTICO: Se consulta é sobre um bairro específico, NUNCA mostrar dados de outros bairros
 - VALIDAÇÃO DUPLA: Conferir se as ZOTs retornadas realmente existem no bairro específico
-- Para Petrópolis: só mostrar ZOT 07, ZOT 08.3-B, ZOT 08.3-C (NUNCA ZOT 08.1 ou 08.2)
+- SEMPRE validar que os dados correspondem ao bairro consultado
 - ABSOLUTO: Se dados dos 4 campos obrigatórios estão presentes, NUNCA dizer que estão indisponíveis
 - Campos obrigatórios: "Zona", "Altura Máxima - Edificação Isolada", "Coeficiente de Aproveitamento - Básico", "Coeficiente de Aproveitamento - Máximo"
 
@@ -125,7 +125,7 @@ Antes de formular sua resposta final, execute as seguintes:
 - Para perguntas sobre médias ou índices, calcule a partir dos dados disponíveis
 - REGRA ESPECIAL PARA "ÍNDICE DE APROVEITAMENTO MÉDIO": Se perguntar o índice médio de um bairro e já houver um campo "indice_medio" ou "indice_aproveitamento_medio" nos dados, USE ESSE VALOR EXATO. Se o valor for 3.3125, apresente como "3,3125". NÃO recalcule se o valor já estiver calculado nos dados SQL.
 - CONTAGEM ESPECIAL: Se perguntar "quantos bairros tem Porto Alegre", a resposta é SEMPRE 94 bairros
-- BAIRROS SEMPRE NO ESCOPO: Cristal, Três Figueiras, Petrópolis, Centro Histórico e TODOS os 94 bairros de Porto Alegre estão no PDUS
+- BAIRROS SEMPRE NO ESCOPO: TODOS os 94 bairros de Porto Alegre estão no PDUS
 - Para listas completas (todos os bairros com suas zonas), apresente em formato de tabela organizada
 - REGRA CRÍTICA PARA LISTAS: Se perguntar "liste todos os bairros" ou "todos os bairros de Porto Alegre" e você tiver a lista completa nos dados, SEMPRE mostre TODOS os 94 bairros. NUNCA corte a lista ou mostre apenas exemplos. LISTE TODOS!
 - REGRA PARA ZOT-BAIRRO: Se perguntar "zot X pertence a que bairro", SEMPRE liste TODOS os bairros encontrados nos dados. Se há 38 bairros com ZOT 8, mostre TODOS os 38, não apenas 10 exemplos!
@@ -249,6 +249,32 @@ Se a pergunta estiver fora do escopo do PDUS 2025 ou do planejamento urbano de P
     const streetPattern = /\brua\s+[^,]+|\bav(?:enida)?\s+[^,]+|\btrav(?:essa)?\s+[^,]+|\bn(?:úmero)?\s*\d+/i;
     const isStreetQuery = streetPattern.test(originalQuery) && !originalQuery.toLowerCase().includes('bairro') && !originalQuery.toLowerCase().includes('zot');
     
+    // CRITICAL: Check if query is generic (no specific neighborhood)
+    const hasNoBairro = !analysisResult?.entities?.bairros?.length;
+    const isGenericPortoAlegreQuery = originalQuery.toLowerCase().includes('porto alegre') && 
+                                      hasNoBairro && 
+                                      analysisResult?.intent === 'conceptual';
+    
+    // CRITICAL FIX: ANY query without neighborhood should be treated as generic
+    const isGenericQueryWithoutContext = hasNoBairro && 
+                                        (analysisResult?.intent === 'conceptual' || analysisResult?.isConstructionQuery);
+    
+    // If generic query and SQL returned specific neighborhood data, clear it
+    if ((isGenericPortoAlegreQuery || isGenericQueryWithoutContext) && sqlResults?.executionResults) {
+      const hasSpecificNeighborhoodData = sqlResults.executionResults.some(result => 
+        result.data?.some(row => row.Bairro && row.Bairro !== 'PORTO ALEGRE')
+      );
+      
+      if (hasSpecificNeighborhoodData) {
+        console.log('WARN: Generic query returned specific neighborhood data. Clearing SQL results.');
+        console.log('Query:', originalQuery);
+        console.log('Has no bairro:', hasNoBairro);
+        console.log('Intent:', analysisResult?.intent);
+        console.log('isConstructionQuery:', analysisResult?.isConstructionQuery);
+        contextData = '\nNenhum dado específico de bairro disponível para consulta genérica.\n';
+      }
+    }
+    
     const userPrompt = `Pergunta do usuário: "${originalQuery}"
 
 AVISO CRÍTICO: Os dados SQL fornecidos são a ÚNICA fonte de verdade. Se os dados mostram CA básico = 3.6, você DEVE usar 3.6, NUNCA substitua por 1.0 ou qualquer outro valor!
@@ -257,6 +283,8 @@ Análise da pergunta: ${JSON.stringify(analysisResult)}
 
 É consulta sobre construção: ${analysisResult?.isConstructionQuery || false}
 É consulta sobre rua/endereço sem bairro: ${isStreetQuery}
+É consulta genérica sobre Porto Alegre: ${isGenericPortoAlegreQuery}
+É consulta genérica sem contexto de bairro: ${isGenericQueryWithoutContext}
 
 Dados com subdivisões detectadas: ${hasSubdivisionData}
 
@@ -271,8 +299,8 @@ REGRAS ESPECÍFICAS PARA PERGUNTAS PROBLEMÁTICAS:
 4. Se perguntar "zot 8 pertence a que bairro": Liste TODOS os bairros encontrados nos dados (são 38 bairros!), não apenas 3
 5. Se perguntar "liste todos os bairros de porto alegre": SEMPRE mostre a lista completa dos 94 bairros que estão nos dados
 6. Se perguntar sobre construção em "Três Figueiras": Este bairro TEM dados de ZOTs (como ZOT 08.3-C) - mostre a tabela com altura, CA básico e máximo
-7. NUNCA MISTURE BAIRROS: Se perguntou sobre Petrópolis, responda APENAS sobre Petrópolis. Se perguntou sobre Três Figueiras, responda APENAS sobre Três Figueiras
-8. USE OS VALORES REAIS: Petrópolis tem CA básico 3.6, NÃO 1.0. Use SEMPRE os valores que estão nos dados SQL
+7. NUNCA MISTURE BAIRROS: Se perguntou sobre um bairro específico, responda APENAS sobre esse bairro
+8. USE OS VALORES REAIS: Use SEMPRE os valores exatos que estão nos dados SQL, nunca substitua por outros valores
 
 Papel do usuário: ${userRole || 'citizen'}
 
@@ -291,7 +319,7 @@ ${hasSubdivisionData ? `CRÍTICO - ZOT COM SUBDIVISÕES DETECTADA:
 
 VALIDAÇÃO CRÍTICA ABSOLUTA: 
 - FILTRO RIGOROSO: Verifique se TODOS os dados são do bairro EXATO solicitado
-- PETRÓPOLIS: só aceitar dados onde campo 'Bairro' = 'PETRÓPOLIS'
+- FILTRO DE BAIRRO: só aceitar dados onde campo 'Bairro' corresponde ao bairro solicitado
 - NUNCA misturar dados de bairros similares ou diferentes
 - VERIFICAÇÃO DE EXISTÊNCIA: Só mostrar ZOTs que REALMENTE EXISTEM no bairro específico
 - CRÍTICO: Se os 4 campos obrigatórios estão nas tabelas com valores válidos, NUNCA dizer que estão indisponíveis
@@ -309,6 +337,23 @@ VOCÊ DEVE OBRIGATORIAMENTE:
 2. Sugerir que ele também pode informar a ZOT se souber
 3. NÃO tentar responder sem essa informação
 4. Use um tom amigável e prestativo` : ''}
+
+${(isGenericPortoAlegreQuery || isGenericQueryWithoutContext) ? `
+REGRA ABSOLUTA PARA CONSULTA GENÉRICA:
+Esta é uma consulta genérica SEM bairro específico.
+VOCÊ DEVE:
+1. Fornecer informações conceituais gerais sobre o parâmetro solicitado
+2. Explicar como o parâmetro funciona no PDUS de forma geral
+3. Mencionar que os valores variam por ZOT e bairro
+4. NUNCA dar exemplos específicos de um único bairro
+5. NUNCA mencionar dados de bairros específicos como exemplos
+6. Se a pergunta for muito vaga, pedir ao usuário para especificar o bairro
+7. Sugerir que o usuário consulte o mapa interativo para valores específicos
+
+EXEMPLOS DE RESPOSTAS:
+- "A altura máxima varia conforme a ZOT. Para informações específicas, informe o bairro."
+- "O recuo de jardim é definido por ZOT. Qual bairro você gostaria de consultar?"
+- "Os parâmetros construtivos variam por zona. Consulte o mapa interativo ou informe o bairro."` : ''}
 
 Sintetize uma resposta completa e detalhada seguindo rigorosamente as diretrizes do sistema. Formatação markdown, tom positivo, links oficiais obrigatórios ao final.`;
 
