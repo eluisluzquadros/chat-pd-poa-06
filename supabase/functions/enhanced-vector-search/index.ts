@@ -1,6 +1,7 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { createCacheMiddleware, CacheUtils } from "../shared/cache-middleware.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -24,6 +25,18 @@ serve(async (req) => {
     const supabaseClient = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+    );
+
+    // Initialize cache middleware for vector search
+    const cacheMiddleware = createCacheMiddleware(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+      {
+        defaultTTL: 15 * 60 * 1000, // 15 minutes for vector search
+        enableVectorSearchCache: true,
+        enableMetrics: true,
+        cacheKeyPrefix: 'pdpoa_vector'
+      }
     );
 
     // Implementa busca fuzzy melhorada e expandida para queries de altura
@@ -114,19 +127,66 @@ serve(async (req) => {
 
     const documentIds = documents.map(doc => doc.id.toString());
 
-    // Search for relevant content using semantic similarity
-    const { data: matches, error: matchError } = await supabaseClient.rpc('match_documents', {
-      query_embedding: embeddingData.embedding,
-      match_count: 10,
-      document_ids: documentIds
-    });
+    // Cache the vector search operation using optimized hierarchical search
+    const vectorSearchResult = await cacheMiddleware.cacheVectorSearch(
+      enhancedMessage,
+      { userRole, documentIds, context },
+      async () => {
+        // Try optimized hierarchical search first
+        let matches: any[] = [];
+        let searchError: any = null;
+        
+        try {
+          const { data: hierarchicalMatches, error: hierarchicalError } = await supabaseClient.rpc('match_hierarchical_documents_optimized', {
+            query_embedding: embeddingData.embedding,
+            match_count: 10,
+            document_ids: documentIds,
+            query_text: enhancedMessage,
+            enable_cache: true,
+            performance_mode: 'balanced'
+          });
 
-    if (matchError) {
-      console.error('Error in document matching:', matchError);
-      return new Response(JSON.stringify({ matches: [] }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+          if (hierarchicalError) {
+            console.warn('⚠️ Hierarchical search failed, falling back to standard search:', hierarchicalError);
+            searchError = hierarchicalError;
+          } else {
+            matches = hierarchicalMatches || [];
+            console.log('🎯 Using optimized hierarchical search with', matches.length, 'results');
+          }
+        } catch (hierarchicalException) {
+          console.warn('⚠️ Hierarchical search exception, falling back:', hierarchicalException);
+          searchError = hierarchicalException;
+        }
+
+        // Fallback to standard search if hierarchical fails
+        if (!matches.length && searchError) {
+          console.log('🔄 Falling back to standard match_documents');
+          const { data: standardMatches, error: standardError } = await supabaseClient.rpc('match_documents', {
+            query_embedding: embeddingData.embedding,
+            match_count: 10,
+            document_ids: documentIds
+          });
+
+          if (standardError) {
+            console.error('❌ Standard search also failed:', standardError);
+            return { matches: [] };
+          }
+          
+          matches = standardMatches || [];
+        }
+
+        return { matches };
+      }
+    );
+
+    const matches = vectorSearchResult.matches;
+
+    // Log cache performance for vector search
+    const cacheMetrics = cacheMiddleware.getCacheMetrics();
+    if (vectorSearchResult.fromCache) {
+      console.log(`🎯 Vector search cache HIT for: ${message.substring(0, 50)}...`);
     }
+    CacheUtils.logCachePerformance(cacheMetrics, 'enhanced-vector-search');
 
     // Apply contextual scoring using the new scoring service
     let enhancedMatches = matches || [];
@@ -240,25 +300,40 @@ serve(async (req) => {
     const resultCount = Math.max(3, Math.min(qualityCount, 8));
     const topMatches = enhancedMatches.slice(0, resultCount);
 
-    // Add hierarchical search info to metadata
+    // Add hierarchical search info to metadata with performance metrics
     const searchMetadata = {
       total_matches: enhancedMatches.length,
       applied_boost: true,
-      search_type: isLegalQuery ? 'hierarchical_vector' : 'enhanced_vector',
-      legal_query_detected: isLegalQuery,
+      search_type: 'optimized_hierarchical_vector',
       result_count: topMatches.length,
-      quality_threshold: 0.3
+      quality_threshold: 0.3,
+      // Extract performance metrics from first result if available
+      performance_metrics: topMatches.length > 0 && topMatches[0].performance_metrics 
+        ? topMatches[0].performance_metrics 
+        : null
     };
     
-    // Log hierarchical chunks if present
-    if (isLegalQuery && topMatches.length > 0) {
-      console.log('📚 Hierarchical chunks found:');
+    // Log optimized hierarchical results with performance info
+    if (topMatches.length > 0) {
+      console.log('🚀 Optimized hierarchical search results:');
+      
+      // Log performance metrics if available
+      const perfMetrics = topMatches[0].performance_metrics;
+      if (perfMetrics) {
+        console.log(`⚡ Performance: ${perfMetrics.query_time_ms}ms, Cache: ${perfMetrics.cache_hit ? 'HIT' : 'MISS'}, Mode: ${perfMetrics.performance_mode}`);
+        console.log(`📊 Candidates: ${perfMetrics.total_candidates}, Filtered: ${perfMetrics.filtered_results}`);
+      }
+      
+      // Log top results with boost information
       topMatches.slice(0, 3).forEach((match: any, idx: number) => {
         const meta = match.chunk_metadata;
+        const boostApplied = match.boosted_score > match.similarity;
+        const boostRatio = perfMetrics?.boost_ratio || (match.boosted_score / match.similarity).toFixed(2);
+        
+        console.log(`  ${idx + 1}. Score: ${match.similarity.toFixed(3)} → ${match.boosted_score.toFixed(3)} ${boostApplied ? `(boost ${boostRatio}x)` : ''}`);
         if (meta) {
-          console.log(`  ${idx + 1}. Type: ${meta.type}, Article: ${meta.articleNumber || 'N/A'}, Inciso: ${meta.incisoNumber || 'N/A'}`);
+          console.log(`     Type: ${meta.type || 'N/A'}, Article: ${meta.articleNumber || 'N/A'}, Inciso: ${meta.incisoNumber || 'N/A'}`);
           console.log(`     Keywords: ${(meta.keywords || []).join(', ')}`);
-          console.log(`     Score: ${match.similarity.toFixed(3)}`);
         }
       });
     }
@@ -268,7 +343,14 @@ serve(async (req) => {
       total: enhancedMatches.length,
       query: message,
       context: context,
-      metadata: searchMetadata
+      metadata: {
+        ...searchMetadata,
+        fromCache: vectorSearchResult.fromCache,
+        cacheMetrics: {
+          hitRate: (cacheMetrics.hitRate * 100).toFixed(1) + '%',
+          totalEntries: cacheMetrics.totalEntries
+        }
+      }
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
