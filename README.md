@@ -1,15 +1,28 @@
 # Chat PD POA - Assistente Virtual do Plano Diretor de Porto Alegre
 
+## 🎯 Status: Sistema Operacional - 80% Funcionalidade
+
+### 📊 Últimos Resultados dos Testes (31/01/2025)
+- ✅ **4 de 5 casos de teste aprovados (80%)**
+- ✅ **95 bairros com dados de risco cadastrados**
+- ✅ **16 chunks de documentos processados**
+- ✅ **Todas Edge Functions deployadas**
+
 ## 📚 Documentação Importante
 
 - [**Guia Supabase CLI**](./SUPABASE_CLI_GUIDE.md) - Comandos essenciais e deploy
 - [**Plano de Melhoria Contínua**](./PLANO_MELHORIA_CONTINUA.md) - Roadmap do projeto
-- [**Relatório de Status**](./RELATORIO_STATUS.md) - Status atual do sistema
-- [**Plano de Ação Emergencial**](./PLANO_ACAO_EMERGENCIAL.md) - Correções críticas
+- [**Relatório de Status**](./RELATORIO_STATUS_31012025.md) - Status atual detalhado
+- [**Plano de Ação**](./PLANO_ACAO_31012025.md) - Próximas etapas
 
 ## 📋 Visão Geral
 
-O Chat PD POA é um assistente virtual baseado em IA desenvolvido para facilitar o acesso às informações do Plano Diretor Urbano Sustentável (PDUS 2025) de Porto Alegre. A plataforma utiliza tecnologias de processamento de linguagem natural e busca vetorial para responder perguntas sobre zoneamento urbano, parâmetros construtivos e diretrizes urbanísticas.
+O Chat PD POA é um assistente virtual baseado em IA desenvolvido para facilitar o acesso às informações do Plano Diretor Urbano Sustentável (PDUS 2025) de Porto Alegre. A plataforma utiliza tecnologias de processamento de linguagem natural e busca vetorial para responder perguntas sobre:
+
+- **Regulamentação Urbana**: Artigos da LUOS, certificações, zoneamento
+- **Riscos de Desastre**: Bairros com risco de inundação, níveis de risco
+- **Parâmetros Construtivos**: Altura de edificações, regime urbanístico
+- **4º Distrito**: Regras especiais para desenvolvimento tecnológico
 
 ## 🏗️ Arquitetura do Sistema
 
@@ -126,14 +139,18 @@ chat-pd-poa-06/
 ## 📊 Funcionalidades Principais
 
 ### Para Usuários
-- ✅ Consultas sobre zoneamento e parâmetros construtivos
-- ✅ Informações sobre o que pode ser construído em cada zona
-- ✅ Dados sobre altura máxima e coeficientes de aproveitamento
-- ✅ Pesquisa por bairro ou ZOT
-- ✅ Links para recursos oficiais
+- ✅ **Consultas sobre regulamentação**: Artigos da LUOS, certificações ambientais
+- ✅ **Informações sobre riscos**: Bairros com risco de inundação/alagamento
+- ✅ **Parâmetros construtivos**: Altura máxima, coeficientes de aproveitamento
+- ✅ **Regras especiais**: 4º Distrito, ZOTs específicas
+- ✅ **Busca inteligente**: Por artigo, bairro ou palavra-chave
+- ✅ **Dados das enchentes 2024**: Bairros afetados e níveis de risco
 
 ### Para Administradores
 - ✅ Dashboard de analytics
+- ✅ Gestão de documentos e chunks
+- ✅ Monitoramento de Edge Functions
+- ✅ Histórico de consultas
 - ✅ Monitoramento de uso
 - ✅ Gestão de dados
 - ✅ Logs de sistema

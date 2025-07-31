@@ -34,7 +34,8 @@
       "Bash(psql:*)",
       "Bash(dir:*)",
       "Bash(find:*)",
-      "Bash(diff:*)"
+      "Bash(diff:*)",
+      "Bash(npx:*)"
     ],
     "deny": []
   }

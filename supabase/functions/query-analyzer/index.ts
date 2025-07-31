@@ -76,7 +76,12 @@ serve(async (req) => {
     ];
 
     const alturaMaximaTerms = [
-      'altura máxima', 'gabarito', 'limite de altura', 'altura', 'altura permitida'
+      'altura máxima', 'gabarito', 'limite de altura', 'altura', 'altura permitida',
+      'elevação', 'elevação máxima', 'altura da edificação', 'altura do prédio', 
+      'metros de altura', 'cota máxima', 'nível máximo', 'teto de altura',
+      'altura da construção', 'height', 'gabarito máximo',
+      'gabarito permitido', 'limite vertical', 'parâmetro de altura', 
+      'restrição de altura', 'altura regulamentada', 'limite construtivo'
     ];
 
     const maximoTerms = [

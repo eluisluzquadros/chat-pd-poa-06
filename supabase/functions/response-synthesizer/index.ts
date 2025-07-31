@@ -1,5 +1,6 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { IntelligentResponseFormatter } from "./intelligent-formatter.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -275,7 +276,78 @@ Se a pergunta estiver fora do escopo do PDUS 2025 ou do planejamento urbano de P
       }
     }
     
+    // 🚀 SISTEMA DE FORMATAÇÃO INTELIGENTE
+    console.log('DEBUG - Aplicando formatação inteligente...');
+    const formattingContext = {
+      originalQuery,
+      analysisResult,
+      sqlResults,
+      vectorResults
+    };
+    
+    const intelligentFormat = IntelligentResponseFormatter.formatResponse(formattingContext);
+    console.log('DEBUG - Resultado da formatação inteligente:', {
+      type: intelligentFormat.queryType.type,
+      confidence: intelligentFormat.confidence,
+      articlesFound: intelligentFormat.articlesFound,
+      hasPreformattedResponse: !!intelligentFormat.response
+    });
+
+    // Se o formatador inteligente já forneceu uma resposta completa, usar ela
+    if (intelligentFormat.response && intelligentFormat.confidence > 0.8) {
+      console.log('DEBUG - Usando resposta pré-formatada do sistema inteligente');
+      return new Response(JSON.stringify({
+        response: intelligentFormat.response + `
+
+📍 **Explore mais:**
+- [Mapa com Regras Construtivas](https://bit.ly/3ILdXRA)
+- [Contribua com sugestões](https://bit.ly/4oefZKm)
+- [Participe da Audiência Pública](https://bit.ly/4o7AWqb)
+
+💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br
+
+💬 **Sua pergunta é importante!** Considere enviá-la pelos canais oficiais para contribuir com o aperfeiçoamento do plano.`,
+        confidence: intelligentFormat.confidence,
+        sources: {
+          tabular: sqlResults?.executionResults?.length || 0,
+          conceptual: vectorResults?.matches?.length || 0
+        },
+        intelligentFormatting: {
+          queryType: intelligentFormat.queryType.type,
+          articlesFound: intelligentFormat.articlesFound,
+          confidence: intelligentFormat.confidence
+        },
+        analysisResult
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     const userPrompt = `Pergunta do usuário: "${originalQuery}"
+
+🎯 FORMATAÇÃO INTELIGENTE DETECTADA:
+- Tipo de query: ${intelligentFormat.queryType.type}
+- Padrão de formatação: ${intelligentFormat.queryType.formatPattern}
+- Artigos encontrados: ${intelligentFormat.articlesFound.join(', ') || 'Nenhum'}
+- Confiança: ${intelligentFormat.confidence}
+
+${intelligentFormat.queryType.type === 'certification' ? `
+🔰 REGRA ESPECIAL - CERTIFICAÇÃO EM SUSTENTABILIDADE:
+OBRIGATÓRIO: Sua resposta DEVE começar com "**Art. 81 - III**: os acréscimos definidos em regulamento..."
+Formate SEMPRE como: **Art. 81 - III**: [conteúdo sobre certificação]
+` : ''}
+
+${intelligentFormat.queryType.type === 'fourth_district' ? `
+🏭 REGRA ESPECIAL - 4º DISTRITO:
+OBRIGATÓRIO: Sua resposta DEVE começar com "**Art. 74**: Os empreendimentos localizados na ZOT 8.2..."
+Formate SEMPRE como: **Art. 74**: [conteúdo sobre 4º distrito]
+` : ''}
+
+${intelligentFormat.queryType.type === 'article' ? `
+📋 REGRA ESPECIAL - QUERY SOBRE ARTIGO:
+OBRIGATÓRIO: Sua resposta DEVE começar com "**Art. ${intelligentFormat.articlesFound[0]?.replace('Art. ', '') || 'XX'}**: [conteúdo]"
+Formate citações de artigos como: **Art. XX**: [texto do artigo]
+` : ''}
 
 AVISO CRÍTICO: Os dados SQL fornecidos são a ÚNICA fonte de verdade. Se os dados mostram CA básico = 3.6, você DEVE usar 3.6, NUNCA substitua por 1.0 ou qualquer outro valor!
 
@@ -389,12 +461,71 @@ Sintetize uma resposta completa e detalhada seguindo rigorosamente as diretrizes
       throw new Error(`Invalid OpenAI response: ${JSON.stringify(data)}`);
     }
     
-    const synthesizedResponse = data.choices[0].message.content;
+    let synthesizedResponse = data.choices[0].message.content;
 
-    // Calculate confidence based on data availability
+    // 🎯 PÓS-PROCESSAMENTO: Aplica formatação inteligente na resposta final
+    console.log('DEBUG - Aplicando pós-processamento da formatação inteligente...');
+    
+    // Aplica formatação específica baseada no tipo detectado
+    if (intelligentFormat.queryType.type !== 'generic') {
+      synthesizedResponse = IntelligentResponseFormatter.formatContent(
+        synthesizedResponse, 
+        intelligentFormat.queryType, 
+        intelligentFormat.articlesFound
+      );
+      
+      // Validações específicas por tipo
+      switch (intelligentFormat.queryType.type) {
+        case 'certification':
+          if (!synthesizedResponse.includes('**Art. 81 - III**') && 
+              synthesizedResponse.toLowerCase().includes('certificação')) {
+            console.log('DEBUG - Forçando formatação Art. 81 - III para certificação');
+            synthesizedResponse = synthesizedResponse.replace(
+              /certificação\s+(?:em\s+)?sustentabilidade/gi,
+              '**Art. 81 - III**: Certificação em Sustentabilidade'
+            );
+          }
+          break;
+          
+        case 'fourth_district':
+          if (!synthesizedResponse.includes('**Art. 74**') && 
+              (synthesizedResponse.toLowerCase().includes('4º distrito') || 
+               synthesizedResponse.toLowerCase().includes('zot 8.2'))) {
+            console.log('DEBUG - Forçando formatação Art. 74 para 4º distrito');
+            synthesizedResponse = synthesizedResponse.replace(
+              /(.*(?:4º distrito|zot 8\.2)[^.]*\.?)/gi,
+              '**Art. 74**: $1'
+            );
+          }
+          break;
+          
+        case 'article':
+          // Formatar qualquer menção a artigos encontrados
+          intelligentFormat.articlesFound.forEach(article => {
+            const articleNum = article.replace('Art. ', '');
+            const pattern = new RegExp(`(?<!\\*\\*)(Art\\.?\\s*${articleNum}(?!\\s*[-:]))`, 'gi');
+            synthesizedResponse = synthesizedResponse.replace(pattern, `**Art. ${articleNum}**`);
+          });
+          break;
+      }
+    }
+
+    // Calculate confidence based on data availability and intelligent formatting
     let confidence = 0.5;
     if (sqlResults?.executionResults?.some((r: any) => r.data?.length > 0)) confidence += 0.3;
     if (vectorResults?.matches?.length > 0) confidence += 0.2;
+    
+    // Boost confidence if intelligent formatting was applied successfully
+    if (intelligentFormat.confidence > 0.7) {
+      confidence += 0.1;
+    }
+    
+    console.log('DEBUG - Resposta final formatada:', {
+      originalLength: data.choices[0].message.content.length,
+      formattedLength: synthesizedResponse.length,
+      hasIntelligentFormatting: intelligentFormat.queryType.type !== 'generic',
+      finalConfidence: confidence
+    });
     
     return new Response(JSON.stringify({
       response: synthesizedResponse,
@@ -402,6 +533,12 @@ Sintetize uma resposta completa e detalhada seguindo rigorosamente as diretrizes
       sources: {
         tabular: sqlResults?.executionResults?.length || 0,
         conceptual: vectorResults?.matches?.length || 0
+      },
+      intelligentFormatting: {
+        queryType: intelligentFormat.queryType.type,
+        articlesFound: intelligentFormat.articlesFound,
+        confidence: intelligentFormat.confidence,
+        applied: intelligentFormat.queryType.type !== 'generic'
       },
       analysisResult
     }), {
