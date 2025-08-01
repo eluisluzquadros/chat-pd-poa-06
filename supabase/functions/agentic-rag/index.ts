@@ -88,7 +88,22 @@ serve(async (req) => {
     console.log('📝 Synthesizing response...');
     agentTrace.push({ step: 'response_synthesis', timestamp: Date.now() });
     
-    const synthesisResponse = await fetch(`${supabaseUrl}/functions/v1/response-synthesizer`, {
+    // Verificar se precisa de busca vetorial
+    const needsVectorSearch = 
+      userMessage.toLowerCase().includes('certificação') ||
+      userMessage.toLowerCase().includes('sustentabilidade') ||
+      userMessage.toLowerCase().includes('4º distrito') ||
+      userMessage.toLowerCase().includes('quarto distrito') ||
+      userMessage.toLowerCase().includes('risco') ||
+      userMessage.toLowerCase().includes('inundação');
+    
+    const synthesizerEndpoint = needsVectorSearch 
+      ? 'response-synthesizer-rag' 
+      : 'response-synthesizer';
+    
+    console.log(`Using synthesizer: ${synthesizerEndpoint}`);
+    
+    const synthesisResponse = await fetch(`${supabaseUrl}/functions/v1/${synthesizerEndpoint}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
