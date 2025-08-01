@@ -35,6 +35,10 @@ serve(async (req) => {
 
   try {
     const { query, userRole, sessionId }: QueryAnalysisRequest = await req.json();
+    
+    if (!query) {
+      throw new Error('Query is required');
+    }
 
     const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
     if (!openAIApiKey) throw new Error('OpenAI API key not configured');
@@ -112,7 +116,7 @@ serve(async (req) => {
       /\bzona\s+de\s+ordenamento/gi
     ];
     
-    const queryLower = query.toLowerCase();
+    const queryLower = (query || '').toString().toLowerCase();
     const hasObjectivesKeyword = objectivesKeywords.some(keyword => 
       queryLower.includes(keyword.toLowerCase())
     );

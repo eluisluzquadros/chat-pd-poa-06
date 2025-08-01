@@ -1,0 +1,54 @@
+{
+  "extraction_date": "2025-07-31T21:18:01.306Z",
+  "source_dataset_id": "17_GMWnJC1sKff-YS0wesgxsvo3tnZdgSSb4JZ0ZjpCk",
+  "total_found": 94,
+  "newly_imported": 0,
+  "previously_existing": 11,
+  "final_total": 11,
+  "neighborhoods": [
+    {
+      "bairro": "AGRONOMIA",
+      "zona": "Zona de Ocupação Moderada 2"
+    },
+    {
+      "bairro": "ANCHIETA",
+      "zona": "Zona de Ocupação Intensiva"
+    },
+    {
+      "bairro": "ARQUIPELAGO",
+      "zona": "Zona de Ocupação Rarefeita"
+    },
+    {
+      "bairro": "AUXILIADORA",
+      "zona": "Zona de Ocupação Moderada 2"
+    },
+    {
+      "bairro": "AZENHA",
+      "zona": "Zona de Ocupação Intensiva"
+    },
+    {
+      "bairro": "BELA VISTA",
+      "zona": "Zona de Ocupação Moderada 2"
+    },
+    {
+      "bairro": "BOM FIM",
+      "zona": "Zona de Ocupação Intensiva"
+    },
+    {
+      "bairro": "CAVALHADA",
+      "zona": "Zona de Ocupação Moderada 1"
+    },
+    {
+      "bairro": "CENTRO HISTORICO",
+      "zona": "Zona de Ocupação Intensiva"
+    },
+    {
+      "bairro": "CRISTAL",
+      "zona": "Zona de Ocupação Moderada 1"
+    },
+    {
+      "bairro": "LAMI",
+      "zona": "Zona de Ocupação Rarefeita"
+    }
+  ]
+}

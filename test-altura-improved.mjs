@@ -51,7 +51,7 @@ function testHeightDetection() {
     const detected = messageContainsAltura || fuzzyMatched;
     const method = messageContainsAltura ? 'keyword' : (fuzzyMatched ? `fuzzy(${matchedPattern})` : 'none');
     
-    console.log(`   "${query}" → ${detected ? '✅' : '❌'} ${method `);
+    console.log(`   "${query}" → ${detected ? '✅' : '❌'} ${method}`);
   });
 }
 

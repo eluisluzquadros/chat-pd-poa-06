@@ -13,6 +13,7 @@ import { EditTestCaseDialog } from "./EditTestCaseDialog";
 import { ValidationOptionsDialog, ValidationExecutionOptions } from "./ValidationOptionsDialog";
 import { QAErrorAnalysis } from "./QAErrorAnalysis";
 import { QAModelComparison } from "./QAModelComparison";
+import { GapDetectionDashboard } from "./GapDetectionDashboard";
 
 interface QAValidationRun {
   id: string;
@@ -529,12 +530,13 @@ export function QADashboard() {
       </div>
 
       <Tabs defaultValue="runs" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="runs">Execuções</TabsTrigger>
           <TabsTrigger value="cases">Casos de Teste</TabsTrigger>
           <TabsTrigger value="results">Resultados</TabsTrigger>
           <TabsTrigger value="errors">Análise de Erros</TabsTrigger>
           <TabsTrigger value="comparison">Comparação</TabsTrigger>
+          <TabsTrigger value="gaps">Gaps Conhecimento</TabsTrigger>
         </TabsList>
 
         <TabsContent value="runs" className="space-y-4">
@@ -757,6 +759,10 @@ export function QADashboard() {
 
         <TabsContent value="comparison" className="space-y-4">
           <QAModelComparison />
+        </TabsContent>
+
+        <TabsContent value="gaps" className="space-y-4">
+          <GapDetectionDashboard />
         </TabsContent>
       </Tabs>
 

@@ -8,11 +8,23 @@ const corsHeaders = {
 };
 
 interface KnowledgeGap {
+  id?: string;
   category: string;
   topic: string;
   severity: 'critical' | 'high' | 'medium' | 'low';
-  failedTests: any[];
-  suggestedAction: string;
+  failedTests?: any[];
+  failed_query?: string;
+  actual_answer?: string;
+  confidence_score?: number;
+  suggestedAction?: string;
+  suggested_action?: string;
+}
+
+interface ContentGenerationRequest {
+  gapId: string;
+  includeExamples?: boolean;
+  targetAudience?: 'general' | 'technical' | 'admin';
+  contentLength?: 'brief' | 'detailed' | 'comprehensive';
 }
 
 serve(async (req) => {
@@ -25,9 +37,10 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const { gap, action } = await req.json();
+    const body = await req.json();
+    const { gap, action, gapId, options } = body;
 
-    console.log(`Knowledge Updater: Processing ${action} for ${gap.topic}`);
+    console.log(`Knowledge Updater: Processing ${action} for ${gap?.topic || gapId}`);
 
     let result;
 
@@ -37,11 +50,23 @@ serve(async (req) => {
         break;
       
       case 'generate_content':
-        result = await generateMissingContent(gap, supabase);
+        result = await generateMissingContent(gap || await getGapById(supabase, gapId), supabase, options);
         break;
       
       case 'update_embeddings':
-        result = await updateKnowledgeBase(gap, supabase);
+        result = await updateKnowledgeBase(gap || await getGapById(supabase, gapId), supabase);
+        break;
+
+      case 'approve_content':
+        result = await approveAndIntegrateContent(body.contentId, supabase);
+        break;
+
+      case 'reject_content':
+        result = await rejectContent(body.contentId, body.reason, supabase);
+        break;
+
+      case 'auto_resolve_gap':
+        result = await autoResolveGap(gapId, supabase);
         break;
       
       default:
@@ -68,6 +93,17 @@ serve(async (req) => {
     });
   }
 });
+
+async function getGapById(supabase: any, gapId: string): Promise<KnowledgeGap> {
+  const { data, error } = await supabase
+    .from('knowledge_gaps')
+    .select('*')
+    .eq('id', gapId)
+    .single();
+
+  if (error) throw new Error(`Gap not found: ${error.message}`);
+  return data;
+}
 
 async function analyzeGapAndSuggestContent(gap: KnowledgeGap, supabase: any) {
   // Analyze the failed tests to understand what's missing
