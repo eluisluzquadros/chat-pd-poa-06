@@ -19,6 +19,7 @@ import TestQACases from "./pages/admin/TestQACases";
 import FeedbackManagement from "./pages/admin/FeedbackManagement";
 import UserSettings from "./pages/UserSettings";
 import Reports from "./pages/Reports";
+import BenchmarkDashboard from "./pages/admin/BenchmarkDashboard";
 
 // Components
 import { SimpleAuthGuard } from "./components/SimpleAuthGuard";
@@ -109,6 +110,13 @@ function App() {
                 <SimpleAuthGuard>
                   <SimpleRoleGuard adminOnly={true}>
                     <FeedbackManagement />
+                  </SimpleRoleGuard>
+                </SimpleAuthGuard>
+              } />
+              <Route path="/admin/benchmark" element={
+                <SimpleAuthGuard>
+                  <SimpleRoleGuard adminOnly={true}>
+                    <BenchmarkDashboard />
                   </SimpleRoleGuard>
                 </SimpleAuthGuard>
               } />
