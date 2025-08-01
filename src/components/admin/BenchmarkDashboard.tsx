@@ -159,12 +159,13 @@ export default function BenchmarkDashboard() {
       
       setResults(mockResults);
       const testCasesForSummary = casesToTest.map(tc => ({
-        id: tc.id,
-        query: tc.question,
-        expectedKeywords: tc.expected_answer.toLowerCase().split(' ').slice(0, 5),
+        id: String(tc.id),
+        query: tc.question || tc.query || '',
+        expectedKeywords: tc.expected_keywords || 
+                        (tc.expected_answer ? tc.expected_answer.toLowerCase().split(' ').slice(0, 5) : []),
         category: tc.category,
-        complexity: tc.difficulty as 'simple' | 'medium' | 'high',
-        minResponseLength: 50
+        complexity: (tc.difficulty || tc.complexity || 'medium') as 'simple' | 'medium' | 'high',
+        minResponseLength: tc.min_response_length || 50
       }));
       
       const newSummaries = BenchmarkService.generateSummaries(mockResults, testCasesForSummary);
