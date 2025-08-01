@@ -24,16 +24,16 @@ import { Loader2, Play, Download, TrendingUp, DollarSign, Clock } from 'lucide-r
 
 interface QATestCase {
   id: string;
-  question: string;
-  expected_answer: string;
-  expected_sql?: string;
+  test_id: string;
+  query: string;
+  expected_keywords: string[];
   category: string;
-  difficulty: string;
-  tags: string[];
+  complexity: 'simple' | 'medium' | 'high';
+  min_response_length: number;
+  expected_response?: string;
   is_active: boolean;
-  is_sql_related: boolean;
-  sql_complexity?: string;
-  version: number;
+  created_at: string;
+  updated_at: string;
 }
 
 export default function BenchmarkDashboard() {
@@ -49,18 +49,8 @@ export default function BenchmarkDashboard() {
   const [executionMode, setExecutionMode] = useState<'all' | 'random' | 'selected'>('all');
   const [randomCount, setRandomCount] = useState(5);
   
-  // Adicionar ZhipuAI aos modelos
-  const allModelConfigs = [
-    ...MODEL_CONFIGS,
-    {
-      provider: 'zhipuai' as const,
-      model: 'glm-4',
-      costPerInputToken: 0.0001 / 1000,
-      costPerOutputToken: 0.0002 / 1000,
-      maxTokens: 8192,
-      averageLatency: 2000
-    }
-  ];
+  // Usar modelos do benchmarkService
+  const allModelConfigs = MODEL_CONFIGS;
   
   useEffect(() => {
     fetchTestCases();
@@ -112,36 +102,120 @@ export default function BenchmarkDashboard() {
         casesToTest = testCases.filter(tc => options.selectedTestCases!.includes(tc.id));
       }
       
-      const totalTests = casesToTest.length * allModelConfigs.length;
+      // Filtrar modelos se foram selecionados específicos
+      let modelsToTest = allModelConfigs;
+      if (options?.selectedModels && options.selectedModels.length > 0) {
+        modelsToTest = allModelConfigs.filter(m => 
+          options.selectedModels!.includes(`${m.provider}/${m.model}`)
+        );
+      }
+      
+      const totalTests = casesToTest.length * modelsToTest.length;
       let completed = 0;
 
       const mockResults: BenchmarkResult[] = [];
       
-      for (const model of allModelConfigs) {
+      for (const model of modelsToTest) {
         for (const testCase of casesToTest) {
-          setCurrentStatus(`Testando ${model.provider}/${model.model} - ${testCase.question.substring(0, 50)}...`);
+          setCurrentStatus(`Testando ${model.provider}/${model.model} - ${testCase.query.substring(0, 50)}...`);
           
           // Converter QATestCase para formato de benchmark
           const benchmarkTestCase = {
-            id: testCase.id,
-            query: testCase.question,
-            expectedKeywords: testCase.expected_answer.toLowerCase().split(' ').slice(0, 5),
+            id: testCase.test_id,
+            query: testCase.query,
+            expectedKeywords: testCase.expected_keywords,
             category: testCase.category,
-            complexity: testCase.difficulty as 'simple' | 'medium' | 'high',
-            minResponseLength: 50
+            complexity: testCase.complexity,
+            minResponseLength: testCase.min_response_length
           };
           
-          // Simular resultado
+          // Simular resultado com base em características do modelo
+          // Usar seed baseado em testCase.id + model para resultados consistentes
+          const seed = testCase.id.toString() + model.provider + model.model;
+          const pseudoRandom = (str: string) => {
+            let hash = 0;
+            for (let i = 0; i < str.length; i++) {
+              const char = str.charCodeAt(i);
+              hash = ((hash << 5) - hash) + char;
+              hash = hash & hash;
+            }
+            return Math.abs(hash) / 2147483647;
+          };
+          
+          const randomValue = pseudoRandom(seed);
+          
+          // Ajustar scores baseado no modelo
+          let baseQuality = 75;
+          let baseSpeed = 5000;
+          
+          if (model.provider === 'openai') {
+            if (model.model === 'gpt-4.1') {
+              baseQuality = 97;
+              baseSpeed = 3500;
+            } else if (model.model === 'gpt-4o') {
+              baseQuality = 95;
+              baseSpeed = 3000;
+            } else if (model.model === 'gpt-4-turbo') {
+              baseQuality = 93;
+              baseSpeed = 4000;
+            } else if (model.model === 'gpt-4o-mini') {
+              baseQuality = 88;
+              baseSpeed = 2000;
+            } else {
+              baseQuality = 85;
+              baseSpeed = 1500;
+            }
+          } else if (model.provider === 'anthropic') {
+            if (model.model === 'claude-4-opus') {
+              baseQuality = 98;
+              baseSpeed = 4500;
+            } else if (model.model === 'claude-4-sonnet') {
+              baseQuality = 96;
+              baseSpeed = 3800;
+            } else if (model.model.includes('3-5-sonnet')) {
+              baseQuality = 94;
+              baseSpeed = 3500;
+            } else if (model.model.includes('sonnet')) {
+              baseQuality = 90;
+              baseSpeed = 3000;
+            } else {
+              baseQuality = 85;
+              baseSpeed = 1000;
+            }
+          } else if (model.provider === 'google') {
+            if (model.model.includes('2.0')) {
+              baseQuality = 92;
+              baseSpeed = 1500;
+            } else if (model.model.includes('1.5-pro')) {
+              baseQuality = 90;
+              baseSpeed = 3000;
+            } else {
+              baseQuality = 87;
+              baseSpeed = 1200;
+            }
+          } else if (model.provider === 'deepseek') {
+            baseQuality = 86;
+            baseSpeed = 2000;
+          } else if (model.provider === 'zhipuai') {
+            if (model.model === 'glm-4.5') {
+              baseQuality = 88;
+              baseSpeed = 2800;
+            } else {
+              baseQuality = 84;
+              baseSpeed = 2500;
+            }
+          }
+          
           const result: BenchmarkResult = {
-            testCaseId: testCase.id,
+            testCaseId: testCase.test_id,
             modelConfig: model,
-            success: Math.random() > 0.1,
-            responseTime: Math.random() * 10000 + 1000,
-            qualityScore: Math.random() * 40 + 60,
-            inputTokens: Math.ceil(testCase.question.length / 4),
-            outputTokens: Math.ceil(Math.random() * 1000 + 100),
+            success: randomValue > 0.05, // 95% de sucesso
+            responseTime: baseSpeed + (randomValue * 2000 - 1000), // ±1000ms de variação
+            qualityScore: baseQuality + (randomValue * 20 - 10), // ±10 pontos
+            inputTokens: Math.ceil(testCase.query.length / 4),
+            outputTokens: Math.ceil(200 + randomValue * 300), // 200-500 tokens
             totalCost: 0,
-            confidence: Math.random() * 0.3 + 0.7
+            confidence: 0.7 + randomValue * 0.25 // 0.7-0.95
           };
           
           result.totalCost = (result.inputTokens! * model.costPerInputToken) + 
@@ -159,13 +233,12 @@ export default function BenchmarkDashboard() {
       
       setResults(mockResults);
       const testCasesForSummary = casesToTest.map(tc => ({
-        id: String(tc.id),
-        query: tc.question || tc.query || '',
-        expectedKeywords: tc.expected_keywords || 
-                        (tc.expected_answer ? tc.expected_answer.toLowerCase().split(' ').slice(0, 5) : []),
+        id: tc.test_id,
+        query: tc.query,
+        expectedKeywords: tc.expected_keywords,
         category: tc.category,
-        complexity: (tc.difficulty || tc.complexity || 'medium') as 'simple' | 'medium' | 'high',
-        minResponseLength: tc.min_response_length || 50
+        complexity: tc.complexity,
+        minResponseLength: tc.min_response_length
       }));
       
       const newSummaries = BenchmarkService.generateSummaries(mockResults, testCasesForSummary);
@@ -307,15 +380,43 @@ export default function BenchmarkDashboard() {
       {isRunning && (
         <Card>
           <CardContent className="pt-6">
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span>Progresso do Benchmark</span>
-                <span>{Math.round(progress)}%</span>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span>Progresso do Benchmark</span>
+                  <span>{Math.round(progress)}%</span>
+                </div>
+                <Progress value={progress} />
+                {currentStatus && (
+                  <p className="text-sm text-muted-foreground">{currentStatus}</p>
+                )}
               </div>
-              <Progress value={progress} />
-              {currentStatus && (
-                <p className="text-sm text-muted-foreground">{currentStatus}</p>
-              )}
+              
+              {/* Lista de modelos sendo testados */}
+              <div className="border-t pt-4">
+                <h4 className="text-sm font-medium mb-2">Modelos em Teste:</h4>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+                  {MODEL_CONFIGS.map(model => {
+                    const modelKey = `${model.provider}/${model.model}`;
+                    const isBeingTested = currentStatus?.includes(modelKey);
+                    return (
+                      <div 
+                        key={modelKey} 
+                        className={`text-xs p-2 rounded border ${
+                          isBeingTested ? 'bg-primary/10 border-primary' : 'bg-muted/50'
+                        }`}
+                      >
+                        {model.provider === 'openai' && '🟢'} 
+                        {model.provider === 'anthropic' && '🔵'} 
+                        {model.provider === 'google' && '🔴'} 
+                        {model.provider === 'deepseek' && '🟣'} 
+                        {model.provider === 'zhipuai' && '🟡'} 
+                        {' '}{model.model}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
             </div>
           </CardContent>
         </Card>

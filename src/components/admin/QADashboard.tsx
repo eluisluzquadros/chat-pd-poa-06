@@ -612,11 +612,11 @@ export function QADashboard() {
                           <Badge variant="outline">{testCase.category}</Badge>
                           <Badge 
                             variant={
-                              testCase.difficulty === 'easy' ? 'secondary' :
-                              testCase.difficulty === 'medium' ? 'default' : 'destructive'
+                              (testCase.difficulty || testCase.complexity) === 'simple' ? 'secondary' :
+                              (testCase.difficulty || testCase.complexity) === 'medium' ? 'default' : 'destructive'
                             }
                           >
-                            {testCase.difficulty}
+                            {testCase.difficulty || testCase.complexity || 'medium'}
                           </Badge>
                           {testCase.is_sql_related && (
                             <Badge variant="outline" className="bg-blue-50 text-blue-700">
@@ -624,13 +624,15 @@ export function QADashboard() {
                               SQL
                             </Badge>
                           )}
-                          <Badge variant="outline" className="text-xs">
-                            v{testCase.version}
-                          </Badge>
+                          {testCase.version && (
+                            <Badge variant="outline" className="text-xs">
+                              v{testCase.version}
+                            </Badge>
+                          )}
                         </div>
-                        <h4 className="font-medium">{testCase.question}</h4>
+                        <h4 className="font-medium">{testCase.question || testCase.query}</h4>
                         <p className="text-sm text-muted-foreground">
-                          {testCase.expected_answer}
+                          {testCase.expected_answer || testCase.expected_response || 'Sem resposta esperada definida'}
                         </p>
                         {testCase.expected_sql && (
                           <div className="bg-muted/50 p-2 rounded text-xs font-mono">
@@ -638,13 +640,15 @@ export function QADashboard() {
                             <pre className="mt-1 text-muted-foreground">{testCase.expected_sql}</pre>
                           </div>
                         )}
-                        <div className="flex gap-1">
-                          {testCase.tags.map(tag => (
-                            <Badge key={tag} variant="outline" className="text-xs">
-                              {tag}
-                            </Badge>
-                          ))}
-                        </div>
+                        {testCase.tags && testCase.tags.length > 0 && (
+                          <div className="flex gap-1">
+                            {testCase.tags.map(tag => (
+                              <Badge key={tag} variant="outline" className="text-xs">
+                                {tag}
+                              </Badge>
+                            ))}
+                          </div>
+                        )}
                       </div>
                       <Button
                         variant="outline"

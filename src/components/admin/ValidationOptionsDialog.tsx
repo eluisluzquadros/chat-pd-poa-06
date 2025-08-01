@@ -7,16 +7,21 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Play, Settings, Filter } from "lucide-react";
+import { Play, Settings, Filter, Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { MODEL_CONFIGS } from "@/services/benchmarkService";
 
 interface QATestCase {
   id: string;
-  question: string;
+  test_id: string;
+  query: string;
+  question?: string;
   category: string;
-  difficulty: string;
-  is_sql_related: boolean;
+  complexity: string;
+  difficulty?: string;
+  is_sql_related?: boolean;
+  is_active: boolean;
 }
 
 interface ValidationOptionsDialogProps {
@@ -29,12 +34,14 @@ interface ValidationOptionsDialogProps {
 
 export interface ValidationExecutionOptions {
   mode: 'all' | 'random' | 'selected' | 'category' | 'difficulty' | 'sql_only' | 'filtered';
+  selectedTestCases?: string[];
   selectedIds?: string[];
   categories?: string[];
   difficulties?: string[];
   randomCount?: number;
   includeSQL?: boolean;
   excludeSQL?: boolean;
+  selectedModels?: string[];
 }
 
 export function ValidationOptionsDialog({ 
@@ -51,9 +58,10 @@ export function ValidationOptionsDialog({
   const [randomCount, setRandomCount] = useState(10);
   const [includeSQL, setIncludeSQL] = useState(true);
   const [excludeSQL, setExcludeSQL] = useState(false);
+  const [selectedModels, setSelectedModels] = useState<string[]>([]);
 
   const categories = [...new Set(testCases.map(tc => tc.category))];
-  const difficulties = [...new Set(testCases.map(tc => tc.difficulty))];
+  const difficulties = [...new Set(testCases.map(tc => tc.difficulty || tc.complexity))];
   const sqlCases = testCases.filter(tc => tc.is_sql_related);
 
   const resetSelections = () => {
@@ -120,7 +128,8 @@ export function ValidationOptionsDialog({
     const options: ValidationExecutionOptions = {
       mode,
       includeSQL,
-      excludeSQL
+      excludeSQL,
+      selectedModels: selectedModels.length > 0 ? selectedModels : MODEL_CONFIGS.map(m => `${m.provider}/${m.model}`)
     };
 
     switch (mode) {
@@ -193,6 +202,68 @@ export function ValidationOptionsDialog({
                 <SelectItem value="sql_only">Apenas casos SQL ({sqlCases.length})</SelectItem>
               </SelectContent>
             </Select>
+          </div>
+
+          {/* Model Selection */}
+          <div className="space-y-3">
+            <Label className="text-base font-medium">
+              <Sparkles className="h-4 w-4 inline mr-1" />
+              Modelos para Testar
+            </Label>
+            <div className="space-y-2 max-h-48 overflow-y-auto border rounded-lg p-3">
+              <div className="mb-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    if (selectedModels.length === MODEL_CONFIGS.length) {
+                      setSelectedModels([]);
+                    } else {
+                      setSelectedModels(MODEL_CONFIGS.map(m => `${m.provider}/${m.model}`));
+                    }
+                  }}
+                >
+                  {selectedModels.length === MODEL_CONFIGS.length ? 'Desmarcar todos' : 'Selecionar todos'}
+                </Button>
+              </div>
+              {MODEL_CONFIGS.map(model => {
+                const modelKey = `${model.provider}/${model.model}`;
+                return (
+                  <div key={modelKey} className="flex items-start space-x-2">
+                    <Checkbox
+                      id={`model_${modelKey}`}
+                      checked={selectedModels.includes(modelKey) || selectedModels.length === 0}
+                      onCheckedChange={(checked) => {
+                        if (checked) {
+                          setSelectedModels(prev => [...prev, modelKey]);
+                        } else {
+                          setSelectedModels(prev => prev.filter(m => m !== modelKey));
+                        }
+                      }}
+                    />
+                    <div className="flex-1">
+                      <Label htmlFor={`model_${modelKey}`} className="text-sm font-normal cursor-pointer">
+                        {model.provider === 'openai' && '🟢'} 
+                        {model.provider === 'anthropic' && '🔵'} 
+                        {model.provider === 'google' && '🔴'} 
+                        {model.provider === 'deepseek' && '🟣'} 
+                        {model.provider === 'zhipuai' && '🟡'} 
+                        {' '}{model.model}
+                      </Label>
+                      <div className="flex gap-2 text-xs text-muted-foreground">
+                        <span>In: ${(model.costPerInputToken * 1000).toFixed(4)}/1K</span>
+                        <span>Out: ${(model.costPerOutputToken * 1000).toFixed(4)}/1K</span>
+                        <span>Max: {(model.maxTokens / 1000).toFixed(0)}K</span>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            <p className="text-sm text-muted-foreground">
+              {selectedModels.length === 0 ? 'Todos os modelos serão testados' : `${selectedModels.length} modelo(s) selecionado(s)`}
+            </p>
           </div>
 
           {/* SQL Filtering */}
@@ -285,16 +356,16 @@ export function ValidationOptionsDialog({
                   <div key={testCase.id} className="flex items-start space-x-2">
                     <Checkbox
                       id={`testcase_${testCase.id}`}
-                      checked={selectedIds.includes(testCase.id)}
-                      onCheckedChange={(checked) => handleTestCaseSelection(testCase.id, !!checked)}
+                      checked={selectedIds.includes(testCase.test_id || testCase.id)}
+                      onCheckedChange={(checked) => handleTestCaseSelection(testCase.test_id || testCase.id, !!checked)}
                     />
                     <div className="flex-1 min-w-0">
                       <Label htmlFor={`testcase_${testCase.id}`} className="text-sm font-normal cursor-pointer">
-                        {testCase.question}
+                        {testCase.question || testCase.query}
                       </Label>
                       <div className="flex gap-1 mt-1">
                         <Badge variant="outline" className="text-xs">{testCase.category}</Badge>
-                        <Badge variant="outline" className="text-xs">{testCase.difficulty}</Badge>
+                        <Badge variant="outline" className="text-xs">{testCase.difficulty || testCase.complexity}</Badge>
                         {testCase.is_sql_related && (
                           <Badge variant="outline" className="text-xs">SQL</Badge>
                         )}

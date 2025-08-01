@@ -45,65 +45,138 @@ export interface BenchmarkSummary {
 
 // Configurações dos modelos disponíveis
 export const MODEL_CONFIGS: ModelConfig[] = [
-  // OpenAI
+  // OpenAI - Modelos mais recentes incluindo GPT-4.1
   {
     provider: 'openai',
-    model: 'gpt-3.5-turbo',
-    costPerInputToken: 0.0015 / 1000,
-    costPerOutputToken: 0.002 / 1000,
-    maxTokens: 4096,
-    averageLatency: 1500
+    model: 'gpt-4.1',
+    costPerInputToken: 0.015 / 1000,
+    costPerOutputToken: 0.045 / 1000,
+    maxTokens: 256000,
+    averageLatency: 3500
   },
   {
     provider: 'openai',
-    model: 'gpt-3.5-turbo-16k',
-    costPerInputToken: 0.003 / 1000,
-    costPerOutputToken: 0.004 / 1000,
-    maxTokens: 16384,
+    model: 'gpt-4o',
+    costPerInputToken: 0.005 / 1000,
+    costPerOutputToken: 0.015 / 1000,
+    maxTokens: 128000,
+    averageLatency: 3000
+  },
+  {
+    provider: 'openai',
+    model: 'gpt-4o-mini',
+    costPerInputToken: 0.00015 / 1000,
+    costPerOutputToken: 0.0006 / 1000,
+    maxTokens: 128000,
     averageLatency: 2000
   },
   {
     provider: 'openai',
-    model: 'gpt-4',
-    costPerInputToken: 0.03 / 1000,
-    costPerOutputToken: 0.06 / 1000,
-    maxTokens: 8192,
-    averageLatency: 5000
+    model: 'gpt-4-turbo',
+    costPerInputToken: 0.01 / 1000,
+    costPerOutputToken: 0.03 / 1000,
+    maxTokens: 128000,
+    averageLatency: 4000
   },
-  // Anthropic
+  {
+    provider: 'openai',
+    model: 'gpt-3.5-turbo',
+    costPerInputToken: 0.0005 / 1000,
+    costPerOutputToken: 0.0015 / 1000,
+    maxTokens: 16384,
+    averageLatency: 1500
+  },
+  // Anthropic - Claude 4 e 3.5
   {
     provider: 'anthropic',
-    model: 'claude-3-haiku-20240307',
-    costPerInputToken: 0.00025 / 1000,
-    costPerOutputToken: 0.00125 / 1000,
-    maxTokens: 4096,
-    averageLatency: 1000
+    model: 'claude-4-opus',
+    costPerInputToken: 0.015 / 1000,
+    costPerOutputToken: 0.075 / 1000,
+    maxTokens: 500000,
+    averageLatency: 4500
+  },
+  {
+    provider: 'anthropic',
+    model: 'claude-4-sonnet',
+    costPerInputToken: 0.008 / 1000,
+    costPerOutputToken: 0.04 / 1000,
+    maxTokens: 500000,
+    averageLatency: 3800
+  },
+  {
+    provider: 'anthropic',
+    model: 'claude-3-5-sonnet-20241022',
+    costPerInputToken: 0.003 / 1000,
+    costPerOutputToken: 0.015 / 1000,
+    maxTokens: 200000,
+    averageLatency: 3500
   },
   {
     provider: 'anthropic',
     model: 'claude-3-sonnet-20240229',
     costPerInputToken: 0.003 / 1000,
     costPerOutputToken: 0.015 / 1000,
-    maxTokens: 4096,
-    averageLatency: 2500
+    maxTokens: 200000,
+    averageLatency: 3000
   },
-  // Google
   {
-    provider: 'google',
-    model: 'gemini-pro',
+    provider: 'anthropic',
+    model: 'claude-3-haiku-20240307',
     costPerInputToken: 0.00025 / 1000,
     costPerOutputToken: 0.00125 / 1000,
-    maxTokens: 30720,
-    averageLatency: 2000
+    maxTokens: 200000,
+    averageLatency: 1000
   },
-  // DeepSeek
+  // Google - Gemini 2.0 e 1.5
+  {
+    provider: 'google',
+    model: 'gemini-2.0-flash-exp',
+    costPerInputToken: 0.00025 / 1000,
+    costPerOutputToken: 0.001 / 1000,
+    maxTokens: 1000000,
+    averageLatency: 1500
+  },
+  {
+    provider: 'google',
+    model: 'gemini-1.5-pro',
+    costPerInputToken: 0.00125 / 1000,
+    costPerOutputToken: 0.005 / 1000,
+    maxTokens: 2000000,
+    averageLatency: 3000
+  },
+  {
+    provider: 'google',
+    model: 'gemini-1.5-flash',
+    costPerInputToken: 0.000075 / 1000,
+    costPerOutputToken: 0.0003 / 1000,
+    maxTokens: 1000000,
+    averageLatency: 1200
+  },
+  // DeepSeek - V3
   {
     provider: 'deepseek',
     model: 'deepseek-chat',
+    costPerInputToken: 0.00014 / 1000,
+    costPerOutputToken: 0.00028 / 1000,
+    maxTokens: 64000,
+    averageLatency: 2000
+  },
+  // ZhipuAI - GLM-4 e GLM-4.5
+  {
+    provider: 'zhipuai',
+    model: 'glm-4.5',
+    costPerInputToken: 0.00015 / 1000,
+    costPerOutputToken: 0.0003 / 1000,
+    maxTokens: 32768,
+    averageLatency: 2800
+  },
+  {
+    provider: 'zhipuai',
+    model: 'glm-4',
     costPerInputToken: 0.0001 / 1000,
     costPerOutputToken: 0.0002 / 1000,
-    maxTokens: 4096,
-    averageLatency: 1500
+    maxTokens: 8192,
+    averageLatency: 2500
   }
 ];
 
