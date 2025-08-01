@@ -3,6 +3,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
+import { ValidationOptionsDialog, ValidationExecutionOptions } from './ValidationOptionsDialog';
+import { supabase } from '@/integrations/supabase/client';
 import {
   BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, 
   Tooltip, Legend, ResponsiveContainer, RadarChart, PolarGrid, 
@@ -17,6 +22,16 @@ import {
 } from '@/services/benchmarkService';
 import { Loader2, Play, Download, TrendingUp, DollarSign, Clock } from 'lucide-react';
 
+interface QATestCase {
+  id: string;
+  question: string;
+  expected_answer: string;
+  category: string;
+  difficulty: string;
+  tags: string[];
+  is_active: boolean;
+}
+
 export default function BenchmarkDashboard() {
   const [isRunning, setIsRunning] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -24,26 +39,85 @@ export default function BenchmarkDashboard() {
   const [summaries, setSummaries] = useState<BenchmarkSummary[]>([]);
   const [selectedModel, setSelectedModel] = useState<string>('all');
   const [currentStatus, setCurrentStatus] = useState<string>('');
+  const [testCases, setTestCases] = useState<QATestCase[]>([]);
+  const [selectedTestCases, setSelectedTestCases] = useState<string[]>([]);
+  const [showValidationOptions, setShowValidationOptions] = useState(false);
+  const [executionMode, setExecutionMode] = useState<'all' | 'random' | 'selected'>('all');
+  const [randomCount, setRandomCount] = useState(5);
+  
+  // Adicionar ZhipuAI aos modelos
+  const allModelConfigs = [
+    ...MODEL_CONFIGS,
+    {
+      provider: 'zhipuai' as const,
+      model: 'glm-4',
+      costPerInputToken: 0.0001 / 1000,
+      costPerOutputToken: 0.0002 / 1000,
+      maxTokens: 8192,
+      averageLatency: 2000
+    }
+  ];
+  
+  useEffect(() => {
+    fetchTestCases();
+  }, []);
+  
+  const fetchTestCases = async () => {
+    const { data, error } = await supabase
+      .from('qa_test_cases')
+      .select('*')
+      .eq('is_active', true)
+      .order('category', { ascending: true });
+      
+    if (data && !error) {
+      setTestCases(data);
+    }
+  };
 
-  // Executar benchmark
-  const runBenchmark = async () => {
+  // Executar benchmark com casos de teste QA
+  const runBenchmark = async (options?: ValidationExecutionOptions) => {
+    if (!showValidationOptions && !options) {
+      setShowValidationOptions(true);
+      return;
+    }
+    
     setIsRunning(true);
     setProgress(0);
     setResults([]);
     setSummaries([]);
 
     try {
-      // Simular progresso
-      const totalTests = DEFAULT_TEST_CASES.length * MODEL_CONFIGS.length;
+      // Determinar quais casos de teste usar
+      let casesToTest: QATestCase[] = [];
+      
+      if (options?.mode === 'all') {
+        casesToTest = testCases;
+      } else if (options?.mode === 'random' && options.randomCount) {
+        // Selecionar casos aleatórios
+        const shuffled = [...testCases].sort(() => Math.random() - 0.5);
+        casesToTest = shuffled.slice(0, options.randomCount);
+      } else if (options?.mode === 'selected' && options.selectedTestCases) {
+        casesToTest = testCases.filter(tc => options.selectedTestCases!.includes(tc.id));
+      }
+      
+      const totalTests = casesToTest.length * allModelConfigs.length;
       let completed = 0;
 
-      // Por enquanto, vamos simular os resultados
-      // Em produção, isso chamaria o BenchmarkService.runFullBenchmark()
       const mockResults: BenchmarkResult[] = [];
       
-      for (const model of MODEL_CONFIGS) {
-        for (const testCase of DEFAULT_TEST_CASES) {
-          setCurrentStatus(`Testando ${model.provider}/${model.model} - ${testCase.id}`);
+      for (const model of allModelConfigs) {
+        for (const testCase of casesToTest) {
+          setCurrentStatus(`Testando ${model.provider}/${model.model} - ${testCase.question.substring(0, 50)}...`);
+          
+          // Converter QATestCase para formato de benchmark
+          const benchmarkTestCase = {
+            id: testCase.id,
+            query: testCase.question,
+            expectedKeywords: testCase.expected_answer.toLowerCase().split(' ').slice(0, 5),
+            category: testCase.category,
+            complexity: testCase.difficulty as 'simple' | 'medium' | 'high',
+            minResponseLength: 50
+          };
           
           // Simular resultado
           const result: BenchmarkResult = {
@@ -52,7 +126,7 @@ export default function BenchmarkDashboard() {
             success: Math.random() > 0.1,
             responseTime: Math.random() * 10000 + 1000,
             qualityScore: Math.random() * 40 + 60,
-            inputTokens: Math.ceil(testCase.query.length / 4),
+            inputTokens: Math.ceil(testCase.question.length / 4),
             outputTokens: Math.ceil(Math.random() * 1000 + 100),
             totalCost: 0,
             confidence: Math.random() * 0.3 + 0.7
@@ -72,8 +146,17 @@ export default function BenchmarkDashboard() {
       }
       
       setResults(mockResults);
-      const newSummaries = BenchmarkService.generateSummaries(mockResults, DEFAULT_TEST_CASES);
-      setSummaries(newSummaries);
+      const testCasesForSummary = casesToTest.map(tc => ({
+        id: tc.id,
+        query: tc.question,
+        expectedKeywords: tc.expected_answer.toLowerCase().split(' ').slice(0, 5),
+        category: tc.category,
+        complexity: tc.difficulty as 'simple' | 'medium' | 'high',
+        minResponseLength: 50
+      }));
+      
+      const newSummaries = BenchmarkService.generateSummaries(mockResults, testCasesForSummary);
+      setSummaries(newSummaries.sort((a, b) => b.avgQualityScore - a.avgQualityScore));
       
     } catch (error) {
       console.error('Benchmark error:', error);
@@ -85,35 +168,38 @@ export default function BenchmarkDashboard() {
 
   // Preparar dados para gráficos
   const getChartData = () => {
-    if (selectedModel === 'all') {
-      return summaries.map(s => ({
-        model: `${s.provider}/${s.model}`,
-        tempo: Math.round(s.avgResponseTime),
-        qualidade: Math.round(s.avgQualityScore),
-        custo: s.avgCostPerQuery * 1000, // Converter para milésimos de dólar
-        sucesso: Math.round(s.successRate)
-      }));
-    } else {
-      const filtered = summaries.filter(s => `${s.provider}/${s.model}` === selectedModel);
-      return filtered.map(s => ({
-        model: `${s.provider}/${s.model}`,
-        tempo: Math.round(s.avgResponseTime),
-        qualidade: Math.round(s.avgQualityScore),
-        custo: s.avgCostPerQuery * 1000,
-        sucesso: Math.round(s.successRate)
-      }));
-    }
+    const data = selectedModel === 'all' 
+      ? summaries 
+      : summaries.filter(s => `${s.provider}/${s.model}` === selectedModel);
+      
+    return data.map(s => ({
+      model: `${s.provider}/${s.model}`,
+      tempo: Math.round(s.avgResponseTime),
+      qualidade: Math.round(s.avgQualityScore),
+      custo: s.avgCostPerQuery * 1000, // Converter para milésimos de dólar
+      sucesso: Math.round(s.successRate)
+    }));
   };
 
   // Dados para radar chart (trade-off analysis)
   const getRadarData = () => {
-    return summaries.map(s => ({
-      model: s.model,
-      velocidade: Math.max(0, 100 - (s.avgResponseTime / 100)), // Inverter escala
-      qualidade: s.avgQualityScore,
-      economia: Math.max(0, 100 - (s.avgCostPerQuery * 10000)), // Inverter e escalar
-      confiabilidade: s.successRate
-    }));
+    const metrics = ['Velocidade', 'Qualidade', 'Economia', 'Confiabilidade'];
+    return metrics.map(metric => {
+      const dataPoint: any = { metric };
+      summaries.forEach(s => {
+        const key = `${s.provider}/${s.model}`;
+        if (metric === 'Velocidade') {
+          dataPoint[key] = Math.max(0, 100 - (s.avgResponseTime / 100));
+        } else if (metric === 'Qualidade') {
+          dataPoint[key] = s.avgQualityScore;
+        } else if (metric === 'Economia') {
+          dataPoint[key] = Math.max(0, 100 - (s.avgCostPerQuery * 10000));
+        } else if (metric === 'Confiabilidade') {
+          dataPoint[key] = s.successRate;
+        }
+      });
+      return dataPoint;
+    });
   };
 
   // Exportar resultados
@@ -140,12 +226,12 @@ export default function BenchmarkDashboard() {
         <div>
           <h2 className="text-3xl font-bold">Benchmark de Modelos LLM</h2>
           <p className="text-muted-foreground">
-            Análise de trade-off: Qualidade vs Velocidade vs Custo
+            Análise de trade-off usando casos de teste QA: Qualidade vs Velocidade vs Custo
           </p>
         </div>
         <div className="flex gap-2">
           <Button
-            onClick={runBenchmark}
+            onClick={() => runBenchmark()}
             disabled={isRunning}
             variant="default"
           >
@@ -171,6 +257,37 @@ export default function BenchmarkDashboard() {
           </Button>
         </div>
       </div>
+      
+      {/* Opções de Validação */}
+      {showValidationOptions && (
+        <ValidationOptionsDialog
+          isOpen={showValidationOptions}
+          onClose={() => setShowValidationOptions(false)}
+          onExecute={(options) => {
+            setShowValidationOptions(false);
+            runBenchmark(options);
+          }}
+          testCases={testCases}
+        />
+      )}
+      
+      {/* Casos de Teste Selecionados */}
+      {testCases.length > 0 && !isRunning && results.length === 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Casos de Teste QA Disponíveis</CardTitle>
+            <p className="text-sm text-muted-foreground">
+              Total: {testCases.length} casos | 
+              Por categoria: {Object.entries(
+                testCases.reduce((acc, tc) => {
+                  acc[tc.category] = (acc[tc.category] || 0) + 1;
+                  return acc;
+                }, {} as Record<string, number>)
+              ).map(([cat, count]) => `${cat}: ${count}`).join(', ')}
+            </p>
+          </CardHeader>
+        </Card>
+      )}
 
       {/* Progress */}
       {isRunning && (
@@ -204,10 +321,14 @@ export default function BenchmarkDashboard() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">
-                  {summaries[0]?.model || '-'}
+                  {summaries.reduce((best, current) => 
+                    current.avgQualityScore > best.avgQualityScore ? current : best
+                  , summaries[0] || {avgQualityScore: 0})?.model || '-'}
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  {summaries[0]?.avgQualityScore.toFixed(1)}% de qualidade
+                  {summaries.reduce((best, current) => 
+                    current.avgQualityScore > best.avgQualityScore ? current : best
+                  , summaries[0] || {avgQualityScore: 0})?.avgQualityScore?.toFixed(1) || '0'}% de qualidade
                 </p>
               </CardContent>
             </Card>
@@ -263,10 +384,18 @@ export default function BenchmarkDashboard() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">
-                  {summaries[0]?.model || '-'}
+                  {summaries.reduce((best, current) => {
+                    const bestScore = (best.avgQualityScore * 0.4) + 
+                                    ((100 - (best.avgResponseTime / 100)) * 0.3) + 
+                                    ((100 - (best.avgCostPerQuery * 10000)) * 0.3);
+                    const currentScore = (current.avgQualityScore * 0.4) + 
+                                       ((100 - (current.avgResponseTime / 100)) * 0.3) + 
+                                       ((100 - (current.avgCostPerQuery * 10000)) * 0.3);
+                    return currentScore > bestScore ? current : best;
+                  }, summaries[0] || {})?.model || '-'}
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  {summaries[0]?.recommendation}
+                  Melhor equilíbrio entre qualidade, velocidade e custo
                 </p>
               </CardContent>
             </Card>
@@ -303,24 +432,23 @@ export default function BenchmarkDashboard() {
                 <ResponsiveContainer width="100%" height={300}>
                   <RadarChart data={getRadarData()}>
                     <PolarGrid />
-                    <PolarAngleAxis dataKey="model" />
+                    <PolarAngleAxis dataKey="metric" />
                     <PolarRadiusAxis angle={90} domain={[0, 100]} />
-                    {getRadarData().map((entry, index) => (
-                      <Radar
-                        key={entry.model}
-                        name={entry.model}
-                        dataKey={(data: any) => data.model === entry.model ? [
-                          data.velocidade,
-                          data.qualidade,
-                          data.economia,
-                          data.confiabilidade
-                        ] : []}
-                        stroke={`hsl(${index * 60}, 70%, 50%)`}
-                        fill={`hsl(${index * 60}, 70%, 50%)`}
-                        fillOpacity={0.3}
-                      />
-                    ))}
+                    {summaries.map((summary, index) => {
+                      const key = `${summary.provider}/${summary.model}`;
+                      return (
+                        <Radar
+                          key={key}
+                          name={key}
+                          dataKey={key}
+                          stroke={`hsl(${index * 60}, 70%, 50%)`}
+                          fill={`hsl(${index * 60}, 70%, 50%)`}
+                          fillOpacity={0.3}
+                        />
+                      );
+                    })}
                     <Tooltip />
+                    <Legend />
                   </RadarChart>
                 </ResponsiveContainer>
               </CardContent>
