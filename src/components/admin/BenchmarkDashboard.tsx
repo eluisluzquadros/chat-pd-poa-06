@@ -274,13 +274,14 @@ export default function BenchmarkDashboard() {
       {/* Opções de Validação */}
       {showValidationOptions && (
         <ValidationOptionsDialog
-          isOpen={showValidationOptions}
-          onClose={() => setShowValidationOptions(false)}
+          open={showValidationOptions}
+          onOpenChange={setShowValidationOptions}
           onExecute={(options) => {
             setShowValidationOptions(false);
             runBenchmark(options);
           }}
           testCases={testCases}
+          selectedModel={selectedModel}
         />
       )}
       
