@@ -26,10 +26,14 @@ interface QATestCase {
   id: string;
   question: string;
   expected_answer: string;
+  expected_sql?: string;
   category: string;
   difficulty: string;
   tags: string[];
   is_active: boolean;
+  is_sql_related: boolean;
+  sql_complexity?: string;
+  version: number;
 }
 
 export default function BenchmarkDashboard() {
@@ -63,14 +67,22 @@ export default function BenchmarkDashboard() {
   }, []);
   
   const fetchTestCases = async () => {
-    const { data, error } = await supabase
-      .from('qa_test_cases')
-      .select('*')
-      .eq('is_active', true)
-      .order('category', { ascending: true });
+    try {
+      const { data: cases, error } = await supabase
+        .from('qa_test_cases')
+        .select('*')
+        .eq('is_active', true)
+        .order('created_at', { ascending: false });
       
-    if (data && !error) {
-      setTestCases(data);
+      if (error) {
+        console.error('Error fetching test cases:', error);
+        return;
+      }
+      
+      setTestCases(cases || []);
+      console.log('Loaded test cases:', cases?.length || 0);
+    } catch (error) {
+      console.error('Error in fetchTestCases:', error);
     }
   };
 
