@@ -17,8 +17,9 @@ serve(async (req) => {
   
   try {
     const requestBody = await req.json();
-    const { query, message, sessionId, userId, bypassCache } = requestBody;
+    const { query, message, sessionId, userId, bypassCache, model } = requestBody;
     const userMessage = message || query || '';
+    const selectedModel = model || 'openai/gpt-3.5-turbo'; // Default model if not specified
     
     if (!userMessage) {
       throw new Error('Query or message is required');
@@ -26,6 +27,9 @@ serve(async (req) => {
     
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
     const agentTrace = [];
+    
+    // Use service role key for internal edge function calls
+    const authKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || Deno.env.get('SUPABASE_ANON_KEY');
     
     // Step 1: Query Analysis
     console.log('🔍 Analyzing query:', userMessage);
@@ -35,7 +39,7 @@ serve(async (req) => {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${Deno.env.get('SUPABASE_ANON_KEY')}`,
+        'Authorization': `Bearer ${authKey}`,
       },
       body: JSON.stringify({ query: userMessage, sessionId }),
     });
@@ -70,7 +74,7 @@ serve(async (req) => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${Deno.env.get('SUPABASE_ANON_KEY')}`,
+          'Authorization': `Bearer ${authKey}`,
         },
         body: JSON.stringify({
           query: userMessage,
@@ -107,13 +111,14 @@ serve(async (req) => {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${Deno.env.get('SUPABASE_ANON_KEY')}`,
+        'Authorization': `Bearer ${authKey}`,
       },
       body: JSON.stringify({
         originalQuery: userMessage,
         analysisResult,
         sqlResults,
-        vectorResults: null
+        vectorResults: null,
+        model: selectedModel // Pass the selected model to response synthesizer
       }),
     });
 

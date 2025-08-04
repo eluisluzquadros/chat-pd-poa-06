@@ -35,7 +35,8 @@
       "Bash(dir:*)",
       "Bash(find:*)",
       "Bash(diff:*)",
-      "Bash(npx:*)"
+      "Bash(npx:*)",
+      "Bash(cat:*)"
     ],
     "deny": []
   }

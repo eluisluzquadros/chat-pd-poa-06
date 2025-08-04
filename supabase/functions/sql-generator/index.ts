@@ -16,7 +16,7 @@ interface SQLGenerationRequest {
 interface SQLGenerationResponse {
   sqlQueries: Array<{
     query: string;
-    dataset_id: string;
+    table: string;
     purpose: string;
   }>;
   confidence: number;
@@ -37,146 +37,106 @@ serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
 
-    // Get schema information for datasets
-    const { data: metadata } = await supabaseClient
-      .from('document_metadata')
-      .select('*')
-      .in('id', analysisResult.requiredDatasets || []);
-
     const systemPrompt = `Você é um especialista em geração de consultas SQL para o banco de dados do PDUS 2025.
 
-ESTRUTURA DO BANCO:
-- Tabela: document_rows
-- Campos: id (UUID), dataset_id (TEXT), row_data (JSONB), row_number (INTEGER), created_at
-- Para acessar dados: row_data->>'campo_nome' para texto, (row_data->>'campo_numerico')::numeric para números
+NOVA ESTRUTURA DO BANCO (USAR ESTAS TABELAS):
 
-QUERIES ESPECÍFICAS IMPORTANTES:
-1. Para contar bairros de Porto Alegre:
-   SELECT COUNT(DISTINCT row_data->>'Bairro') as total_bairros 
-   FROM document_rows 
-   WHERE dataset_id = '1FTENHpX4aLxmAoxvrEeGQn0fej-wxTMQRQs_XBjPQPY'
-   
-2. Para listar ZOTs de um bairro específico:
-   SELECT DISTINCT row_data->>'Zona' as zona 
-   FROM document_rows 
-   WHERE dataset_id = '1FTENHpX4aLxmAoxvrEeGQn0fej-wxTMQRQs_XBjPQPY' 
-   AND row_data->>'Bairro' = '[NOME_DO_BAIRRO]'
-   
-3. Para altura máxima de uma ZOT:
-   SELECT row_data->>'Altura Máxima - Edificação Isolada' as altura_maxima
-   FROM document_rows
-   WHERE dataset_id = '17_GMWnJC1sKff-YS0wesgxsvo3tnZdgSSb4JZ0ZjpCk'
-   AND row_data->>'Zona' = 'ZOT 07'
+1. TABELA: regime_urbanistico
+   Colunas:
+   - id (SERIAL PRIMARY KEY)
+   - bairro (VARCHAR) - Nome do bairro
+   - zona (VARCHAR) - Nome da zona (ex: "ZOT 8", "ZONA 1")
+   - altura_maxima (DECIMAL) - Altura máxima em metros
+   - coef_maximo_4d (TEXT) - Coeficiente de Aproveitamento Máximo
+   - coef_basico_4d (TEXT) - Coeficiente de Aproveitamento Básico
+   - to_base (DECIMAL) - Taxa de Ocupação Base
+   - to_max (DECIMAL) - Taxa de Ocupação Máxima
+   - taxa_permeabilidade (DECIMAL) - Taxa de Permeabilidade
+   - recuo_jardim_m (DECIMAL) - Recuo de jardim em metros
+   - recuo_lateral_m (DECIMAL) - Recuo lateral em metros
+   - recuo_fundos_m (DECIMAL) - Recuo de fundos em metros
+   - area_total_ha (DECIMAL) - Área total em hectares
+   - populacao (INTEGER) - População
+   - densidade_hab_ha (DECIMAL) - Densidade habitacional por hectare
+   - domicilios (INTEGER) - Número de domicílios
+   - quarteirao_padrao_m (INTEGER) - Quarteirão padrão em metros
+   - divisao_lote (BOOLEAN) - Se permite divisão de lote
+   - remembramento (BOOLEAN) - Se permite remembramento
+   - quota_ideal_m2 (INTEGER) - Quota ideal em m²
+   - metadata (JSONB) - Metadados adicionais
+   - created_at (TIMESTAMP)
+   - updated_at (TIMESTAMP)
 
-DATASETS DISPONÍVEIS:
-${metadata?.map(m => `
-- Dataset: ${m.id}
-- Nome: ${m.title}
-- Schema: ${JSON.stringify(m.schema)}
-`).join('\n') || 'Nenhum dataset encontrado'}
+2. TABELA: zots_bairros
+   Colunas:
+   - id (SERIAL PRIMARY KEY)
+   - bairro (VARCHAR) - Nome do bairro
+   - zona (VARCHAR) - Nome da zona
+   - caracteristicas (JSONB) - Características da zona
+   - restricoes (JSONB) - Restrições aplicáveis
+   - incentivos (JSONB) - Incentivos disponíveis
+   - metadata (JSONB) - Metadados adicionais
+   - created_at (TIMESTAMP)
+   - updated_at (TIMESTAMP)
 
-SCHEMAS ESPECÍFICOS:
-- Dataset ZOTs vs Bairros (1FTENHpX4aLxmAoxvrEeGQn0fej-wxTMQRQs_XBjPQPY):
-  Colunas: ["id","Bairro","Zona","Total_Zonas_no_Bairro","Tem_Zona_Especial"]
-  
-- Dataset Regime Urbanístico (17_GMWnJC1sKff-YS0wesgxsvo3tnZdgSSb4JZ0ZjpCk):
-  Colunas: ["id","Bairro","Zona","Área Mínima do Lote",...] (muitas colunas de parâmetros urbanísticos)
+3. TABELA: bairros_risco_desastre (se necessário)
+   Colunas:
+   - id (SERIAL PRIMARY KEY)
+   - bairro (VARCHAR)
+   - tipo_risco (VARCHAR)
+   - nivel_risco (VARCHAR)
+   - descricao (TEXT)
+   - metadata (JSONB)
 
 REGRAS DE GERAÇÃO:
-1. SEMPRE use document_rows como tabela base
-2. SEMPRE filtre por dataset_id primeiro
-3. Use row_data->>'campo' para acessar dados JSONB
-4. Para números: (row_data->>'campo')::numeric
-5. Para JOINs entre datasets, use subqueries ou CTEs
-6. Limite resultados com LIMIT quando apropriado
-7. CORRESPONDÊNCIA EXATA DE BAIRROS: Use = 'BAIRRO' (não ILIKE '%bairro%')
-8. Normalize ZOTs para formato "ZOT XX"
-9. CUIDADO: "BOA VISTA" ≠ "BOA VISTA DO SUL" - são bairros diferentes
-10. SEMPRE incluir a coluna "Zona" para identificar ZOTs nas consultas
 
-MAPEAMENTO DE TERMOS DO USUÁRIO PARA CAMPOS DA BASE (NOMES EXATOS):
-- "CA", "coeficiente", "índice de aproveitamento", "potencial construtivo" → "Coeficiente de Aproveitamento - Básico", "Coeficiente de Aproveitamento - Máximo"
-- "taxa de ocupação", "TO", "ocupação" → colunas relacionadas à ocupação
-- "altura máxima", "gabarito", "altura" → "Altura Máxima - Edificação Isolada"
-- "maior", "máximo", "superior", "teto", "limite máximo" → buscar campos com valores máximos
+1. SEMPRE use as novas tabelas dedicadas (regime_urbanistico, zots_bairros)
+2. NÃO use mais document_rows ou dataset_id
+3. Acesso direto às colunas (sem JSONB)
+4. Para bairros: WHERE UPPER(bairro) = UPPER('nome_do_bairro')
+5. Para zonas: WHERE zona = 'ZOT XX' ou zona LIKE 'ZOT%'
+6. Limite resultados quando apropriado com LIMIT
 
-CAMPOS CORRETOS DO DATASET:
-- Zona: "Zona"
-- Altura máxima: "Altura Máxima - Edificação Isolada" 
-- CA Básico: "Coeficiente de Aproveitamento - Básico"
-- CA Máximo: "Coeficiente de Aproveitamento - Máximo"
+MAPEAMENTO DE TERMOS:
+- "altura máxima", "gabarito" → altura_maxima
+- "CA", "coeficiente", "índice de aproveitamento" → coef_maximo_4d, coef_basico_4d
+- "taxa de ocupação", "TO" → usar campos de ocupação disponíveis
+- "permeabilidade" → taxa_permeabilidade_acima_1500, taxa_permeabilidade_ate_1500
+- "recuo" → recuo_jardim, afastamento_frente, afastamento_lateral, afastamento_fundos
 
-REGRA ESPECIAL PARA CONSULTAS DE CONSTRUÇÃO:
-Se isConstructionQuery = true, OBRIGATORIAMENTE inclua estas colunas no resultado:
-- "Zona" (para identificar a ZOT) 
-- "Altura Máxima - Edificação Isolada" (nome EXATO da coluna)
-- "Coeficiente de Aproveitamento - Básico" (nome EXATO da coluna)
-- "Coeficiente de Aproveitamento - Máximo" (nome EXATO da coluna)
-PRIORIDADE: Use SEMPRE o dataset "17_GMWnJC1sKff-YS0wesgxsvo3tnZdgSSb4JZ0ZjpCk" para consultas de construção
+QUERIES EXEMPLO:
 
-QUERIES ESPECÍFICAS CRÍTICAS:
-1. Para "índice de aproveitamento médio" de um bairro - USE DUAS QUERIES SEPARADAS:
-   
-   Query 1 - Calcular APENAS a média:
-   SELECT AVG(((row_data->>'Coeficiente de Aproveitamento - Básico')::numeric + 
-               (row_data->>'Coeficiente de Aproveitamento - Máximo')::numeric) / 2) as indice_medio
-   FROM document_rows 
-   WHERE dataset_id = '17_GMWnJC1sKff-YS0wesgxsvo3tnZdgSSb4JZ0ZjpCk'
-   AND UPPER(row_data->>'Bairro') = 'NOME_BAIRRO'
-   
-   Query 2 - Listar as ZOTs com detalhes (SEM AVG):
-   SELECT row_data->>'Zona' as zona,
-          row_data->>'Altura Máxima - Edificação Isolada' as altura_maxima,
-          row_data->>'Coeficiente de Aproveitamento - Básico' as ca_basico,
-          row_data->>'Coeficiente de Aproveitamento - Máximo' as ca_maximo
-   FROM document_rows 
-   WHERE dataset_id = '17_GMWnJC1sKff-YS0wesgxsvo3tnZdgSSb4JZ0ZjpCk'
-   AND UPPER(row_data->>'Bairro') = 'NOME_BAIRRO'
-   ORDER BY row_data->>'Zona'
-   
-2. Para "ZOTs com coeficiente maior que X":
-   SELECT DISTINCT row_data->>'Zona' as zona,
-          (row_data->>'Coeficiente de Aproveitamento - Máximo')::numeric as ca_maximo
-   FROM document_rows 
-   WHERE dataset_id = '17_GMWnJC1sKff-YS0wesgxsvo3tnZdgSSb4JZ0ZjpCk'
-   AND (row_data->>'Coeficiente de Aproveitamento - Máximo')::numeric > X
-   
-3. Para "zot X pertence a que bairro":
-   SELECT DISTINCT row_data->>'Bairro' as bairro, row_data->>'Zona' as zona
-   FROM document_rows 
-   WHERE dataset_id = '1FTENHpX4aLxmAoxvrEeGQn0fej-wxTMQRQs_XBjPQPY'
-   AND row_data->>'Zona' LIKE 'ZOT X%'
+1. Altura máxima de uma ZOT:
+   SELECT zona, altura_maxima, bairro 
+   FROM regime_urbanistico 
+   WHERE zona = 'ZOT 8'
 
-REGRA CRÍTICA PARA PRECISÃO DE DADOS:
-1. CORRESPONDÊNCIA EXATA DE BAIRROS:
-   - SEMPRE usar = 'NOME_BAIRRO_MAIUSCULO' (não ILIKE '%bairro%')
-   - Exemplos: 'BOA VISTA' ≠ 'BOA VISTA DO SUL' (são bairros diferentes)
-   - Sempre verificar acentuação correta dos nomes
+2. Parâmetros de um bairro:
+   SELECT zona, altura_maxima, coef_maximo_4d, coef_basico_4d 
+   FROM regime_urbanistico 
+   WHERE UPPER(bairro) = UPPER('Centro Histórico')
+   ORDER BY zona
 
-2. ZOTs COM SUBDIVISÕES:
-   - CRÍTICO: Só retornar subdivisões que EXISTEM na base de dados
-   - Cada bairro tem suas próprias ZOTs específicas
-   - NUNCA inventar subdivisões que não existem no bairro
-   - Query exemplo: WHERE row_data->>'Bairro' = '[NOME_BAIRRO]' AND row_data->>'Zona' IN (lista de ZOTs existentes)
+3. ZOTs com CA maior que X:
+   SELECT DISTINCT zona, coef_maximo_4d, bairro
+   FROM regime_urbanistico
+   WHERE coef_maximo_4d > '2.4'
+   ORDER BY coef_maximo_4d DESC
 
-3. VALIDAÇÃO OBRIGATÓRIA:
-   - Verificar se dados retornados são realmente do bairro solicitado
-   - NUNCA misturar dados de bairros diferentes
-   - Se consulta é sobre um bairro específico, só retornar dados desse bairro
+4. Listar bairros:
+   SELECT DISTINCT bairro 
+   FROM regime_urbanistico 
+   ORDER BY bairro
 
-CONTEXTO: ${analysisResult?.entities ? JSON.stringify(analysisResult.entities) : 'Nenhuma entidade específica'}
-É consulta de construção: ${analysisResult?.isConstructionQuery || false}
-Estratégia especial: ${analysisResult?.processingStrategy || 'standard'}
+5. O que pode ser construído em um bairro:
+   SELECT zona, altura_maxima, coef_maximo_4d, taxa_permeabilidade_acima_1500
+   FROM regime_urbanistico
+   WHERE UPPER(bairro) = UPPER('nome_do_bairro')
+   ORDER BY zona
 
-DICAS PARA NOMES DE BAIRROS:
-- SEMPRE use UPPER() para comparação: UPPER(row_data->>'Bairro') = UPPER('nome')
-- Bairros com acentos: tente ambas as versões (com e sem acento)
-- "Três Figueiras" pode estar como "TRES FIGUEIRAS" ou "TRÊS FIGUEIRAS" - SEMPRE tente ambas variações
-- Para bairros com acentos, SEMPRE gere queries com e sem acentos (ex: "TRÊS FIGUEIRAS" e "TRES FIGUEIRAS")
-- "Cristal" deve estar como "CRISTAL"
-- NUNCA diga que um bairro não existe sem verificar variações do nome
+CONTEXTO: ${JSON.stringify(analysisResult)}
 
-Gere consultas SQL otimizadas e seguras. Responda APENAS com JSON válido.`;
+Gere consultas SQL otimizadas usando as NOVAS TABELAS. Responda APENAS com JSON válido.`;
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -194,70 +154,19 @@ Gere consultas SQL otimizadas e seguras. Responda APENAS com JSON válido.`;
 
 Análise prévia: ${JSON.stringify(analysisResult)}
 
-REGRAS CRÍTICAS:
-0. REGRA ABSOLUTA: Se NÃO há bairro especificado na consulta (analysisResult.entities.bairros está vazio), NUNCA gere queries com filtro de bairro específico. NÃO use WHERE row_data->>'Bairro' = 'QUALQUER_BAIRRO'
-1. Se a pergunta menciona "índice de aproveitamento médio", use DUAS queries: uma para calcular APENAS o AVG (sem outros campos) e outra para listar as ZOTs com detalhes
-2. Se pergunta por "ZOTs com coeficiente maior que", filtre por ca_maximo > valor
-3. Para bairros, SEMPRE tente múltiplas variações do nome (com/sem acento, maiúsculo)
-4. NUNCA retorne resultado vazio sem tentar variações do nome do bairro
-5. Para "Três Figueiras", SEMPRE gere queries que tentam: "TRÊS FIGUEIRAS", "TRES FIGUEIRAS", "três figueiras", "tres figueiras"
-6. Para "liste todos os bairros", use: SELECT DISTINCT row_data->>'Bairro' FROM document_rows WHERE dataset_id = '17_GMWnJC1sKff-YS0wesgxsvo3tnZdgSSb4JZ0ZjpCk' ORDER BY 1
-7. Para "o que pode ser construído", SEMPRE retorne TODAS as ZOTs do bairro (sem LIMIT), pois um bairro pode ter múltiplas ZOTs
-
-REGRA FUNDAMENTAL - QUERIES GENÉRICAS:
-Se analysisResult.entities.bairros está vazio:
-- NÃO gere queries SQL para dados específicos
-- NÃO use filtros de bairro
-- NÃO mencione nomes de bairros específicos
-- Retorne sqlQueries vazio ou queries muito genéricas sem filtro de bairro
-
-${analysisResult?.isConstructionQuery ? 
-`ATENÇÃO: Esta é uma consulta sobre construção. OBRIGATORIAMENTE inclua:
-- Campo "Zona" para identificar a ZOT
-- Campo "Altura Máxima - Edificação Isolada" (nome exato da coluna)
-- Campo "Coeficiente de Aproveitamento - Básico" (nome exato da coluna)  
-- Campo "Coeficiente de Aproveitamento - Máximo" (nome exato da coluna)
-
-DATASET OBRIGATÓRIO: Use "17_GMWnJC1sKff-YS0wesgxsvo3tnZdgSSb4JZ0ZjpCk" como prioridade MÁXIMA
-
-CRÍTICO ABSOLUTO - PRECISÃO DE DADOS:
-1. CORRESPONDÊNCIA EXATA DE BAIRROS:
-   row_data->>'Bairro' = 'NOME_BAIRRO_MAIUSCULO' (NUNCA use ILIKE)
-   
-2. VALIDAÇÃO POR BAIRRO ESPECÍFICO (APENAS SE HÁ BAIRRO NA CONSULTA):
-   - Cada bairro tem suas ZOTs específicas
-   - NUNCA assumir que todas as subdivisões (A, B, C) existem
-   - ATENÇÃO: SÓ use filtros de bairro se analysisResult.entities.bairros NÃO está vazio
-   
-3. QUERY SEGURA PARA SUBDIVISÕES:
-   WHERE row_data->>'Bairro' = '[NOME_DO_BAIRRO_SOLICITADO]' 
-   AND row_data->>'Zona' IN (lista das ZOTs que existem no bairro)
-   (usar lista específica das ZOTs que EXISTEM)
-
-4. VERIFICAÇÃO FINAL:
-   - Se retornou dados, conferir se todos são do bairro correto
-   - NUNCA retornar ZOT que não existe no bairro
-
-RECONHECIMENTO DE VARIAÇÕES LINGUÍSTICAS:
-Se o usuário perguntar por qualquer variação de:
-- "CA", "coeficiente", "índice de aproveitamento", "potencial construtivo" → busque "Coeficiente de Aproveitamento - Básico/Máximo"
-- "taxa de ocupação", "TO" → busque campos de ocupação  
-- "altura máxima", "gabarito" → busque "Altura Máxima - Edificação Isolada"
-- "maior", "máximo", "superior", "teto" → identifique que quer valores máximos
-
-VALIDAÇÃO FINAL: Sempre verifique se retornou dados válidos dos 4 campos obrigatórios para construção` : ''}
+IMPORTANTE: Use APENAS as novas tabelas (regime_urbanistico, zots_bairros), NÃO use document_rows!
 
 Responda com JSON válido seguindo esta estrutura:
 {
   "sqlQueries": [
     {
-      "query": "SELECT row_data->>'campo' as campo FROM document_rows WHERE dataset_id = 'id' AND ...",
-      "dataset_id": "dataset_id_aqui",
-      "purpose": "descrição do propósito da consulta"
+      "query": "SELECT ... FROM regime_urbanistico WHERE ...",
+      "table": "regime_urbanistico",
+      "purpose": "descrição do propósito"
     }
   ],
   "confidence": 0.95,
-  "executionPlan": "descrição de como as consultas devem ser executadas"
+  "executionPlan": "descrição do plano"
 }`
           }
         ],
@@ -285,71 +194,83 @@ Responda com JSON válido seguindo esta estrutura:
       const jsonMatch = contentToParse.match(/```(?:json)?\s*(\{[\s\S]*?\})\s*```/);
       if (jsonMatch) {
         contentToParse = jsonMatch[1];
-        console.log('DEBUG - SQL Generator extracted JSON from markdown');
       }
       
       sqlResult = JSON.parse(contentToParse);
-      console.log('DEBUG - Successfully parsed SQL JSON, queries count:', sqlResult.sqlQueries?.length);
     } catch (parseError) {
-      console.error('Failed to parse SQL result:', parseError, 'Raw content:', data.choices[0].message.content);
+      console.error('Failed to parse SQL result:', parseError);
       
-      // Enhanced fallback with better queries for construction
-      const isConstruction = analysisResult.isConstructionQuery;
-      const constructionFields = `
-        row_data->>'Zona' as zona,
-        row_data->>'Altura Máxima - Edificação Isolada' as altura_maxima,
-        row_data->>'Coeficiente de Aproveitamento - Básico' as ca_basico,
-        row_data->>'Coeficiente de Aproveitamento - Máximo' as ca_maximo
-      `;
-      
+      // Fallback para queries básicas com nova estrutura
       sqlResult = {
         sqlQueries: [
           {
-            query: isConstruction 
-              ? `SELECT ${constructionFields} FROM document_rows WHERE dataset_id = '17_GMWnJC1sKff-YS0wesgxsvo3tnZdgSSb4JZ0ZjpCk' LIMIT 20`
-              : `SELECT row_data FROM document_rows WHERE dataset_id IN ('${analysisResult.requiredDatasets?.join("', '") || ''}') LIMIT 10`,
-            dataset_id: analysisResult.requiredDatasets?.[0] || '17_GMWnJC1sKff-YS0wesgxsvo3tnZdgSSb4JZ0ZjpCk',
-            purpose: isConstruction ? 'Consulta de parâmetros construtivos (fallback)' : 'Consulta genérica de fallback'
+            query: `SELECT zona, altura_maxima, coef_maximo_4d FROM regime_urbanistico LIMIT 20`,
+            table: 'regime_urbanistico',
+            purpose: 'Consulta de fallback com nova estrutura'
           }
         ],
         confidence: 0.6,
-        executionPlan: isConstruction ? 'Buscar dados construtivos essenciais' : 'Executar consulta simples como fallback'
+        executionPlan: 'Executar consulta básica como fallback'
       };
-      console.log('DEBUG - Used enhanced SQL fallback for construction:', isConstruction);
     }
 
     // Validate and execute queries
     const executionResults = [];
     for (const sqlQuery of sqlResult.sqlQueries) {
       try {
-        console.log('SQL Query before cleaning:', sqlQuery.query);
-        
-        // Remove leading/trailing whitespace and newlines to fix RPC function
         const cleanQuery = sqlQuery.query.trim().replace(/\s+/g, ' ');
-        console.log('SQL Query after cleaning:', cleanQuery);
         
         // Basic SQL injection prevention
         if (!/^SELECT/i.test(cleanQuery)) {
           throw new Error('Apenas consultas SELECT são permitidas');
         }
         
-        const { data: queryResult, error } = await supabaseClient
-          .rpc('execute_sql_query', { query_text: cleanQuery });
-        
-        console.log('RPC Result:', { data: queryResult, error });
+        // First check if table exists and has data
+        const tableCheck = await supabaseClient
+          .from(sqlQuery.table || 'regime_urbanistico')
+          .select('id')
+          .limit(1);
 
-        if (error) {
-          console.error('SQL execution error:', error);
-          executionResults.push({
-            ...sqlQuery,
-            error: error.message,
-            data: []
-          });
+        if (tableCheck.error) {
+          // Table doesn't exist or is empty, fallback to old structure
+          console.warn(`Table ${sqlQuery.table} not accessible, using fallback`);
+          
+          // Convert query to old structure format
+          const fallbackQuery = convertToOldStructure(cleanQuery, analysisResult);
+          
+          const { data: queryResult, error } = await supabaseClient
+            .rpc('execute_sql_query', { query_text: fallbackQuery });
+          
+          if (error) {
+            executionResults.push({
+              ...sqlQuery,
+              error: `Tabela nova não disponível, fallback também falhou: ${error.message}`,
+              data: []
+            });
+          } else {
+            executionResults.push({
+              ...sqlQuery,
+              data: queryResult || [],
+              note: 'Usando estrutura antiga (fallback)'
+            });
+          }
         } else {
-          executionResults.push({
-            ...sqlQuery,
-            data: queryResult || []
-          });
+          // Execute query on new table
+          const { data: queryResult, error } = await supabaseClient
+            .rpc('execute_sql_query', { query_text: cleanQuery });
+          
+          if (error) {
+            executionResults.push({
+              ...sqlQuery,
+              error: error.message,
+              data: []
+            });
+          } else {
+            executionResults.push({
+              ...sqlQuery,
+              data: queryResult || []
+            });
+          }
         }
       } catch (execError) {
         console.error('Query execution error:', execError);
@@ -381,3 +302,41 @@ Responda com JSON válido seguindo esta estrutura:
     });
   }
 });
+
+// Helper function to convert new structure query to old structure
+function convertToOldStructure(query: string, analysisResult: any): string {
+  // This is a fallback converter for when new tables don't exist
+  // It converts queries from new table structure to old document_rows structure
+  
+  let convertedQuery = query;
+  
+  // Replace table names
+  convertedQuery = convertedQuery.replace(/FROM\s+regime_urbanistico/gi, 
+    "FROM document_rows WHERE dataset_id = '17_GMWnJC1sKff-YS0wesgxsvo3tnZdgSSb4JZ0ZjpCk'");
+  
+  convertedQuery = convertedQuery.replace(/FROM\s+zots_bairros/gi,
+    "FROM document_rows WHERE dataset_id = '1FTENHpX4aLxmAoxvrEeGQn0fej-wxTMQRQs_XBjPQPY'");
+  
+  // Replace column names with JSONB access
+  const columnMappings = {
+    'bairro': "row_data->>'Bairro'",
+    'zona': "row_data->>'Zona'",
+    'altura_maxima': "row_data->>'Altura Máxima - Edificação Isolada'",
+    'ca_max': "row_data->>'Coeficiente de Aproveitamento - Máximo'",
+    'ca_basico': "row_data->>'Coeficiente de Aproveitamento - Básico'",
+    'to_max': "row_data->>'Taxa de Ocupação Máxima'",
+    'to_base': "row_data->>'Taxa de Ocupação Base'",
+    'taxa_permeabilidade': "row_data->>'Taxa de Permeabilidade'"
+  };
+  
+  for (const [newCol, oldCol] of Object.entries(columnMappings)) {
+    const regex = new RegExp(`\\b${newCol}\\b`, 'gi');
+    convertedQuery = convertedQuery.replace(regex, oldCol);
+  }
+  
+  // Fix WHERE clauses
+  convertedQuery = convertedQuery.replace(/WHERE\s+UPPER\((.*?)\)\s*=\s*UPPER/gi, 
+    "AND UPPER($1) = UPPER");
+  
+  return convertedQuery;
+}

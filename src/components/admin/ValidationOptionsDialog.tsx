@@ -8,9 +8,9 @@ import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Play, Settings, Filter, Sparkles } from "lucide-react";
+import { MODEL_CONFIGS } from "@/services/benchmarkService";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { MODEL_CONFIGS } from "@/services/benchmarkService";
 
 interface QATestCase {
   id: string;
@@ -129,7 +129,7 @@ export function ValidationOptionsDialog({
       mode,
       includeSQL,
       excludeSQL,
-      selectedModels: selectedModels.length > 0 ? selectedModels : MODEL_CONFIGS.map(m => `${m.provider}/${m.model}`)
+      selectedModels: selectedModels.length > 0 ? selectedModels : [selectedModel]
     };
 
     switch (mode) {
@@ -233,7 +233,7 @@ export function ValidationOptionsDialog({
                   <div key={modelKey} className="flex items-start space-x-2">
                     <Checkbox
                       id={`model_${modelKey}`}
-                      checked={selectedModels.includes(modelKey) || selectedModels.length === 0}
+                      checked={selectedModels.includes(modelKey)}
                       onCheckedChange={(checked) => {
                         if (checked) {
                           setSelectedModels(prev => [...prev, modelKey]);
@@ -262,7 +262,9 @@ export function ValidationOptionsDialog({
               })}
             </div>
             <p className="text-sm text-muted-foreground">
-              {selectedModels.length === 0 ? 'Todos os modelos serão testados' : `${selectedModels.length} modelo(s) selecionado(s)`}
+              {selectedModels.length === 0 
+                ? `Usando modelo selecionado: ${selectedModel}` 
+                : `${selectedModels.length} modelo(s) selecionado(s)`}
             </p>
           </div>
 

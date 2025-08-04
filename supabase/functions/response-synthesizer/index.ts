@@ -17,7 +17,11 @@ serve(async (req) => {
   try {
     debugLog.push({ step: 'start', time: new Date().toISOString() });
     
-    const { originalQuery, analysisResult, sqlResults, vectorResults } = await req.json();
+    const { originalQuery, analysisResult, sqlResults, vectorResults, model } = await req.json();
+    
+    // Determine which model to use for synthesis
+    const selectedModel = model || 'openai/gpt-3.5-turbo';
+    console.log(`Using model for synthesis: ${selectedModel}`);
     
     debugLog.push({ 
       step: 'parsed_request',
@@ -65,43 +69,121 @@ serve(async (req) => {
       promptLength: prompt.length
     });
     
-    // Chamar OpenAI
-    debugLog.push({ step: 'calling_openai' });
+    // Chamar o modelo LLM selecionado
+    debugLog.push({ step: 'calling_llm', model: selectedModel });
+    
+    // Extrair provider e modelo do formato "provider/model"
+    const [provider, modelName] = selectedModel.includes('/') 
+      ? selectedModel.split('/') 
+      : ['openai', selectedModel];
+    
+    let llmResponse;
     
     try {
-      const response = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${openAIApiKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: 'gpt-3.5-turbo',
-          messages: [
-            { role: 'system', content: 'Você é um assistente do Plano Diretor de Porto Alegre.' },
-            { role: 'user', content: prompt }
-          ],
-          temperature: 0.7,
-          max_tokens: 2000
-        }),
-      });
+      // Route to appropriate LLM based on provider
+      if (provider === 'openai' || provider === 'gpt' || modelName?.startsWith('gpt')) {
+        // OpenAI models
+        const actualModel = modelName || 'gpt-3.5-turbo';
+        const response = await fetch('https://api.openai.com/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${openAIApiKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            model: actualModel === 'gpt-4.1' ? 'gpt-4-turbo-preview' : actualModel,
+            messages: [
+              { role: 'system', content: 'Você é um assistente do Plano Diretor de Porto Alegre.' },
+              { role: 'user', content: prompt }
+            ],
+            temperature: 0.7,
+            max_tokens: 2000
+          }),
+        });
+        llmResponse = response;
+      
+      } else if (provider === 'anthropic' || provider === 'claude') {
+        // Anthropic Claude models
+        const claudeKey = Deno.env.get('ANTHROPIC_API_KEY');
+        if (!claudeKey) {
+          // Fallback to OpenAI if Claude key not available
+          const response = await fetch('https://api.openai.com/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${openAIApiKey}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              model: 'gpt-3.5-turbo',
+              messages: [
+                { role: 'system', content: 'Você é um assistente do Plano Diretor de Porto Alegre.' },
+                { role: 'user', content: prompt }
+              ],
+              temperature: 0.7,
+              max_tokens: 2000
+            }),
+          });
+          llmResponse = response;
+        } else {
+          // Add Claude API call here when available
+          // For now, fallback to OpenAI
+          const response = await fetch('https://api.openai.com/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${openAIApiKey}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              model: 'gpt-3.5-turbo',
+              messages: [
+                { role: 'system', content: 'Você é um assistente do Plano Diretor de Porto Alegre.' },
+                { role: 'user', content: prompt }
+              ],
+              temperature: 0.7,
+              max_tokens: 2000
+            }),
+          });
+          llmResponse = response;
+        }
+      } else {
+        // Default to OpenAI for unsupported providers
+        const response = await fetch('https://api.openai.com/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${openAIApiKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            model: 'gpt-3.5-turbo',
+            messages: [
+              { role: 'system', content: 'Você é um assistente do Plano Diretor de Porto Alegre.' },
+              { role: 'user', content: prompt }
+            ],
+            temperature: 0.7,
+            max_tokens: 2000
+          }),
+        });
+        llmResponse = response;
+      }
       
       debugLog.push({
-        step: 'openai_response',
-        status: response.status,
-        ok: response.ok
+        step: 'llm_response',
+        status: llmResponse.status,
+        ok: llmResponse.ok,
+        provider,
+        model: modelName
       });
       
-      if (!response.ok) {
-        const error = await response.text();
+      if (!llmResponse.ok) {
+        const error = await llmResponse.text();
         debugLog.push({
-          step: 'openai_error',
+          step: 'llm_error',
           error: error.substring(0, 500)
         });
         throw new Error(`OpenAI error: ${response.status}`);
       }
       
-      const data = await response.json();
+      const data = await llmResponse.json();
       const synthesizedResponse = data.choices[0].message.content;
       
       return new Response(JSON.stringify({

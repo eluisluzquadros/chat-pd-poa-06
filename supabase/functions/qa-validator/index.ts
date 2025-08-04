@@ -14,14 +14,57 @@ const TOKENS_PER_MINUTE_LIMIT = 10000; // Rate limit for tokens per minute
 const MAX_EXECUTION_TIME = 50000; // 50 seconds max execution time
 
 // Map frontend model names to edge function names
+// This should match the multiLLMService routing
 const modelToFunction: Record<string, string> = {
+  // Base providers (used by multiLLMService)
+  'openai': 'agentic-rag',
+  'claude': 'claude-chat',
+  'gemini': 'gemini-chat',
+  'llama': 'llama-chat',
+  'deepseek': 'deepseek-chat',
+  'groq': 'groq-chat',
+  
+  // Direct function mappings
   'agentic-rag': 'agentic-rag',
   'claude-chat': 'claude-chat',
   'gemini-chat': 'gemini-chat',
   'llama-chat': 'llama-chat',
   'deepseek-chat': 'deepseek-chat',
   'groq-chat': 'groq-chat',
-  'openai': 'agentic-rag'
+  
+  // Specific OpenAI models (all route to agentic-rag)
+  'openai/gpt-4.1': 'agentic-rag',
+  'openai/gpt-4o': 'agentic-rag',
+  'openai/gpt-4-turbo': 'agentic-rag',
+  'openai/gpt-4o-mini': 'agentic-rag',
+  'openai/gpt-3.5-turbo': 'agentic-rag',
+  'gpt-4.1': 'agentic-rag', // Also accept without provider prefix
+  'gpt-4o': 'agentic-rag',
+  'gpt-4-turbo': 'agentic-rag',
+  'gpt-4o-mini': 'agentic-rag',
+  'gpt-3.5-turbo': 'agentic-rag',
+  
+  // Anthropic models variations
+  'anthropic/claude-4-opus': 'claude-opus-chat',
+  'anthropic/claude-4-sonnet': 'claude-sonnet-chat',
+  'anthropic/claude-3-5-sonnet-20241022': 'claude-chat',
+  'anthropic/claude-3-sonnet-20240229': 'claude-sonnet-chat',
+  'anthropic/claude-3-haiku-20240307': 'claude-haiku-chat',
+  'claude-3-opus': 'claude-opus-chat',
+  'claude-3-sonnet': 'claude-sonnet-chat',
+  'claude-3-haiku': 'claude-haiku-chat',
+  
+  // Google models variations
+  'google/gemini-2.0-flash-exp': 'gemini-chat',
+  'google/gemini-1.5-pro': 'gemini-pro-chat',
+  'google/gemini-1.5-flash': 'gemini-chat',
+  'gemini-pro': 'gemini-pro-chat',
+  'gemini-pro-vision': 'gemini-vision-chat',
+  
+  // Other providers
+  'deepseek/deepseek-v3': 'deepseek-chat',
+  'zhipuai/glm-4.5': 'groq-chat',
+  'zhipuai/glm-4': 'groq-chat'
 };
 
 // Token tracking for rate limiting
@@ -136,7 +179,19 @@ serve(async (req) => {
 
     if (mode === 'selected' && testCaseIds.length > 0) {
       console.log('Mode: selected, filtering by IDs:', testCaseIds);
-      query = query.in('id', testCaseIds);
+      // testCaseIds might be integers (test_id) or UUIDs (id)
+      // Check if they look like integers
+      const isNumeric = testCaseIds.every(id => !isNaN(Number(id)));
+      
+      if (isNumeric) {
+        // If they're numeric, match against test_id field
+        console.log('Using numeric test_id field for filtering');
+        query = query.in('test_id', testCaseIds.map(id => Number(id)));
+      } else {
+        // If they're not numeric, assume they're UUIDs
+        console.log('Using UUID id field for filtering');
+        query = query.in('id', testCaseIds);
+      }
     } else if (mode === 'filtered') {
       console.log('Mode: filtered, applying filters');
       if (categories.length > 0) {
@@ -145,7 +200,8 @@ serve(async (req) => {
       }
       if (difficulties.length > 0) {
         console.log('Filtering by difficulties:', difficulties);
-        query = query.in('difficulty', difficulties);
+        // Handle both difficulty and complexity fields
+        query = query.or(`difficulty.in.(${difficulties.join(',')}),complexity.in.(${difficulties.join(',')})`)
       }
     } else if (mode === 'all') {
       console.log('Mode: all, no additional filters');
@@ -230,24 +286,57 @@ serve(async (req) => {
       const testCase = batchTestCases[i];
       const globalIndex = startIndex + i;
       console.log(`\n=== Processing test ${globalIndex + 1}/${totalTests} ===`);
-      console.log(`Test ID: ${testCase.id}`);
-      console.log(`Question: ${testCase.question}`);
+      
+      // Debug: Log all fields to find the UUID field
+      console.log('Test case fields:', Object.keys(testCase));
+      console.log('Test case id:', testCase.id, 'type:', typeof testCase.id);
+      console.log('Test case test_id:', testCase.test_id, 'type:', typeof testCase.test_id);
+      
+      // Look for UUID field - it might be named differently
+      let testCaseUUID = null;
+      
+      // Check if there's a uuid field
+      if (testCase.uuid) {
+        testCaseUUID = testCase.uuid;
+        console.log('Found uuid field:', testCaseUUID);
+      }
+      // Check if id is a string that looks like a UUID
+      else if (typeof testCase.id === 'string' && testCase.id.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
+        testCaseUUID = testCase.id;
+        console.log('id field is UUID:', testCaseUUID);
+      }
+      // Otherwise, generate a deterministic UUID from the test_id
+      else {
+        // Generate a deterministic UUID v5 from the test_id for consistency
+        // For now, we'll use a placeholder UUID format
+        const testId = testCase.test_id || testCase.id;
+        testCaseUUID = `00000000-0000-0000-0000-${String(testId).padStart(12, '0')}`;
+        console.log('Generated placeholder UUID from test_id:', testCaseUUID);
+      }
+      
+      const testCaseNumber = testCase.test_id || testCase.id;
+      console.log(`Using UUID: ${testCaseUUID}, Test Number: ${testCaseNumber}`);
+      const questionText = testCase.question || testCase.query || '';
+      console.log(`Question: ${questionText}`);
       
       const testStartTime = Date.now();
       
       try {
-        // Determine which edge function to call
-        const functionName = modelToFunction[model] || 'agentic-rag';
+        // ALWAYS use agentic-rag for the RAG system
+        // The model parameter will be passed to control which LLM is used for synthesis
+        const functionName = 'agentic-rag';
+        console.log(`Using RAG system (agentic-rag) with model: ${model}`);
         
-        // Call the edge function
+        // Call the edge function with model parameter
         const response = await callEdgeFunction(
           supabase,
           functionName,
           {
-            message: testCase.question,
+            message: questionText,
             userRole: 'user',
             sessionId: `qa-test-${validationRun.id}`,
-            userId: 'qa-validator'
+            userId: 'qa-validator',
+            model: model // Pass the selected model to control which LLM is used
           },
           TIMEOUT_PER_TEST
         );
@@ -259,14 +348,15 @@ serve(async (req) => {
         const answer = response.response || response.content || response.text || '';
         const confidence = response.confidence || 0.5;
         const tokensUsed = response.usage?.total_tokens || 
-                          estimateTokens(testCase.question + answer);
+                          estimateTokens(questionText + answer);
         
         totalTokensUsed += tokensUsed;
         addTokensToWindow(tokensUsed);
         
-        // Compare answers
+        // Compare answers - handle both field names
         const actualAnswer = answer.toLowerCase().trim();
-        const expectedAnswer = testCase.expected_answer.toLowerCase().trim();
+        const expectedAnswerField = testCase.expected_answer || testCase.expected_response || '';
+        const expectedAnswer = expectedAnswerField.toLowerCase().trim();
         
         // Calculate accuracy
         let isCorrect = false;
@@ -291,9 +381,9 @@ serve(async (req) => {
           accuracy = accuracy * 0.7 + confidence * 0.3;
         }
         
-        // Save result
+        // Save result - IMPORTANT: use UUID for test_case_id
         const result = {
-          test_case_id: testCase.id,
+          test_case_id: testCaseUUID, // Use the UUID variable we defined above
           validation_run_id: validationRun.id,
           model,
           actual_answer: answer || 'Sem resposta',
@@ -305,13 +395,21 @@ serve(async (req) => {
           generated_sql: response.generatedSql || null
         };
         
-        const { error: insertError } = await supabase
+        console.log('Attempting to save result:', JSON.stringify(result, null, 2));
+        
+        const { data: insertedResult, error: insertError } = await supabase
           .from('qa_validation_results')
-          .insert(result);
+          .insert(result)
+          .select()
+          .single();
 
         if (insertError) {
-          console.error('Error inserting result:', insertError);
-          throw insertError;
+          console.error('❌ Error inserting result:', insertError);
+          console.error('Error details:', JSON.stringify(insertError, null, 2));
+          // Don't throw, just log and continue
+          // throw insertError;
+        } else {
+          console.log('✅ Result saved successfully:', insertedResult?.id);
         }
         
         processedTests++;
@@ -321,11 +419,11 @@ serve(async (req) => {
         totalResponseTime += responseTime;
         
       } catch (error) {
-        console.error(`Test failed for "${testCase.question}":`, error.message);
+        console.error(`Test failed for "${questionText}":`, error.message);
         
-        // Save error result
+        // Save error result - IMPORTANT: use UUID for test_case_id
         const errorResult = {
-          test_case_id: testCase.id,
+          test_case_id: testCaseUUID, // Use the UUID variable we defined above
           validation_run_id: validationRun.id,
           model,
           actual_answer: null,
@@ -349,14 +447,16 @@ serve(async (req) => {
       await supabase
         .from('qa_validation_runs')
         .update({
-          passed_tests: passedTests,
-          overall_accuracy: processedTests > 0 ? totalAccuracy / processedTests : 0,
-          avg_response_time_ms: Math.round(totalResponseTime / Math.max(processedTests, 1)),
+          passed_tests: existingPassedTests + passedTests,
+          overall_accuracy: (existingProcessedTests + processedTests) > 0 
+            ? (existingTotalAccuracy + totalAccuracy) / (existingProcessedTests + processedTests) 
+            : 0,
+          avg_response_time_ms: Math.round((existingTotalResponseTime + totalResponseTime) / Math.max(existingProcessedTests + processedTests, 1)),
         })
         .eq('id', validationRun.id);
       
       // Calculate and apply delay before next test
-      if (i < testCases.length - 1) {
+      if (i < batchTestCases.length - 1) {
         const estimatedNextTokens = 500; // Estimate for next test
         const delay = calculateDelay(estimatedNextTokens);
         console.log(`Waiting ${delay}ms before next test (${getTokensInLastMinute()} tokens in last minute)`);

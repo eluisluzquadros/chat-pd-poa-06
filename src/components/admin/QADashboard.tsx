@@ -62,7 +62,6 @@ export function QADashboard() {
   const [validationRuns, setValidationRuns] = useState<QAValidationRun[]>([]);
   const [testCases, setTestCases] = useState<QATestCase[]>([]);
   const [selectedResults, setSelectedResults] = useState<QAValidationResult[]>([]);
-  const [selectedModel, setSelectedModel] = useState<string>("agentic-rag");
   const [isRunning, setIsRunning] = useState(false);
   const [loading, setLoading] = useState(true);
   const [editingTestCase, setEditingTestCase] = useState<QATestCase | null>(null);
@@ -73,11 +72,6 @@ export function QADashboard() {
     total: number;
     percentage: number;
   } | null>(null);
-
-  const models = [
-    "agentic-rag", "claude-chat", "gemini-chat", 
-    "llama-chat", "deepseek-chat", "groq-chat"
-  ];
 
   useEffect(() => {
     fetchData();
@@ -214,31 +208,51 @@ export function QADashboard() {
     setShowValidationOptions(true);
   };
 
-  const executeValidation = async (options: ValidationExecutionOptions, runId?: string, startIdx?: number) => {
-    console.log('executeValidation called with options:', options, 'runId:', runId, 'startIdx:', startIdx);
+  const executeValidation = async (options: ValidationExecutionOptions, runId?: string, startIdx?: number, modelIndex?: number) => {
+    console.log('executeValidation called with options:', options, 'runId:', runId, 'startIdx:', startIdx, 'modelIndex:', modelIndex);
     if (isRunning && !runId) return;
     
-    if (!runId) {
+    // Get models to test - use agentic-rag as default if no models selected
+    const modelsToTest = options.selectedModels || ['agentic-rag'];
+    const currentModelIndex = modelIndex || 0;
+    
+    if (!runId && currentModelIndex === 0) {
       setIsRunning(true);
       console.log('isRunning set to true');
-      toast.info("Iniciando validação QA personalizada...");
+      const totalModels = modelsToTest.length;
+      const testsPerModel = options.selectedIds?.length || testCases.length || 38;
+      const totalTests = totalModels * testsPerModel;
+      
+      toast.info(`Iniciando validação QA com ${totalModels} modelo(s)...`);
       
       // Initialize progress immediately with estimated values
-      const estimatedTotal = options.selectedIds?.length || testCases.length || 38;
       const tempRunId = `temp-${Date.now()}`;
       
       setCurrentRunId(tempRunId);
       setValidationProgress({
         current: 0,
-        total: estimatedTotal,
+        total: totalTests,
         percentage: 0
       });
-      console.log('Initial progress set:', { current: 0, total: estimatedTotal, tempRunId });
+      console.log('Initial progress set:', { current: 0, total: totalTests, tempRunId });
     }
+    
+    // If we've processed all models, finish
+    if (currentModelIndex >= modelsToTest.length) {
+      setIsRunning(false);
+      setCurrentRunId(null);
+      setValidationProgress(null);
+      toast.success('Validação QA concluída para todos os modelos!');
+      await fetchData();
+      return;
+    }
+    
+    const currentModel = modelsToTest[currentModelIndex];
+    console.log(`Processing model ${currentModelIndex + 1}/${modelsToTest.length}: ${currentModel}`);
 
     try {
       const body: any = { 
-        model: selectedModel,
+        model: currentModel,
         mode: options.mode || 'all',
         validationRunId: runId || null,
         startIndex: startIdx || 0
@@ -335,25 +349,37 @@ export function QADashboard() {
           percentage: Math.round((responseData.processedTests / totalTests) * 100)
         });
         
-        // Check if there are more tests to process
+        // Check if there are more tests to process for current model
         if (responseData.batchInfo?.hasMoreTests) {
           console.log('More tests to process, continuing with next batch...');
           toast.info(`Lote processado: ${responseData.processedTests}/${totalTests} testes. Continuando...`);
           
           // Continue with next batch after a short delay
           setTimeout(() => {
-            executeValidation(options, responseData.validationRunId, responseData.batchInfo.nextStartIndex);
+            executeValidation(options, responseData.validationRunId, responseData.batchInfo.nextStartIndex, currentModelIndex);
           }, 1000);
         } else {
-          // All tests completed
-          console.log('All tests completed');
-          setIsRunning(false);
-          setCurrentRunId(null);
-          setValidationProgress(null);
-          toast.success(`Validação QA concluída! ${responseData.processedTests} testes processados.`);
+          // All tests completed for current model
+          console.log(`All tests completed for model: ${currentModel}`);
+          toast.success(`Modelo ${currentModel} concluído! ${responseData.processedTests} testes processados.`);
           
-          // Refresh data
-          await fetchData();
+          // Process next model if available
+          if (currentModelIndex + 1 < modelsToTest.length) {
+            console.log(`Moving to next model: ${modelsToTest[currentModelIndex + 1]}`);
+            setTimeout(() => {
+              executeValidation(options, null, 0, currentModelIndex + 1);
+            }, 2000); // 2 second delay between models
+          } else {
+            // All models completed
+            console.log('All models completed');
+            setIsRunning(false);
+            setCurrentRunId(null);
+            setValidationProgress(null);
+            toast.success('Validação QA concluída para todos os modelos!');
+            
+            // Refresh data
+            await fetchData();
+          }
         }
       } else {
         console.warn('No validationRunId in response, data structure:', responseData);
@@ -409,56 +435,41 @@ export function QADashboard() {
         </div>
         
         <div className="flex items-center gap-4">
-          <Select value={selectedModel} onValueChange={setSelectedModel}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {models.map(model => (
-                <SelectItem key={model} value={model}>
-                  {model}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          
-          <div className="flex items-center gap-4">
-            <Button 
-              onClick={runValidation} 
-              disabled={isRunning}
-              className="flex items-center gap-2"
-            >
-              {isRunning ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Play className="h-4 w-4" />
-              )}
-              {isRunning ? "Executando..." : "Executar Validação"}
-            </Button>
-            
-            {isRunning && (
-              <div className="flex items-center gap-3 bg-muted px-4 py-2 rounded-lg min-w-[300px]">
-                {validationProgress && validationProgress.total > 0 ? (
-                  <>
-                    <div className="text-sm font-medium whitespace-nowrap">
-                      {validationProgress.current}/{validationProgress.total} testes
-                    </div>
-                    <Progress value={validationProgress.percentage} className="w-48" />
-                    <div className="text-sm text-muted-foreground whitespace-nowrap">
-                      {validationProgress.percentage}%
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    <div className="text-sm text-muted-foreground">
-                      Preparando validação...
-                    </div>
-                  </>
-                )}
-              </div>
+          <Button 
+            onClick={runValidation} 
+            disabled={isRunning}
+            className="flex items-center gap-2"
+          >
+            {isRunning ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Play className="h-4 w-4" />
             )}
-          </div>
+            {isRunning ? "Executando..." : "Executar Validação"}
+          </Button>
+          
+          {isRunning && (
+            <div className="flex items-center gap-3 bg-muted px-4 py-2 rounded-lg min-w-[300px]">
+              {validationProgress && validationProgress.total > 0 ? (
+                <>
+                  <div className="text-sm font-medium whitespace-nowrap">
+                    {validationProgress.current}/{validationProgress.total} testes
+                  </div>
+                  <Progress value={validationProgress.percentage} className="w-48" />
+                  <div className="text-sm text-muted-foreground whitespace-nowrap">
+                    {validationProgress.percentage}%
+                  </div>
+                </>
+              ) : (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <div className="text-sm text-muted-foreground">
+                    Preparando validação...
+                  </div>
+                </>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
@@ -776,7 +787,7 @@ export function QADashboard() {
         open={showValidationOptions}
         onOpenChange={setShowValidationOptions}
         onExecute={executeValidation}
-        selectedModel={selectedModel}
+        selectedModel={'agentic-rag'}
       />
 
       <EditTestCaseDialog
