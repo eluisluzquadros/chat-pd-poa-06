@@ -2,10 +2,8 @@
 import { MessageList } from "@/components/chat/MessageList";
 import { ChatInput } from "@/components/chat/ChatInput";
 import { ModelSelector } from "@/components/chat/ModelSelector";
-import { TokenStatsButton } from "@/components/chat/TokenStatsButton";
 import { Message, LLMProvider } from "@/types/chat";
 import { cn } from "@/lib/utils";
-import { TypewriterEffect } from "@/components/ui/typewriter-effect";
 import { useTheme } from "@/components/ui/theme-provider";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { useAuth } from "@/context/AuthContext";
@@ -38,18 +36,7 @@ export function ChatMain({
   const { isAdmin } = useAuth();
   const hasMessages = messages.length > 0;
   
-  const welcomeWords = [{
-    text: "Como"
-  }, {
-    text: "posso"
-  }, {
-    text: "ajudar"
-  }, {
-    text: "você"
-  }, {
-    text: "hoje?",
-    className: "text-primary"
-  }];
+  const welcomeText = "Como posso ajudar você hoje?";
 
   return (
     <div className="flex flex-col h-full bg-background">
@@ -60,15 +47,12 @@ export function ChatMain({
           <SidebarTrigger className="text-foreground hover:bg-accent" />
         </div>
         
-        {isAdmin && (
-          <div className="absolute top-4 right-4 z-30 flex gap-2">
-            <ModelSelector 
-              selectedModel={selectedModel} 
-              onModelSelect={onModelSelect}
-            />
-            <TokenStatsButton />
-          </div>
-        )}
+        <div className="absolute top-4 right-4 z-30">
+          <ModelSelector 
+            selectedModel={selectedModel} 
+            onModelSelect={onModelSelect}
+          />
+        </div>
         {hasMessages ? (
           <>
             {/* Lista de mensagens com scroll próprio */}
@@ -111,13 +95,11 @@ export function ChatMain({
                   />
                 </div>
                 
-                {/* Título animado */}
+                {/* Título fixo */}
                 <div className="w-full">
-                  <TypewriterEffect 
-                    words={welcomeWords} 
-                    className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold tracking-tight text-foreground" 
-                    cursorClassName="bg-primary h-6 sm:h-8 lg:h-10" 
-                  />
+                  <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold tracking-tight text-foreground">
+                    {welcomeText}
+                  </h1>
                 </div>
               </div>
             </div>

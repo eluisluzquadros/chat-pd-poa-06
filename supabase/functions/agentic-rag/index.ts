@@ -1,4 +1,3 @@
-
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
@@ -7,6 +6,9 @@ const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+// Memória da conversa - armazenar contexto por conversationId
+const conversationMemory = new Map<string, Array<{role: string, content: string}>>();
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -17,13 +19,20 @@ serve(async (req) => {
   
   try {
     const requestBody = await req.json();
-    const { query, message, sessionId, userId, bypassCache, model } = requestBody;
+    const { query, message, sessionId, userId, bypassCache, model, conversationId } = requestBody;
     const userMessage = message || query || '';
-    const selectedModel = model || 'openai/gpt-3.5-turbo'; // Default model if not specified
+    const selectedModel = model || 'openai/gpt-3.5-turbo';
     
     if (!userMessage) {
       throw new Error('Query or message is required');
     }
+    
+    // Gerenciar memória da conversa
+    const convId = conversationId || sessionId || 'default';
+    if (!conversationMemory.has(convId)) {
+      conversationMemory.set(convId, []);
+    }
+    const conversationHistory = conversationMemory.get(convId)!;
     
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
     const agentTrace = [];
@@ -41,7 +50,11 @@ serve(async (req) => {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${authKey}`,
       },
-      body: JSON.stringify({ query: userMessage, sessionId }),
+      body: JSON.stringify({ 
+        query: userMessage, 
+        sessionId,
+        conversationHistory: conversationHistory.slice(-5) // Enviar últimas 5 mensagens
+      }),
     });
 
     if (!analysisResponse.ok) {
@@ -53,12 +66,19 @@ serve(async (req) => {
     
     // Handle simple greetings
     if (userMessage.toLowerCase().match(/^(oi|olá|ola|bom dia|boa tarde|boa noite)$/)) {
+      const greetingResponse = 'Olá! Sou o assistente do Plano Diretor de Porto Alegre. Como posso ajudá-lo hoje? Você pode me perguntar sobre:\n\n• Zonas e bairros\n• Altura máxima permitida\n• Coeficientes de aproveitamento\n• Regras construtivas\n• E muito mais!';
+      
+      // Adicionar à memória
+      conversationHistory.push({ role: 'user', content: userMessage });
+      conversationHistory.push({ role: 'assistant', content: greetingResponse });
+      
       return new Response(JSON.stringify({
-        response: 'Olá! Sou o assistente do Plano Diretor de Porto Alegre. Como posso ajudá-lo hoje? Você pode me perguntar sobre zonas, bairros, regras de construção e muito mais.',
+        response: greetingResponse,
         confidence: 1.0,
         sources: { tabular: 0, conceptual: 0 },
         executionTime: Date.now() - startTime,
-        agentTrace
+        agentTrace,
+        conversationId: convId
       }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
@@ -118,7 +138,8 @@ serve(async (req) => {
         analysisResult,
         sqlResults,
         vectorResults: null,
-        model: selectedModel // Pass the selected model to response synthesizer
+        model: selectedModel,
+        conversationHistory: conversationHistory.slice(-5) // Contexto para síntese
       }),
     });
 
@@ -129,6 +150,15 @@ serve(async (req) => {
     const synthesisResult = await synthesisResponse.json();
     agentTrace.push({ step: 'response_synthesis_complete' });
     
+    // Adicionar à memória da conversa
+    conversationHistory.push({ role: 'user', content: userMessage });
+    conversationHistory.push({ role: 'assistant', content: synthesisResult.response });
+    
+    // Limitar memória a 20 mensagens
+    if (conversationHistory.length > 20) {
+      conversationHistory.splice(0, conversationHistory.length - 20);
+    }
+    
     const executionTime = Date.now() - startTime;
     
     return new Response(JSON.stringify({
@@ -137,8 +167,9 @@ serve(async (req) => {
       sources: synthesisResult.sources,
       executionTime,
       agentTrace,
-      model: 'gpt-3.5-turbo',
-      tokensUsed: synthesisResult.tokensUsed
+      model: selectedModel,
+      tokensUsed: synthesisResult.tokensUsed,
+      conversationId: convId
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });

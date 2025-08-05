@@ -62,14 +62,26 @@ export function AddTestCaseDialog({ onTestCaseAdded }: AddTestCaseDialogProps) {
     setLoading(true);
 
     try {
+      // Gerar test_id baseado na categoria e timestamp
+      const testId = `${formData.category}_${Date.now()}`;
+      
+      // Converter expected_answer em keywords se necessário
+      const expectedKeywords = formData.expected_answer
+        .toLowerCase()
+        .split(/\s+/)
+        .filter(word => word.length > 3)
+        .slice(0, 10); // Pegar até 10 palavras-chave
+      
       const { data, error } = await supabase
         .from('qa_test_cases')
         .insert({
-          question: formData.question.trim(),
-          expected_answer: formData.expected_answer.trim(),
+          test_id: testId,
+          query: formData.question.trim(),
+          expected_keywords: expectedKeywords,
+          expected_response: formData.expected_answer.trim(),
           category: formData.category,
-          difficulty: formData.difficulty,
-          tags: tags,
+          complexity: formData.difficulty,
+          min_response_length: 50,
           is_active: formData.is_active
         })
         .select();
