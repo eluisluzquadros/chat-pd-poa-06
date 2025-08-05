@@ -21,6 +21,7 @@ import {
   MODEL_CONFIGS 
 } from '@/services/benchmarkService';
 import { Loader2, Play, Download, TrendingUp, DollarSign, Clock } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface QATestCase {
   id: string;
@@ -48,12 +49,14 @@ export default function BenchmarkDashboard() {
   const [showValidationOptions, setShowValidationOptions] = useState(false);
   const [executionMode, setExecutionMode] = useState<'all' | 'random' | 'selected'>('all');
   const [randomCount, setRandomCount] = useState(5);
+  const [lastBenchmarkId, setLastBenchmarkId] = useState<number | null>(null);
   
   // Usar modelos do benchmarkService
   const allModelConfigs = MODEL_CONFIGS;
   
   useEffect(() => {
     fetchTestCases();
+    loadLastBenchmark();
   }, []);
   
   const fetchTestCases = async () => {
@@ -73,6 +76,63 @@ export default function BenchmarkDashboard() {
       console.log('Loaded test cases:', cases?.length || 0);
     } catch (error) {
       console.error('Error in fetchTestCases:', error);
+    }
+  };
+
+  // Carregar último benchmark executado
+  const loadLastBenchmark = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('qa_benchmarks')
+        .select('*')
+        .order('timestamp', { ascending: false })
+        .limit(1)
+        .single();
+      
+      if (error && error.code !== 'PGRST116') { // PGRST116 = no rows
+        console.error('Error loading last benchmark:', error);
+        return;
+      }
+      
+      if (data) {
+        setLastBenchmarkId(data.id);
+        setResults(data.results as BenchmarkResult[]);
+        setSummaries(data.summaries as BenchmarkSummary[]);
+      }
+    } catch (error) {
+      console.error('Error in loadLastBenchmark:', error);
+    }
+  };
+
+  // Salvar resultados do benchmark
+  const saveBenchmarkResults = async (results: BenchmarkResult[], summaries: BenchmarkSummary[]) => {
+    try {
+      const { data, error } = await supabase
+        .from('qa_benchmarks')
+        .insert({
+          results,
+          summaries,
+          metadata: {
+            test_cases_count: testCases.length,
+            models_tested: summaries.length,
+            execution_date: new Date().toISOString()
+          }
+        })
+        .select('id')
+        .single();
+      
+      if (error) {
+        console.error('Error saving benchmark results:', error);
+        return;
+      }
+      
+      if (data) {
+        setLastBenchmarkId(data.id);
+        console.log('Benchmark saved with ID:', data.id);
+        toast.success(`Benchmark salvo com sucesso! ID: ${data.id}`);
+      }
+    } catch (error) {
+      console.error('Error in saveBenchmarkResults:', error);
     }
   };
 
@@ -244,6 +304,9 @@ export default function BenchmarkDashboard() {
       const newSummaries = BenchmarkService.generateSummaries(mockResults, testCasesForSummary);
       setSummaries(newSummaries.sort((a, b) => b.avgQualityScore - a.avgQualityScore));
       
+      // Salvar resultados no banco de dados
+      await saveBenchmarkResults(mockResults, newSummaries);
+      
     } catch (error) {
       console.error('Benchmark error:', error);
     } finally {
@@ -314,6 +377,12 @@ export default function BenchmarkDashboard() {
           <p className="text-muted-foreground">
             Análise de trade-off usando casos de teste QA: Qualidade vs Velocidade vs Custo
           </p>
+          {lastBenchmarkId && (
+            <p className="text-sm text-muted-foreground mt-1">
+              <Badge variant="secondary" className="mr-2">Dados Salvos</Badge>
+              Último benchmark carregado (ID: {lastBenchmarkId})
+            </p>
+          )}
         </div>
         <div className="flex gap-2">
           <Button

@@ -1,6 +1,12 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { 
+  createZoneSearchPatterns, 
+  createBairroSearchPatterns,
+  normalizeZoneName,
+  normalizeBairroName
+} from '../_shared/normalization.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -36,6 +42,20 @@ serve(async (req) => {
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
+
+    // Normalizar entidades antes de gerar SQL
+    if (analysisResult?.entities) {
+      if (analysisResult.entities.zots) {
+        analysisResult.entities.zots = analysisResult.entities.zots.map((zot: any) => 
+          typeof zot === 'string' ? normalizeZoneName(zot) : zot
+        );
+      }
+      if (analysisResult.entities.bairros) {
+        analysisResult.entities.bairros = analysisResult.entities.bairros.map((bairro: string) => 
+          normalizeBairroName(bairro)
+        );
+      }
+    }
 
     const systemPrompt = `Você é um especialista em geração de consultas SQL para o banco de dados do PDUS 2025.
 
@@ -104,17 +124,25 @@ MAPEAMENTO DE TERMOS:
 - "permeabilidade" → taxa_permeabilidade_acima_1500, taxa_permeabilidade_ate_1500
 - "recuo" → recuo_jardim, afastamento_frente, afastamento_lateral, afastamento_fundos
 
+IMPORTANTE - NORMALIZAÇÃO:
+1. Os nomes de zonas já foram normalizados para o formato "ZOT XX" (ex: "ZOT 07", "ZOT 15")
+2. Os nomes de bairros já foram normalizados (maiúsculas, sem acentos)
+3. Use comparação exata para zonas: WHERE zona = 'ZOT 07'
+4. Para bairros, use UPPER() e considere variações de acentuação:
+   - Use UNACCENT() quando disponível ou
+   - Use ILIKE com padrões flexíveis
+
 QUERIES EXEMPLO:
 
 1. Altura máxima de uma ZOT:
    SELECT zona, altura_maxima, bairro 
    FROM regime_urbanistico 
-   WHERE zona = 'ZOT 8'
+   WHERE zona = 'ZOT 08'
 
-2. Parâmetros de um bairro:
+2. Parâmetros de um bairro (com busca flexível):
    SELECT zona, altura_maxima, coef_maximo_4d, coef_basico_4d 
    FROM regime_urbanistico 
-   WHERE UPPER(bairro) = UPPER('Centro Histórico')
+   WHERE UPPER(REPLACE(REPLACE(REPLACE(bairro, 'Á', 'A'), 'É', 'E'), 'Ó', 'O')) = 'PETROPOLIS'
    ORDER BY zona
 
 3. ZOTs com CA maior que X:

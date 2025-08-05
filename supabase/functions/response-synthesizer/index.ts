@@ -18,6 +18,102 @@ const FOOTER_TEMPLATE = `
 
 💬 Sua pergunta é importante! Participe pelos canais oficiais para contribuir com o aperfeiçoamento do plano.`;
 
+// Helper function to route to correct LLM API
+function getLLMEndpoint(provider) {
+  const endpoints = {
+    'openai': 'https://api.openai.com/v1/chat/completions',
+    'anthropic': 'https://api.anthropic.com/v1/messages',
+    'google': 'https://generativelanguage.googleapis.com/v1beta/models',
+    'deepseek': 'https://api.deepseek.com/v1/chat/completions',
+    'zhipuai': 'https://open.bigmodel.cn/api/paas/v4/chat/completions'
+  };
+  return endpoints[provider] || endpoints['openai'];
+}
+
+function getAPIHeaders(provider) {
+  const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
+  const anthropicApiKey = Deno.env.get('ANTHROPIC_API_KEY');
+  const geminiApiKey = Deno.env.get('GEMINI_API_KEY');
+  const deepseekApiKey = Deno.env.get('DEEPSEEK_API_KEY');
+  const zhipuaiApiKey = Deno.env.get('ZHIPUAI_API_KEY');
+
+  switch (provider) {
+    case 'anthropic':
+      return {
+        'x-api-key': anthropicApiKey || '',
+        'anthropic-version': '2023-06-01',
+        'Content-Type': 'application/json',
+      };
+    case 'google':
+      return {
+        'Content-Type': 'application/json',
+      };
+    case 'deepseek':
+      return {
+        'Authorization': `Bearer ${deepseekApiKey}`,
+        'Content-Type': 'application/json',
+      };
+    case 'zhipuai':
+      return {
+        'Authorization': `Bearer ${zhipuaiApiKey}`,
+        'Content-Type': 'application/json',
+      };
+    case 'openai':
+    default:
+      return {
+        'Authorization': `Bearer ${openAIApiKey}`,
+        'Content-Type': 'application/json',
+      };
+  }
+}
+
+function formatRequestBody(provider, modelName, messages, systemPrompt) {
+  switch (provider) {
+    case 'anthropic':
+      return {
+        model: modelName,
+        max_tokens: 4096,
+        system: systemPrompt,
+        messages: messages.map(m => ({
+          role: m.role === 'system' ? 'assistant' : m.role,
+          content: m.content
+        }))
+      };
+    case 'google':
+      return {
+        contents: messages.map(m => ({
+          role: m.role === 'assistant' ? 'model' : 'user',
+          parts: [{ text: m.content }]
+        })),
+        systemInstruction: { parts: [{ text: systemPrompt }] }
+      };
+    case 'deepseek':
+    case 'zhipuai':
+    case 'openai':
+    default:
+      return {
+        model: modelName || 'gpt-3.5-turbo',
+        messages: [{ role: 'system', content: systemPrompt }, ...messages],
+        temperature: 0.7,
+        max_tokens: 4096
+      };
+  }
+}
+
+function parseModelResponse(provider, response) {
+  switch (provider) {
+    case 'anthropic':
+      return response.content?.[0]?.text || '';
+    case 'google':
+      return response.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    case 'deepseek':
+    case 'zhipuai':
+    case 'openai':
+    default:
+      return response.choices?.[0]?.message?.content || '';
+  }
+}
+
 // Regras do agente
 const AGENT_RULES = `Você é o assistente oficial do Plano Diretor de Porto Alegre. Siga estas regras rigorosamente:
 
@@ -191,26 +287,73 @@ Qual bairro ou zona você gostaria de consultar?${FOOTER_TEMPLATE}`,
     
     let llmResponse;
     
-    // Por enquanto, usar sempre OpenAI (implementar outros providers depois)
-    const actualModel = modelName || 'gpt-3.5-turbo';
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    // Ajustar nome do modelo para APIs específicas
+    let actualModel = modelName || 'gpt-3.5-turbo';
+    
+    // Conversões específicas de modelo - ATUALIZADO Janeiro 2025
+    const modelMappings = {
+      // OpenAI
+      'gpt-4': 'gpt-4-turbo-2024-04-09',
+      'gpt-4-turbo': 'gpt-4-turbo-2024-04-09',
+      'gpt-4-turbo-preview': 'gpt-4-0125-preview',
+      'gpt-4.1': 'gpt-4-0125-preview',
+      'gpt-4o': 'gpt-4o-2024-11-20',
+      'gpt-4o-mini': 'gpt-4o-mini-2024-07-18',
+      'gpt-3.5-turbo': 'gpt-3.5-turbo-0125',
+      
+      // Anthropic - NOVOS MODELOS
+      'claude-4-opus': 'claude-opus-4-1-20250805',
+      'claude-opus-4.1': 'claude-opus-4-1-20250805',
+      'claude-opus-4': 'claude-opus-4-20250122',
+      'claude-4-sonnet': 'claude-sonnet-4-20250122',
+      'claude-sonnet-4': 'claude-sonnet-4-20250122',
+      'claude-sonnet-3.7': 'claude-sonnet-3-7-20250122',
+      'claude-3-5-sonnet': 'claude-3-5-sonnet-20241022',
+      'claude-3-haiku': 'claude-3-haiku-20240307',
+      
+      // Google
+      'gemini-2.0-flash': 'gemini-2.0-flash-exp',
+      'gemini-pro': 'gemini-1.5-pro-002',
+      'gemini-flash': 'gemini-1.5-flash-002',
+      'gemini-1.5-pro': 'gemini-1.5-pro-002',
+      'gemini-1.5-flash': 'gemini-1.5-flash-002',
+      
+      // ZhipuAI
+      'glm-4.5': 'glm-4-plus',
+      'glm-4-plus': 'glm-4-plus',
+      'glm-4-flash': 'glm-4-flash',
+      'glm-4': 'glm-4',
+      
+      // DeepSeek
+      'deepseek-chat': 'deepseek-chat',
+      'deepseek-coder': 'deepseek-coder'
+    };
+    
+    if (modelMappings[actualModel]) {
+      actualModel = modelMappings[actualModel];
+    }
+    
+    debugLog.push({
+      step: 'model_mapping',
+      originalModel: modelName,
+      mappedModel: actualModel,
+      provider: provider
+    });
+    
+    // Determine API endpoint based on provider
+    const apiEndpoint = provider === 'google' 
+      ? `${getLLMEndpoint(provider)}/${actualModel}:generateContent?key=${Deno.env.get('GEMINI_API_KEY')}`
+      : getLLMEndpoint(provider);
+    
+    debugLog.push({
+      step: 'api_endpoint',
+      endpoint: apiEndpoint
+    });
+    
+    const response = await fetch(apiEndpoint, {
       method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${openAIApiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: actualModel === 'gpt-4.1' ? 'gpt-4-turbo-preview' : actualModel,
-        messages: [
-          { 
-            role: 'system', 
-            content: AGENT_RULES
-          },
-          { role: 'user', content: prompt }
-        ],
-        temperature: 0.7,
-        max_tokens: 2000
-      }),
+      headers: getAPIHeaders(provider),
+      body: JSON.stringify(formatRequestBody(provider, actualModel, [{ role: 'user', content: prompt }], AGENT_RULES)),
     });
     
     debugLog.push({
@@ -220,16 +363,33 @@ Qual bairro ou zona você gostaria de consultar?${FOOTER_TEMPLATE}`,
     });
     
     if (!response.ok) {
-      const error = await response.text();
+      const errorText = await response.text();
       debugLog.push({
         step: 'llm_error',
-        error: error.substring(0, 500)
+        provider: provider,
+        model: actualModel,
+        status: response.status,
+        error: errorText.substring(0, 500)
       });
-      throw new Error(`LLM error: ${response.status}`);
+      
+      // Mensagem de erro específica por provider
+      let errorMessage = `Erro ao processar com ${provider}/${actualModel}: `;
+      
+      if (response.status === 401) {
+        errorMessage += 'Chave de API inválida ou expirada';
+      } else if (response.status === 429) {
+        errorMessage += 'Limite de requisições excedido';
+      } else if (response.status === 404) {
+        errorMessage += 'Modelo não encontrado ou não disponível';
+      } else {
+        errorMessage += `Status ${response.status}`;
+      }
+      
+      throw new Error(errorMessage);
     }
     
     const data = await response.json();
-    let synthesizedResponse = data.choices[0].message.content;
+    let synthesizedResponse = parseModelResponse(provider, data);
     
     // Garantir que o template final está presente
     if (!synthesizedResponse.includes('Explore mais:')) {
@@ -243,6 +403,9 @@ Qual bairro ou zona você gostaria de consultar?${FOOTER_TEMPLATE}`,
         tabular: sqlResults?.executionResults?.length || 0,
         conceptual: 0
       },
+      model: selectedModel,
+      actualModel: actualModel,
+      provider: provider,
       debugLog,
       tokensUsed: data.usage?.total_tokens || 0
     }), {

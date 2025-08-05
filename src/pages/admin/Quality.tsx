@@ -5,8 +5,10 @@ import { Progress } from "@/components/ui/progress";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle, TrendingUp, TrendingDown, Clock, CheckCircle } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { QADashboard } from "@/components/admin/QADashboard";
+import { QADashboardWrapper } from "@/components/admin/QADashboardWrapper";
 import { QAKnowledgeGaps } from "@/components/admin/QAKnowledgeGaps";
+import { QAErrorAnalysis } from "@/components/admin/QAErrorAnalysis";
+import { QAModelComparison } from "@/components/admin/QAModelComparison";
 
 interface QualityMetrics {
   betaRate: number;
@@ -107,14 +109,18 @@ export default function Quality() {
         )}
 
         {!loading && !error && metrics && (
-          <Tabs defaultValue="overview" className="space-y-4">
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="overview">Visão Geral</TabsTrigger>
-              <TabsTrigger value="qa-validation">Validação QA</TabsTrigger>
+          <Tabs defaultValue="indicators" className="space-y-4">
+            <TabsList className="grid w-full grid-cols-7">
+              <TabsTrigger value="indicators">Indicadores</TabsTrigger>
+              <TabsTrigger value="runs">Execuções</TabsTrigger>
+              <TabsTrigger value="cases">Casos de Teste</TabsTrigger>
+              <TabsTrigger value="results">Resultados</TabsTrigger>
+              <TabsTrigger value="errors">Análise de Erros</TabsTrigger>
+              <TabsTrigger value="comparison">Comparação</TabsTrigger>
               <TabsTrigger value="knowledge-gaps">Gaps de Conhecimento</TabsTrigger>
             </TabsList>
             
-            <TabsContent value="overview" className="space-y-4">
+            <TabsContent value="indicators" className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {/* Beta Rate */}
                 <Card>
@@ -229,8 +235,24 @@ export default function Quality() {
               </Alert>
             </TabsContent>
             
-            <TabsContent value="qa-validation">
-              <QADashboard />
+            <TabsContent value="runs">
+              <QADashboardWrapper tab="runs" />
+            </TabsContent>
+            
+            <TabsContent value="cases">
+              <QADashboardWrapper tab="cases" />
+            </TabsContent>
+            
+            <TabsContent value="results">
+              <QADashboardWrapper tab="results" />
+            </TabsContent>
+            
+            <TabsContent value="errors">
+              <QAErrorAnalysis />
+            </TabsContent>
+            
+            <TabsContent value="comparison">
+              <QAModelComparison />
             </TabsContent>
             
             <TabsContent value="knowledge-gaps">

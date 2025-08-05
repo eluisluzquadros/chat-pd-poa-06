@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AlertTriangle, CheckCircle, XCircle, Play, BarChart3, FileText, Edit, Settings2, Database, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 import { AddTestCaseDialog } from "./AddTestCaseDialog";
 import { EditTestCaseDialog } from "./EditTestCaseDialog";
 import { ValidationOptionsDialog, ValidationExecutionOptions } from "./ValidationOptionsDialog";
@@ -67,7 +68,13 @@ export function QADashboard() {
   const [editingTestCase, setEditingTestCase] = useState<QATestCase | null>(null);
   const [showValidationOptions, setShowValidationOptions] = useState(false);
   const [currentRunId, setCurrentRunId] = useState<string | null>(null);
+  const [selectedRunId, setSelectedRunId] = useState<string | null>(null);
   const [validationProgress, setValidationProgress] = useState<{
+    current: number;
+    total: number;
+    percentage: number;
+  } | null>(null);
+  const [lastCompletedProgress, setLastCompletedProgress] = useState<{
     current: number;
     total: number;
     percentage: number;
@@ -100,6 +107,9 @@ export function QADashboard() {
           setTimeout(() => {
             setIsRunning(false);
             setCurrentRunId(null);
+            if (validationProgress) {
+              setLastCompletedProgress(validationProgress);
+            }
             setValidationProgress(null);
             toast.success('Validação QA concluída! Dashboard atualizado.');
           }, 500);
@@ -164,7 +174,7 @@ export function QADashboard() {
       }
       
       // Update progress if still running
-      if (data.status === 'running' && data.total_tests > 0) {
+      if (data.status === 'running') {
         // Get completed tests count
         const { count } = await supabase
           .from('qa_validation_results')
@@ -172,20 +182,14 @@ export function QADashboard() {
           .eq('validation_run_id', runId);
         
         const completed = count || 0;
-        console.log(`Progress update: ${completed}/${data.total_tests} tests completed`);
+        const totalTests = data.total_tests || validationProgress?.total || testCases.filter(tc => tc.is_active).length || 10;
+        
+        console.log(`Progress update: ${completed}/${totalTests} tests completed`);
         
         setValidationProgress({
           current: completed,
-          total: data.total_tests,
-          percentage: Math.round((completed / data.total_tests) * 100)
-        });
-      } else if (data.status === 'running') {
-        // Still running but no total tests yet
-        console.log('Running but no total tests info yet');
-        setValidationProgress({
-          current: 0,
-          total: 0,
-          percentage: 0
+          total: totalTests,
+          percentage: totalTests > 0 ? Math.round((completed / totalTests) * 100) : 0
         });
       }
       
@@ -220,10 +224,12 @@ export function QADashboard() {
       setIsRunning(true);
       console.log('isRunning set to true');
       const totalModels = modelsToTest.length;
-      const testsPerModel = options.selectedIds?.length || testCases.length || 38;
+      // Use active test cases count for accurate progress
+      const activeTestCases = testCases.filter(tc => tc.is_active);
+      const testsPerModel = options.selectedIds?.length || activeTestCases.length || testCases.length || 10;
       const totalTests = totalModels * testsPerModel;
       
-      toast.info(`Iniciando validação QA com ${totalModels} modelo(s)...`);
+      toast.info(`Iniciando validação QA com ${totalModels} modelo(s) e ${testsPerModel} testes...`);
       
       // Initialize progress immediately with estimated values
       const tempRunId = `temp-${Date.now()}`;
@@ -241,6 +247,9 @@ export function QADashboard() {
     if (currentModelIndex >= modelsToTest.length) {
       setIsRunning(false);
       setCurrentRunId(null);
+      if (validationProgress) {
+        setLastCompletedProgress(validationProgress);
+      }
       setValidationProgress(null);
       toast.success('Validação QA concluída para todos os modelos!');
       await fetchData();
@@ -336,17 +345,20 @@ export function QADashboard() {
         setCurrentRunId(responseData.validationRunId); // Replace temp ID with real ID
         
         // Initialize or update progress
-        const totalTests = responseData.totalTests || options.selectedIds?.length || testCases.length;
+        const activeTestCases = testCases.filter(tc => tc.is_active);
+        const totalTests = responseData.totalTests || options.selectedIds?.length || activeTestCases.length || testCases.length || 10;
+        const processedTests = responseData.processedTests || startIdx || 0;
+        
         console.log('Progress update:', {
-          current: responseData.processedTests,
+          current: processedTests,
           total: totalTests,
-          percentage: Math.round((responseData.processedTests / totalTests) * 100)
+          percentage: Math.round((processedTests / totalTests) * 100)
         });
         
         setValidationProgress({
-          current: responseData.processedTests || 0,
+          current: processedTests,
           total: totalTests,
-          percentage: Math.round((responseData.processedTests / totalTests) * 100)
+          percentage: Math.round((processedTests / totalTests) * 100)
         });
         
         // Check if there are more tests to process for current model
@@ -374,6 +386,9 @@ export function QADashboard() {
             console.log('All models completed');
             setIsRunning(false);
             setCurrentRunId(null);
+            if (validationProgress) {
+              setLastCompletedProgress(validationProgress);
+            }
             setValidationProgress(null);
             toast.success('Validação QA concluída para todos os modelos!');
             
@@ -411,6 +426,7 @@ export function QADashboard() {
         .order('created_at', { ascending: false });
 
       setSelectedResults(data || []);
+      setSelectedRunId(runId);
     } catch (error) {
       console.error('Error fetching results:', error);
       toast.error("Erro ao carregar resultados");
@@ -448,16 +464,33 @@ export function QADashboard() {
             {isRunning ? "Executando..." : "Executar Validação"}
           </Button>
           
-          {isRunning && (
+          {(isRunning || lastCompletedProgress) && (
             <div className="flex items-center gap-3 bg-muted px-4 py-2 rounded-lg min-w-[300px]">
-              {validationProgress && validationProgress.total > 0 ? (
+              {validationProgress ? (
                 <>
                   <div className="text-sm font-medium whitespace-nowrap">
-                    {validationProgress.current}/{validationProgress.total} testes
+                    {validationProgress.current}/{validationProgress.total || '?'} testes
                   </div>
-                  <Progress value={validationProgress.percentage} className="w-48" />
+                  <Progress 
+                    value={validationProgress.total > 0 ? validationProgress.percentage : 0} 
+                    className="w-48" 
+                  />
                   <div className="text-sm text-muted-foreground whitespace-nowrap">
-                    {validationProgress.percentage}%
+                    {validationProgress.total > 0 ? `${validationProgress.percentage}%` : 'Iniciando...'}
+                  </div>
+                </>
+              ) : lastCompletedProgress && !isRunning ? (
+                <>
+                  <CheckCircle className="h-4 w-4 text-green-500" />
+                  <div className="text-sm font-medium whitespace-nowrap">
+                    {lastCompletedProgress.current}/{lastCompletedProgress.total} testes
+                  </div>
+                  <Progress 
+                    value={lastCompletedProgress.percentage} 
+                    className="w-48" 
+                  />
+                  <div className="text-sm text-muted-foreground whitespace-nowrap">
+                    {lastCompletedProgress.percentage}% completo
                   </div>
                 </>
               ) : (
@@ -563,7 +596,10 @@ export function QADashboard() {
                 {validationRuns.map((run) => (
                   <div 
                     key={run.id} 
-                    className="flex items-center justify-between p-4 border rounded-lg cursor-pointer hover:bg-muted/50"
+                    className={cn(
+                      "flex items-center justify-between p-4 border rounded-lg cursor-pointer hover:bg-muted/50",
+                      selectedRunId === run.id && "bg-muted border-primary"
+                    )}
                     onClick={() => fetchRunResults(run.id)}
                   >
                     <div className="space-y-1">

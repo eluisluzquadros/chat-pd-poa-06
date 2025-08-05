@@ -43,8 +43,14 @@ export interface BenchmarkSummary {
   recommendation: string;
 }
 
-// Configurações dos modelos disponíveis
-export const MODEL_CONFIGS: ModelConfig[] = [
+// Import das configurações atualizadas
+import { UPDATED_MODEL_CONFIGS, getCorrectModelName } from '@/config/llm-models-2025';
+
+// Re-exportar as configurações para manter compatibilidade
+export const MODEL_CONFIGS = UPDATED_MODEL_CONFIGS;
+
+// Configurações dos modelos disponíveis (DEPRECATED - usar UPDATED_MODEL_CONFIGS)
+const LEGACY_MODEL_CONFIGS: ModelConfig[] = [
   // OpenAI - Modelos mais recentes incluindo GPT-4.1
   {
     provider: 'openai',

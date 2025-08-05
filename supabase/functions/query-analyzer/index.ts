@@ -1,6 +1,12 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { 
+  normalizeZoneName, 
+  normalizeBairroName, 
+  extractZoneTerms, 
+  extractBairroTerms 
+} from '../_shared/normalization.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -381,12 +387,34 @@ Responda APENAS com JSON válido no formato especificado.`;
       console.log('DEBUG - Used enhanced fallback:', JSON.stringify(analysisResult, null, 2));
     }
 
-    // PÓS-PROCESSAMENTO CRÍTICO: Remover "PORTO ALEGRE" dos bairros
+    // PÓS-PROCESSAMENTO: Normalização e limpeza de entidades
+    
+    // 1. Normalizar nomes de zonas
+    if (analysisResult.entities?.zots) {
+      analysisResult.entities.zots = analysisResult.entities.zots.map(zot => {
+        if (typeof zot === 'string') {
+          return normalizeZoneName(zot);
+        }
+        return zot;
+      });
+      console.log('DEBUG - ZOTs normalizadas:', analysisResult.entities.zots);
+    }
+    
+    // 2. Normalizar nomes de bairros
     if (analysisResult.entities?.bairros) {
       const originalBairros = [...analysisResult.entities.bairros];
-      analysisResult.entities.bairros = analysisResult.entities.bairros.filter(
-        bairro => !bairro.toUpperCase().includes('PORTO ALEGRE')
+      
+      // Primeiro normaliza todos os bairros
+      analysisResult.entities.bairros = analysisResult.entities.bairros.map(bairro => 
+        normalizeBairroName(bairro)
       );
+      
+      // Depois remove "PORTO ALEGRE" (que é a cidade, não um bairro)
+      analysisResult.entities.bairros = analysisResult.entities.bairros.filter(
+        bairro => !bairro.includes('PORTO ALEGRE')
+      );
+      
+      console.log('DEBUG - Bairros normalizados:', analysisResult.entities.bairros);
       
       if (originalBairros.length !== analysisResult.entities.bairros.length) {
         console.log('DEBUG - Removido "PORTO ALEGRE" da lista de bairros');
@@ -399,6 +427,37 @@ Responda APENAS com JSON válido no formato especificado.`;
           console.log('DEBUG - Ajustado para consulta conceitual após remover Porto Alegre');
         }
       }
+    }
+    
+    // 3. Extração adicional de termos não detectados pelo GPT
+    const zonesFromQuery = extractZoneTerms(query);
+    const bairrosFromQuery = extractBairroTerms(query);
+    
+    if (zonesFromQuery.length > 0) {
+      if (!analysisResult.entities) analysisResult.entities = {};
+      if (!analysisResult.entities.zots) analysisResult.entities.zots = [];
+      
+      // Adiciona zonas encontradas que não estão na lista
+      for (const zone of zonesFromQuery) {
+        if (!analysisResult.entities.zots.includes(zone)) {
+          analysisResult.entities.zots.push(zone);
+        }
+      }
+      console.log('DEBUG - ZOTs adicionadas da extração:', zonesFromQuery);
+    }
+    
+    if (bairrosFromQuery.length > 0) {
+      if (!analysisResult.entities) analysisResult.entities = {};
+      if (!analysisResult.entities.bairros) analysisResult.entities.bairros = [];
+      
+      // Adiciona bairros encontrados que não estão na lista
+      for (const bairro of bairrosFromQuery) {
+        const normalized = normalizeBairroName(bairro);
+        if (!analysisResult.entities.bairros.includes(normalized) && !normalized.includes('PORTO ALEGRE')) {
+          analysisResult.entities.bairros.push(normalized);
+        }
+      }
+      console.log('DEBUG - Bairros adicionados da extração:', bairrosFromQuery);
     }
 
     // FORÇA a inclusão do dataset de regime urbanístico para consultas de construção

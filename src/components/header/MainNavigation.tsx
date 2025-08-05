@@ -41,12 +41,6 @@ export const MainNavigation = () => {
                 Usuários
               </Link>
             </li>
-            <li>
-              <Link to="/admin/quality" className="hover:underline flex items-center">
-                <Shield className="h-4 w-4 mr-1" />
-                Qualidade
-              </Link>
-            </li>
           </>
         )}
       </ul>

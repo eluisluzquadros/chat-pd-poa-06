@@ -4,62 +4,92 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { LLMProvider } from "@/types/chat";
 import { ChevronDown } from "lucide-react";
+import { MODEL_CONFIGS } from "@/services/benchmarkService";
 
 interface ModelSelectorProps {
   selectedModel: LLMProvider;
   onModelSelect: (model: LLMProvider) => void;
 }
 
-// Modelos alinhados com o sistema de benchmark e edge functions
-const models: { id: string; name: string; provider: LLMProvider }[] = [
-  { id: "openai/gpt-3.5-turbo", name: "GPT-3.5 Turbo", provider: "openai" },
-  { id: "openai/gpt-4-turbo", name: "GPT-4 Turbo", provider: "openai" },
-  { id: "openai/gpt-4o", name: "GPT-4o", provider: "openai" },
-  { id: "openai/gpt-4o-mini", name: "GPT-4o Mini", provider: "openai" },
-  { id: "anthropic/claude-3-opus", name: "Claude 3 Opus", provider: "claude" },
-  { id: "anthropic/claude-3-sonnet", name: "Claude 3 Sonnet", provider: "claude" },
-  { id: "anthropic/claude-3-haiku", name: "Claude 3 Haiku", provider: "claude" },
-  { id: "google/gemini-pro", name: "Gemini Pro", provider: "gemini" },
-  { id: "deepseek/deepseek-chat", name: "DeepSeek Chat", provider: "deepseek" },
-  { id: "groq/llama3-70b", name: "Llama 3 70B (Groq)", provider: "groq" },
-];
-
 export function ModelSelector({ selectedModel, onModelSelect }: ModelSelectorProps) {
-  // Encontrar o modelo selecionado baseado no provider
-  const selectedModelConfig = models.find(m => {
-    // Se selectedModel é apenas o provider (ex: "openai"), pegar o primeiro modelo desse provider
-    if (!selectedModel.includes('/')) {
-      return m.provider === selectedModel;
+  // Agrupar modelos por provider
+  const modelsByProvider = MODEL_CONFIGS.reduce((acc, model) => {
+    if (!acc[model.provider]) {
+      acc[model.provider] = [];
     }
-    // Se já é um modelo completo (ex: "openai/gpt-3.5-turbo"), comparar diretamente
-    return m.id === selectedModel;
+    acc[model.provider].push(model);
+    return acc;
+  }, {} as Record<string, typeof MODEL_CONFIGS>);
+
+  // Encontrar o modelo selecionado
+  const selectedModelConfig = MODEL_CONFIGS.find(m => {
+    const modelId = `${m.provider}/${m.model}`;
+    return modelId === selectedModel || m.model === selectedModel;
   });
 
-  const handleModelSelect = (modelId: string) => {
-    // Passar o ID completo do modelo (provider/model) para o onModelSelect
+  const providerLabels = {
+    openai: "🟢 OpenAI",
+    anthropic: "🔵 Anthropic",
+    google: "🔴 Google",
+    deepseek: "🟣 DeepSeek",
+    zhipuai: "🟡 ZhipuAI"
+  };
+
+  const handleModelSelect = (model: typeof MODEL_CONFIGS[0]) => {
+    const modelId = `${model.provider}/${model.model}`;
     onModelSelect(modelId as LLMProvider);
+    
+    // Salvar a seleção no localStorage para persistência
+    localStorage.setItem('preferredModel', modelId);
   };
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" className="w-[220px] justify-between">
-          {selectedModelConfig?.name || "Selecione um modelo"}
+        <Button variant="outline" className="w-[280px] justify-between">
+          {selectedModelConfig ? (
+            <span className="flex items-center gap-2">
+              <span>{providerLabels[selectedModelConfig.provider]?.split(' ')[0]}</span>
+              <span>{selectedModelConfig.model}</span>
+            </span>
+          ) : (
+            "Selecione um modelo"
+          )}
           <ChevronDown className="ml-2 h-4 w-4" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-[220px]">
-        {models.map((model) => (
-          <DropdownMenuItem
-            key={model.id}
-            onClick={() => handleModelSelect(model.id)}
-            className={selectedModelConfig?.id === model.id ? "bg-accent" : ""}
-          >
-            {model.name}
-          </DropdownMenuItem>
+      <DropdownMenuContent className="w-[280px] max-h-[400px] overflow-y-auto">
+        {Object.entries(modelsByProvider).map(([provider, models]) => (
+          <div key={provider}>
+            <DropdownMenuLabel>{providerLabels[provider as keyof typeof providerLabels]}</DropdownMenuLabel>
+            {models.map((model) => {
+              const modelId = `${model.provider}/${model.model}`;
+              const isSelected = modelId === selectedModel || 
+                                (selectedModelConfig?.provider === model.provider && 
+                                 selectedModelConfig?.model === model.model);
+              
+              return (
+                <DropdownMenuItem
+                  key={modelId}
+                  onClick={() => handleModelSelect(model)}
+                  className={isSelected ? "bg-accent" : ""}
+                >
+                  <div className="flex flex-col w-full">
+                    <span className="font-medium">{model.model}</span>
+                    <span className="text-xs text-muted-foreground">
+                      ${(model.costPerInputToken * 1000).toFixed(4)}/1K tokens
+                    </span>
+                  </div>
+                </DropdownMenuItem>
+              );
+            })}
+            <DropdownMenuSeparator className="last:hidden" />
+          </div>
         ))}
       </DropdownMenuContent>
     </DropdownMenu>

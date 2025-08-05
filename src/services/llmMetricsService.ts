@@ -88,6 +88,38 @@ export class LLMMetricsService {
       apiEndpoint: "https://generativelanguage.googleapis.com/v1beta/models/",
       headers: { "Content-Type": "application/json" }
     },
+    "google": {
+      provider: "google",
+      models: ["gemini-1.5-pro", "gemini-1.5-flash", "gemini-2.0-flash"],
+      costPerToken: { input: 0.00000125, output: 0.000005 },
+      maxTokensPerSecond: 50,
+      apiEndpoint: "https://generativelanguage.googleapis.com/v1beta/models/",
+      headers: { "Content-Type": "application/json" }
+    },
+    "anthropic": {
+      provider: "anthropic",
+      models: ["claude-3-5-sonnet-20241022", "claude-4-opus", "claude-4-sonnet"],
+      costPerToken: { input: 0.000003, output: 0.000015 },
+      maxTokensPerSecond: 40,
+      apiEndpoint: "https://api.anthropic.com/v1/messages",
+      headers: { "x-api-key": "", "anthropic-version": "2023-06-01", "Content-Type": "application/json" }
+    },
+    "deepseek": {
+      provider: "deepseek",
+      models: ["deepseek-chat", "deepseek-coder"],
+      costPerToken: { input: 0.00000014, output: 0.00000028 },
+      maxTokensPerSecond: 60,
+      apiEndpoint: "https://api.deepseek.com/v1/chat/completions",
+      headers: { "Content-Type": "application/json", "Authorization": "" }
+    },
+    "zhipuai": {
+      provider: "zhipuai",
+      models: ["glm-4", "glm-4.5"],
+      costPerToken: { input: 0.0000015, output: 0.0000015 },
+      maxTokensPerSecond: 55,
+      apiEndpoint: "https://open.bigmodel.cn/api/paas/v4/chat/completions",
+      headers: { "Content-Type": "application/json", "Authorization": "" }
+    },
     "llama": {
       provider: "llama",
       models: ["llama-3.1-8b", "llama-3.1-70b"],
@@ -135,7 +167,28 @@ export class LLMMetricsService {
     const totalTokens = inputTokens + outputTokens;
     const tokensPerSecond = totalTokens / (responseTime / 1000);
     
-    const config = this.modelConfigs[provider];
+    // Extract base provider from format like "openai/gpt-3.5-turbo"
+    const baseProvider = provider.includes('/') ? provider.split('/')[0] : provider;
+    const config = this.modelConfigs[baseProvider] || this.modelConfigs['openai'];
+    
+    if (!config) {
+      console.warn(`No config found for provider: ${baseProvider}, using default`);
+      return {
+        responseTime,
+        tokensPerSecond,
+        inputTokens,
+        outputTokens,
+        totalTokens,
+        costPerToken: 0.000002,
+        totalCost: totalTokens * 0.000002,
+        qualityScore: qualityScore || (success ? 85 : 0),
+        provider: baseProvider,
+        model,
+        success,
+        failureReason: success ? undefined : "Configuration not found"
+      };
+    }
+    
     const totalCost = (inputTokens * config.costPerToken.input) + (outputTokens * config.costPerToken.output);
     
     const metrics: LLMMetrics = {
