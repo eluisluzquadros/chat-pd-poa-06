@@ -95,9 +95,21 @@ serve(async (req) => {
     ];
 
     const maximoTerms = [
-      'maior', 'máximo', 'superior', 'teto', 'limite máximo', 'mais alto', 'previsto', 'permitido',
+      'maior', 'máximo', 'superior', 'teto', 'limite máximo', 'mais alto', 'mais alta', 'previsto', 'permitido',
       'autorizado', 'estabelecido', 'definido'
     ];
+    
+    // Detectar queries de altura máxima mais alta (query agregada)
+    const isMaxHeightQuery = query.toLowerCase().includes('altura máxima mais alta') || 
+                            (query.toLowerCase().includes('altura') && 
+                             query.toLowerCase().includes('máxima') && 
+                             query.toLowerCase().includes('mais alta')) ||
+                            (query.toLowerCase().includes('altura') && 
+                             query.toLowerCase().includes('máxima') && 
+                             query.toLowerCase().includes('maior')) ||
+                            (query.toLowerCase().includes('altura') && 
+                             query.toLowerCase().includes('mais alta')) ||
+                            (query.toLowerCase().includes('maior altura'));
 
     // Enhanced construction detection - now includes specific neighborhood/ZOT queries
     const constructionKeywords = [
@@ -158,7 +170,7 @@ serve(async (req) => {
     const isCountingQuery = hasCountingTerms && (queryLower.includes('bairro') || queryLower.includes('zona') || queryLower.includes('zot'));
     
     // Check if query asks for neighborhood data (zones, parameters)
-    const asksForNeighborhoodData = !isCountingQuery && (
+    const asksForNeighborhoodData = !isCountingQuery && !isMaxHeightQuery && (
       // Explicit construction queries
       (hasConstructionTerms && hasBairroOrZot) ||
       // Short queries that might be neighborhood names
@@ -184,6 +196,7 @@ serve(async (req) => {
       hasConstructionTerms: hasConstructionTerms,
       hasBairroOrZot: hasBairroOrZot,
       isCountingQuery: isCountingQuery,
+      isMaxHeightQuery: isMaxHeightQuery,
       asksForNeighborhoodData: asksForNeighborhoodData,
       isConstructionQuery: isConstructionQuery
     });
@@ -218,9 +231,10 @@ serve(async (req) => {
 
 ORDEM DE ANÁLISE OBRIGATÓRIA:
 1º - Se contém "Quantos", "Quantas", "Total de" → É CONTAGEM (isConstructionQuery: false)
-2º - Se contém "construir", "edificar" + bairro/endereço → É CONSTRUÇÃO (isConstructionQuery: true)  
-3º - SE A QUERY É CURTA (1-3 palavras) E PARECE SER NOME DE BAIRRO → É CONSULTA DE BAIRRO (isConstructionQuery: true)
-4º - Outras análises
+2º - Se pergunta sobre "altura máxima mais alta" ou "maior altura" → É AGREGAÇÃO (intent: tabular, isConstructionQuery: false)
+3º - Se contém "construir", "edificar" + bairro/endereço → É CONSTRUÇÃO (isConstructionQuery: true)  
+4º - SE A QUERY É CURTA (1-3 palavras) E PARECE SER NOME DE BAIRRO → É CONSULTA DE BAIRRO (isConstructionQuery: true)
+5º - Outras análises
 
 REGRA CRÍTICA PARA QUERIES CURTAS:
 - "três figueiras" → DEVE retornar dados do bairro (intent: tabular, isConstructionQuery: true)
@@ -313,11 +327,17 @@ Responda APENAS com JSON válido no formato especificado.`;
             Contexto do usuário: ${userRole || 'citizen'}
             É uma consulta sobre construção/bairro: ${isConstructionQuery}
             É uma consulta de contagem/agregação: ${isCountingQuery}
+            É uma consulta de altura máxima agregada: ${isMaxHeightQuery}
             Query é curta (possível nome de bairro): ${isShortQuery}
             
             REGRAS CRÍTICAS:
             1. Se isCountingQuery = true, SEMPRE defina isConstructionQuery: false no JSON
-            2. Se a query é CURTA (1-3 palavras) e NÃO é contagem, ASSUMA que é nome de bairro:
+            2. Se isMaxHeightQuery = true (altura máxima mais alta), SEMPRE:
+               - intent: "tabular"
+               - strategy: "structured_only" 
+               - isConstructionQuery: false
+               - requiredDatasets: ["17_GMWnJC1sKff-YS0wesgxsvo3tnZdgSSb4JZ0ZjpCk"]
+            3. Se a query é CURTA (1-3 palavras) e NÃO é contagem, ASSUMA que é nome de bairro:
                - intent: "tabular" 
                - isConstructionQuery: true
                - requiredDatasets: DEVE incluir "17_GMWnJC1sKff-YS0wesgxsvo3tnZdgSSb4JZ0ZjpCk" e "1FTENHpX4aLxmAoxvrEeGQn0fej-wxTMQRQs_XBjPQPY"

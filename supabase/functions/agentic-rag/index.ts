@@ -7,7 +7,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// Memória da conversa - armazenar contexto por conversationId
+// Memória da conversa
 const conversationMemory = new Map<string, Array<{role: string, content: string}>>();
 
 serve(async (req) => {
@@ -27,6 +27,17 @@ serve(async (req) => {
       throw new Error('Query or message is required');
     }
     
+    // Inicializar Supabase client
+    const supabaseUrl = Deno.env.get("SUPABASE_URL");
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || Deno.env.get('SUPABASE_ANON_KEY');
+    const supabase = createClient(supabaseUrl!, supabaseKey!);
+    
+    const agentTrace = [];
+    
+    // ========================================
+    // Pipeline RAG otimizado para regime_urbanistico
+    // ========================================
+    
     // Gerenciar memória da conversa
     const convId = conversationId || sessionId || 'default';
     if (!conversationMemory.has(convId)) {
@@ -34,10 +45,6 @@ serve(async (req) => {
     }
     const conversationHistory = conversationMemory.get(convId)!;
     
-    const supabaseUrl = Deno.env.get("SUPABASE_URL");
-    const agentTrace = [];
-    
-    // Use service role key for internal edge function calls
     const authKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || Deno.env.get('SUPABASE_ANON_KEY');
     
     // Step 1: Query Analysis
@@ -53,7 +60,7 @@ serve(async (req) => {
       body: JSON.stringify({ 
         query: userMessage, 
         sessionId,
-        conversationHistory: conversationHistory.slice(-5) // Enviar últimas 5 mensagens
+        conversationHistory: conversationHistory.slice(-5)
       }),
     });
 
@@ -68,7 +75,6 @@ serve(async (req) => {
     if (userMessage.toLowerCase().match(/^(oi|olá|ola|bom dia|boa tarde|boa noite)$/)) {
       const greetingResponse = 'Olá! Sou o assistente do Plano Diretor de Porto Alegre. Como posso ajudá-lo hoje? Você pode me perguntar sobre:\n\n• Zonas e bairros\n• Altura máxima permitida\n• Coeficientes de aproveitamento\n• Regras construtivas\n• E muito mais!';
       
-      // Adicionar à memória
       conversationHistory.push({ role: 'user', content: userMessage });
       conversationHistory.push({ role: 'assistant', content: greetingResponse });
       
@@ -90,6 +96,21 @@ serve(async (req) => {
       console.log('🔧 Generating SQL...');
       agentTrace.push({ step: 'sql_generation', timestamp: Date.now() });
       
+      // Adicionar hints para queries específicas
+      const sqlHints = {
+        needsMax: userMessage.toLowerCase().includes('mais alta') || 
+                  userMessage.toLowerCase().includes('máxima') ||
+                  userMessage.toLowerCase().includes('maior'),
+        needsMin: userMessage.toLowerCase().includes('mais baixa') || 
+                  userMessage.toLowerCase().includes('mínima') ||
+                  userMessage.toLowerCase().includes('menor'),
+        needsAvg: userMessage.toLowerCase().includes('média') || 
+                  userMessage.toLowerCase().includes('médio'),
+        needsAll: userMessage.toLowerCase().includes('todas as zonas') || 
+                  userMessage.toLowerCase().includes('todos os bairros'),
+        useRegimeTable: true // Forçar uso da tabela regime_urbanistico
+      };
+      
       const sqlResponse = await fetch(`${supabaseUrl}/functions/v1/sql-generator`, {
         method: 'POST',
         headers: {
@@ -98,7 +119,8 @@ serve(async (req) => {
         },
         body: JSON.stringify({
           query: userMessage,
-          analysisResult
+          analysisResult,
+          hints: sqlHints
         }),
       });
 
@@ -112,18 +134,7 @@ serve(async (req) => {
     console.log('📝 Synthesizing response...');
     agentTrace.push({ step: 'response_synthesis', timestamp: Date.now() });
     
-    // Verificar se precisa de busca vetorial
-    const needsVectorSearch = 
-      userMessage.toLowerCase().includes('certificação') ||
-      userMessage.toLowerCase().includes('sustentabilidade') ||
-      userMessage.toLowerCase().includes('4º distrito') ||
-      userMessage.toLowerCase().includes('quarto distrito') ||
-      userMessage.toLowerCase().includes('risco') ||
-      userMessage.toLowerCase().includes('inundação');
-    
-    const synthesizerEndpoint = needsVectorSearch 
-      ? 'response-synthesizer-rag' 
-      : 'response-synthesizer';
+    const synthesizerEndpoint = 'response-synthesizer';
     
     console.log(`Using synthesizer: ${synthesizerEndpoint}`);
     
@@ -139,7 +150,7 @@ serve(async (req) => {
         sqlResults,
         vectorResults: null,
         model: selectedModel,
-        conversationHistory: conversationHistory.slice(-5) // Contexto para síntese
+        conversationHistory: conversationHistory.slice(-5)
       }),
     });
 

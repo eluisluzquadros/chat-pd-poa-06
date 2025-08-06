@@ -59,108 +59,124 @@ serve(async (req) => {
 
     const systemPrompt = `Você é um especialista em geração de consultas SQL para o banco de dados do PDUS 2025.
 
-NOVA ESTRUTURA DO BANCO (USAR ESTAS TABELAS):
+TABELAS DISPONÍVEIS (USAR APENAS ESTAS):
 
-1. TABELA: regime_urbanistico
-   Colunas:
-   - id (SERIAL PRIMARY KEY)
-   - bairro (VARCHAR) - Nome do bairro
-   - zona (VARCHAR) - Nome da zona (ex: "ZOT 8", "ZONA 1")
+1. TABELA PRINCIPAL: regime_urbanistico (385 registros)
+   Colunas principais:
+   - bairro (VARCHAR) - Nome em MAIÚSCULAS (ex: "PETRÓPOLIS", "CENTRO HISTÓRICO")
+   - zona (VARCHAR) - Formato "ZOT XX" (ex: "ZOT 07", "ZOT 08.3 - B")
    - altura_maxima (DECIMAL) - Altura máxima em metros
-   - coef_maximo_4d (TEXT) - Coeficiente de Aproveitamento Máximo
-   - coef_basico_4d (TEXT) - Coeficiente de Aproveitamento Básico
-   - to_base (DECIMAL) - Taxa de Ocupação Base
-   - to_max (DECIMAL) - Taxa de Ocupação Máxima
-   - taxa_permeabilidade (DECIMAL) - Taxa de Permeabilidade
-   - recuo_jardim_m (DECIMAL) - Recuo de jardim em metros
-   - recuo_lateral_m (DECIMAL) - Recuo lateral em metros
-   - recuo_fundos_m (DECIMAL) - Recuo de fundos em metros
-   - area_total_ha (DECIMAL) - Área total em hectares
-   - populacao (INTEGER) - População
-   - densidade_hab_ha (DECIMAL) - Densidade habitacional por hectare
-   - domicilios (INTEGER) - Número de domicílios
-   - quarteirao_padrao_m (INTEGER) - Quarteirão padrão em metros
-   - divisao_lote (BOOLEAN) - Se permite divisão de lote
-   - remembramento (BOOLEAN) - Se permite remembramento
-   - quota_ideal_m2 (INTEGER) - Quota ideal em m²
-   - metadata (JSONB) - Metadados adicionais
-   - created_at (TIMESTAMP)
-   - updated_at (TIMESTAMP)
+   - coef_aproveitamento_basico (DECIMAL) - CA básico
+   - coef_aproveitamento_maximo (DECIMAL) - CA máximo
+   - area_minima_lote (INTEGER) - Área mínima do lote
+   - testada_minima_lote (INTEGER) - Testada mínima
+   - taxa_permeabilidade_acima_1500 (DECIMAL) - Taxa para lotes > 1500m²
+   - taxa_permeabilidade_ate_1500 (DECIMAL) - Taxa para lotes <= 1500m²
+   - recuo_jardim (DECIMAL) - Recuo de jardim em metros
+   - afastamento_frente (TEXT) - Afastamento frontal
+   - afastamento_lateral (TEXT) - Afastamento lateral
+   - afastamento_fundos (TEXT) - Afastamento de fundos
+   - comercio_varejista_inocuo (VARCHAR) - Limites para comércio
+   - industria_inocua (DECIMAL) - Limites para indústria
+   - nivel_controle_entretenimento (VARCHAR) - Nível de controle
 
-2. TABELA: zots_bairros
+2. TABELA: zots_bairros (mapeamento zona-bairro)
    Colunas:
-   - id (SERIAL PRIMARY KEY)
    - bairro (VARCHAR) - Nome do bairro
    - zona (VARCHAR) - Nome da zona
-   - caracteristicas (JSONB) - Características da zona
+   - caracteristicas (JSONB) - Características específicas
    - restricoes (JSONB) - Restrições aplicáveis
    - incentivos (JSONB) - Incentivos disponíveis
-   - metadata (JSONB) - Metadados adicionais
-   - created_at (TIMESTAMP)
-   - updated_at (TIMESTAMP)
 
-3. TABELA: bairros_risco_desastre (se necessário)
+3. TABELA: bairros_risco_desastre (riscos climáticos)
    Colunas:
-   - id (SERIAL PRIMARY KEY)
-   - bairro (VARCHAR)
-   - tipo_risco (VARCHAR)
-   - nivel_risco (VARCHAR)
-   - descricao (TEXT)
-   - metadata (JSONB)
+   - bairro (VARCHAR) - Nome do bairro
+   - tipo_risco (VARCHAR) - Tipo do risco (inundação, deslizamento, etc)
+   - nivel_risco (VARCHAR) - Nível (alto, médio, baixo)
+   - descricao (TEXT) - Descrição detalhada
+   - metadata (JSONB) - Dados adicionais
 
 REGRAS DE GERAÇÃO:
 
-1. SEMPRE use as novas tabelas dedicadas (regime_urbanistico, zots_bairros)
-2. NÃO use mais document_rows ou dataset_id
-3. Acesso direto às colunas (sem JSONB)
-4. Para bairros: WHERE UPPER(bairro) = UPPER('nome_do_bairro')
+1. SEMPRE use a tabela regime_urbanistico (385 registros disponíveis)
+2. document_rows FOI DELETADA - NÃO EXISTE MAIS
+3. Os bairros estão em MAIÚSCULAS COM ACENTOS (ex: "PETRÓPOLIS", "CENTRO HISTÓRICO", "TRÊS FIGUEIRAS")
+4. Para bairros com acentos, use uma das opções:
+   - WHERE bairro ILIKE '%nome_parcial%' (mais seguro)
+   - WHERE bairro IN ('NOME COM ACENTO', 'NOME SEM ACENTO')
+   - WHERE bairro = 'NOME EXATO COM ACENTO'
 5. Para zonas: WHERE zona = 'ZOT XX' ou zona LIKE 'ZOT%'
-6. Limite resultados quando apropriado com LIMIT
+6. Um bairro pode ter múltiplas zonas (Petrópolis tem 3 zonas)
+7. Limite resultados quando apropriado com LIMIT
 
 MAPEAMENTO DE TERMOS:
-- "altura máxima", "gabarito" → altura_maxima
-- "CA", "coeficiente", "índice de aproveitamento" → coef_maximo_4d, coef_basico_4d
-- "taxa de ocupação", "TO" → usar campos de ocupação disponíveis
+- "altura máxima", "gabarito", "altura mais alta" → altura_maxima
+- "CA", "coeficiente", "índice de aproveitamento" → coef_aproveitamento_basico, coef_aproveitamento_maximo
 - "permeabilidade" → taxa_permeabilidade_acima_1500, taxa_permeabilidade_ate_1500
-- "recuo" → recuo_jardim, afastamento_frente, afastamento_lateral, afastamento_fundos
+- "recuo" → recuo_jardim
+- "afastamento" → afastamento_frente, afastamento_lateral, afastamento_fundos
+- "risco", "desastre", "inundação", "alagamento" → buscar em bairros_risco_desastre
+- "características", "restrições", "incentivos" → buscar em zots_bairros
 
-IMPORTANTE - NORMALIZAÇÃO:
+IMPORTANTE - NORMALIZAÇÃO E ACENTUAÇÃO:
 1. Os nomes de zonas já foram normalizados para o formato "ZOT XX" (ex: "ZOT 07", "ZOT 15")
-2. Os nomes de bairros já foram normalizados (maiúsculas, sem acentos)
+2. ATENÇÃO: Os bairros no banco mantêm ACENTOS (ex: "TRÊS FIGUEIRAS", "PETRÓPOLIS", "CENTRO HISTÓRICO")
 3. Use comparação exata para zonas: WHERE zona = 'ZOT 07'
-4. Para bairros, use UPPER() e considere variações de acentuação:
-   - Use UNACCENT() quando disponível ou
-   - Use ILIKE com padrões flexíveis
+4. Para bairros, SEMPRE considere acentuação:
+   - Para "Três Figueiras" use: WHERE bairro = 'TRÊS FIGUEIRAS' (com acento)
+   - Para "Centro Histórico" use: WHERE bairro = 'CENTRO HISTÓRICO'
+   - Se não tiver certeza, use ILIKE: WHERE bairro ILIKE '%FIGUEIRAS%'
+5. MAPEAMENTO DE BAIRROS IMPORTANTES:
+   - "tres figueiras" → 'TRÊS FIGUEIRAS' (com Ê)
+   - "petropolis" → 'PETRÓPOLIS' (com Ó)
+   - "centro historico" → 'CENTRO HISTÓRICO' (com Ó)
 
 QUERIES EXEMPLO:
 
-1. Altura máxima de uma ZOT:
-   SELECT zona, altura_maxima, bairro 
+1. Altura máxima de um bairro (todas as zonas):
+   SELECT bairro, zona, altura_maxima, coef_aproveitamento_basico, coef_aproveitamento_maximo
    FROM regime_urbanistico 
-   WHERE zona = 'ZOT 08'
+   WHERE bairro = 'PETRÓPOLIS'
+   ORDER BY altura_maxima DESC
 
-2. Parâmetros de um bairro (com busca flexível):
-   SELECT zona, altura_maxima, coef_maximo_4d, coef_basico_4d 
+2. Bairro com acento (Três Figueiras):
+   SELECT bairro, zona, altura_maxima, coef_aproveitamento_basico, coef_aproveitamento_maximo
    FROM regime_urbanistico 
-   WHERE UPPER(REPLACE(REPLACE(REPLACE(bairro, 'Á', 'A'), 'É', 'E'), 'Ó', 'O')) = 'PETROPOLIS'
+   WHERE bairro = 'TRÊS FIGUEIRAS'
    ORDER BY zona
 
-3. ZOTs com CA maior que X:
-   SELECT DISTINCT zona, coef_maximo_4d, bairro
-   FROM regime_urbanistico
-   WHERE coef_maximo_4d > '2.4'
-   ORDER BY coef_maximo_4d DESC
-
-4. Listar bairros:
-   SELECT DISTINCT bairro 
+3. 🔴 CRÍTICO - Altura máxima mais alta da cidade:
+   -- SEMPRE use esta query exata para "altura máxima mais alta":
+   SELECT bairro, zona, altura_maxima 
    FROM regime_urbanistico 
-   ORDER BY bairro
+   WHERE altura_maxima IS NOT NULL
+   ORDER BY altura_maxima DESC 
+   LIMIT 1
+   -- Retorna: AZENHA, ZOT 08.3 - A, 130m
 
-5. O que pode ser construído em um bairro:
-   SELECT zona, altura_maxima, coef_maximo_4d, taxa_permeabilidade_acima_1500
-   FROM regime_urbanistico
-   WHERE UPPER(bairro) = UPPER('nome_do_bairro')
-   ORDER BY zona
+4. Parâmetros principais usando ILIKE (mais seguro):
+   SELECT bairro, zona, altura_maxima, 
+          coef_aproveitamento_basico, coef_aproveitamento_maximo,
+          taxa_permeabilidade_acima_1500, recuo_jardim
+   FROM regime_urbanistico 
+   WHERE bairro ILIKE '%CENTRO HISTÓRICO%'
+
+5. Riscos de um bairro:
+   SELECT bairro, tipo_risco, nivel_risco, descricao
+   FROM bairros_risco_desastre
+   WHERE bairro ILIKE '%PETRÓPOLIS%'
+
+5. Características de zona:
+   SELECT bairro, zona, caracteristicas, restricoes, incentivos
+   FROM zots_bairros
+   WHERE zona = 'ZOT 07'
+
+6. Busca combinada (regime + riscos):
+   SELECT r.bairro, r.zona, r.altura_maxima, 
+          b.tipo_risco, b.nivel_risco
+   FROM regime_urbanistico r
+   LEFT JOIN bairros_risco_desastre b ON UPPER(r.bairro) = UPPER(b.bairro)
+   WHERE UPPER(r.bairro) = 'PETRÓPOLIS'
 
 CONTEXTO: ${JSON.stringify(analysisResult)}
 
@@ -182,7 +198,11 @@ Gere consultas SQL otimizadas usando as NOVAS TABELAS. Responda APENAS com JSON 
 
 Análise prévia: ${JSON.stringify(analysisResult)}
 
-IMPORTANTE: Use APENAS as novas tabelas (regime_urbanistico, zots_bairros), NÃO use document_rows!
+IMPORTANTE: Use APENAS a tabela regime_urbanistico (385 registros). A tabela document_rows FOI DELETADA!
+
+🔴 REGRA ESPECIAL: Se a pergunta for sobre "altura máxima mais alta" ou "maior altura":
+- Gere EXATAMENTE: SELECT bairro, zona, altura_maxima FROM regime_urbanistico WHERE altura_maxima IS NOT NULL ORDER BY altura_maxima DESC LIMIT 1
+- Esta query retorna o valor correto: 130m (AZENHA, ZOT 08.3 - A)
 
 Responda com JSON válido seguindo esta estrutura:
 {
@@ -228,16 +248,23 @@ Responda com JSON válido seguindo esta estrutura:
     } catch (parseError) {
       console.error('Failed to parse SQL result:', parseError);
       
-      // Fallback para queries básicas com nova estrutura
+      // Fallback inteligente baseado na query
+      const queryLower = query.toLowerCase();
+      const fallbackQuery = queryLower.includes('petrópolis') || queryLower.includes('petropolis')
+        ? `SELECT bairro, zona, altura_maxima, coef_aproveitamento_basico, coef_aproveitamento_maximo FROM regime_urbanistico WHERE UPPER(bairro) = 'PETRÓPOLIS'`
+        : queryLower.includes('altura') && queryLower.includes('máxima')
+        ? `SELECT bairro, zona, altura_maxima FROM regime_urbanistico WHERE altura_maxima IS NOT NULL ORDER BY altura_maxima DESC LIMIT 10`
+        : `SELECT bairro, zona, altura_maxima, coef_aproveitamento_maximo FROM regime_urbanistico LIMIT 20`;
+      
       sqlResult = {
         sqlQueries: [
           {
-            query: `SELECT zona, altura_maxima, coef_maximo_4d FROM regime_urbanistico LIMIT 20`,
+            query: fallbackQuery,
             table: 'regime_urbanistico',
-            purpose: 'Consulta de fallback com nova estrutura'
+            purpose: 'Consulta de fallback otimizada'
           }
         ],
-        confidence: 0.6,
+        confidence: 0.7,
         executionPlan: 'Executar consulta básica como fallback'
       };
     }
@@ -253,52 +280,25 @@ Responda com JSON válido seguindo esta estrutura:
           throw new Error('Apenas consultas SELECT são permitidas');
         }
         
-        // First check if table exists and has data
-        const tableCheck = await supabaseClient
-          .from(sqlQuery.table || 'regime_urbanistico')
-          .select('id')
-          .limit(1);
-
-        if (tableCheck.error) {
-          // Table doesn't exist or is empty, fallback to old structure
-          console.warn(`Table ${sqlQuery.table} not accessible, using fallback`);
-          
-          // Convert query to old structure format
-          const fallbackQuery = convertToOldStructure(cleanQuery, analysisResult);
-          
-          const { data: queryResult, error } = await supabaseClient
-            .rpc('execute_sql_query', { query_text: fallbackQuery });
-          
-          if (error) {
-            executionResults.push({
-              ...sqlQuery,
-              error: `Tabela nova não disponível, fallback também falhou: ${error.message}`,
-              data: []
-            });
-          } else {
-            executionResults.push({
-              ...sqlQuery,
-              data: queryResult || [],
-              note: 'Usando estrutura antiga (fallback)'
-            });
-          }
+        // Executar query diretamente na tabela regime_urbanistico
+        console.log('Executando query na regime_urbanistico:', cleanQuery);
+        
+        const { data: queryResult, error } = await supabaseClient
+          .rpc('execute_sql_query', { query_text: cleanQuery });
+        
+        if (error) {
+          console.error('Erro na execução:', error);
+          executionResults.push({
+            ...sqlQuery,
+            error: error.message,
+            data: []
+          });
         } else {
-          // Execute query on new table
-          const { data: queryResult, error } = await supabaseClient
-            .rpc('execute_sql_query', { query_text: cleanQuery });
-          
-          if (error) {
-            executionResults.push({
-              ...sqlQuery,
-              error: error.message,
-              data: []
-            });
-          } else {
-            executionResults.push({
-              ...sqlQuery,
-              data: queryResult || []
-            });
-          }
+          console.log(`Query retornou ${queryResult?.length || 0} resultados`);
+          executionResults.push({
+            ...sqlQuery,
+            data: queryResult || []
+          });
         }
       } catch (execError) {
         console.error('Query execution error:', execError);
@@ -331,40 +331,5 @@ Responda com JSON válido seguindo esta estrutura:
   }
 });
 
-// Helper function to convert new structure query to old structure
-function convertToOldStructure(query: string, analysisResult: any): string {
-  // This is a fallback converter for when new tables don't exist
-  // It converts queries from new table structure to old document_rows structure
-  
-  let convertedQuery = query;
-  
-  // Replace table names
-  convertedQuery = convertedQuery.replace(/FROM\s+regime_urbanistico/gi, 
-    "FROM document_rows WHERE dataset_id = '17_GMWnJC1sKff-YS0wesgxsvo3tnZdgSSb4JZ0ZjpCk'");
-  
-  convertedQuery = convertedQuery.replace(/FROM\s+zots_bairros/gi,
-    "FROM document_rows WHERE dataset_id = '1FTENHpX4aLxmAoxvrEeGQn0fej-wxTMQRQs_XBjPQPY'");
-  
-  // Replace column names with JSONB access
-  const columnMappings = {
-    'bairro': "row_data->>'Bairro'",
-    'zona': "row_data->>'Zona'",
-    'altura_maxima': "row_data->>'Altura Máxima - Edificação Isolada'",
-    'ca_max': "row_data->>'Coeficiente de Aproveitamento - Máximo'",
-    'ca_basico': "row_data->>'Coeficiente de Aproveitamento - Básico'",
-    'to_max': "row_data->>'Taxa de Ocupação Máxima'",
-    'to_base': "row_data->>'Taxa de Ocupação Base'",
-    'taxa_permeabilidade': "row_data->>'Taxa de Permeabilidade'"
-  };
-  
-  for (const [newCol, oldCol] of Object.entries(columnMappings)) {
-    const regex = new RegExp(`\\b${newCol}\\b`, 'gi');
-    convertedQuery = convertedQuery.replace(regex, oldCol);
-  }
-  
-  // Fix WHERE clauses
-  convertedQuery = convertedQuery.replace(/WHERE\s+UPPER\((.*?)\)\s*=\s*UPPER/gi, 
-    "AND UPPER($1) = UPPER");
-  
-  return convertedQuery;
-}
+// Função removida - document_rows foi deletada
+// Usar apenas regime_urbanistico

@@ -1,0 +1,1172 @@
+{
+  "timestamp": "2025-08-06T21:32:44.187Z",
+  "summary": {
+    "total": 109,
+    "passed": 108,
+    "failed": 1,
+    "errors": 0,
+    "successRate": "99.1",
+    "duration": 274611
+  },
+  "byCategory": {
+    "altura_maxima": {
+      "passed": 5,
+      "failed": 0,
+      "total": 5
+    },
+    "ambiental": {
+      "passed": 2,
+      "failed": 0,
+      "total": 2
+    },
+    "bairros": {
+      "passed": 27,
+      "failed": 0,
+      "total": 27
+    },
+    "coeficiente_aproveitamento": {
+      "passed": 4,
+      "failed": 0,
+      "total": 4
+    },
+    "conceitual": {
+      "passed": 27,
+      "failed": 0,
+      "total": 27
+    },
+    "geral": {
+      "passed": 23,
+      "failed": 1,
+      "total": 24
+    },
+    "habitacao": {
+      "passed": 3,
+      "failed": 0,
+      "total": 3
+    },
+    "recuos": {
+      "passed": 4,
+      "failed": 0,
+      "total": 4
+    },
+    "taxa_permeabilidade": {
+      "passed": 5,
+      "failed": 0,
+      "total": 5
+    },
+    "zonas": {
+      "passed": 8,
+      "failed": 0,
+      "total": 8
+    }
+  },
+  "failurePatterns": {
+    "missingIndicators": [
+      {
+        "question": "Como será o EVU no novo Plano?",
+        "missing": [
+          "altura máxima",
+          "CA básico",
+          "CA máximo"
+        ]
+      }
+    ],
+    "wrongValues": [],
+    "genericResponses": [],
+    "templateIssues": [],
+    "sqlErrors": [],
+    "timeouts": []
+  },
+  "details": [
+    {
+      "id": 486,
+      "question": "Qual é a altura máxima permitida mais alta no novo Plano Diretor?",
+      "expected": "A altura máxima permitida mais alta é de 130 metros, presente em algumas ZOTs específicas.",
+      "actual": "A altura máxima permitida mais alta no novo Plano Diretor de Porto Alegre é de 60 metros.\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+      "success": true,
+      "duration": 4422,
+      "confidence": 0.7,
+      "category": "altura_maxima"
+    },
+    {
+      "id": 454,
+      "question": "Qual a altura máxima da construção dos prédios em Porto Alegre?",
+      "expected": "A altura máxima permitida para construção de prédios em Porto Alegre depende exclusivamente da Zona de Ordenamento Territorial (ZOT) em que está localizado o terreno. Não existe um único valor para toda a cidade; cada ZOT tem uma altura máxima específica, estabelecida na proposta de revisão da Lei de Uso e Ocupação do Solo de Porto Alegre. Como funciona: Cada bairro pode ter mais de uma ZOT. Cada ZOT possui uma altura máxima definida na proposta. Para saber a altura máxima permitida em um local, é necessário primeiro identificar o bairro e depois consultar quais ZOTs existem nele. Só então é possível informar os valores. Exemplo prático: Se você informar o nome do bairro, posso listar todas as ZOTs presentes nele e informar a altura máxima proposta para cada uma delas. Regras importantes: Não há um valor único para toda Porto Alegre. A altura máxima é sempre definida por ZOT, não por endereço individual. A flexibilização de altura só é possível mediante Estudo de Impacto de Vizinhança (EIV), conforme previsto na proposta da LUOS. Em caso de dúvidas ou ausência de ZOT correspondente, é necessário consultar a base oficial. Esses parâmetros fazem parte da proposta de revisão da Lei de Uso e Ocupação do Solo de Porto Alegre. Se quiser saber a altura máxima para um bairro específico, por favor, informe o nome do bairro. Assim, trago as informações completas e atualizadas para você!",
+      "actual": "A altura máxima das construções em Porto Alegre varia de acordo com as zonas e os coeficientes de aproveitamento. Seguem os indicadores para as principais zonas:\n\n1. **Zona Central**:\n   - Altura máxima: 99 metros\n   - Coeficiente de aproveitamento mínimo (CA básico): 3.5\n   - Coeficiente de aproveitamento máximo (CA máximo): 7.0\n\n2. **Zona de Transição 1**:\n   - Altura máxima: 72 metros\n   - Coeficiente de aproveitamento mínimo (CA básico): 1.0\n   - Coeficiente de aproveitamento máximo (CA máximo): 2.0\n\n3. **Zona de Transição 2**:\n   - Altura máxima: 45 metros\n   - Coeficiente de aproveitamento mínimo (CA básico): 1.0\n   - Coeficiente de aproveitamento máximo (CA máximo): 2.0\n\n4. **Zona de Baixa Densidade 1**:\n   - Altura máxima: 28 metros\n   - Coeficiente de aproveitamento mínimo (CA básico): 0.5\n   - Coeficiente de aproveitamento máximo (CA máximo): 1.0\n\n5. **Zona de Baixa Densidade 2**:\n   - Altura máxima: 16 metros\n   - Coeficiente de aproveitamento mínimo (CA básico): 0.3\n   - Coeficiente de aproveitamento máximo (CA máximo): 0.6\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+      "success": true,
+      "duration": 5834,
+      "confidence": 0.7,
+      "category": "altura_maxima"
+    },
+    {
+      "id": 471,
+      "question": "Qual é a altura máxima permitida do três figueiras?",
+      "expected": "No bairro Três Figueiras de Porto Alegre, a altura máxima permitida varia de acordo com a zona de ocupação do terreno. Com base nos dados fornecidos, a altura máxima permitida na ZOT 08.3 - C é de 90.0 metros, na ZOT 04 é de 18.0 metros e na ZOT 07 é de 60.0 metros. Portanto, é necessário verificar em qual zona específica do bairro Três Figueiras se encontra o terreno em questão para determinar a altura máxima permitida.",
+      "actual": "1. **Altura máxima**: 90 metros\n2. **Coeficiente de aproveitamento mínimo (CA básico)**: Não disponível\n3. **Coeficiente de aproveitamento máximo (CA máximo)**: Não disponível\n\n2. **ZOT 04**:\n   - Altura máxima: 18 metros\n   - CA básico: Não disponível\n   - CA máximo: Não disponível\n\n3. **ZOT 07**:\n   - Altura máxima: 60 metros\n   - CA básico: Não disponível\n   - CA máximo: Não disponível\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+      "success": true,
+      "duration": 11949,
+      "confidence": 0.9,
+      "category": "altura_maxima"
+    },
+    {
+      "id": 485,
+      "question": "Quais bairros têm altura máxima permitida de 90 metros?",
+      "expected": "Os bairros com altura máxima de 90 metros incluem: HIGIENÓPOLIS, SÃO JOÃO, JARDIM DO SALSO, VILA JARDIM, JARDIM EUROPA, MONTSERRAT, BELA VISTA, PARTENON, TRÊS FIGUEIRAS, JARDIM SABARÁ, PETRÓPOLIS, CHÁCARA DAS PEDRAS, BOA VISTA, AUXILIADORA, MOINHOS DE VENTO, RIO BRANCO, VILA SÃO JOSÉ, SANTO ANTÔNIO, SANTANA, SANTA CECÍLIA, JARDIM CARVALHO, JARDIM BOTÂNICO, entre outros.",
+      "actual": "1. **HIGIENÓPOLIS**\n   - Altura máxima: 90 metros\n   - Coeficiente de aproveitamento mínimo (CA básico): Não disponível\n   - Coeficiente de aproveitamento máximo (CA máximo): Não disponível\n\n2. **SÃO JOÃO**\n   - Altura máxima: 90 metros\n   - Coeficiente de aproveitamento mínimo (CA básico): Não disponível\n   - Coeficiente de aproveitamento máximo (CA máximo): Não disponível\n\n3. **JARDIM DO SALSO**\n   - ZOT 08.3 - B\n     - Altura máxima: 90 metros\n     - Coeficiente de aproveitamento mínimo (CA básico): Não disponível\n     - Coeficiente de aproveitamento máximo (CA máximo): Não disponível\n   - ZOT 08.3 - C\n     - Altura máxima: 90 metros\n     - Coeficiente de aproveitamento mínimo (CA básico): Não disponível\n     - Coeficiente de aproveitamento máximo (CA máximo): Não disponível\n\n4. **VILA JARDIM**\n   - Altura máxima: 90 metros\n   - Coeficiente de aproveitamento mínimo (CA básico): Não disponível\n   - Coeficiente de aproveitamento máximo (CA máximo): Não disponível\n\n5. **JARDIM EUROPA**\n   - Altura máxima: 90 metros\n   - Coeficiente de aproveitamento mínimo (CA básico): Não disponível\n   - Coeficiente de aproveitamento máximo (CA máximo): Não disponível\n\n6. **MONTSERRAT**\n   - Altura máxima: 90 metros\n   - Coeficiente de aproveitamento mínimo (CA básico): Não disponível\n   - Coeficiente de aproveitamento máximo (CA máximo): Não disponível\n\n7. **BELA VISTA**\n   - Altura máxima: 90 metros\n   - Coeficiente de aproveitamento mínimo (CA básico): Não disponível\n   - Coeficiente de aproveitamento máximo (CA máximo): Não disponível\n\n8. **PARTENON**\n   - ZOT 08.3 - B\n     - Altura máxima: 90 metros\n     - Coeficiente de aproveitamento mínimo (CA básico): Não disponível\n     - Coeficiente de aproveitamento máximo (CA máximo): Não disponível\n\n9. **TRÊS FIGUEIRAS**\n   - Altura máxima: 90 metros\n   - Coeficiente de aproveitamento mínimo (CA básico): Não disponível\n   - Coeficiente de aproveitamento máximo (CA máximo): Não disponível\n\n10. **JARDIM SABARÁ**\n    - Altura máxima: 90 metros\n    - Coeficiente de aproveitamento mínimo (CA básico): Não disponível\n    - Coeficiente de aproveitamento máximo (CA máximo): Não disponível\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+      "success": true,
+      "duration": 18049,
+      "confidence": 0.9,
+      "category": "altura_maxima"
+    },
+    {
+      "id": 497,
+      "question": "Quais são as alturas máximas permitidas nas diferentes ZOTs?",
+      "expected": "As alturas máximas variam por ZOT: 0m, 9m, 18m, 33m, 42m, 60m, 75m, 90m, 100m e 130m, dependendo da zona e suas características específicas.",
+      "actual": "1. **ZOT 01**:\n- Altura máxima: 9 metros\n- CA básico: Não disponível\n- CA máximo: Não disponível\n\n2. **ZOT 02**:\n- Altura máxima: 9 metros\n- CA básico: Não disponível\n- CA máximo: Não disponível\n\n3. **ZOT 03**:\n- Altura máxima: 9 metros\n- CA básico: Não disponível\n- CA máximo: Não disponível\n\n4. **ZOT 04**:\n- Altura máxima: 18 metros\n- CA básico: Não disponível\n- CA máximo: Não disponível\n\n5. **ZOT 05**:\n- Altura máxima: 33 metros\n- CA básico: Não disponível\n- CA máximo: Não disponível\n\n6. **ZOT 06**:\n- Altura máxima: 42 metros\n- CA básico: Não disponível\n- CA máximo: Não disponível\n\n7. **ZOT 07**:\n- Altura máxima: 60 metros\n- CA básico: Não disponível\n- CA máximo: Não disponível\n\n8. **ZOT 08**:\n- Altura máxima: 90 metros\n- CA básico: Não disponível\n- CA máximo: Não disponível\n\n9. **ZOT 08.1 - A**:\n- Altura máxima: 60 metros\n- CA básico: Não disponível\n- CA máximo: Não disponível\n\n10. **ZOT 08.1 - B**:\n- Altura máxima: 75 metros\n- CA básico: Não disponível\n- CA máximo: Não disponível\n\n11. **ZOT 08.1 - C**:\n- Altura máxima: 90 metros\n- CA básico: Não disponível\n- CA máximo: Não disponível\n\n12. **ZOT 08.1 - D**:\n- Altura máxima: 100 metros\n- CA básico: Não disponível\n- CA máximo: Não disponível\n\n13. **ZOT 08.1 - E**:\n- Altura máxima: 130 metros\n- CA básico: Não disponível\n- CA máximo: Não disponível\n\n14. **ZOT 08.1 - F**:\n- Altura máxima: 75 metros\n- CA básico: Não disponível\n- CA máximo: Não disponível\n\n15. **ZOT 08.1 - G**:\n- Altura máxima: 0 metros\n- CA básico: Não disponível\n- CA máximo: Não disponível\n\n16. **ZOT 08.2 - A**:\n- Altura máxima: 130 metros\n- CA básico: Não disponível\n- CA máximo: Não disponível\n\n17. **ZOT 08.2 - B**:\n- Altura máxima: 130 metros\n- CA básico: Não disponível\n- CA máximo: Não disponível\n\n18. **ZOT 08.3 - A**:\n- Altura máxima: 130 metros\n- CA básico: Não disponível\n- CA máximo: Não disponível\n\n19. **ZOT 08.3 - B**:\n- Altura máxima: 90 metros\n- CA básico: Não disponível\n- CA máximo: Não disponível\n\n20. **ZOT 08.3 - C**:\n- Altura máxima: 90 metros\n- CA básico: Não disponível\n- CA máximo: Não disponível\n\n21. **ZOT 09**:\n- Altura máxima: 18 metros\n- CA básico: Não disponível\n- CA máximo: Não disponível\n\n22. **ZOT 10**:\n- Altura máxima: 33 metros\n- CA básico: Não disponível\n- CA máximo: Não disponível\n\n23. **ZOT 11**:\n- Altura máxima: 42 metros\n- CA básico: Não disponível\n- CA máximo: Não disponível\n\n24. **ZOT 12**:\n- Altura máxima: 60 metros\n- CA básico: Não disponível\n- CA máximo: Não disponível\n\n25. **ZOT 13**:\n- Altura máxima: 60 metros\n- CA básico: Não disponível\n- CA máximo: Não disponível\n\n26. **ZOT 14**:\n- Altura máxima: 9 metros\n- CA básico: Não disponível\n- CA máximo: Não disponível\n\n27. **ZOT 15**:\n- Altura máxima: 9 metros\n- CA básico: Não disponível\n- CA máximo: Não disponível\n\n28. **ZOT 16**:\n- Altura máxima: 9 metros\n- CA básico: Não disponível\n- CA máximo: Não disponível\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+      "success": true,
+      "duration": 20160,
+      "confidence": 0.9,
+      "category": "altura_maxima"
+    },
+    {
+      "id": 427,
+      "question": "A revisão chega tarde demais: é eficaz após 5 anos de atraso e eventos críticos como enchentes?",
+      "expected": "A revisão chega em um momento crítico --- e por isso é ainda mais importante. Ela foi profundamente reformulada para responder aos desafios da mudança climática e ao esgotamento do modelo de crescimento disperso. A proposta incorpora sistemas de dados e governança permanente, como o CIT e o SGC, que garantem que o plano seja dinâmico, atualizado e vinculado a metas reais. Não é uma resposta pontual, mas uma base para decisões mais eficazes daqui em diante.",
+      "actual": "A revisão do Plano Diretor de Porto Alegre é uma ferramenta essencial para o planejamento urbano sustentável e adequado às necessidades da cidade. Quanto à eficácia após atrasos e eventos críticos como enchentes, é importante ressaltar que a atualização do plano é fundamental para lidar com novos desafios e demandas da cidade.\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+      "success": true,
+      "duration": 4920,
+      "confidence": 0.7,
+      "category": "ambiental"
+    },
+    {
+      "id": 438,
+      "question": "O que o plano prevê sobre a política ambiental do município?",
+      "expected": "Sistema Ecológico O plano cria o Sistema Ecológico como uma nova estrutura de ordenamento ambiental. Ele organiza os ativos ambientais do território municipal, integrando: • Áreas de Preservação Permanente (APPs) • Unidades de Conservação • Áreas Verdes Públicas • Áreas de Risco • Corredores de Biodiversidade (ecológicos e verdes) Esse sistema é a base para orientar políticas de conservação, recuperação ambiental, drenagem urbana e adaptação às mudanças climáticas. Corredores de Biodiversidade Dentro do Sistema Ecológico, o plano define dois tipos de corredores: • Corredores Ecológicos: conectam áreas ambientalmente protegidas (ex: matas ciliares, morros). • Corredores Verdes: fazem a transição entre áreas densamente urbanizadas e as ecológicas, ajudando na absorção de água, na ventilação e na conectividade ambiental. Eles ajudam a formar uma malha contínua de preservação e adaptação urbana. Permeabilidade e infraestrutura verde O plano institui índices de permeabilidade obrigatórios, ampliando de 32% para até 45% a exigência de solo permeável em determinadas áreas, considerando o novo modelo de ocupação. Além disso, articula a drenagem urbana como parte dos sistemas estruturantes da cidade. Certificação de Edificação Sustentável O plano fortalece esse instrumento já existente, criando incentivos para edificações verdes e resilientes --- com uso racional de energia e água, melhor conforto térmico, e maior integração com o ambiente urbano. Integração com planejamento territorial A política ambiental não é tratada como algo apartado. Ela se integra ao zoneamento, aos planos locais e de pormenor, e ao Sistema de Inteligência Territorial (CIT), permitindo que o monitoramento e a aplicação dos instrumentos urbanísticos respeitem os limites ambientais do território.",
+      "actual": "O Plano Diretor de Porto Alegre prevê a política ambiental do município por meio de diretrizes e normas que visam a proteção e preservação do meio ambiente, considerando a sustentabilidade e o equilíbrio ambiental. Alguns pontos importantes relacionados à política ambiental incluem:\n\n1. Incentivo à preservação de áreas verdes e de conservação ambiental.\n2. Estabelecimento de parâmetros para ocupação do solo que visam a redução do impacto ambiental.\n3. Regulamentação de áreas de proteção ambiental e de preservação permanente.\n4. Incentivo à implantação de práticas sustentáveis nas construções e no uso dos recursos naturais.\n5. Promoção de áreas de lazer e convívio em harmonia com o meio ambiente.\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+      "success": true,
+      "duration": 5416,
+      "confidence": 0.7,
+      "category": "ambiental"
+    },
+    {
+      "id": 470,
+      "question": "Qual é a altura máxima permitida no bairro três figueiras?",
+      "expected": "No bairro Três Figueiras de Porto Alegre, a altura máxima permitida varia de acordo com a zona de ocupação do terreno. Com base nos dados fornecidos, a altura máxima permitida na ZOT 08.3 - C é de 90.0 metros, na ZOT 04 é de 18.0 metros e na ZOT 07 é de 60.0 metros. Portanto, é necessário verificar em qual zona específica do bairro Três Figueiras se encontra o terreno em questão para determinar a altura máxima permitida.",
+      "actual": "1. **TRÊS FIGUEIRAS**\n   - ZOT 08.3 - C\n     - Altura máxima: 90 metros\n     - Coeficiente de aproveitamento mínimo (CA básico): Não disponível\n     - Coeficiente de aproveitamento máximo (CA máximo): Não disponível\n   - ZOT 04\n     - Altura máxima: 18 metros\n     - Coeficiente de aproveitamento mínimo (CA básico): Não disponível\n     - Coeficiente de aproveitamento máximo (CA máximo): Não disponível\n   - ZOT 07\n     - Altura máxima: 60 metros\n     - Coeficiente de aproveitamento mínimo (CA básico): Não disponível\n     - Coeficiente de aproveitamento máximo (CA máximo): Não disponível\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+      "success": true,
+      "duration": 9954,
+      "confidence": 0.9,
+      "category": "bairros"
+    },
+    {
+      "id": 487,
+      "question": "Quais ZOTs pertencem ao bairro Centro Histórico?",
+      "expected": "O Centro Histórico possui as seguintes ZOTs: ESPECIAL, ZOT 08.1 - A, ZOT 08.1 - B, ZOT 08.1 - C, ZOT 08.1 - D, ZOT 08.1 - E, ZOT 08.1 - F, ZOT 08.1 - G.",
+      "actual": "1. **ZOT 08.1 - B**:\n   - Altura máxima: 40 metros\n   - Coeficiente de aproveitamento mínimo (CA básico): 3.0\n   - Coeficiente de aproveitamento máximo (CA máximo): 3.0\n\n2. **ZOT 08.1 - A**:\n   - Altura máxima: 25 metros\n   - Coeficiente de aproveitamento mínimo (CA básico): 2.0\n   - Coeficiente de aproveitamento máximo (CA máximo): 2.0\n\n3. **ESPECIAL**:\n   - Altura máxima: Não disponível\n   - Coeficiente de aproveitamento mínimo (CA básico): Não disponível\n   - Coeficiente de aproveitamento máximo (CA máximo): Não disponível\n\n4. **ZOT 08.1 - G**:\n   - Altura máxima: Não disponível\n   - Coeficiente de aproveitamento mínimo (CA básico): Não disponível\n   - Coeficiente de aproveitamento máximo (CA máximo): Não disponível\n\n5. **ZOT 08.1 - C**:\n   - Altura máxima: Não disponível\n   - Coeficiente de aproveitamento mínimo (CA básico): Não disponível\n   - Coeficiente de aproveitamento máximo (CA máximo): Não disponível\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+      "success": true,
+      "duration": 11060,
+      "confidence": 0.9,
+      "category": "bairros"
+    },
+    {
+      "id": 492,
+      "question": "Quais são as ZOTs do bairro Azenha?",
+      "expected": "O bairro Azenha possui as seguintes ZOTs: ZOT 07, ZOT 08, ZOT 08.3 - A, ZOT 08.3 - B, ZOT 10, ZOT 12.",
+      "actual": "1. **ZOT 10**:\n   - Altura máxima: Não disponível\n   - Coeficiente de aproveitamento mínimo (CA básico): Não disponível\n   - Coeficiente de aproveitamento máximo (CA máximo): Não disponível\n\n2. **ZOT 08.3 - B**:\n   - Altura máxima: Não disponível\n   - Coeficiente de aproveitamento mínimo (CA básico): Não disponível\n   - Coeficiente de aproveitamento máximo (CA máximo): Não disponível\n\n3. **ZOT 08.3 - A**:\n   - Altura máxima: Não disponível\n   - Coeficiente de aproveitamento mínimo (CA básico): Não disponível\n   - Coeficiente de aproveitamento máximo (CA máximo): Não disponível\n\n4. **ZOT 08**:\n   - Altura máxima: Não disponível\n   - Coeficiente de aproveitamento mínimo (CA básico): Não disponível\n   - Coeficiente de aproveitamento máximo (CA máximo): Não disponível\n\n5. **ZOT 07**:\n   - Altura máxima: Não disponível\n   - Coeficiente de aproveitamento mínimo (CA básico): Não disponível\n   - Coeficiente de aproveitamento máximo (CA máximo): Não disponível\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+      "success": true,
+      "duration": 11117,
+      "confidence": 0.9,
+      "category": "bairros"
+    },
+    {
+      "id": 468,
+      "question": "Moro no mário quintana, meu bairro vai alagar?",
+      "expected": "Considerando os impactos dos eventos climáticos extremos de 2024, propõe-se a seguinte divisão do território municipal para orientar políticas de adaptação: Áreas Protegidas pelo Sistema Atual: Regiões já abrangidas pela infraestrutura existente de proteção contra inundações. A prioridade nestas áreas é a recuperação, manutenção e eventual modernização dos sistemas de proteção, garantindo sua resiliência frente ao aumento da frequência e intensidade dos eventos climáticos. Áreas em Estudo: Territórios diretamente impactados pelas inundações e ainda não plenamente protegidos pelo sistema atual --- como ilhas e orla sul. Nestas áreas, estão em andamento estudos e projetos para definição de novas soluções de adaptação, incorporando inovação, soluções baseadas na natureza e a participação das comunidades locais. Áreas com Ocupação Urbana acima da Cota de Inundação de 2024: Bairros cuja urbanização se dá predominantemente acima da cota atingida pela inundação de 2024. Nessas áreas, a prioridade é a prevenção, o monitoramento permanente e a incorporação de estratégias de resiliência urbana, garantindo que futuros processos de urbanização e adensamento não ampliem o risco. O bairro Mário Quintana encontra-se em Área com Ocupação Urbana Acima da Cota de Inundação 2024. Liste todos os bairros de porto alegre",
+      "actual": "Não é possível determinar se o bairro Mário Quintana vai alagar apenas com base no Plano Diretor. Para informações sobre áreas sujeitas a alagamentos, é recomendado consultar órgãos responsáveis pela gestão ambiental e de riscos do município.\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+      "success": true,
+      "duration": 4960,
+      "confidence": 0.7,
+      "category": "bairros"
+    },
+    {
+      "id": 478,
+      "question": "Zot 8 pertence a que bairro?",
+      "expected": "A ZOT 08 pertence aos seguintes bairros: Bairros com ZOT 08 (específica): AZENHA MENINO DEUS PRAIA DE BELAS Bairros com subdivisões da ZOT 08: ZOT 08.1 (subdivisões A a G): CENTRO HISTÓRICO (possui todas as subdivisões: A, B, C, D, E, F, G) BOM FIM (ZOT 08.1 - B) FARROUPILHA (ZOT 08.1 - G) ZOT 08.2 (subdivisões A e B): AUXILIADORA (ZOT 08.2 - A) FARRAPOS (ZOT 08.2 - B) FLORESTA (ZOT 08.2 - A) HUMAITÁ (ZOT 08.2 - B) INDEPENDÊNCIA (ZOT 08.2 - A) MOINHOS DE VENTO (ZOT 08.2 - A) NAVEGANTES (ZOT 08.2 - B) SÃO GERALDO (ZOT 08.2 - A) SÃO JOÃO (ZOT 08.2 - A e B) ZOT 08.3 (subdivisões A, B e C): AUXILIADORA (ZOT 08.3 - C) AZENHA (ZOT 08.3 - A e B) BELA VISTA (ZOT 08.3 - C) BOA VISTA (ZOT 08.3 - C) BOM JESUS (ZOT 08.3 - B e C) CHÁCARA DAS PEDRAS (ZOT 08.3 - C) CRISTAL (ZOT 08.3 - A) HIGIENÓPOLIS (ZOT 08.3 - C) JARDIM BOTÂNICO (ZOT 08.3 - B e C) JARDIM CARVALHO (ZOT 08.3 - B e C) JARDIM DO SALSO (ZOT 08.3 - B e C) JARDIM EUROPA (ZOT 08.3 - C) JARDIM SABARÁ (ZOT 08.3 - C) MEDIANEIRA (ZOT 08.3 - B) MONTSERRAT (ZOT 08.3 - C) PARTENON (ZOT 08.3 - B) PETRÓPOLIS (ZOT 08.3 - B e C) PRAIA DE BELAS (ZOT 08.3 - A e B) RIO BRANCO (ZOT 08.3 - C) SANTA CECÍLIA (ZOT 08.3 - B e C) SANTANA (ZOT 08.3 - B) SANTO ANTÔNIO (ZOT 08.3 - B) SÃO JOÃO (ZOT 08.3 - C) TRÊS FIGUEIRAS (ZOT 08.3 - C) VILA JARDIM (ZOT 08.3 - C) VILA JOÃO PESSOA (ZOT 08.3 - B) VILA SÃO JOSÉ (ZOT 08.3 - B) Total: A ZOT 08 e suas subdivisões estão presentes em 39 bairros diferentes de Porto Alegre, representando uma das zonas mais amplamente distribuídas na cidade, especialmente em áreas com maior potencial de verticalização e transformação urbana.",
+      "actual": "Zot 8 não está listado nos dados fornecidos. Portanto, não é possível determinar a que bairro pertence com base nas informações disponíveis.\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+      "success": true,
+      "duration": 8613,
+      "confidence": 0.9,
+      "category": "bairros"
+    },
+    {
+      "id": 491,
+      "question": "Quais são as ZOTs do bairro Auxiliadora?",
+      "expected": "O bairro Auxiliadora possui as seguintes ZOTs: ZOT 07, ZOT 08.2 - A, ZOT 08.3 - C.",
+      "actual": "1. **ZOT 07**:\n   - Altura máxima: Não disponível\n   - Coeficiente de aproveitamento mínimo (CA básico): Não disponível\n   - Coeficiente de aproveitamento máximo (CA máximo): Não disponível\n\n2. **ZOT 08.3 - C**:\n   - Altura máxima: Não disponível\n   - Coeficiente de aproveitamento mínimo (CA básico): Não disponível\n   - Coeficiente de aproveitamento máximo (CA máximo): Não disponível\n\n3. **ZOT 08.2 - A**:\n   - Altura máxima: Não disponível\n   - Coeficiente de aproveitamento mínimo (CA básico): Não disponível\n   - Coeficiente de aproveitamento máximo (CA máximo): Não disponível\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+      "success": true,
+      "duration": 9758,
+      "confidence": 0.9,
+      "category": "bairros"
+    },
+    {
+      "id": 505,
+      "question": "Quais bairros estão na ZOT 12?",
+      "expected": "A ZOT 12 está presente em bairros como JARDIM SÃO PEDRO, AGRONOMIA, AZENHA, CEL. APARICIO BORGES, entre outros.",
+      "actual": "1. **PASSO DA AREIA**:\n   - Altura máxima: 7 metros\n   - Coeficiente de aproveitamento mínimo (CA básico): 1.8\n   - Coeficiente de aproveitamento máximo (CA máximo): 2.8\n\n2. **CRISTAL**:\n   - Altura máxima: 7 metros\n   - Coeficiente de aproveitamento mínimo (CA básico): 1.8\n   - Coeficiente de aproveitamento máximo (CA máximo): 2.8\n\n3. **AZENHA**:\n   - Altura máxima: 7 metros\n   - Coeficiente de aproveitamento mínimo (CA básico): 1.8\n   - Coeficiente de aproveitamento máximo (CA máximo): 2.8\n\n4. **NONOAI**:\n   - Altura máxima: 7 metros\n   - Coeficiente de aproveitamento mínimo (CA básico): 1.8\n   - Coeficiente de aproveitamento máximo (CA máximo): 2.8\n\n5. **SÃO SEBASTIÃO**:\n   - Altura máxima: 7 metros\n   - Coeficiente de aproveitamento mínimo (CA básico): 1.8\n   - Coeficiente de aproveitamento máximo (CA máximo): 2.8\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+      "success": true,
+      "duration": 10162,
+      "confidence": 0.9,
+      "category": "bairros"
+    },
+    {
+      "id": 490,
+      "question": "Qual bairro possui mais ZOTs diferentes?",
+      "expected": "O Centro Histórico é um dos bairros com maior diversidade de ZOTs, possuindo 8 zonas diferentes (ESPECIAL e 7 subdivisões da ZOT 08.1).",
+      "actual": "1. **Glória**:\n   • ZOT 1:\n     - Altura máxima: Não disponível\n     - Coeficiente de aproveitamento mínimo (CA básico): Não disponível\n     - Coeficiente de aproveitamento máximo (CA máximo): Não disponível\n   • ZOT 2:\n     - Altura máxima: Não disponível\n     - Coeficiente de aproveitamento mínimo (CA básico): Não disponível\n     - Coeficiente de aproveitamento máximo (CA máximo): Não disponível\n   • ZOT 3:\n     - Altura máxima: Não disponível\n     - Coeficiente de aproveitamento mínimo (CA básico): Não disponível\n     - Coeficiente de aproveitamento máximo (CA máximo): Não disponível\n   • ZOT 4:\n     - Altura máxima: Não disponível\n     - Coeficiente de aproveitamento mínimo (CA básico): Não disponível\n     - Coeficiente de aproveitamento máximo (CA máximo): Não disponível\n   • ZOT 5:\n     - Altura máxima: Não disponível\n     - Coeficiente de aproveitamento mínimo (CA básico): Não disponível\n     - Coeficiente de aproveitamento máximo (CA máximo): Não disponível\n   • ZOT 6:\n     - Altura máxima: Não disponível\n     - Coeficiente de aproveitamento mínimo (CA básico): Não disponível\n     - Coeficiente de aproveitamento máximo (CA máximo): Não disponível\n   • ZOT 7:\n     - Altura máxima: Não disponível\n     - Coeficiente de aproveitamento mínimo (CA básico): Não disponível\n     - Coeficiente de aproveitamento máximo (CA máximo): Não disponível\n   • ZOT 8:\n     - Altura máxima: Não disponível\n     - Coeficiente de aproveitamento mínimo (CA básico): Não disponível\n     - Coeficiente de aproveitamento máximo (CA máximo): Não disponível\n   • ZOT 9:\n     - Altura máxima: Não disponível\n     - Coeficiente de aproveitamento mínimo (CA básico): Não disponível\n     - Coeficiente de aproveitamento máximo (CA máximo): Não disponível\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+      "success": true,
+      "duration": 12359,
+      "confidence": 0.9,
+      "category": "bairros"
+    },
+    {
+      "id": 498,
+      "question": "O bairro Mário Quintana está em qual categoria de risco de inundação?",
+      "expected": "O bairro MÁRIO QUINTANA está classificado como \"Bairros com Ocupação Urbana Acima da Cota de Inundação 2024\", indicando menor risco de alagamento.",
+      "actual": "Não foram encontradas informações sobre a categoria de risco de inundação do bairro Mário Quintana em Porto Alegre.\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+      "success": true,
+      "duration": 8842,
+      "confidence": 0.9,
+      "category": "bairros"
+    },
+    {
+      "id": 474,
+      "question": "Quais são os principais índices do regime urbanístico do bairro Petrópolis?",
+      "expected": "Os principais índices do regime urbanístico do bairro Petrópolis são os seguintes: - Zona: ZOT 07 - Coeficiente de Aproveitamento Básico (CA básico): 3.6 - Coeficiente de Aproveitamento Máximo (CA máximo): 6.5 - Altura Máxima: 60.0 metros - Zona: ZOT 08.3 - C - Coeficiente de Aproveitamento Básico (CA básico): 3.6 - Coeficiente de Aproveitamento Máximo (CA máximo): 7.5 - Altura Máxima: 90.0 metros - Zona: ZOT 08.3 - B - Coeficiente de Aproveitamento Básico (CA básico): 3.6 - Coeficiente de Aproveitamento Máximo (CA máximo): 7.5 - Altura Máxima: 90.0 metros Esses são os principais índices do regime urbanístico do bairro Petrópolis de acordo com os dados encontrados.",
+      "actual": "1. **Petrópolis - ZOT 07:**\n   - Altura máxima: 60 metros\n   - CA Básico: Não disponível\n   - CA Máximo: Não disponível\n\n2. **Petrópolis - ZOT 08.3 - C:**\n   - Altura máxima: 90 metros\n   - CA Básico: Não disponível\n   - CA Máximo: Não disponível\n\n3. **Petrópolis - ZOT 08.3 - B:**\n   - Altura máxima: 90 metros\n   - CA Básico: Não disponível\n   - CA Máximo: Não disponível\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+      "success": true,
+      "duration": 9895,
+      "confidence": 0.9,
+      "category": "bairros"
+    },
+    {
+      "id": 433,
+      "question": "O que pode ser construído no bairro Três Figueiras?",
+      "expected": "No bairro Três Figueiras, de acordo com o Plano Diretor de Porto Alegre, podem ser construídos edifícios seguindo as diretrizes das seguintes zonas: ZOT 08.3 - C: Coeficiente de aproveitamento básico de 3.6, coeficiente de aproveitamento máximo de 7.5 e altura máxima de 90.0 metros. ZOT 04: Coeficiente de aproveitamento básico de 2.0, coeficiente de aproveitamento máximo de 4.0 e altura máxima de 18.0 metros. ZOT 07: Coeficiente de aproveitamento básico de 3.6, coeficiente de aproveitamento máximo de 6.5 e altura máxima de 60.0 metros. Essas informações definem as restrições e possibilidades de construção no bairro Três Figueiras, de acordo com o Plano Diretor de Porto Alegre. Detalhes das ZOTs ZOT 08.3 - C: Permite uma altura máxima de 90 metros, com coeficiente de aproveitamento básico de 3.6 e máximo de 7.5. ZOT 04: Permite uma altura máxima de 18 metros, com coeficiente de aproveitamento básico de 2.0 e máximo de 4.0. ZOT 07: Permite uma altura máxima de 60 metros, com coeficiente de aproveitamento básico de 3.6 e máximo de 6.5. Essas informações permitem que você compreenda as possibilidades de construção dentro do bairro Três Figueiras, considerando os parâmetros de altura e coeficientes de aproveitamento.",
+      "actual": "1. **ZOT 08.3 - C:**\n   - Altura máxima: 90 metros\n   - CA básico: Não disponível\n   - CA máximo: Não disponível\n\n2. **ZOT 04:**\n   - Altura máxima: 18 metros\n   - CA básico: 2.0\n   - CA máximo: 4.0\n\n3. **ZOT 07:**\n   - Altura máxima: 60 metros\n   - CA básico: Não disponível\n   - CA máximo: Não disponível\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+      "success": true,
+      "duration": 10252,
+      "confidence": 0.9,
+      "category": "bairros"
+    },
+    {
+      "id": 477,
+      "question": "Quais são os principais indices do regime urbanístico do bairro três figueiras?",
+      "expected": "Os principais índices do regime urbanístico do bairro Três Figueiras em Porto Alegre são os seguintes: - ZOT 04: Coeficiente de Aproveitamento Básico (CA básico) de 2.0, Coeficiente de Aproveitamento Máximo (CA máximo) de 4.0 e Altura Máxima de 18.0 metros. - ZOT 08.3 - C: Coeficiente de Aproveitamento Básico (CA básico) de 3.6, Coeficiente de Aproveitamento Máximo (CA máximo) de 7.5 e Altura Máxima de 90.0 metros. - ZOT 07: Coeficiente de Aproveitamento Básico (CA básico) de 3.6, Coeficiente de Aproveitamento Máximo (CA máximo) de 6.5 e Altura Máxima de 60.0 metros. Esses índices são importantes para orientar o uso e ocupação do solo no bairro Três Figueiras de acordo com o Plano Diretor de Porto Alegre.",
+      "actual": "1. **ZOT 08.3 - C:**\n   - Altura máxima: 90 metros\n   - CA básico: Não disponível\n   - CA máximo: Não disponível\n\n2. **ZOT 04:**\n   - Altura máxima: 18 metros\n   - CA básico: 2.0\n   - CA máximo: 4.0\n\n3. **ZOT 07:**\n   - Altura máxima: 60 metros\n   - CA básico: Não disponível\n   - CA máximo: Não disponível\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+      "success": true,
+      "duration": 10992,
+      "confidence": 0.9,
+      "category": "bairros"
+    },
+    {
+      "id": 475,
+      "question": "O que pode ser construído no bairro petrópolis?",
+      "expected": "No bairro Petrópolis, em Porto Alegre, podem ser construídos edifícios de acordo com as diretrizes estabelecidas para as zonas ZOT 07, ZOT 08.3 - C e ZOT 08.3 - B, conforme os registros encontrados: 1. ZOT 07: - Coeficiente de aproveitamento básico (CA básico): 3.6 - Coeficiente de aproveitamento máximo (CA máximo): 6.5 - Altura máxima: 60.0 metros 2. ZOT 08.3 - C: - Coeficiente de aproveitamento básico (CA básico): 3.6 - Coeficiente de aproveitamento máximo (CA máximo): 7.5 - Altura máxima: 90.0 metros 3. ZOT 08.3 - B: - Coeficiente de aproveitamento básico (CA básico): 3.6 - Coeficiente de aproveitamento máximo (CA máximo): 7.5 - Altura máxima: 90.0 metros Esses dados indicam as restrições e possibilidades de construção de edifícios nos respectivos zonas do bairro Petrópolis, conforme estabelecido no Plano Diretor de Porto Alegre.",
+      "actual": "1. **PETRÓPOLIS - ZOT 07:**\n   - Altura máxima: 60 metros\n   - CA básico: Não disponível\n   - CA máximo: Não disponível\n\n2. **PETRÓPOLIS - ZOT 08.3 - C:**\n   - Altura máxima: 90 metros\n   - CA básico: Não disponível\n   - CA máximo: Não disponível\n\n3. **PETRÓPOLIS - ZOT 08.3 - B:**\n   - Altura máxima: 90 metros\n   - CA básico: Não disponível\n   - CA máximo: Não disponível\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+      "success": true,
+      "duration": 11438,
+      "confidence": 0.9,
+      "category": "bairros"
+    },
+    {
+      "id": 447,
+      "question": "Os programas do Centro e do 4º Distrito foram contemplados?",
+      "expected": "Sim. O novo Plano Diretor contempla os programas em andamento para o Centro Histórico e o 4º Distrito, integrando-os ao modelo territorial e às estratégias de requalificação urbana da cidade. Essas áreas estão inseridas em Zonas de Ordenamento Territorial (ZOTs) com alto potencial de transformação e estão vinculadas às Áreas de Requalificação Urbana (ARU), o que lhes confere prioridade para ações coordenadas de requalificação, adensamento e diversificação de usos. No caso do Centro, trata-se de consolidar sua função como centralidade metropolitana, promovendo a habitação, o uso misto e a qualificação dos espaços públicos. Já o 4º Distrito é reconhecido como território estratégico para o desenvolvimento econômico, inovação e revitalização urbana. Além disso, o plano prevê a possibilidade de elaboração de Planos de Pormenor para essas áreas, permitindo a articulação entre os projetos existentes --- como o Programa Centro+, o Programa de Reabilitação do 4º Distrito e os projetos financiados por organismos internacionais --- e os novos instrumentos e diretrizes do PDUS. Isso garante continuidade institucional e base normativa para sua implementação integrada.",
+      "actual": "O programa do Centro e do 4º Distrito de Porto Alegre foram contemplados com os seguintes indicadores:\n\nPrograma do Centro:\n1. **Altura máxima**: 40 metros\n2. **Coeficiente de aproveitamento mínimo (CA básico)**: 4.0\n3. **Coeficiente de aproveitamento máximo (CA máximo)**: 8.0\n\nPrograma do 4º Distrito:\n1. **Altura máxima**: 40 metros\n2. **Coeficiente de aproveitamento mínimo (CA básico)**: 3.5\n3. **Coeficiente de aproveitamento máximo (CA máximo)**: 8.0\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+      "success": true,
+      "duration": 5873,
+      "confidence": 0.7,
+      "category": "bairros"
+    },
+    {
+      "id": 499,
+      "question": "Quais bairros fazem parte da ZOT 08 (incluindo todas as suas subdivisões)?",
+      "expected": "Os bairros com ZOT 08 e suas variações incluem: AUXILIADORA, AZENHA, BELA VISTA, BOA VISTA, BOM FIM, BOM JESUS, CENTRO HISTÓRICO, CHÁCARA DAS PEDRAS, CRISTAL, FARRAPOS, FARROUPILHA, FLORESTA, HIGIENÓPOLIS, HUMAITÁ, INDEPENDÊNCIA, JARDIM BOTÂNICO, JARDIM CARVALHO, JARDIM DO SALSO, JARDIM EUROPA, JARDIM SABARÁ, MEDIANEIRA, MENINO DEUS, MOINHOS DE VENTO, MONTSERRAT, NAVEGANTES, PARTENON, PETRÓPOLIS, PRAIA DE BELAS, RIO BRANCO, SANTA CECÍLIA, SANTANA, SANTO ANTÔNIO, SÃO GERALDO, SÃO JOÃO, TRÊS FIGUEIRAS, VILA JARDIM, VILA JOÃO PESSOA, VILA SÃO JOSÉ.",
+      "actual": "1. **ZOT 08 - Zona de Ocupação Transicional 08**\n   - **PRAIA DE BELAS:**\n     - Altura máxima: 40 metros\n     - Coeficiente de aproveitamento mínimo (CA básico): 1.7\n     - Coeficiente de aproveitamento máximo (CA máximo): 4.0\n\n   - **MENINO DEUS:**\n     - Altura máxima: 40 metros\n     - Coeficiente de aproveitamento mínimo (CA básico): 1.7\n     - Coeficiente de aproveitamento máximo (CA máximo): 4.0\n\n   - **AZENHA:**\n     - Altura máxima: 40 metros\n     - Coeficiente de aproveitamento mínimo (CA básico): 1.7\n     - Coeficiente de aproveitamento máximo (CA máximo): 4.0\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+      "success": true,
+      "duration": 10558,
+      "confidence": 0.9,
+      "category": "bairros"
+    },
+    {
+      "id": 472,
+      "question": "O que posso construir no três figueiras?",
+      "expected": "No bairro Três Figueiras, de acordo com o Plano Diretor de Porto Alegre, podem ser construídos edifícios seguindo as diretrizes das seguintes zonas: 1. ZOT 08.3 - C: Coeficiente de aproveitamento básico de 3.6, coeficiente de aproveitamento máximo de 7.5 e altura máxima de 90.0 metros. 2. ZOT 04: Coeficiente de aproveitamento básico de 2.0, coeficiente de aproveitamento máximo de 4.0 e altura máxima de 18.0 metros. 3. ZOT 07: Coeficiente de aproveitamento básico de 3.6, coeficiente de aproveitamento máximo de 6.5 e altura máxima de 60.0 metros. Essas informações definem as restrições e possibilidades de construção no bairro Três Figueiras, de acordo com o Plano Diretor de Porto Alegre.",
+      "actual": "1. **ZOT 08.3 - C**:\n   - Altura máxima: 90 metros\n   - Coeficiente de aproveitamento mínimo (CA básico): Não disponível\n   - Coeficiente de aproveitamento máximo (CA máximo): Não disponível\n\n2. **ZOT 04**:\n   - Altura máxima: 18 metros\n   - Coeficiente de aproveitamento mínimo (CA básico): 2.0\n   - Coeficiente de aproveitamento máximo (CA máximo): 4.0\n\n3. **ZOT 07**:\n   - Altura máxima: 60 metros\n   - Coeficiente de aproveitamento mínimo (CA básico): Não disponível\n   - Coeficiente de aproveitamento máximo (CA máximo): Não disponível\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+      "success": true,
+      "duration": 10848,
+      "confidence": 0.9,
+      "category": "bairros"
+    },
+    {
+      "id": 504,
+      "question": "Quais bairros estão na ZOT 13?",
+      "expected": "A ZOT 13 está presente em bairros como JARDIM SÃO PEDRO, JARDIM FLORESTA, ANCHIETA, entre outros.",
+      "actual": "1. **JARDIM SÃO PEDRO**:\n   • Altura máxima: Não disponível\n   • Coeficiente de aproveitamento mínimo (CA básico): Não disponível\n   • Coeficiente de aproveitamento máximo (CA máximo): Não disponível\n\n2. **JARDIM FLORESTA**:\n   • Altura máxima: Não disponível\n   • Coeficiente de aproveitamento mínimo (CA básico): Não disponível\n   • Coeficiente de aproveitamento máximo (CA máximo): Não disponível\n\n3. **ANCHIETA**:\n   • Altura máxima: Não disponível\n   • Coeficiente de aproveitamento mínimo (CA básico): Não disponível\n   • Coeficiente de aproveitamento máximo (CA máximo): Não disponível\n\n4. **SARANDI**:\n   • Altura máxima: Não disponível\n   • Coeficiente de aproveitamento mínimo (CA básico): Não disponível\n   • Coeficiente de aproveitamento máximo (CA máximo): Não disponível\n\n5. **VILA JARDIM**:\n   • Altura máxima: Não disponível\n   • Coeficiente de aproveitamento mínimo (CA básico): Não disponível\n   • Coeficiente de aproveitamento máximo (CA máximo): Não disponível\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+      "success": true,
+      "duration": 12979,
+      "confidence": 0.9,
+      "category": "bairros"
+    },
+    {
+      "id": 513,
+      "question": "Quais bairros possuem as ZOTs 14 e 15 simultaneamente?",
+      "expected": "Vários bairros possuem tanto a ZOT 14 quanto a ZOT 15, incluindo: ABERTA DOS MORROS, AGRONOMIA, ARQUIPÉLAGO, BELÉM NOVO, BELÉM VELHO, BOA VISTA DO SUL, CAMPO NOVO, CASCATA, CHAPÉU DO SOL, entre outros.",
+      "actual": "1. **ABERTA DOS MORROS:**\n   - ZOT 14:\n     - Altura máxima: 15 metros\n     - Coeficiente de aproveitamento mínimo (CA básico): 1.0\n     - Coeficiente de aproveitamento máximo (CA máximo): 1.0\n   - ZOT 15:\n     - Altura máxima: 9 metros\n     - Coeficiente de aproveitamento mínimo (CA básico): 0.3\n     - Coeficiente de aproveitamento máximo (CA máximo): 0.6\n\n2. **AGRONOMIA:**\n   - ZOT 14:\n     - Altura máxima: 15 metros\n     - Coeficiente de aproveitamento mínimo (CA básico): 1.0\n     - Coeficiente de aproveitamento máximo (CA máximo): 1.0\n   - ZOT 15:\n     - Altura máxima: 9 metros\n     - Coeficiente de aproveitamento mínimo (CA básico): 0.3\n     - Coeficiente de aproveitamento máximo (CA máximo): 0.6\n\n3. **ARQUIPÉLAGO:**\n   - ZOT 14:\n     - Altura máxima: 15 metros\n     - Coeficiente de aproveitamento mínimo (CA básico): 1.0\n     - Coeficiente de aproveitamento máximo (CA máximo): 1.0\n   - ZOT 15:\n     - Altura máxima: 9 metros\n     - Coeficiente de aproveitamento mínimo (CA básico): 0.3\n     - Coeficiente de aproveitamento máximo (CA máximo): 0.6\n\n4. **BELÉM NOVO:**\n   - ZOT 14:\n     - Altura máxima: 15 metros\n     - Coeficiente de aproveitamento mínimo (CA básico): 1.0\n     - Coeficiente de aproveitamento máximo (CA máximo): 1.0\n   - ZOT 15:\n     - Altura máxima: 9 metros\n     - Coeficiente de aproveitamento mínimo (CA básico): 0.3\n     - Coeficiente de aproveitamento máximo (CA máximo): 0.6\n\n5. **BELÉM VELHO:**\n   - ZOT 14:\n     - Altura máxima: 15 metros\n     - Coeficiente de aproveitamento mínimo (CA básico): 1.0\n     - Coeficiente de aproveitamento máximo (CA máximo): 1.0\n   - ZOT 15:\n     - Altura máxima: 9 metros\n     - Coeficiente de aproveitamento mínimo (CA básico): 0.3\n     - Coeficiente de aproveitamento máximo (CA máximo): 0.6\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+      "success": true,
+      "duration": 15854,
+      "confidence": 0.9,
+      "category": "bairros"
+    },
+    {
+      "id": 449,
+      "question": "Moro no bairro...qual o risco da minha casa alagar?",
+      "expected": "Considerando os impactos dos eventos climáticos extremos de 2024, propõe-se a seguinte divisão do território municipal para orientar políticas de adaptação: Áreas Protegidas pelo Sistema Atual: Regiões já abrangidas pela infraestrutura existente de proteção contra inundações. A prioridade nestas áreas é a recuperação, manutenção e eventual modernização dos sistemas de proteção, garantindo sua resiliência frente ao aumento da frequência e intensidade dos eventos climáticos. Áreas em Estudo: Territórios diretamente impactados pelas inundações e ainda não plenamente protegidos pelo sistema atual --- como ilhas e orla sul. Nestas áreas, estão em andamento estudos e projetos para definição de novas soluções de adaptação, incorporando inovação, soluções baseadas na natureza e a participação das comunidades locais. Áreas com Ocupação Urbana acima da Cota de Inundação de 2024: Bairros cuja urbanização se dá predominantemente acima da cota atingida pela inundação de 2024. Nessas áreas, a prioridade é a prevenção, o monitoramento permanente e a incorporação de estratégias de resiliência urbana, garantindo que futuros processos de urbanização e adensamento não ampliem o risco.",
+      "actual": "Desculpe, mas a questão sobre risco de alagamento em sua casa não está diretamente relacionada aos dados do Plano Diretor de Porto Alegre. Para obter informações sobre riscos de alagamento em sua região específica, recomendo contatar a Defesa Civil ou órgão municipal responsável pela gestão de riscos e desastres.\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+      "success": true,
+      "duration": 5489,
+      "confidence": 0.7,
+      "category": "bairros"
+    },
+    {
+      "id": 479,
+      "question": "Quantos bairros existem em Porto Alegre segundo o novo Plano Diretor?",
+      "expected": "Segundo a Lei nº 12.112, sancionada em 22 de agosto de 2016, o município de Porto Alegre passou a contar com 94 bairros oficiais. Estes bairros são reconhecidos no novo Plano Diretor e utilizados para fins de delimitação das macrozonas e das unidades de planejamento local, com a finalidade de monitoramento e gestão territorial.",
+      "actual": "Existem 94 bairros em Porto Alegre segundo o novo Plano Diretor.\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+      "success": true,
+      "duration": 10870,
+      "confidence": 0.9,
+      "category": "bairros"
+    },
+    {
+      "id": 496,
+      "question": "Quantos bairros possuem a ZOT 01?",
+      "expected": "A ZOT 01 está presente em múltiplos bairros, incluindo: ABERTA DOS MORROS, AGRONOMIA, BELÉM VELHO, BOA VISTA DO SUL, CAMAQUÃ, CAMPO NOVO, CASCATA, CAVALHADA, CEL. APARICIO BORGES, CHAPÉU DO SOL, entre outros.",
+      "actual": "Existem 30 bairros que possuem a ZOT 01.\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+      "success": true,
+      "duration": 11111,
+      "confidence": 0.9,
+      "category": "bairros"
+    },
+    {
+      "id": 480,
+      "question": "Zot 8 pertence a que bairro?",
+      "expected": "Os 94 bairros de Porto Alegre são: ABERTA DOS MORROS AGRONOMIA ANCHIETA ARQUIPÉLAGO AUXILIADORA AZENHA BELA VISTA BELÉM NOVO BELÉM VELHO BOA VISTA BOA VISTA DO SUL BOM FIM BOM JESUS CAMAQUÃ CAMPO NOVO CASCATA CAVALHADA CEL. APARICIO BORGES CENTRO HISTÓRICO CHAPÉU DO SOL CHÁCARA DAS PEDRAS CIDADE BAIXA COSTA E SILVA CRISTAL CRISTO REDENTOR ESPÍRITO SANTO EXTREMA FARRAPOS FARROUPILHA FLORESTA GLÓRIA GUARUJÁ HIGIENÓPOLIS HUMAITÁ HÍPICA INDEPENDÊNCIA IPANEMA JARDIM BOTÂNICO JARDIM CARVALHO JARDIM DO SALSO JARDIM EUROPA JARDIM FLORESTA JARDIM ISABEL JARDIM ITU JARDIM LEOPOLDINA JARDIM LINDÓIA JARDIM SABARÁ JARDIM SÃO PEDRO LAGEADO LAMI LOMBA DO PINHEIRO MEDIANEIRA MENINO DEUS MOINHOS DE VENTO MONTSERRAT MORRO SANTANA MÁRIO QUINTANA NAVEGANTES NONOAI PARQUE SANTA FÉ PARTENON PASSO DA AREIA PASSO DAS PEDRAS PEDRA REDONDA PETRÓPOLIS PITINGA PONTA GROSSA PRAIA DE BELAS RESTINGA RIO BRANCO RUBEM BERTA SANTA CECÍLIA SANTA MARIA GORETTI SANTA ROSA DE LIMA SANTA TEREZA SANTANA SANTO ANTÔNIO SARANDI SERRARIA SÃO CAETANO SÃO GERALDO SÃO JOÃO SÃO SEBASTIÃO SÉTIMO CÉU TERESÓPOLIS TRISTEZA TRÊS FIGUEIRAS VILA ASSUNÇÃO VILA CONCEIÇÃO VILA IPIRANGA VILA JARDIM VILA JOÃO PESSOA VILA NOVA VILA SÃO JOSÉ",
+      "actual": "O Zot 8 pertence ao bairro Praia de Belas em Porto Alegre.\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+      "success": true,
+      "duration": 12109,
+      "confidence": 0.9,
+      "category": "bairros"
+    },
+    {
+      "id": 469,
+      "question": "Quais são os principais índices do regime urbanístico do bairro três figueiras?",
+      "expected": "Os principais índices do regime urbanístico do bairro Três Figueiras em Porto Alegre são os seguintes: - ZOT 08.3 - C: Coeficiente de aproveitamento básico (CA básico) de 3.6, coeficiente de aproveitamento máximo (CA máximo) de 7.5 e altura máxima de 90.0 metros. - ZOT 04: Coeficiente de aproveitamento básico (CA básico) de 2.0, coeficiente de aproveitamento máximo (CA máximo) de 4.0 e altura máxima de 18.0 metros. - ZOT 07: Coeficiente de aproveitamento básico (CA básico) de 3.6, coeficiente de aproveitamento máximo (CA máximo) de 6.5 e altura máxima de 60.0 metros. Resuma o regime urbanístico do bairro três figueiras. O regime urbanístico do bairro Três Figueiras em Porto Alegre é composto por três conjuntos com diferentes parâmetros de ocupação do solo: 1. Conjunto 1 (ZOT 08.3 - C): - Coeficiente de Aproveitamento Básico (CA) de 3.6 - Coeficiente de Aproveitamento Máximo (CA) de 7.5 - Altura máxima de 90.0 metros 2. Conjunto 2 (ZOT 04): - Coeficiente de Aproveitamento Básico (CA) de 2.0 - Coeficiente de Aproveitamento Máximo (CA) de 4.0 - Altura máxima de 18.0 metros 3. Conjunto 3 (ZOT 07): - Coeficiente de Aproveitamento Básico (CA) de 3.6 - Coeficiente de Aproveitamento Máximo (CA) de 6.5 - Altura máxima de 60.0 metros Esses parâmetros indicam as restrições e possibilidades de construção e ocupação do solo no bairro Três Figueiras de acordo com o Plano Diretor de Porto Alegre. Qual é o potencial construtivo do bairro três figueiras. Com base nos dados encontrados para o bairro Três Figueiras em Porto Alegre, o potencial construtivo varia de acordo com a zona de ocupação do local. Seguem as informações encontradas: 1. ZOT 08.3 - C: Coeficiente de aproveitamento básico (CA básico) de 3.6, coeficiente de aproveitamento máximo (CA máximo) de 7.5 e altura máxima de 90.0 metros. 2. ZOT 04: Coeficiente de aproveitamento básico (CA básico) de 2.0, coeficiente de aproveitamento máximo (CA máximo) de 4.0 e altura máxima de 18.0 metros. 3. ZOT 07: Coeficiente de aproveitamento básico (CA básico) de 3.6, coeficiente de aproveitamento máximo (CA máximo) de 6.5 e altura máxima de 60.0 metros. Esses dados indicam o potencial de construção permitido em cada zona do bairro Três Figueiras. Recomenda-se verificar junto à Prefeitura de Porto Alegre para mais informações específicas sobre o potencial construtivo do local.",
+      "actual": "1. **TRÊS FIGUEIRAS - ZOT 08.3 - C:**\n   - Altura máxima: 90 metros\n   - Coeficiente de aproveitamento mínimo (CA básico): Não disponível\n   - Coeficiente de aproveitamento máximo (CA máximo): Não disponível\n\n2. **TRÊS FIGUEIRAS - ZOT 04:**\n   - Altura máxima: 18 metros\n   - Coeficiente de aproveitamento mínimo (CA básico): 2.0\n   - Coeficiente de aproveitamento máximo (CA máximo): 4.0\n\n3. **TRÊS FIGUEIRAS - ZOT 07:**\n   - Altura máxima: 60 metros\n   - Coeficiente de aproveitamento mínimo (CA básico): Não disponível\n   - Coeficiente de aproveitamento máximo (CA máximo): Não disponível\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+      "success": true,
+      "duration": 15704,
+      "confidence": 0.9,
+      "category": "bairros"
+    },
+    {
+      "id": 483,
+      "question": "Quantos bairros são considerados \"Protegidos pelo Sistema Atual\"?",
+      "expected": "25 bairros são classificados como \"Bairros Protegidos pelo Sistema Atual\" de proteção contra inundações.",
+      "actual": "Existem 0 bairros considerados \"Protegidos pelo Sistema Atual\".\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+      "success": true,
+      "duration": 7334,
+      "confidence": 0.9,
+      "category": "bairros"
+    },
+    {
+      "id": 482,
+      "question": "Quantos bairros estão classificados como \"Acima da Cota de Inundação 2024\"?",
+      "expected": "57 bairros estão classificados como \"Bairros com Ocupação Urbana Acima da Cota de Inundação 2024\"",
+      "actual": "Atualmente, nenhum bairro em Porto Alegre está classificado como \"Acima da Cota de Inundação 2024\".\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+      "success": true,
+      "duration": 8355,
+      "confidence": 0.9,
+      "category": "bairros"
+    },
+    {
+      "id": 495,
+      "question": "Quais bairros estão na categoria de maior risco de inundação (Em Estudo)?",
+      "expected": "Os 13 bairros em Área de Estudo são: ARQUIPÉLAGO, BELÉM NOVO, BOA VISTA DO SUL, CHAPÉU DO SOL, EXTREMA, FARRAPOS, HUMAITÁ, LAGEADO, LAMI, PONTA GROSSA, RESTINGA, SARANDI, SERRARIA.",
+      "actual": "Os bairros em Porto Alegre que estão na categoria de maior risco de inundação (Em Estudo) são:\n\n1. **Maior Risco de Inundação (Em Estudo)**\n   - **Não disponível**\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+      "success": true,
+      "duration": 8656,
+      "confidence": 0.9,
+      "category": "bairros"
+    },
+    {
+      "id": 476,
+      "question": "Qual é o índice de aproveitamento médio do bairro Cristal?",
+      "expected": "O índice de aproveitamento médio do bairro Cristal é de 3.3125. Esse valor pode variar de acordo com a zona e as diretrizes específicas de cada área. No entanto, com base nos dados fornecidos, o índice de aproveitamento varia de 2.0 a 7.5, dependendo da zona, com alturas máximas variando de 9.0 a 130.0 metros.",
+      "actual": "1. **Altura máxima**: Não disponível\n2. **Coeficiente de aproveitamento mínimo (CA básico)**: Não disponível\n3. **Coeficiente de aproveitamento máximo (CA máximo)**: Não disponível\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+      "success": true,
+      "duration": 10768,
+      "confidence": 0.9,
+      "category": "coeficiente_aproveitamento"
+    },
+    {
+      "id": 484,
+      "question": "Quantos bairros estão \"Em Área de Estudo\" para proteção contra enchentes?",
+      "expected": "13 bairros estão classificados como \"Bairros em Área de Estudo\", que são territórios diretamente impactados pelas inundações e ainda não plenamente protegidos pelo sistema atual.",
+      "actual": "Existem 5 bairros em \"Área de Estudo\" para proteção contra enchentes em Porto Alegre. Abaixo estão os bairros e suas respectivas zonas com os indicadores solicitados:\n\n1. **Bairro 1**:\n   - Altura máxima: 15 metros\n   - Coeficiente de aproveitamento mínimo (CA básico): 1.0\n   - Coeficiente de aproveitamento máximo (CA máximo): 1.5\n\n2. **Bairro 2**:\n   - Altura máxima: 12 metros\n   - Coeficiente de aproveitamento mínimo (CA básico): 0.8\n   - Coeficiente de aproveitamento máximo (CA máximo): 1.2\n\n3. **Bairro 3**:\n   - Altura máxima: 20 metros\n   - Coeficiente de aproveitamento mínimo (CA básico): 1.2\n   - Coeficiente de aproveitamento máximo (CA máximo): 2.0\n\n4. **Bairro 4**:\n   - Altura máxima: 18 metros\n   - Coeficiente de aproveitamento mínimo (CA básico): 1.0\n   - Coeficiente de aproveitamento máximo (CA máximo): 1.8\n\n5. **Bairro 5**:\n   - Altura máxima: 25 metros\n   - Coeficiente de aproveitamento mínimo (CA básico): 1.5\n   - Coeficiente de aproveitamento máximo (CA máximo): 2.5\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+      "success": true,
+      "duration": 13267,
+      "confidence": 0.9,
+      "category": "bairros"
+    },
+    {
+      "id": 442,
+      "question": "O que é o Sistema de Estrutura e Infraestrutura?",
+      "expected": "O Sistema de Estrutura e Infraestrutura é um dos quatro sistemas estruturantes do território no novo Plano Diretor Urbano Sustentável (PDUS) de Porto Alegre. Ele organiza os elementos físicos que estruturam o funcionamento da cidade e sustentam seu desenvolvimento, incluindo a mobilidade urbana, os equipamentos urbanos e comunitários (como escolas, postos de saúde, centros culturais), as redes de infraestrutura técnica (abastecimento, saneamento, energia, comunicação) e os sistemas de proteção contra cheias e drenagem. Esse sistema orienta a ocupação do solo com base na capacidade instalada de atendimento à população, promovendo a integração entre moradia, transporte e serviços públicos. Também qualifica os territórios a partir da lógica da infraestrutura social e ambiental, priorizando o adensamento em áreas com boa oferta de equipamentos e redes, e induzindo investimentos onde há déficit. Com isso, o sistema busca garantir eficiência urbana, reduzir desigualdades territoriais e aumentar a resiliência da cidade frente a eventos climáticos extremos.",
+      "actual": "O Sistema de Estrutura e Infraestrutura é um conjunto de diretrizes e normas que estabelecem as condições necessárias para o funcionamento adequado de uma determinada região, abrangendo aspectos como redes de água, esgoto, energia, transporte, comunicações, entre outros. Ele visa garantir a qualidade de vida dos habitantes, o desenvolvimento urbano sustentável e a organização do espaço físico.\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+      "success": true,
+      "duration": 4231,
+      "confidence": 0.7,
+      "category": "conceitual"
+    },
+    {
+      "id": 448,
+      "question": "Vai ter cobrança de outorga onerosa?",
+      "expected": "Sim, a proposta da revisão do Plano Diretor Urbano Sustentável de Porto Alegre prevê a possibilidade de cobrança de outorga onerosa do direito de construir. A outorga onerosa é um instrumento previsto pelo Estatuto da Cidade (Lei Federal nº 10.257/2001), que permite ao município cobrar do proprietário ou empreendedor uma contrapartida financeira quando deseja construir acima do coeficiente de aproveitamento básico definido para a sua área, dentro dos limites estabelecidos pela legislação municipal. O texto preliminar do Plano Diretor destaca, entre seus princípios e diretrizes, a recuperação dos investimentos públicos que tenham resultado na valorização de imóveis urbanos e a distribuição equitativa dos benefícios e ônus decorrentes do processo de urbanização. Esses são fundamentos para aplicação de instrumentos como a outorga onerosa do direito de construir, como parte das formas de financiamento do desenvolvimento urbano sustentável e para promover justiça urbana. Os detalhes sobre o cálculo, a aplicação e as exceções da outorga onerosa serão definidos na regulamentação específica, que normalmente é detalhada na Lei de Uso e Ocupação do Solo (LUOS) e em decretos posteriores. Portanto: Sim, a proposta prevê o uso da outorga onerosa como instrumento para o financiamento urbano e distribuição de benefícios e ônus do desenvolvimento, conforme diretrizes do Plano Diretor Urbano Sustentável de Porto Alegre. Como ficam as contrapartidas dos Empreendimentos no Plano Diretor: As contrapartidas dos empreendimentos no novo Plano Diretor de Porto Alegre são regulamentadas por diversos instrumentos urbanísticos, com critérios claros e foco na qualificação do território. A Outorga Onerosa do Direito de Construir exige pagamento proporcional ao potencial construtivo adicional utilizado, com possibilidade de contrapartidas financeiras ou em obras, serviços e doação de áreas ou imóveis, vinculadas ao Fundo Municipal de Gestão do Território (FMGT) e ao Fundo Municipal de Habitação de Interesse Social (FMHIS). No parcelamento do solo, é possível a conversão da obrigação de destinação de área pública, mediante transferência de terrenos urbanizados ou não, execução de obras ou pagamento pecuniário, conforme viabilidade e interesse público, com formalização por Termo de Conversão de Área Pública. Também há previsão de compensação por Transferência do Direito de Construir (TDC) quando exigências urbanísticas ultrapassarem os limites máximos estabelecidos para a ZOT. As Operações Urbanas Consorciadas preveem contrapartidas específicas, como recursos financeiros, imóveis, execução de obras ou produção de habitação de interesse social, definidas por lei para cada operação. Já o Estudo de Impacto de Vizinhança (EIV) exige medidas mitigadoras e compensatórias proporcionais aos impactos diagnosticados, como condição para aprovação do empreendimento. Esses instrumentos asseguram que os benefícios gerados pelas transformações urbanas retornem em melhorias para a coletividade.",
+      "actual": "A cobrança de outorga onerosa é um instrumento previsto no Plano Diretor de Porto Alegre para permitir que proprietários possam construir acima do limite estabelecido em troca do pagamento de contrapartidas financeiras ao município. A outorga onerosa não é obrigatória para todos os casos de aumento de altura, sendo analisada de acordo com a legislação vigente e as diretrizes do Plano Diretor.\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+      "success": true,
+      "duration": 4535,
+      "confidence": 0.7,
+      "category": "coeficiente_aproveitamento"
+    },
+    {
+      "id": 441,
+      "question": "O que é o Sistema de Espaços Abertos?",
+      "expected": "O Sistema de Espaços Abertos é um dos quatro sistemas estruturantes do território no novo Plano Diretor Urbano Sustentável (PDUS) de Porto Alegre. Ele organiza os espaços públicos não edificados --- como praças, parques, largos, calçadas amplas, áreas verdes e espaços de lazer --- reconhecendo-os como infraestrutura urbana essencial para a convivência, a mobilidade ativa, o bem-estar e a identidade da cidade. Esses espaços são aquilo que o cidadão percebe como o rosto público da cidade, essenciais para a vida urbana cotidiana. O sistema busca promover continuidade, acessibilidade e integração entre os espaços públicos, articulando-os à paisagem, à estrutura ecológica e aos equipamentos urbanos. Também valoriza as Áreas de Interesse Cultural (AIC), que incluem territórios com relevância simbólica, histórica e social --- entre eles, espaços vinculados a povos tradicionais, cuja relação com o entorno urbano deve ser qualificada e respeitada. Dessa forma, o Sistema de Espaços Abertos fortalece os vínculos entre espaço público, memória e pertencimento.",
+      "actual": "O Sistema de Espaços Abertos é uma parte do Plano Diretor que engloba áreas verdes, praças, parques e demais espaços livres públicos ou privados que contribuem para a qualidade ambiental, paisagística e urbanística da cidade. Esses espaços têm a função de proporcionar lazer, recreação, integração social, preservação ambiental, entre outros benefícios para a população.\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+      "success": true,
+      "duration": 4649,
+      "confidence": 0.7,
+      "category": "conceitual"
+    },
+    {
+      "id": 434,
+      "question": "Quais as ZOT com coeficiente de aproveitamento maior do que 4?",
+      "expected": "Aqui estão as Zonas de Ordenamento Territorial (ZOT) com coeficiente de aproveitamento máximo superior a 4: ZOT 11 , ZOT 08.1 - A, ZOT 06, ZOT 07, ZOT 08, ZOT 08.1 - B, ZOT 08.1 - C, ZOT 08.1 - D, ZOT 08.1 - E, ZOT 08.1 - G, ZOT 08.2, ZOT 08.2 - B, ZOT 08.3 - A, ZOT 08.3 - B, ZOT 08.3 - C, ZOT 12, ZOT 13,",
+      "actual": "1. **ZOT 11**:\n   - Altura máxima: Não disponível\n   - Coeficiente de aproveitamento mínimo (CA básico): Não disponível\n   - Coeficiente de aproveitamento máximo (CA máximo): 5.0\n\n2. **ZOT 06**:\n   - Altura máxima: Não disponível\n   - Coeficiente de aproveitamento mínimo (CA básico): Não disponível\n   - Coeficiente de aproveitamento máximo (CA máximo): 5.0\n\n3. **ZOT 08.1 - B**:\n   - Altura máxima: Não disponível\n   - Coeficiente de aproveitamento mínimo (CA básico): Não disponível\n   - Coeficiente de aproveitamento máximo (CA máximo): 7.0\n\n4. **ZOT 08.1 - G**:\n   - Altura máxima: Não disponível\n   - Coeficiente de aproveitamento mínimo (CA básico): Não disponível\n   - Coeficiente de aproveitamento máximo (CA máximo): 6.0\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+      "success": true,
+      "duration": 10951,
+      "confidence": 0.9,
+      "category": "coeficiente_aproveitamento"
+    },
+    {
+      "id": 473,
+      "question": "Quais são os principais índices do regime urbanístico do três figueiras?",
+      "expected": "Os principais índices do regime urbanístico do bairro Três Figueiras em Porto Alegre são os seguintes: - ZOT 08.3 - C: Coeficiente de aproveitamento básico (CA básico) de 3.6, coeficiente de aproveitamento máximo (CA máximo) de 7.5 e altura máxima de 90.0 metros. - ZOT 04: Coeficiente de aproveitamento básico (CA básico) de 2.0, coeficiente de aproveitamento máximo (CA máximo) de 4.0 e altura máxima de 18.0 metros. - ZOT 07: Coeficiente de aproveitamento básico (CA básico) de 3.6, coeficiente de aproveitamento máximo (CA máximo) de 6.5 e altura máxima de 60.0 metros. Resuma o regime urbanístico do três figueiras. Os principais índices do regime urbanístico do bairro Três Figueiras em Porto Alegre são os seguintes: - ZOT 08.3 - C: Coeficiente de aproveitamento básico (CA básico) de 3.6, coeficiente de aproveitamento máximo (CA máximo) de 7.5 e altura máxima de 90.0 metros. - ZOT 04: Coeficiente de aproveitamento básico (CA básico) de 2.0, coeficiente de aproveitamento máximo (CA máximo) de 4.0 e altura máxima de 18.0 metros. - ZOT 07: Coeficiente de aproveitamento básico (CA básico) de 3.6, coeficiente de aproveitamento máximo (CA máximo) de 6.5 e altura máxima de 60.0 metros. Qual é o potencial construtivo do três figueiras. Com base nos dados encontrados para o bairro Três Figueiras em Porto Alegre, o potencial construtivo varia de acordo com a zona de ocupação do local. Seguem as informações encontradas: 1.ZOT 08.3 - C: Coeficiente de aproveitamento básico (CA básico) de 3.6, coeficiente de aproveitamento máximo (CA máximo) de 7.5 e altura máxima de 90.0 metros. 1.ZOT 04: Coeficiente de aproveitamento básico (CA básico) de 2.0, coeficiente de aproveitamento máximo (CA máximo) de 4.0 e altura máxima de 18.0 metros. 1.ZOT 07: Coeficiente de aproveitamento básico (CA básico) de 3.6, coeficiente de aproveitamento máximo (CA máximo) de 6.5 e altura máxima de 60.0 metros. Esses dados indicam o potencial de construção permitido em cada zona do bairro Três Figueiras. Recomenda-se verificar junto à Prefeitura de Porto Alegre para mais informações específicas sobre o potencial construtivo do local. Três figueiras. Os dados fornecidos referem-se a algumas zonas do Plano Diretor de Porto Alegre. Cada zona possui especificações quanto ao Coeficiente de Aproveitamento Básico (CA básico), Coeficiente de Aproveitamento Máximo (CA máximo) e Altura Máxima permitida para construções. Para a zona \"ZOT 08.3 - C\", os valores são: - Coeficiente de Aproveitamento Básico (CA básico): 3.6 - Coeficiente de Aproveitamento Máximo (CA máximo): 7.5 - Altura Máxima permitida: 90.0 metros Para a zona \"ZOT 04\", os valores são: - Coeficiente de Aproveitamento Básico (CA básico): 2.0 - Coeficiente de Aproveitamento Máximo (CA máximo): 4.0 - Altura Máxima permitida: 18.0 metros Para a zona \"ZOT 07\", os valores são: - Coeficiente de Aproveitamento Básico (CA básico): 3.6 - Coeficiente de Aproveitamento Máximo (CA máximo): 6.5 - Altura Máxima permitida: 60.0 metros Essas informações são importantes para orientar o planejamento urbano e o uso do solo em Porto Alegre, visando o desenvolvimento sustentável da cidade. Descreva as zonas do três figueiras. As zonas do Três Figueiras encontradas nos dados são as seguintes: 1. ZOT 08.3 - C - Coeficiente de aproveitamento básico: 3.6 - Coeficiente de aproveitamento máximo: 7.5 - Altura máxima: 90.0 metros 2. ZOT 04 - Coeficiente de aproveitamento básico: 2.0 - Coeficiente de aproveitamento máximo: 4.0 - Altura máxima: 18.0 metros 3. ZOT 07 - Coeficiente de aproveitamento básico: 3.6 - Coeficiente de aproveitamento máximo: 6.5 - Altura máxima: 60.0 metros Essas informações são importantes para orientar o uso e ocupação do solo dentro das zonas do bairro Três Figueiras, de acordo com o Plano Diretor de Porto Alegre.",
+      "actual": "1. **Altura máxima**: 90 metros\n2. **Coeficiente de aproveitamento mínimo (CA básico)**: Não disponível\n3. **Coeficiente de aproveitamento máximo (CA máximo)**: Não disponível\n\n2. **ZOT 04:**\n   - **Altura máxima**: 18 metros\n   - **Coeficiente de aproveitamento mínimo (CA básico)**: 2.0\n   - **Coeficiente de aproveitamento máximo (CA máximo)**: 4.0\n\n3. **ZOT 07:**\n   - **Altura máxima**: 60 metros\n   - **Coeficiente de aproveitamento mínimo (CA básico)**: Não disponível\n   - **Coeficiente de aproveitamento máximo (CA máximo)**: Não disponível\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+      "success": true,
+      "duration": 13513,
+      "confidence": 0.9,
+      "category": "coeficiente_aproveitamento"
+    },
+    {
+      "id": 463,
+      "question": "O novo plano diretor propõe o fatiamento do plano em planos de pormenor e parciais?",
+      "expected": "O novo Plano Diretor Urbano Sustentável (PDUS 2025) de Porto Alegre propõe um enfoque na gestão do espaço urbano, incluindo a possibilidade de segmentar o planejamento em planos de pormenor e planos parciais. Isso visa adaptar as diretrizes urbanísticas às especificidades de áreas e bairros, promovendo um desenvolvimento mais sustentável e integrado. Como Funciona o Modelo do PDUS Planos de Pormenor: São instrumentos que detalham aspectos específicos de determinadas áreas, permitindo um planejamento mais preciso e adaptado às necessidades locais. Eles podem incluir diretrizes sobre uso do solo, infraestrutura e serviços urbanos. Planos Parciais: Permitem uma abordagem mais flexível e segmentada, abordando áreas que requerem atenção especial e que podem ter características distintas em relação ao restante do município. Esses planos podem tratar de aspectos como mobilidade, paisagem e uso do solo de forma mais focada. Importância do detalhamento de escalas intermediárias Adaptação Local: Contribui para que as políticas urbanas sejam mais adequadas às realidades específicas de cada região. Participação Cidadã: Facilita a inclusão da comunidade nas discussões sobre o desenvolvimento de suas áreas. Sustentabilidade: Promove um uso mais eficiente dos recursos e planejamento integrado, favorecendo um crescimento urbano que respeite o meio ambiente. Variações por ZOT e Bairro Os parâmetros urbanísticos, como altura máxima de edificações e coeficientes de aproveitamento, variam conforme a Zona de Ordenamento Territorial (ZOT) e o bairro específico. Para obter informações detalhadas sobre o que pode ser construído em uma área específica, recomenda-se consultar o mapa interativo ou fornecer o nome do bairro desejado.",
+      "actual": "Sim, o novo Plano Diretor propõe o fatiamento do plano em planos de pormenor e parciais.\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+      "success": true,
+      "duration": 3898,
+      "confidence": 0.7,
+      "category": "conceitual"
+    },
+    {
+      "id": 443,
+      "question": "O que é o Sistema Socioeconômico?",
+      "expected": "O Sistema Socioeconômico é um dos quatro sistemas estruturantes do território no novo Plano Diretor Urbano Sustentável (PDUS) de Porto Alegre. Ele organiza as atividades econômicas, sociais e produtivas da cidade, articulando o uso do solo à geração de empregos, à oferta de serviços, ao comércio, à inovação e às dinâmicas culturais e comunitárias. Esse sistema se articula diretamente com as Áreas Estruturadoras do PDUS, que são porções do território com alto potencial de transformação urbana e relevância estratégica para o desenvolvimento sustentável da cidade. Ao integrar as diretrizes do Sistema Socioeconômico a essas áreas --- como o Centro Histórico, o 4º Distrito, os eixos de transporte coletivo e os corredores de centralidades --- o plano orienta a aplicação de incentivos urbanísticos e o direcionamento de investimentos públicos, promovendo adensamento qualificado, aproveitamento da infraestrutura existente e integração entre moradia e emprego. O sistema também contempla as Áreas de Requalificação Urbana (ARU) como territórios prioritários, por combinarem déficit urbano com localização estratégica próxima a centralidades e áreas de emprego. Com isso, o Sistema Socioeconômico apoia decisões estruturantes de desenvolvimento econômico e territorial, ampliando oportunidades e promovendo uma ocupação urbana mais equilibrada, inclusiva e eficiente.",
+      "actual": "O Sistema Socioeconômico é um conjunto de elementos que engloba as relações sociais, econômicas, culturais e políticas presentes em uma determinada região, influenciando diretamente no desenvolvimento e na qualidade de vida da população. Ele abrange aspectos como emprego, renda, educação, saúde, moradia, mobilidade urbana, segurança, entre outros fatores que impactam a vida das pessoas e o funcionamento da cidade.\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+      "success": true,
+      "duration": 4523,
+      "confidence": 0.7,
+      "category": "conceitual"
+    },
+    {
+      "id": 418,
+      "question": "Como o novo Plano Diretor ajuda Porto Alegre a atrair investimentos e gerar desenvolvimento?",
+      "expected": "O novo Plano Diretor organiza o crescimento da cidade com mais clareza e previsibilidade. Isso dá mais segurança para quem quer investir, empreender ou construir. O plano também fortalece o papel do planejamento urbano como motor da economia, conectando as decisões sobre o uso do solo à infraestrutura, ao orçamento público e às oportunidades de financiamento. Com regras mais simples, uso mais eficiente do território e visão de longo prazo, a cidade se torna mais preparada para receber projetos que geram emprego, renda e qualidade de vida.",
+      "actual": "O novo Plano Diretor de Porto Alegre contribui para atrair investimentos e gerar desenvolvimento por meio de regras claras e objetivas que orientam o uso e ocupação do solo na cidade. Com diretrizes bem definidas, investidores e empreendedores têm maior segurança jurídica para realizar projetos, fomentando o crescimento econômico de forma sustentável.\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+      "success": true,
+      "duration": 4844,
+      "confidence": 0.7,
+      "category": "conceitual"
+    },
+    {
+      "id": 445,
+      "question": "O que é o Sistema de Gestão, Controle, Planejamento e Financiamento Urbano (SGC)?",
+      "expected": "O Sistema de Gestão, Controle, Planejamento e Financiamento Urbano (SGC) é o núcleo institucional responsável por garantir a implementação efetiva do Plano Diretor Urbano Sustentável (PDUS) de Porto Alegre. Ele articula, coordena e monitora o conjunto de ações necessárias para transformar as diretrizes do plano em resultados concretos no território. Entre suas funções estratégicas estão: a coordenação integrada da política urbana, a atualização periódica do PDUS, da LUOS e dos planos urbanísticos, e a execução de planos locais, planos de pormenor e projetos urbanos prioritários, com foco especial nas Áreas Estruturadoras e nas intervenções de requalificação urbana. O sistema também atua na aplicação dos instrumentos de desenvolvimento urbano previstos no plano, como outorga onerosa, operações urbanas consorciadas, reparcelamento, regularização fundiária e transferência do direito de construir. Além disso, o SGC realiza o monitoramento contínuo do território, com base em indicadores de desempenho urbano, subsidiando decisões técnicas, revisões normativas e a alocação de recursos. Ele é o elo entre planejamento, gestão, financiamento e participação social, apoiando a implementação de projetos urbanos integrados e sustentáveis, com foco na qualificação do espaço público, na eficiência territorial e na promoção do desenvolvimento equilibrado da cidade.",
+      "actual": "O Sistema de Gestão, Controle, Planejamento e Financiamento Urbano (SGC) é um conjunto de ferramentas e procedimentos utilizados para gerenciar as questões urbanas de um município, envolvendo desde o planejamento do uso do solo até a gestão de recursos financeiros para o desenvolvimento urbano de forma sustentável.\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+      "success": true,
+      "duration": 5933,
+      "confidence": 0.7,
+      "category": "conceitual"
+    },
+    {
+      "id": 460,
+      "question": "Houve participação social na construção do plano diretor?",
+      "expected": "Sim, houve participação social ativa e estruturada em várias etapas na construção da proposta de revisão do Plano Diretor Urbano Sustentável de Porto Alegre. A participação social é um dos princípios fundamentais do novo Plano Diretor e está prevista tanto no texto da minuta quanto na prática, com o envolvimento da população, de entidades da sociedade civil, setores produtivos e do poder público. A participação foi estruturada em várias etapas, incluindo: Oficinas territoriais e temáticas Audiências públicas Escutas setoriais Reuniões no CMDUA (Conselho Municipal de Desenvolvimento Urbano Ambiental) Canais digitais de consulta e participação Alguns números da participação social até o momento incluem: 9 Oficinas Territoriais 15 Exposições Interativas 2 Seminários 2 Conferências 7 Oficinas Temáticas 24 Devolutivas 4 Consultas Públicas 184 Reuniões 30 Reuniões do CMDUA Diversas visitas a entidades Um debate que se estende desde 2019 Além disso, o novo plano propõe governança permanente da política urbana, criando novos pilares institucionais: Centro de Inteligência Territorial (CIT) CMDUA fortalecido SGC -- Sistema de Gestão, Controle e Planejamento Dessa forma, a participação social não termina com a aprovação da lei. Ela passa a ser contínua, auditável e baseada em dados públicos, consolidando um modelo de gestão urbana democrático e transparente. Como previsto na minuta do plano: \"A participação social e comunitária na formulação e implementação das políticas urbanas se dará por meio de consultas públicas, audiências e demais instrumentos de participação, incluindo a atuação no Conselho Municipal de Desenvolvimento Urbano Ambiental.\" Você pode contribuir e acompanhar todo o processo pelo canal oficial: Participe da construção do Plano Diretor",
+      "actual": "Sim, houve participação social na construção do Plano Diretor de Porto Alegre. A elaboração do Plano Diretor contou com a realização de Audiências Públicas, consultas populares, debates em conselhos e comissões, além de contribuições de diferentes setores da sociedade civil, representantes do poder público e especialistas, visando a construção de um documento que refletisse as demandas e necessidades da cidade.\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+      "success": true,
+      "duration": 6298,
+      "confidence": 0.7,
+      "category": "conceitual"
+    },
+    {
+      "id": 466,
+      "question": "O que diz a proposta do Plano Diretor?",
+      "expected": "Um dos objetivos centrais é reduzir o custo da moradia e garantir o acesso de todos à cidade. Estimula a inclusão social e territorial, especialmente de quem está em situação de vulnerabilidade ou precariedade habitacional. Defende o uso de instrumentos urbanísticos para garantir moradia em áreas com infraestrutura e acesso ao emprego, além de incentivar a ocupação de imóveis ociosos e a regularização fundiária. Valoriza a participação social e a proteção de comunidades tradicionais e modos de vida locais.",
+      "actual": "A proposta do Plano Diretor de Porto Alegre define regras para o uso do solo urbano, visando o desenvolvimento ordenado da cidade. Alguns dos principais pontos da proposta incluem:\n\n1. **Altura máxima**: Variável de acordo com a zona e o tipo de uso.\n2. **Coeficiente de aproveitamento mínimo (CA básico)**: Variável de acordo com a zona e o tipo de uso.\n3. **Coeficiente de aproveitamento máximo (CA máximo)**: Variável de acordo com a zona e o tipo de uso.\n\nPara informações específicas sobre altura, CA básico e CA máximo de zonas ou bairros em Porto Alegre, consulte o mapa com as regras construtivas disponível no link fornecido.\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+      "success": true,
+      "duration": 5338,
+      "confidence": 0.7,
+      "category": "conceitual"
+    },
+    {
+      "id": 456,
+      "question": "O que é o EIV no novo Plano Diretor?",
+      "expected": "O Estudo de Impacto de Vizinhança (EIV) é um instrumento previsto no Estatuto da Cidade e está detalhadamente regulamentado na proposta de revisão do Plano Diretor e da Lei de Uso e Ocupação do Solo de Porto Alegre. O EIV deve ser apresentado para o licenciamento de empreendimentos e atividades que, pelo seu porte ou natureza, possam gerar impactos relevantes na vizinhança, como alterações no trânsito, na paisagem, na oferta de serviços urbanos, no meio ambiente e na dinâmica social. Principais pontos sobre o EIV no novo Plano: Obrigatoriedade: O EIV será exigido para empreendimentos definidos em regulamento próprio, conforme critérios de porte, localização e impacto potencial. Conteúdo mínimo: O EIV deverá conter, entre outros aspectos, análise dos impactos sobre o trânsito, infraestrutura urbana, meio ambiente, valorização imobiliária, oferta de equipamentos públicos, patrimônio cultural e paisagem urbana. Participação social: O processo de avaliação do EIV prevê transparência e participação da comunidade, podendo incluir audiências públicas e consulta a conselhos municipais. Mitigação de impactos: O EIV não serve apenas para apontar impactos, mas também para propor medidas de mitigação, compensação ou adequação do projeto ao contexto urbano. Integração com outros instrumentos: O EIV deve estar articulado com o zoneamento urbano, diretrizes ambientais e políticas setoriais do município. Diferença em relação ao EVU: Enquanto o EVU tinha foco em viabilidade urbanística (parâmetros construtivos, uso do solo etc.), o EIV aprofunda a análise nos impactos que o empreendimento pode causar à vizinhança e à cidade, promovendo uma avaliação mais ampla e transparente, com participação da sociedade e foco em soluções para conflitos urbanos. Essas diretrizes fazem parte da proposta de revisão da Lei de Uso e Ocupação do Solo de Porto Alegre.",
+      "actual": "No novo Plano Diretor de Porto Alegre, EIV significa Estudo de Impacto de Vizinhança. Esse estudo é uma ferramenta de gestão urbana que visa analisar os impactos que determinado empreendimento pode causar em sua vizinhança, levando em consideração aspectos como mobilidade, meio ambiente, infraestrutura, entre outros.\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+      "success": true,
+      "duration": 5556,
+      "confidence": 0.7,
+      "category": "conceitual"
+    },
+    {
+      "id": 412,
+      "question": "O novo Plano Diretor ajuda mesmo a melhorar a mobilidade em Porto Alegre?",
+      "expected": "Sim. O plano incentiva que mais pessoas morem perto de onde trabalham, estudam e usam serviços, reduzindo a necessidade de grandes deslocamentos. Ao promover o uso misto do solo e concentrar o adensamento nas áreas com melhor infraestrutura, o plano favorece trajetos mais curtos, fortalece o transporte coletivo e estimula modos ativos, como caminhar e pedalar. Isso também ajuda a reduzir a poluição: segundo o Plano de Ação Climática de Porto Alegre, o transporte por automóvel é o principal responsável pelas emissões de gases de efeito estufa na cidade.",
+      "actual": "O novo Plano Diretor de Porto Alegre tem como objetivo melhorar a mobilidade na cidade através de diretrizes que incentivam um desenvolvimento urbano mais sustentável e integrado. Alguns dos pontos-chave que contribuem para a melhoria da mobilidade são:\n\n1. **Zoneamento e Uso do Solo**:\n   - Altura máxima: Variável de acordo com cada zona\n   - Coeficiente de aproveitamento mínimo (CA básico): Variável de acordo com cada zona\n   - Coeficiente de aproveitamento máximo (CA máximo): Variável de acordo com cada zona\n\n2. **Adensamento e Verticalização**:\n   - Estímulo ao adensamento e à verticalização em áreas bem servidas por transporte público, promovendo a ocupação do espaço de forma mais eficiente e reduzindo a necessidade de deslocamentos.\n\n3. **Priorização do Transporte Público**:\n   - Incentivo à implantação de corredores exclusivos para ônibus, ciclovias e outras infraestruturas que favoreçam o deslocamento sustentável.\n\n4. **Promoção da Acessibilidade**:\n   - Incentivo à criação de calçadas acessíveis, vias compartilhadas e espaços públicos de qualidade que facilitem a circulação de pedestres e ciclistas.\n\nPortanto, o novo Plano Diretor de Porto Alegre busca contribuir para a melhoria da mobilidade na cidade, promovendo um desenvolvimento urbano mais equilibrado e sustentável.\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+      "success": true,
+      "duration": 6674,
+      "confidence": 0.7,
+      "category": "conceitual"
+    },
+    {
+      "id": 413,
+      "question": "Como o novo Plano Diretor vai ajudar a reduzir o custo da moradia?",
+      "expected": "O Plano Diretor facilita a construção de mais moradias em áreas bem localizadas, próximas ao transporte coletivo e aos empregos. Ele estimula o uso de terrenos ociosos, permite diferentes tipos de moradia, incentiva reformas de prédios existentes e simplifica as regras urbanísticas. Com mais oferta onde a cidade já tem infraestrutura, o custo por moradia tende a cair --- e morar bem se torna mais acessível para mais gente.",
+      "actual": "O novo Plano Diretor de Porto Alegre pode ajudar a reduzir o custo da moradia de diversas formas, tais como:\n\n1. **Estímulo à verticalização e adensamento urbano**: Permitindo maior altura e coeficiente de aproveitamento nas zonas específicas, possibilitando a construção de mais unidades habitacionais em um mesmo terreno. Isso pode aumentar a oferta de imóveis e potencialmente reduzir os preços.\n\n2. **Incentivo à produção de habitação de interesse social**: Estabelecendo diretrizes que favoreçam a construção de moradias populares em áreas bem localizadas, com acesso a serviços e infraestrutura.\n\n3. **Promoção de áreas mistas e diversificadas**: Permitindo a combinação de usos residenciais, comerciais e de serviços em um mesmo local, o que pode facilitar o acesso a empregos, reduzindo custos de deslocamento.\n\n4. **Regularização fundiária e incentivo à ocupação de vazios urbanos**: Facilitando a regularização de áreas ocupadas de forma informal e incentivando a ocupação de terrenos subutilizados, contribuindo para a oferta de moradias mais acessíveis.\n\n5. **Estabelecimento de diretrizes para construção sustentável**: Promovendo a utilização de tecnologias e práticas construtivas mais eficientes, o que pode reduzir os custos de manutenção e operação dos imóveis.\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+      "success": true,
+      "duration": 10039,
+      "confidence": 0.7,
+      "category": "conceitual"
+    },
+    {
+      "id": 419,
+      "question": "Como o novo Plano Diretor garante que a cidade acompanhe suas transformações e tome decisões com base em dados?",
+      "expected": "O novo Plano Diretor cria o CIT -- Centro de Inteligência Territorial --, uma estrutura permanente que integra dados, mapas e indicadores para entender como a cidade está mudando. Ele permite que o planejamento urbano seja feito com base em evidências técnicas, ajudando a Prefeitura a tomar decisões mais rápidas, inteligentes e transparentes. Isso significa mais capacidade de resposta diante das transformações da cidade --- e mais eficiência no uso dos recursos públicos.",
+      "actual": "O novo Plano Diretor de Porto Alegre garante que a cidade acompanhe suas transformações e tome decisões com base em dados por meio de diversas estratégias, tais como:\n\n1. **Monitoramento contínuo de indicadores urbanos**: Através do acompanhamento de indicadores como densidade populacional, uso do solo, mobilidade urbana, entre outros, a Prefeitura pode identificar áreas que necessitam de intervenções ou melhorias.\n\n2. **Realização de estudos e pesquisas**: A realização de estudos e pesquisas constantes sobre a cidade permite uma análise aprofundada de tendências, demandas e potencialidades, auxiliando na tomada de decisões embasadas em dados concretos.\n\n3. **Participação da sociedade civil**: A promoção de audiências públicas, consultas populares e espaços de diálogo com a sociedade civil possibilita a coleta de informações e contribuições valiosas para a formulação e revisão do Plano Diretor, tornando-o mais alinhado com as reais necessidades da população.\n\n4. **Flexibilidade e adaptação**: O Plano Diretor deve ser flexível o suficiente para se adaptar às mudanças e transformações da cidade ao longo do tempo, garantindo que as políticas urbanas estejam sempre atualizadas e em consonância com a realidade local.\n\n5. **Integração de diferentes áreas do conhecimento**: A integração de profissionais de diversas áreas, como urbanismo, arquitetura, engenharia, sociologia, economia, entre outras, contribui para uma abordagem multidisciplinar na elaboração e implementação do Plano Diretor, enriquecendo as análises e propostas apresentadas.\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+      "success": true,
+      "duration": 10769,
+      "confidence": 0.7,
+      "category": "conceitual"
+    },
+    {
+      "id": 430,
+      "question": "Como o plano diretor de porto alegre trata as áreas de risco?",
+      "expected": "O Plano Diretor Urbano Sustentável de Porto Alegre trata as áreas de risco com enfoque na resiliência urbana e adaptação às mudanças climáticas, integrando estratégias de prevenção, recuperação e mitigação dos riscos ambientais, especialmente em relação a enchentes, deslizamentos e ocupações em áreas suscetíveis a desastres naturais. Principais pontos sobre áreas de risco: O Plano Diretor define como objetivo a adaptação da cidade aos efeitos das mudanças climáticas, incluindo a implantação de sistemas de monitoramento e alerta de eventos extremos, o fortalecimento da infraestrutura urbana adaptativa e a incorporação da gestão de riscos climáticos ao planejamento urbano e aos instrumentos de regulação territorial. Prevê a elaboração de um plano de ação para a recuperação das áreas de risco e para a mitigação de riscos nas áreas passíveis de ocupação, de forma integrada com as políticas de habitação. Define as Áreas de Risco e Vulnerabilidade Ambiental (ARVA) como zonas suscetíveis a desastres naturais, como enchentes e deslizamentos, ou a impactos antrópicos, como poluição. Nessas áreas, são estabelecidas restrições de ocupação e necessidade de intervenções para mitigação dos riscos. O Plano também aponta a necessidade de estabelecer incentivos e normas para aumentar a resiliência das edificações e espaços urbanos, como o uso de infraestruturas verdes, áreas permeáveis e corredores ecológicos. A Lei de Uso e Ocupação do Solo (LUOS), que regulamenta o Plano Diretor, veda o parcelamento e a edificação em terrenos alagadiços ou sujeitos a inundações, em áreas com declividade acentuada (igual ou superior a 30%) ou em terrenos cuja condição geológica não seja compatível com a edificação, salvo se forem atendidas exigências técnicas específicas. Também há restrições para edificações em áreas de preservação permanente, salvo exceções previstas em lei. Exige-se, em áreas estratégicas para drenagem urbana, a construção de reservatórios de retenção de águas pluviais, dependendo do tipo de edificação. Em resumo: O Plano Diretor propõe um tratamento preventivo e regulatório das áreas de risco, priorizando a segurança, a resiliência e a adaptação climática. As intervenções são pautadas por critérios técnicos, com restrições ao uso e ocupação do solo em áreas vulneráveis e integração das ações urbanísticas às políticas ambientais e habitacionais. Esses parâmetros fazem parte da proposta de revisão da Lei de Uso e Ocupação do Solo de Porto Alegre.",
+      "actual": "O Plano Diretor de Porto Alegre não trata diretamente das áreas de risco. Para informações sobre áreas de risco e medidas de prevenção, recomenda-se contatar a Defesa Civil ou órgãos responsáveis pela gestão de riscos e desastres.\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+      "success": true,
+      "duration": 4736,
+      "confidence": 0.7,
+      "category": "conceitual"
+    },
+    {
+      "id": 428,
+      "question": "Como saber se o Plano Diretor está funcionando? Existem metas mensuráveis?",
+      "expected": "Sim. O novo plano cria o Centro de Inteligência Territorial (CIT), que vai monitorar os dados do território em tempo real. Ele acompanha indicadores urbanos, avalia o impacto das políticas e orienta revisões futuras com base em evidências. Cada indicador será publicado com série histórica, metodologia e base geográfica, garantindo transparência e controle público. Isso marca uma ruptura com modelos anteriores de planejamento sem monitoramento efetivo.",
+      "actual": "Atualmente, o Plano Diretor de Porto Alegre possui metas e indicadores para avaliar seu funcionamento e impacto. Alguns dos indicadores mensuráveis incluem:\n\n1. Taxa de ocupação do solo: Mede a quantidade de área construída em relação à área total do terreno, contribuindo para o controle da densidade urbana e uso do espaço.\n\n2. Índice de verticalização: Refere-se à proporção de edifícios em relação ao número de terrenos na cidade, auxiliando na gestão da altura dos prédios e no adensamento urbano.\n\n3. Taxa de áreas verdes: Avalia a quantidade de áreas verdes disponíveis em relação à área construída, influenciando na qualidade de vida e sustentabilidade ambiental da cidade.\n\nEsses e outros indicadores são acompanhados e analisados periodicamente para verificar o cumprimento das diretrizes do Plano Diretor e promover ajustes necessários.\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+      "success": true,
+      "duration": 5487,
+      "confidence": 0.7,
+      "category": "conceitual"
+    },
+    {
+      "id": 432,
+      "question": "O que é o Plano Diretor Urbano Sustentável (PDUS)?",
+      "expected": "O PDUS é a lei que orienta o desenvolvimento urbano de Porto Alegre. Ele define as estratégias para o uso e a ocupação do solo, organização do território, infraestrutura, mobilidade, proteção ambiental, habitação e desenvolvimento econômico. A proposta atual está sendo revisada com foco em sustentabilidade, qualificação dos espaços públicos e adaptação às mudanças climáticas.",
+      "actual": "O Plano Diretor Urbano Sustentável (PDUS) é um instrumento de planejamento urbano que estabelece diretrizes, objetivos e normas para o desenvolvimento e ordenamento do território de forma sustentável. Ele visa promover o equilíbrio entre o desenvolvimento econômico, a preservação ambiental e a qualidade de vida da população.\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+      "success": true,
+      "duration": 6062,
+      "confidence": 0.7,
+      "category": "conceitual"
+    },
+    {
+      "id": 411,
+      "question": "Como o novo Plano Diretor vai ajudar as pessoas a perderem menos tempo no trânsito?",
+      "expected": "O novo Plano Diretor reorganiza o crescimento da cidade para aproximar moradia, trabalho e serviços. Ele permite mais habitação nos lugares com transporte coletivo e infraestrutura urbana, como corredores de ônibus e áreas com muitos empregos. Além disso, valoriza o uso misto do solo e propõe redes de centralidades mais bem conectadas --- tudo isso para facilitar o dia a dia de quem vive longe de onde precisa estar.",
+      "actual": "O novo Plano Diretor de Porto Alegre pode ajudar as pessoas a perderem menos tempo no trânsito através das seguintes medidas:\n\n1. Estímulo ao adensamento urbano: Promovendo o aumento da densidade populacional em áreas estratégicas, o Plano Diretor busca incentivar a ocupação mais compacta e integrada, reduzindo deslocamentos longos e desnecessários.\n\n2. Fomento à mobilidade ativa e coletiva: Priorizando a infraestrutura para pedestres, ciclistas e transporte público, o Plano Diretor visa proporcionar alternativas viáveis e atrativas ao uso do automóvel particular, diminuindo a quantidade de veículos nas vias e, consequentemente, o congestionamento.\n\n3. Zoneamento adequado: A definição de usos mistos, com áreas residenciais próximas a serviços, comércios e espaços de trabalho, contribui para o desenvolvimento de bairros autossuficientes, onde as pessoas podem realizar suas atividades diárias sem a necessidade de grandes deslocamentos.\n\nEssas medidas, quando implementadas de forma integrada e planejada, têm o potencial de otimizar a mobilidade urbana, reduzindo o tempo gasto no trânsito e melhorando a qualidade de vida dos cidadãos.\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+      "success": true,
+      "duration": 6528,
+      "confidence": 0.7,
+      "category": "conceitual"
+    },
+    {
+      "id": 429,
+      "question": "O que muda no novo plano diretor de porto alegre?",
+      "expected": "O novo Plano Diretor de Porto Alegre propõe uma série de mudanças estruturais e estratégicas em relação ao plano vigente. A seguir, destaco os principais pontos de mudança: Organização do Plano: Criação de Sistemas Territoriais (Urbano, Ecológico, Socioeconômico e de Gestão) para integrar políticas setoriais e qualificar a aplicação das normas urbanísticas. Nova Estrutura de Zoneamento: substituição das zonas de uso anteriores por 16 Zonas de Ordenamento Territorial (ZOTs) com diretrizes e parâmetros mais claros. Parâmetros Urbanísticos: Alturas máximas e coeficientes de aproveitamento definidos por ZOT, com estímulo ao adensamento de áreas com maior disponibilidade de infraestrutura e acesso a equipamentos públicos e serviços urbanos. Criação da taxa de permeabilidade, possibilitante o aumento da permeabilidade do solo e adaptando o território as mudanças climáticas. Uso do solo mais flexível: incentivo à mistura de usos, especialmente em áreas com maior infraestrutura. Estratégia de Adensamento: Definição de Áreas Estratégicas para Adensamento com base na infraestrutura instalada (transporte, saneamento, equipamentos). Integração entre forma urbana e função social da cidade, com foco em ampliar acesso à moradia e oportunidades. Instrumentos de Planejamento e Gestão: Atualização de instrumentos como Outorga Onerosa e parcelamento. Inclusão de instrumentos como EIV e incentivos à reabilitação urbana. Sustentabilidade e Resiliência: Integração de aspectos ambientais no zoneamento: limites para áreas sensíveis, conexão com o sistema ecológico. Indicação de bairros prioritários para adaptação climática. Implementação e Monitoramento: Proposta de Centro de Inteligência Territorial para apoiar a implementação, monitoramento e revisão do plano. Criação de indicadores de acompanhamento e metas relacionadas a mobilidade, habitação, infraestrutura, meio ambiente e economia.",
+      "actual": "No novo Plano Diretor de Porto Alegre, haverá mudanças nas regras de construção para diversos bairros e zonas da cidade. Abaixo estão as principais alterações em relação aos indicadores de altura máxima e coeficientes de aproveitamento para os bairros em \"Área de Estudo\" para proteção contra enchentes:\n\n1. **Bairro 1**:\n   - Altura máxima: 15 metros\n   - Coeficiente de aproveitamento mínimo (CA básico): 1.0\n   - Coeficiente de aproveitamento máximo (CA máximo): 1.5\n\n2. **Bairro 2**:\n   - Altura máxima: 12 metros\n   - Coeficiente de aproveitamento mínimo (CA básico): 0.8\n   - Coeficiente de aproveitamento máximo (CA máximo): 1.2\n\n3. **Bairro 3**:\n   - Altura máxima: 20 metros\n   - Coeficiente de aproveitamento mínimo (CA básico): 1.2\n   - Coeficiente de aproveitamento máximo (CA máximo): 2.0\n\n4. **Bairro 4**:\n   - Altura máxima: 18 metros\n   - Coeficiente de aproveitamento mínimo (CA básico): 1.0\n   - Coeficiente de aproveitamento máximo (CA máximo): 1.8\n\n5. **Bairro 5**:\n   - Altura máxima: 25 metros\n   - Coeficiente de aproveitamento mínimo (CA básico): 1.5\n   - Coeficiente de aproveitamento máximo (CA máximo): 2.5\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+      "success": true,
+      "duration": 7134,
+      "confidence": 0.7,
+      "category": "conceitual"
+    },
+    {
+      "id": 415,
+      "question": "Onde a moradia vai ficar mais acessível com o novo Plano Diretor?",
+      "expected": "Nas áreas com melhor infraestrutura urbana e transporte coletivo, como os corredores de ônibus, centros de bairro e zonas mais consolidadas da cidade. O novo Plano Diretor permite mais unidades habitacionais nesses locais e incentiva o uso de terrenos vazios ou subutilizados. Isso aproxima as pessoas dos serviços e empregos, reduz os custos com transporte e aumenta a oferta de moradia onde já é possível viver com qualidade.",
+      "actual": "Com base no novo Plano Diretor de Porto Alegre, a moradia tende a ficar mais acessível em áreas com maior potencial construtivo, o que pode impactar positivamente os custos de construção e, consequentemente, os preços de moradia.\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+      "success": true,
+      "duration": 3852,
+      "confidence": 0.7,
+      "category": "conceitual"
+    },
+    {
+      "id": 465,
+      "question": "O que é gentrificação?",
+      "expected": "Gentrificação ocorre quando a requalificação de áreas urbanas leva ao aumento dos preços e à substituição da população original (geralmente de baixa renda) por moradores de maior poder aquisitivo. É um processo não desejado pelas políticas de inclusão social e habitacional.",
+      "actual": "Gentrificação é um processo de transformação urbana em que áreas antes ocupadas por populações de baixa renda e com características culturais próprias passam a atrair moradores de maior poder aquisitivo, resultando em aumento dos preços de imóveis, comércios e serviços locais. Esse fenômeno pode levar à expulsão dos moradores originais, mudanças na identidade do bairro e desigualdades socioeconômicas.\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+      "success": true,
+      "duration": 4446,
+      "confidence": 0.7,
+      "category": "conceitual"
+    },
+    {
+      "id": 464,
+      "question": "O plano diretor promove a gentrificação na cidade?",
+      "expected": "O Plano Diretor Urbano Sustentável de Porto Alegre, conforme sua proposta de revisão, não tem como objetivo promover a gentrificação, mas sim enfrentar desigualdades históricas e promover inclusão social e espacial. Os princípios e objetivos definidos no documento buscam garantir acesso equitativo à cidade, reduzir o custo da moradia, incentivar a habitação em áreas com infraestrutura, e promover justiça espacial, sempre com foco na população vulnerável e no combate à segregação social.",
+      "actual": "O plano diretor de Porto Alegre não promove diretamente a gentrificação na cidade, pois seu foco principal é ordenar o desenvolvimento urbano de forma equilibrada e sustentável, levando em consideração diversos aspectos, como uso do solo, mobilidade urbana, preservação ambiental, entre outros.\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+      "success": true,
+      "duration": 5282,
+      "confidence": 0.7,
+      "category": "conceitual"
+    },
+    {
+      "id": 437,
+      "question": "Como o novo Plano Diretor trata a regularização fundiária?",
+      "expected": "O plano: Define procedimentos específicos de licenciamento e regularização de edificações e assentamentos consolidados; Cria Áreas de Requalificação Urbana, com prioridade de investimento em infraestrutura, serviços e habitação; Estabelece políticas contínuas de regularização fundiária integrada, com foco na permanência das famílias, salvo em áreas de risco ou em casos de requalificação necessária; Cria incentivos específicos para parcelamento e uso do solo voltados à regularização.",
+      "actual": "O novo Plano Diretor de Porto Alegre trata a regularização fundiária com o objetivo de promover a regularização de assentamentos precários e irregulares, garantindo o acesso à terra de forma digna e legalizada. Alguns pontos relevantes relacionados à regularização fundiária no Plano Diretor são:\n\n1. **Altura máxima**: Não disponível\n2. **Coeficiente de aproveitamento mínimo (CA básico)**: Não disponível\n3. **Coeficiente de aproveitamento máximo (CA máximo)**: Não disponível\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+      "success": true,
+      "duration": 5403,
+      "confidence": 0.7,
+      "category": "conceitual"
+    },
+    {
+      "id": 420,
+      "question": "Como o novo Plano Diretor garante que os recursos gerados pelo desenvolvimento urbano sejam bem aplicados?",
+      "expected": "O novo Plano Diretor fortalece o sistema de gestão urbana para garantir que os recursos arrecadados com instrumentos como a Outorga Onerosa --- novo nome do solo criado --- sejam usados com inteligência. Esses valores passam a ser direcionados de forma estratégica para melhorar a infraestrutura da cidade, qualificar os bairros e ampliar o acesso à moradia digna. A aplicação dos recursos será orientada por dados e prioridades territoriais, assegurando que o crescimento urbano traga retorno real para toda a população.",
+      "actual": "O novo Plano Diretor de Porto Alegre garante que os recursos gerados pelo desenvolvimento urbano sejam bem aplicados através de diversas diretrizes e instrumentos de planejamento urbano, tais como:\n\n1. **Instrumentos de captação de recursos**:\n   - Implementação de instrumentos como outorga onerosa e operações urbanas consorciadas, que permitem a captação de recursos financeiros provenientes do desenvolvimento urbano para investimentos em infraestrutura e equipamentos públicos.\n\n2. **Zoneamento e uso do solo**:\n   - Definição de zonas e usos do solo adequados, visando a melhor utilização dos recursos gerados pelo desenvolvimento urbano, evitando concentrações excessivas e promovendo a diversificação de atividades.\n\n3. **Regularização fundiária**:\n   - Promoção da regularização fundiária para garantir o acesso à terra urbanizada e a regularidade das ocupações, contribuindo para a eficiente aplicação dos recursos públicos.\n\n4. **Participação social e transparência**:\n   - Incentivo à participação da sociedade civil no planejamento urbano, garantindo transparência na aplicação dos recursos e promovendo a gestão democrática da cidade.\n\nDessa forma, o Plano Diretor busca assegurar que os recursos gerados pelo desenvolvimento urbano sejam direcionados de forma eficiente e equitativa para o benefício de toda a população.\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+      "success": true,
+      "duration": 6942,
+      "confidence": 0.7,
+      "category": "conceitual"
+    },
+    {
+      "id": 440,
+      "question": "O Plano Diretor considerou as enchentes de 2024?",
+      "expected": "Sim. O novo Plano Diretor Urbano Sustentável (PDUS) incorpora as enchentes de 2024 como elemento central de sua estratégia de adaptação climática e gestão de riscos. O evento reforçou a urgência de reestruturar a relação da cidade com seus sistemas naturais, especialmente os arroios e áreas de várzea, motivando a adoção de medidas mais rígidas de prevenção e resiliência. Entre as principais ações previstas estão: a criação do Sistema Ecológico, que valoriza áreas de preservação e corredores de biodiversidade; a exigência de cotas mínimas de proteção contra cheias para novas edificações e obras públicas; a ampliação da permeabilidade urbana; e a priorização de soluções baseadas na natureza para drenagem e contenção de riscos. Essas diretrizes consolidam uma mudança de paradigma no planejamento urbano, colocando a gestão ambiental e climática como parte integrante da estrutura territorial da cidade.",
+      "actual": "Sim, o Plano Diretor considerou as enchentes de 2024 ao estabelecer diretrizes e normas para a ocupação do solo visando a redução do impacto ambiental e a proteção das áreas suscetíveis a inundações.\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+      "success": true,
+      "duration": 4343,
+      "confidence": 0.7,
+      "category": "conceitual"
+    },
+    {
+      "id": 439,
+      "question": "O que é o Sistema Ecológico?",
+      "expected": "O Sistema Ecológico é um dos quatro sistemas estruturantes do território definidos pelo novo Plano Diretor Urbano Sustentável (PDUS) de Porto Alegre. Ele organiza e integra os elementos ambientais da cidade --- como áreas de preservação permanente (APPs), morros, matas, banhados, arroios, várzeas e áreas permeáveis --- com o objetivo de proteger os recursos naturais, conter riscos e fortalecer a resiliência urbana frente às mudanças climáticas. Esse sistema trata o meio ambiente como infraestrutura urbana essencial, e não apenas como área de restrição. Ele orienta o ordenamento territorial e a ocupação do solo, articulando a preservação ambiental com a qualidade de vida urbana, a partir de diretrizes que incentivam a renaturalização de cursos d'água, a recuperação de áreas degradadas, a ampliação da permeabilidade e a criação de corredores ecológicos. Ao estruturar o território com base nos seus atributos ambientais, o Sistema Ecológico contribui para um modelo de cidade mais sustentável, segura e adaptada às condições climáticas extremas.",
+      "actual": "O Sistema Ecológico é uma estratégia adotada no Plano Diretor de Porto Alegre para promover a preservação e valorização do meio ambiente e dos recursos naturais da cidade. Ele engloba medidas e diretrizes que visam a proteção de áreas verdes, parques, cursos d'água, áreas de preservação permanente, entre outros elementos naturais presentes no território urbano.\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+      "success": true,
+      "duration": 4363,
+      "confidence": 0.7,
+      "category": "conceitual"
+    },
+    {
+      "id": 410,
+      "question": "Como o Guaíba vai fazer mais parte da vida das pessoas com o novo Plano Diretor?",
+      "expected": "O Plano Diretor propõe transformar o Guaíba em protagonista da vida urbana. Isso significa fomentar atividades náuticas, culturais e de lazer ao longo da orla, conectar os bairros ao lago com infraestrutura acessível e integrar o Guaíba aos sistemas de mobilidade, cultura e meio ambiente da cidade. Em vez de ser apenas paisagem, o Guaíba passa a ser espaço de convivência, turismo, transporte e valorização das comunidades que vivem em suas margens.",
+      "actual": "O novo Plano Diretor de Porto Alegre busca integrar o Guaíba à vida das pessoas de diversas maneiras, promovendo o desenvolvimento sustentável e o uso consciente desse recurso natural. Algumas das estratégias para aumentar a integração do Guaíba com a vida urbana incluem:\n\n1. **Valorização das áreas de preservação ambiental**: Estabelecendo normas de proteção e conservação das áreas de preservação ambiental ao redor do Guaíba, garantindo a sua sustentabilidade e preservação.\n\n2. **Incentivo à ocupação ordenada**: Estabelecendo diretrizes para o uso do solo que favoreçam uma ocupação ordenada e sustentável das áreas próximas ao Guaíba, promovendo a integração das atividades urbanas com a natureza.\n\n3. **Criação de espaços públicos de convívio**: Estimulando a criação de espaços públicos de convívio ao longo das margens do Guaíba, permitindo que a população desfrute e usufrua desse recurso natural de forma harmoniosa.\n\nEssas medidas visam potencializar a relação das pessoas com o Guaíba, promovendo a sua preservação, valorização e uso consciente dentro do contexto urbano de Porto Alegre.\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+      "success": true,
+      "duration": 5462,
+      "confidence": 0.7,
+      "category": "conceitual"
+    },
+    {
+      "id": 417,
+      "question": "O novo Plano Diretor ajuda a reduzir as emissões que causam as mudanças climáticas?",
+      "expected": "Sim. O plano estimula que mais pessoas morem perto do transporte coletivo e dos empregos, o que reduz o uso do carro --- hoje o principal responsável pelas emissões em Porto Alegre, segundo o Plano de Ação Climática. Além disso, ele promove o uso misto do solo, valoriza a mobilidade ativa (como caminhar e pedalar) e protege áreas verdes, que ajudam a regular o clima. É um passo importante para tornar a cidade mais sustentável e justa com o meio ambiente.",
+      "actual": "Sim, o novo Plano Diretor de Porto Alegre inclui medidas para reduzir as emissões que causam as mudanças climáticas, através de diretrizes que promovem o uso racional do solo, a preservação de áreas verdes, a promoção da mobilidade sustentável, entre outras ações.\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+      "success": true,
+      "duration": 5602,
+      "confidence": 0.7,
+      "category": "conceitual"
+    },
+    {
+      "id": 416,
+      "question": "Como o novo Plano Diretor vai preparar Porto Alegre para os efeitos das mudanças climáticas?",
+      "expected": "O Plano Diretor propõe transformar a forma como a cidade lida com o clima extremo. Em vez de afastar a população das áreas vulneráveis, o plano organiza o território com foco na adaptação --- fortalecendo a drenagem urbana, valorizando soluções baseadas na natureza e conectando áreas verdes para formar redes ecológicas. Áreas expostas a alagamentos passam a ser priorizadas para investimentos públicos, com infraestrutura segura e resiliência ambiental. É uma nova forma de planejar: reconhecendo os riscos, mas sem abandonar quem mais precisa de proteção.",
+      "actual": "O novo Plano Diretor de Porto Alegre está sendo planejado levando em consideração os efeitos das mudanças climáticas. Algumas medidas que estão sendo consideradas para preparar a cidade incluem:\n\n1. Implementação de áreas verdes e arborização:\n   - Estabelecimento de áreas verdes e espaços de arborização para ajudar na absorção de água da chuva, reduzir ilhas de calor e promover a biodiversidade.\n\n2. Incentivo à drenagem sustentável:\n   - Promoção de técnicas de drenagem sustentável, como uso de pavimentos permeáveis, telhados verdes e áreas de infiltração, para diminuir enchentes e melhorar a qualidade da água.\n\n3. Zoneamento e planejamento urbano:\n   - Definição de regras de zoneamento que incentivem o desenvolvimento urbano sustentável, promovendo a eficiência energética, a redução de emissões de gases de efeito estufa e a adaptação às mudanças climáticas.\n\n4. Incentivo à mobilidade sustentável:\n   - Promoção de alternativas de transporte sustentável, como ciclovias, transporte público eficiente e incentivo ao transporte não motorizado, visando reduzir a emissão de poluentes e o congestionamento nas vias.\n\n5. Resiliência às mudanças climáticas:\n   - Adoção de medidas de adaptação, como planejamento de áreas de risco, gestão de desastres naturais e incentivo à construção de edifícios mais resilientes.\n\nEssas são algumas das estratégias que estão sendo consideradas no novo Plano Diretor para preparar Porto Alegre para os efeitos das mudanças climáticas.\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+      "success": true,
+      "duration": 11101,
+      "confidence": 0.7,
+      "category": "conceitual"
+    },
+    {
+      "id": 421,
+      "question": "O plano está sendo conduzido em benefício do mercado imobiliário em detrimento da população?",
+      "expected": "Não. O Plano Diretor parte da lógica de que a cidade deve funcionar para todos, e isso exige que o mercado urbano esteja regulado com clareza, justiça e previsibilidade. A revisão não retira direitos sociais --- ao contrário, amplia instrumentos como a Outorga Onerosa (solo criado) para gerar recursos para habitação, infraestrutura e espaços públicos. Além disso, o plano propõe a organização do território em sistemas que garantam equilíbrio entre adensamento, proteção ambiental e acesso à cidade para todas as classes sociais.",
+      "actual": "Não possuo informações para responder a essa pergunta, pois foge do escopo técnico do Plano Diretor de Porto Alegre.\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+      "success": true,
+      "duration": 4019,
+      "confidence": 0.7,
+      "category": "geral"
+    },
+    {
+      "id": 501,
+      "question": "Quais são os níveis de controle de polarização de entretenimento noturno?",
+      "expected": "Existem diferentes níveis de controle de polarização de entretenimento noturno, variando de Nível 1 a Nível 4, sendo aplicados conforme a ZOT e suas características.",
+      "actual": "Desculpe, mas a pergunta sobre \"níveis de controle de polarização de entretenimento noturno\" não está relacionada diretamente aos parâmetros de altura máxima e coeficientes de aproveitamento dos bairros ou zonas de Porto Alegre. Para informações específicas sobre esse tema, sugiro entrar em contato com a Secretaria Municipal responsável pela questão.\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+      "success": true,
+      "duration": 4333,
+      "confidence": 0.7,
+      "category": "geral"
+    },
+    {
+      "id": 422,
+      "question": "O processo é realmente participativo ou só formal?",
+      "expected": "A participação foi estruturada em várias etapas: oficinas, audiências públicas, escutas setoriais, reuniões no CMDUA e canais digitais. Alguns números da participação social até o momento incluem: 9 Oficinas Territoriais, 15 Exposições Interativas, 2 Seminários, 2 Conferências, 7 Oficinas Temáticas, 24 Devolutivas, 4 Consultas Públicas, 184 Reuniões e 30 Reuniões do CMDUA e diversas visitas à entidades. Um debate que se estende desde 2019. O novo plano ainda propõe uma governança permanente da política urbana, com o Centro de Inteligência Territorial (CIT), o CMDUA fortalecido e o SGC (Sistema de Gestão, Controle e Planejamento) como pilares institucionais. Isso garante que a participação não acabe com a aprovação da lei --- ela passa a ser contínua, auditável e com base em dados públicos.",
+      "actual": "Sim, o processo de revisão do Plano Diretor de Porto Alegre é participativo, envolvendo a sociedade civil, órgãos públicos e demais interessados. Durante a elaboração e revisão do plano, são realizadas audiências públicas, consultas populares, oficinas participativas e outras atividades que permitem a participação e contribuição da população.\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+      "success": true,
+      "duration": 4943,
+      "confidence": 0.7,
+      "category": "geral"
+    },
+    {
+      "id": 503,
+      "question": "Qual é a testada mínima de lote?",
+      "expected": "A testada mínima de lote padrão é de 5,0 metros na maioria das zonas.",
+      "actual": "A testada mínima de lote não foi fornecida nos dados disponíveis.\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+      "success": true,
+      "duration": 5054,
+      "confidence": 0.7,
+      "category": "geral"
+    },
+    {
+      "id": 467,
+      "question": "Como a proposta busca evitar a gentrificação?",
+      "expected": "Prevê monitoramento de preços de moradia e renda para orientar políticas públicas. Fomenta instrumentos para manter a população de baixa renda em áreas centrais e bem servidas. Propõe a ampliação da oferta de habitação de interesse social nas regiões valorizadas, aliando crescimento econômico ao combate à exclusão. Em resumo: O Plano Diretor reconhece a possibilidade de transformação urbana, mas procura garantir que ela seja inclusiva, justa e que combata a expulsão de moradores de menor renda. A proposta é promover uma cidade diversa e acessível, e não excludente. Esses princípios fazem parte da proposta de revisão do Plano Diretor Urbano Sustentável e da Lei de Uso e Ocupação do Solo de Porto Alegre.",
+      "actual": "A proposta do Plano Diretor de Porto Alegre busca evitar a gentrificação por meio de diversas estratégias, tais como:\n\n1. **Políticas de Habitação Social**:\n   - Estímulo à construção de habitações de interesse social em áreas valorizadas.\n   - Incentivo à regularização fundiária em regiões com potencial de gentrificação.\n\n2. **Zoneamento e Uso do Solo**:\n   - Restrições ao uso exclusivo de determinadas áreas para fins comerciais ou de luxo.\n   - Estabelecimento de zonas mistas, com diversidade de usos e atividades.\n\n3. **Instrumentos de Controle Urbano**:\n   - Controle do adensamento e da verticalização em áreas vulneráveis à gentrificação.\n   - Monitoramento constante do mercado imobiliário para identificar sinais de gentrificação.\n\n4. **Participação Comunitária**:\n   - Promoção de diálogos e audiências públicas para envolver a comunidade nas decisões urbanísticas.\n   - Estímulo à criação de conselhos locais para acompanhar e fiscalizar a implementação do Plano Diretor.\n\nEssas medidas visam garantir a diversidade social e econômica dos bairros, evitando a expulsão de moradores tradicionais e a perda de identidade dos espaços urbanos.\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+      "success": true,
+      "duration": 8679,
+      "confidence": 0.7,
+      "category": "geral"
+    },
+    {
+      "id": 452,
+      "question": "Por que essa mudança?",
+      "expected": "A exclusão da taxa de ocupação visa simplificar e modernizar a legislação urbanística, focando em parâmetros mais flexíveis e adaptados à realidade contemporânea das cidades, sem comprometer o controle urbanístico essencial. Essas diretrizes fazem parte da proposta de revisão da Lei de Uso e Ocupação do Solo de Porto Alegre. Se quiser saber os parâmetros urbanísticos exatos (altura, coeficiente de aproveitamento, taxa de permeabilidade) de algum bairro, basta informar o nome!",
+      "actual": "A mudança nas regras de altura e coeficientes de aproveitamento para os bairros da ZOT 12, como Passo da Areia, Cristal, Azenha, Nonoai e São Sebastião, foi realizada com o objetivo de estabelecer parâmetros que visam a ordenação do crescimento urbano, a qualificação do ambiente construído e a promoção de um desenvolvimento sustentável nessas áreas.\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+      "success": true,
+      "duration": 3760,
+      "confidence": 0.7,
+      "category": "geral"
+    },
+    {
+      "id": 459,
+      "question": "O plano incentiva construções sustentáveis?",
+      "expected": "O Plano Diretor Urbano Sustentável (PDUS) e a Lei de Uso e Ocupação do Solo (LUOS) de Porto Alegre incentiva construções sustentáveis através de várias diretrizes. Uma das principais iniciativas é a concessão de acréscimos nos limites de altura para projetos que obtêm Certificação em Sustentabilidade Ambiental. Isso significa que, ao adotar práticas sustentáveis em seus empreendimentos, os construtores podem ter a oportunidade de construir em maior altura do que o permitido normalmente. Além disso, os empreendimentos são orientados a considerar aspectos ambientais e de sustentabilidade em seus projetos, refletindo uma preocupação com o desenvolvimento sustentável e a qualidade de vida dos cidadãos. É importante ressaltar que os parâmetros de construção, como altura máxima, coeficientes de aproveitamento e outros regulamentos, podem variar de acordo com a Zona de Ordenamento Territorial (ZOT) e o bairro específico. Para obter informações detalhadas sobre as regras construtivas em uma área específica, recomendo consultar o mapa interativo do PDUS ou informar o bairro de interesse.",
+      "actual": "Sim, o Plano Diretor de Porto Alegre incentiva construções sustentáveis através de diretrizes que promovem o desenvolvimento urbano de forma equilibrada, considerando aspectos ambientais, sociais e econômicos. Isso pode incluir incentivos para a utilização de tecnologias verdes, eficiência energética, reuso de água, áreas verdes e outras práticas sustentáveis.\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+      "success": true,
+      "duration": 3845,
+      "confidence": 0.7,
+      "category": "geral"
+    },
+    {
+      "id": 451,
+      "question": "Como funciona na nova proposta?",
+      "expected": "A taxa de ocupação, que limitava a porcentagem do terreno que podia ser coberta pela edificação, foi retirada dos parâmetros urbanísticos no novo modelo. Os principais parâmetros agora são: altura máxima, coeficiente de aproveitamento e taxa de permeabilidade do solo (esta última, sim, está prevista para garantir áreas livres e permeáveis, especialmente em terrenos maiores). O controle sobre o adensamento e o volume construído se dá principalmente pelo coeficiente de aproveitamento e os recuos obrigatórios, variando conforme a ZOT (Zona de Ordenamento Territorial).",
+      "actual": "Não disponho das informações sobre a nova proposta do Plano Diretor de Porto Alegre. Para detalhes sobre as alturas máximas e coeficientes de aproveitamento das ZOTs 14 e 15 em diversos bairros, consulte o Plano Diretor atual ou entre em contato com a equipe responsável pelo Plano Diretor.\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+      "success": true,
+      "duration": 4136,
+      "confidence": 0.7,
+      "category": "geral"
+    },
+    {
+      "id": 444,
+      "question": "Qual o papel do CMDUA no PDUS?",
+      "expected": "O CMDUA -- Conselho Municipal de Desenvolvimento Urbano e Ambiental tem um papel central no novo Plano Diretor Urbano Sustentável (PDUS) de Porto Alegre como instância de gestão democrática da política urbana. Ele atua na formulação, acompanhamento, fiscalização e avaliação da implementação do plano, contribuindo para assegurar a efetividade das diretrizes e instrumentos definidos. O CMDUA será responsável por deliberar sobre temas estratégicos, como a aplicação de instrumentos urbanísticos, a definição de áreas prioritárias, a aprovação de planos locais e planos de pormenor, e a análise de propostas de alteração da legislação urbanística. Também participa do processo de monitoramento permanente do plano, contribuindo com a leitura técnica e social do território, a partir da representação da sociedade civil e do poder público. Com isso, o CMDUA consolida-se como espaço de participação institucionalizada e qualificada, essencial para garantir a transparência, o controle social e a continuidade da política urbana estabelecida pelo PDUS.",
+      "actual": "O Conselho Municipal de Desenvolvimento Urbano Ambiental (CMDUA) tem o papel de analisar e emitir pareceres técnicos sobre projetos de parcelamento do solo, de edificação e de uso do solo, conforme previsto no Plano Diretor de Desenvolvimento Urbano Ambiental de Porto Alegre (PDUS).\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+      "success": true,
+      "duration": 4808,
+      "confidence": 0.7,
+      "category": "geral"
+    },
+    {
+      "id": 450,
+      "question": "Neste plano inexiste a taxa de ocupação das edificações nos terrenos?",
+      "expected": "Exatamente, sua percepção está correta! Na proposta de revisão da Lei de Uso e Ocupação do Solo (LUOS) de Porto Alegre, NÃO existe mais o parâmetro de \"taxa de ocupação\" para as edificações nos terrenos.",
+      "actual": "A taxa de ocupação das edificações nos terrenos não está disponível no Plano Diretor de Porto Alegre.\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+      "success": true,
+      "duration": 4867,
+      "confidence": 0.7,
+      "category": "geral"
+    },
+    {
+      "id": 453,
+      "question": "Que dia é a audiência pública?",
+      "expected": "A audiência pública do Plano Diretor será realizada no dia 09 de agosto de 2025 (sábado), às 9h, no Auditório Araújo Vianna, localizado no Parque Farroupilha, nº 685. Participe!",
+      "actual": "A Audiência Pública do Plano Diretor de Porto Alegre está agendada para o dia 26 de janeiro de 2023.\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+      "success": true,
+      "duration": 4055,
+      "confidence": 0.7,
+      "category": "geral"
+    },
+    {
+      "id": 455,
+      "question": "Como será o EVU no novo Plano?",
+      "expected": "O novo Plano Diretor Urbano Sustentável (PDUS) de Porto Alegre não prevê o Estudo de Viabilidade Urbanística (EVU) como instrumento, mas sim o Estudo de Impacto de Vizinhança (EIV), que passa a ser o principal mecanismo para avaliação prévia dos impactos urbanos dos empreendimentos.",
+      "actual": "Não tenho informações sobre o EVU no novo Plano Diretor de Porto Alegre. Recomendo verificar diretamente com a Prefeitura de Porto Alegre para obter informações atualizadas sobre esse assunto.\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+      "success": false,
+      "duration": 5109,
+      "confidence": 0.7,
+      "category": "geral"
+    },
+    {
+      "id": 462,
+      "question": "O que isso significa na prática?",
+      "expected": "Edificações podem construir até um determinado limite junto à divisa do terreno (esse limite está especificado para cada ZOT nos anexos da lei). Se a edificação ultrapassar esse limite de construção junto à divisa, passa a ser obrigatório observar um recuo lateral ou de fundos. Esse recuo obrigatório deve ser de 18% da altura da edificação, calculado em relação à divisa correspondente e aplicado a cada volume da edificação. Exemplo prático: Se uma edificação atinge 20 metros de altura acima do limite permitido junto à divisa, o recuo obrigatório será de 3,6 metros (18% de 20 metros) em relação à divisa em questão. Essa regra busca garantir ventilação, insolação e privacidade entre os edifícios, promovendo melhor qualidade ambiental urbana. Lembrando: o limite de construção junto à divisa e quando o recuo passa a ser exigido dependem do zoneamento (ZOT) e devem ser conferidos no Anexo 2 da proposta da LUOS. Esses parâmetros fazem parte da proposta de revisão da Lei de Uso e Ocupação do Solo de Porto Alegre.",
+      "actual": "Na prática, as medidas do novo Plano Diretor de Porto Alegre para lidar com os efeitos das mudanças climáticas significam o seguinte:\n\n1. **Implementação de áreas verdes e arborização**:\n   - Estabelecimento de espaços verdes e arborização para ajudar na absorção de água da chuva, redução das ilhas de calor e promoção da biodiversidade.\n\n2. **Incentivo à drenagem sustentável**:\n   - Promoção de técnicas de drenagem sustentável, como pavimentos permeáveis e telhados verdes, para reduzir enchentes e melhorar a qualidade da água.\n\n3. **Zoneamento e planejamento urbano**:\n   - Definição de regras de zoneamento que incentivem o desenvolvimento urbano sustentável, eficiência energética e adaptação às mudanças climáticas.\n\n4. **Incentivo à mobilidade sustentável**:\n   - Promoção de alternativas de transporte sustentável, como ciclovias e transporte público eficiente, visando reduzir a emissão de poluentes e o congestionamento.\n\n5. **Resiliência às mudanças climáticas**:\n   - Adoção de medidas de adaptação, como planejamento de áreas de risco e incentivo à construção de edifícios mais resilientes.\n\nEssas ações visam tornar a cidade mais preparada para enfrentar os desafios das mudanças climáticas, promovendo um desenvolvimento urbano mais sustentável e resiliente.\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+      "success": true,
+      "duration": 7779,
+      "confidence": 0.7,
+      "category": "geral"
+    },
+    {
+      "id": 409,
+      "question": "O que muda na forma como Porto Alegre cuida dos seus espaços públicos?",
+      "expected": "Pela primeira vez, o Plano Diretor propõe uma estrutura permanente e integrada para planejar, coordenar e qualificar os espaços públicos da cidade. Isso significa que, em vez de cada secretaria atuar isoladamente, haverá uma instância dedicada à compatibilização de projetos, à solução de conflitos e à valorização do espaço público com o mesmo nível de atenção técnica que hoje é dedicado ao setor privado. A gestão passa a ser mais estratégica, garantindo que obras e investimentos públicos estejam bem articulados entre si --- com mais eficiência e foco nas pessoas.",
+      "actual": "Em relação à forma como Porto Alegre cuida dos seus espaços públicos, é importante ressaltar que o Plano Diretor da cidade estabelece diretrizes e regras que impactam diretamente a ocupação e uso dessas áreas. Dentre as principais mudanças que o Plano Diretor pode trazer, destacam-se:\n\n1. **Regulamentação do uso do solo**:\n   - Definição de zonas de uso e ocupação do solo, incluindo áreas destinadas à preservação ambiental, áreas residenciais, comerciais, industriais, entre outras.\n\n2. **Limites de altura e coeficientes de aproveitamento**:\n   - Estabelecimento de altura máxima, coeficiente de aproveitamento mínimo e máximo para cada zona, visando controlar a densidade populacional e a verticalização da cidade.\n\n3. **Incentivo à criação de áreas verdes e espaços de convivência**:\n   - Definição de áreas destinadas à criação de parques, praças, ciclovias, calçadas arborizadas, visando promover a qualidade de vida e o bem-estar dos cidadãos.\n\n4. **Normas para a ocupação de áreas públicas**:\n   - Estabelecimento de regras para ocupação e uso de áreas públicas, como calçadas, praças e parques, visando garantir a acessibilidade, segurança e conforto para a população.\n\n5. **Incentivo à participação popular**:\n   - Promoção de audiências públicas e consultas populares para discutir e definir as políticas de ocupação do solo e de gestão dos espaços públicos, garantindo a participação ativa da comunidade nas decisões.\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+      "success": true,
+      "duration": 8160,
+      "confidence": 0.7,
+      "category": "geral"
+    },
+    {
+      "id": 458,
+      "question": "Por quê?",
+      "expected": "A retirada da taxa de ocupação visa dar mais flexibilidade para a implantação dos projetos, incentivando formas construtivas mais adequadas à cidade compacta, sustentabilidade e soluções inovadoras, desde que respeitada a permeabilidade, altura e coeficiente estabelecidos para cada ZOT. Esses parâmetros fazem parte da proposta de revisão da Lei de Uso e Ocupação do Solo de Porto Alegre. Se precisar de explicação sobre outro parâmetro ou quiser saber os valores de taxa de permeabilidade do seu bairro, me informe o nome do bairro que faço a consulta!",
+      "actual": "**Três Figueiras:**\n1. **ZOT 08.3 - C:**\n   - Altura máxima: 90 metros\n   - CA básico: Não disponível\n   - CA máximo: Não disponível\n\n2. **ZOT 04:**\n   - Altura máxima: 18 metros\n   - CA básico: 2.0\n   - CA máximo: 4.0\n\n3. **ZOT 07:**\n   - Altura máxima: 60 metros\n   - CA básico: Não disponível\n   - CA máximo: Não disponível\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+      "success": true,
+      "duration": 10438,
+      "confidence": 0.9,
+      "category": "geral"
+    },
+    {
+      "id": 507,
+      "question": "Qual é o módulo de fracionamento mais comum?",
+      "expected": "Os módulos de fracionamento variam entre 3.000 m² e 5.000 m², dependendo da ZOT específica.",
+      "actual": "O módulo de fracionamento mais comum em Porto Alegre é de 250m².\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+      "success": true,
+      "duration": 4130,
+      "confidence": 0.7,
+      "category": "geral"
+    },
+    {
+      "id": 510,
+      "question": "Qual é a face máxima permitida para quarteirões?",
+      "expected": "A face máxima do quarteirão é geralmente de 200 metros na maioria das ZOTs.",
+      "actual": "Não foram fornecidos dados específicos sobre a face máxima permitida para quarteirões no contexto do Plano Diretor de Porto Alegre.\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+      "success": true,
+      "duration": 4338,
+      "confidence": 0.7,
+      "category": "geral"
+    },
+    {
+      "id": 502,
+      "question": "Qual é a área mínima de lote padrão?",
+      "expected": "A área mínima de lote mais comum é de 125,0 m² na maioria das ZOTs.",
+      "actual": "Para a área mínima de lote padrão em Porto Alegre, os valores são os seguintes:\n\n1. **Altura máxima**: -\n2. **Coeficiente de aproveitamento mínimo (CA básico)**: 0.5\n3. **Coeficiente de aproveitamento máximo (CA máximo)**: 1.0\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+      "success": true,
+      "duration": 4955,
+      "confidence": 0.7,
+      "category": "geral"
+    },
+    {
+      "id": 508,
+      "question": "Quais são as áreas de destinação pública exigidas para loteamentos?",
+      "expected": "Para loteamentos (acima de 22.500 m²), geralmente são exigidos 32% para malha viária e 18% para equipamentos públicos.",
+      "actual": "Para loteamentos em Porto Alegre, as áreas de destinação pública exigidas são as seguintes:\n\n1. **Áreas Verdes Públicas (AVP)**:\n   - Área mínima exigida: 15% da área do loteamento\n   - Localização: Devem ser distribuídas de forma a atender a população residente e a ser preservadas em sua função ecológica, paisagística e de lazer.\n\n2. **Sistema Viário Local (SVL)**:\n   - Área mínima exigida: 15% da área do loteamento\n   - Localização: Devem garantir a acessibilidade e a integração do loteamento com o sistema viário existente.\n\n3. **Áreas Institucionais (AI)**:\n   - Área mínima exigida: 5% da área do loteamento\n   - Localização: Devem destinar-se à instalação de equipamentos de uso público, como escolas, postos de saúde, entre outros.\n\n4. **Áreas de Preservação Permanente (APP)**:\n   - Devem ser preservadas de acordo com a legislação ambiental vigente.\n\nÉ importante ressaltar que essas áreas são essenciais para garantir a qualidade de vida e o bem-estar da população, promovendo espaços de convivência, lazer e preservação ambiental nos loteamentos.\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+      "success": true,
+      "duration": 5982,
+      "confidence": 0.7,
+      "category": "geral"
+    },
+    {
+      "id": 509,
+      "question": "O comércio atacadista é permitido em todas as ZOTs?",
+      "expected": "Não, o comércio atacadista tem restrições variadas. Em algumas ZOTs é permitido sem limites (S/L), em outras tem limite de porte (como 1.500 m²), e em algumas zonas específicas pode ser proibido.",
+      "actual": "O comércio atacadista é permitido em algumas Zonas de Ocupação Territorial (ZOTs) em Porto Alegre. Abaixo estão as informações sobre as ZOTs onde o comércio atacadista é permitido:\n\n1. ZOT Zona de Ocupação Territorial 3:\n   - Altura máxima: 10 metros\n   - Coeficiente de aproveitamento mínimo (CA básico): 1.0\n   - Coeficiente de aproveitamento máximo (CA máximo): 1.0\n\n2. ZOT Zona de Ocupação Territorial 4:\n   - Altura máxima: 12 metros\n   - Coeficiente de aproveitamento mínimo (CA básico): 1.0\n   - Coeficiente de aproveitamento máximo (CA máximo): 1.0\n\n3. ZOT Zona de Ocupação Territorial 5:\n   - Altura máxima: 15 metros\n   - Coeficiente de aproveitamento mínimo (CA básico): 1.0\n   - Coeficiente de aproveitamento máximo (CA máximo): 1.0\n\nPortanto, o comércio atacadista é permitido em algumas ZOTs com as características acima mencionadas.\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+      "success": true,
+      "duration": 6094,
+      "confidence": 0.7,
+      "category": "geral"
+    },
+    {
+      "id": 511,
+      "question": "Qual é a área máxima permitida para quarteirões?",
+      "expected": "A área máxima do quarteirão é tipicamente de 22.500 m² na maioria das zonas.",
+      "actual": "Desculpe, mas a pergunta sobre a área máxima permitida para quarteirões não está clara. Você poderia fornecer mais detalhes ou reformular a pergunta para que eu possa ajudar adequadamente? \n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+      "success": true,
+      "duration": 3426,
+      "confidence": 0.7,
+      "category": "geral"
+    },
+    {
+      "id": 435,
+      "question": "Como o novo Plano Diretor trata a Habitação de Interesse Social?",
+      "expected": "O novo Plano Diretor trata a habitação de interesse social como eixo estruturante da política urbana, com foco na redução do custo da moradia e na garantia do acesso de todos à cidade. Esse Objetivo Estratégico reconhece que o afastamento da população de baixa renda dos territórios bem estruturados é um dos principais vetores de desigualdade urbana em Porto Alegre, propondo ampliar a produção de moradia em áreas com infraestrutura, serviços e oferta de oportunidades, especialmente ao longo dos eixos de transporte coletivo e nas centralidades. Para viabilizar essa diretriz, a LUOS estabelece parâmetros específicos de parcelamento e uso do solo voltados à demanda habitacional prioritária, além de prever incentivos urbanísticos como a Outorga Onerosa do Direito de Construir, com fator de planejamento diferenciado --- incluindo a isenção do valor da outorga para habitação de interesse social --- e a destinação de recursos ao Fundo Municipal de Habitação. De forma complementar, o plano define as Áreas de Requalificação Urbana (ARU) como territórios com carências de infraestrutura e baixa integração à malha urbana, priorizando-os para intervenções públicas e privadas voltadas à urbanização, regularização e qualificação habitacional.",
+      "actual": "O novo Plano Diretor de Porto Alegre trata a Habitação de Interesse Social da seguinte forma:\n\n1. **Altura máxima**: Varia de acordo com a zona.\n2. **Coeficiente de aproveitamento mínimo (CA básico)**: Varia de acordo com a zona.\n3. **Coeficiente de aproveitamento máximo (CA máximo)**: Varia de acordo com a zona.\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+      "success": true,
+      "duration": 4123,
+      "confidence": 0.7,
+      "category": "habitacao"
+    },
+    {
+      "id": 515,
+      "question": "O que significa \"S/L\" nas restrições de porte?",
+      "expected": "\"S/L\" significa \"Sem Limite\", indicando que não há restrição de porte (tamanho/área) para determinada atividade naquela ZOT específica.",
+      "actual": "\"S/L\" nas restrições de porte significa \"Sem Limitação\". Isso indica que não há restrição específica para a altura máxima, coeficiente de aproveitamento mínimo ou coeficiente de aproveitamento máximo naquela área.\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+      "success": true,
+      "duration": 4129,
+      "confidence": 0.7,
+      "category": "geral"
+    },
+    {
+      "id": 516,
+      "question": "Quais são os tipos de desmembramento previstos?",
+      "expected": "Existem três tipos de desmembramento: Tipo 1: acima de 3.000 a 4.000 m² Tipo 2: acima de 4.000 a 5.000 m² Tipo 3: acima de 5.000 a 22.500 m²",
+      "actual": "Existem dois tipos de desmembramento previstos no Plano Diretor de Porto Alegre:\n\n1. **Desmembramento Simples**:\n   - Altura máxima: -\n   - Coeficiente de aproveitamento mínimo (CA básico): -\n   - Coeficiente de aproveitamento máximo (CA máximo): -\n\n2. **Desmembramento Qualificado**:\n   - Altura máxima: -\n   - Coeficiente de aproveitamento mínimo (CA básico): -\n   - Coeficiente de aproveitamento máximo (CA máximo): -\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+      "success": true,
+      "duration": 4215,
+      "confidence": 0.7,
+      "category": "geral"
+    },
+    {
+      "id": 512,
+      "question": "As indústrias são permitidas em todas as ZOTs?",
+      "expected": "Não, as indústrias têm restrições variadas. Indústrias inócuas geralmente têm limite de 300 m² de área, enquanto indústrias com interferência ambiental podem ter limites maiores (como 1.500 m²) ou serem permitidas sem limite em zonas específicas.",
+      "actual": "Indústrias não são permitidas em todas as ZOTs (Zonas de Ocupação Territorial):\n\n1. ZOT A:\n   • Altura máxima: Não disponível\n   • Coeficiente de aproveitamento mínimo (CA básico): 0.5\n   • Coeficiente de aproveitamento máximo (CA máximo): 1.0\n\n2. ZOT B:\n   • Altura máxima: 12 metros\n   • Coeficiente de aproveitamento mínimo (CA básico): 0.5\n   • Coeficiente de aproveitamento máximo (CA máximo): 1.0\n\n3. ZOT C:\n   • Altura máxima: 12 metros\n   • Coeficiente de aproveitamento mínimo (CA básico): 0.5\n   • Coeficiente de aproveitamento máximo (CA máximo): 1.0\n\n4. ZOT D:\n   • Altura máxima: 12 metros\n   • Coeficiente de aproveitamento mínimo (CA básico): 0.5\n   • Coeficiente de aproveitamento máximo (CA máximo): 1.0\n\n5. ZOT E:\n   • Altura máxima: 12 metros\n   • Coeficiente de aproveitamento mínimo (CA básico): 0.5\n   • Coeficiente de aproveitamento máximo (CA máximo): 1.0\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+      "success": true,
+      "duration": 6385,
+      "confidence": 0.7,
+      "category": "geral"
+    },
+    {
+      "id": 517,
+      "question": "O afastamento frontal é obrigatório em todas as ZOTs?",
+      "expected": "Não, o afastamento frontal é \"Isento\" na maioria das ZOTs, significando que não é obrigatório manter afastamento da frente do lote.",
+      "actual": "Sim, o afastamento frontal é obrigatório em todas as ZOTs de Porto Alegre.\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+      "success": true,
+      "duration": 3473,
+      "confidence": 0.7,
+      "category": "recuos"
+    },
+    {
+      "id": 426,
+      "question": "O plano aborda o déficit habitacional e regularização de favelas?",
+      "expected": "Sim. O plano reconhece o déficit habitacional e inclui estratégias para regularização fundiária, reassentamento de famílias em áreas de risco e ampliação da oferta de habitação social em áreas com infraestrutura e emprego. Há zonas específicas para melhorias urbanas com foca na qualificação da HIS (Habitação de Interesse Social), além de regras mais claras para parcelamentos populares e para uso misto, o que permite moradia mais próxima de oportunidades.",
+      "actual": "O Plano Diretor de Porto Alegre aborda sim o déficit habitacional e a regularização de favelas, por meio de diretrizes e instrumentos urbanísticos específicos para promover o desenvolvimento urbano de forma sustentável e inclusiva.\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+      "success": true,
+      "duration": 4039,
+      "confidence": 0.7,
+      "category": "habitacao"
+    },
+    {
+      "id": 500,
+      "question": "Qual é o recuo de jardim padrão exigido?",
+      "expected": "O recuo de jardim padrão é de 4,0 metros na maioria das ZOTs.",
+      "actual": "Para o recuo de jardim padrão exigido em Porto Alegre, os valores são os seguintes:\n\n1. **Recuo de Jardim Padrão Exigido**:\n   - Frente de Lote: 5 metros\n   - Fundos de Lote: 5 metros\n   - Lateral de Lote: 2,5 metros\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+      "success": true,
+      "duration": 4945,
+      "confidence": 0.7,
+      "category": "recuos"
+    },
+    {
+      "id": 414,
+      "question": "Como a simplificação das regras urbanísticas reduz o custo da habitação?",
+      "expected": "Porque regras mais simples e claras ajudam a destravar projetos e reduzir os custos com estudos, revisões e prazos de aprovação. O novo Plano Diretor e a nova LUOS substituem centenas de zonas específicas por uma lógica mais enxuta e coerente com a realidade da cidade. Isso permite construir com mais segurança jurídica, amplia as possibilidades de uso dos terrenos e facilita a regularização de imóveis. Quanto menos barreiras, mais moradias podem ser viabilizadas --- e mais acessíveis elas se tornam.",
+      "actual": "A simplificação das regras urbanísticas pode reduzir o custo da habitação de diversas formas, tais como:\n\n1. Redução de custos burocráticos: A simplificação dos processos administrativos pode diminuir os custos relacionados à obtenção de licenças e autorizações para construção, tornando o processo mais eficiente e econômico.\n\n2. Estímulo à produção de habitação de interesse social: Com regras mais claras e acessíveis, é possível facilitar a construção de moradias populares, contribuindo para a redução do déficit habitacional e oferta de moradias mais acessíveis.\n\n3. Estímulo à inovação e diversificação de projetos: Regras simplificadas podem encorajar a adoção de novas técnicas construtivas, materiais mais sustentáveis e soluções arquitetônicas inovadoras, o que pode resultar em redução de custos de construção.\n\n4. Promoção de áreas de adensamento qualificado: Com normas mais claras e flexíveis, é possível incentivar o adensamento em áreas bem localizadas e servidas por infraestrutura, o que pode contribuir para a redução dos custos de deslocamento e melhor aproveitamento do espaço urbano.\n\nPortanto, a simplificação das regras urbanísticas pode ter um impacto positivo na redução do custo da habitação, tornando o processo de construção mais eficiente e acessível para a população.\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+      "success": true,
+      "duration": 6254,
+      "confidence": 0.7,
+      "category": "habitacao"
+    },
+    {
+      "id": 506,
+      "question": "Como são calculados os afastamentos laterais e de fundos?",
+      "expected": "Os afastamentos laterais e de fundos são calculados em 18% da altura total desde o RN (Referência de Nível), sendo aplicáveis acima de 12,5 metros de altura na maioria das ZOTs.",
+      "actual": "Os afastamentos laterais e de fundos são calculados com base no Plano Diretor de Porto Alegre. Os afastamentos variam de acordo com a zona de ocupação do terreno e são determinados pelas seguintes regras gerais:\n\n1. Zonas residenciais:\n   - Afastamento lateral: Pode variar de acordo com a largura do terreno, geralmente determinado como uma porcentagem da largura.\n   - Afastamento de fundos: Pode variar de acordo com a profundidade do terreno, geralmente determinado como uma porcentagem da profundidade.\n\n2. Zonas mistas e comerciais:\n   - Os afastamentos laterais e de fundos podem ser diferentes das zonas residenciais, sendo determinados de acordo com as regras específicas de cada zona.\n\n3. Para obter informações precisas sobre os afastamentos laterais e de fundos em uma zona específica, recomenda-se consultar o Plano Diretor de Porto Alegre ou entrar em contato com o órgão responsável.\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+      "success": true,
+      "duration": 9581,
+      "confidence": 0.7,
+      "category": "recuos"
+    },
+    {
+      "id": 494,
+      "question": "Qual é a taxa de permeabilidade mais alta exigida?",
+      "expected": "A taxa de permeabilidade mais alta exigida é de 45% para terrenos acima de 1.500 m² em determinadas ZOTs.",
+      "actual": "A taxa de permeabilidade mais alta exigida em Porto Alegre é de 25%.\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+      "success": true,
+      "duration": 4070,
+      "confidence": 0.7,
+      "category": "taxa_permeabilidade"
+    },
+    {
+      "id": 425,
+      "question": "O novo plano responde às enchentes de 2024 ou continua ignorando a necessidade de manutenção da infraestrutura de drenagem e diques?",
+      "expected": "O Plano Diretor não substitui os planos operacionais de manutenção, mas organiza o território com o objetivo de prevenir novos riscos. A proposta valoriza a ampliação de áreas de preservação, a criação de corredores ecológicos, a integração de redes de drenagem e a definição de áreas prioritárias para ação pública. A adaptação climática é um dos objetivos centrais do plano, e a requalificação de áreas vulneráveis está prevista nas Áreas Estruturadoras e nos Sistemas de Espaços Abertos e Ecológicos. É possível dividir o território de Porto Alegre em duas grandes áreas, considerando os eventos climáticos de 2024: uma acima da cota de inundação, e outra abaixo dessa cota, que foi diretamente impactada. Para essa área diretamente afetada, o plano prevê, de forma geral, duas estratégias principais: a recuperação do sistema nas áreas protegidas; e a realização de estudos específicos para as ilhas e para a porção sul do território. Nas áreas protegidas, o Plano Diretor orienta a ocupação com índices compatíveis com a infraestrutura disponível e com o acesso a serviços públicos. Já nas ilhas e na porção sul, onde não há zoneamento de proteção, são propostos índices e taxas urbanísticas mais restritivos, prevendo o posterior detalhamento por meio de estudos já contratados e em andamento.",
+      "actual": "Não possuo informações para responder a essa pergunta, pois foge do escopo técnico do Plano Diretor de Porto Alegre.\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+      "success": true,
+      "duration": 4327,
+      "confidence": 0.7,
+      "category": "taxa_permeabilidade"
+    },
+    {
+      "id": 461,
+      "question": "Como ficam os recuos no novo plano diretor?",
+      "expected": "De acordo com a proposta da nova Lei de Uso e Ocupação do Solo de Porto Alegre, especificamente conforme os anexos e dispositivos complementares, há a seguinte regra: \"Os recuos laterais e de fundos serão exigidos quando a edificação ultrapassar o limite máximo de construção permitido nas divisas do lote, conforme previsto no Anexo 2 desta Lei Complementar, e deverão ser calculados em 18% (dezoito por cento) da altura de cada volume da edificação em relação à divisa correspondente.\"",
+      "actual": "Os recuos no novo Plano Diretor de Porto Alegre são estabelecidos da seguinte forma:\n\n1. **Recuo Frontal**:\n   - Largura mínima: 5 metros\n   - Pode ser reduzido conforme critérios específicos do zoneamento\n\n2. **Recuo Lateral**:\n   - Largura mínima: 1,5 metros\n   - Pode ser reduzido conforme critérios específicos do zoneamento\n\n3. **Recuo de Fundos**:\n   - Largura mínima: 5 metros\n   - Pode ser reduzido conforme critérios específicos do zoneamento\n\nEsses recuos visam garantir a ventilação, iluminação e qualidade do ambiente urbano, além de promover a segurança e o conforto dos moradores.\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+      "success": true,
+      "duration": 4568,
+      "confidence": 0.7,
+      "category": "recuos"
+    },
+    {
+      "id": 514,
+      "question": "Existe diferença na taxa de permeabilidade para terrenos até 1.500 m²?",
+      "expected": "Sim, para terrenos até 1.500 m², a taxa de permeabilidade geralmente é menor, variando entre 10% e 20%, dependendo da ZOT.",
+      "actual": "Para terrenos até 1.500 m² em Porto Alegre, não há diferença na taxa de permeabilidade. A taxa de permeabilidade é a mesma para todos os terrenos, independentemente do tamanho.\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+      "success": true,
+      "duration": 4693,
+      "confidence": 0.7,
+      "category": "taxa_permeabilidade"
+    },
+    {
+      "id": 457,
+      "question": "Qual a diferença entre taxa de ocupação e taxa de permeabilidade?",
+      "expected": "A proposta de revisão da Lei de Uso e Ocupação do Solo de Porto Alegre não utiliza mais a taxa de ocupação como parâmetro urbanístico. Na nova proposta, o foco dos parâmetros urbanísticos está na altura máxima, coeficiente de aproveitamento (ou seja, quanto pode ser construído em relação à área do terreno), e taxa de permeabilidade (solo livre e áreas verdes). A taxa de ocupação, tradicionalmente usada para limitar o quanto do terreno pode ser coberto por edificações no térreo, foi retirada dos novos regramentos. Resumo: Taxa de ocupação: Não é mais utilizada na proposta revisada. Taxa de permeabilidade: Continua como parâmetro obrigatório, determinando o mínimo de solo livre para infiltração de água. Outros parâmetros de controle: altura máxima, coeficiente de aproveitamento e, em alguns casos, área mínima de terreno.",
+      "actual": "A taxa de ocupação e a taxa de permeabilidade são conceitos importantes na legislação urbanística e no planejamento urbano. Aqui está a diferença entre eles:\n\n1. **Taxa de Ocupação**:\n   - Refere-se à área do terreno que pode ser ocupada pela construção. É a relação entre a área da projeção da edificação no terreno e a área total do terreno.\n   - Geralmente expressa em percentual, como por exemplo 50% de taxa de ocupação significa que metade do terreno pode ser ocupado pela construção.\n\n2. **Taxa de Permeabilidade**:\n   - Refere-se à parte do terreno que deve ser mantida permeável, ou seja, sem construções. É a área não construída que permite a infiltração da água no solo.\n   - Também expressa em percentual, como por exemplo 30% de taxa de permeabilidade significa que pelo menos 30% do terreno deve ser mantido sem construções.\n\nEm resumo, a taxa de ocupação está relacionada à ocupação do terreno pela construção, enquanto a taxa de permeabilidade está relacionada à manutenção de áreas permeáveis no terreno para permitir a drenagem e infiltração da água.\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+      "success": true,
+      "duration": 7314,
+      "confidence": 0.7,
+      "category": "taxa_permeabilidade"
+    },
+    {
+      "id": 493,
+      "question": "Qual é a taxa de permeabilidade mínima para terrenos acima de 1.500 m²?",
+      "expected": "As taxas de permeabilidade para terrenos acima de 1.500 m² variam de acordo com a ZOT, sendo os valores mais comuns: 20%, 25%, 32%, 35%, 40% e 45%.",
+      "actual": "A taxa de permeabilidade mínima para terrenos acima de 1.500 m² em Porto Alegre é de 15%.\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+      "success": true,
+      "duration": 4355,
+      "confidence": 0.7,
+      "category": "taxa_permeabilidade"
+    },
+    {
+      "id": 436,
+      "question": "Como o Plano Diretor aborda as ZEIS (Zonas Especiais de Interesse Social)?",
+      "expected": "Sim, o novo Plano Diretor contempla as ZEIS por meio de uma abordagem atualizada e mais propositiva. Entretanto, o novo plano adota o conceito de AEIS - Área de Especial Interesse Social integrando ao conjunto das Áreas de Requalificação Urbana (ARU). As AEIS previstas no plano anterior (PDDUA) são automaticamente incorporadas ao novo PDUS, mas agora inseridas em um contexto mais amplo, que busca não apenas reconhecer essas áreas, mas atuar ativamente na sua qualificação urbana. Essa integração amplia o papel tradicional das ZEIS, indo além da simples demarcação para fins de regularização. No PDUS, as AEIS nas ARUs são tratadas como territórios prioritários para políticas públicas que promovam acesso à cidade, inclusão territorial, infraestrutura, regularização fundiária, produção habitacional e melhoria da qualidade de vida, articulando a política habitacional com os instrumentos de planejamento e ordenamento do solo urbano.",
+      "actual": "As Zonas Especiais de Interesse Social (ZEIS) no Plano Diretor de Porto Alegre são abordadas da seguinte forma:\n\n1. ZEIS 1:\n   - Altura máxima: 12 metros\n   - Coeficiente de aproveitamento mínimo (CA básico): 0.5\n   - Coeficiente de aproveitamento máximo (CA máximo): 1.0\n\n2. ZEIS 2:\n   - Altura máxima: 12 metros\n   - Coeficiente de aproveitamento mínimo (CA básico): 0.5\n   - Coeficiente de aproveitamento máximo (CA máximo): 1.0\n\n3. ZEIS 3:\n   - Altura máxima: 12 metros\n   - Coeficiente de aproveitamento mínimo (CA básico): 0.5\n   - Coeficiente de aproveitamento máximo (CA máximo): 1.0\n\n4. ZEIS 4:\n   - Altura máxima: 12 metros\n   - Coeficiente de aproveitamento mínimo (CA básico): 0.5\n   - Coeficiente de aproveitamento máximo (CA máximo): 1.0\n\n5. ZEIS 5:\n   - Altura máxima: Não disponível\n   - Coeficiente de aproveitamento mínimo (CA básico): 0.5\n   - Coeficiente de aproveitamento máximo (CA máximo): 1.0\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+      "success": true,
+      "duration": 5956,
+      "confidence": 0.7,
+      "category": "zonas"
+    },
+    {
+      "id": 423,
+      "question": "Quem ganha e quem perde com as 16 ZOTs e o novo zoneamento?",
+      "expected": "O novo zoneamento não distribui \"ganhos\" e \"perdas\" arbitrariamente: ele reorganiza o território para equilibrar densidade, infraestrutura e vocações locais. As 16 ZOTs (Zonas de Ordenamento Territorial) foram desenhadas a partir de dados reais sobre uso do solo, mobilidade, riscos ambientais e acesso a serviços. Em vez de regras fragmentadas por zoneamentos específicos, as ZOTs buscam coerência e equidade territorial. Ganham as pessoas --- sobretudo onde havia travas ao uso urbano qualificado.",
+      "actual": "Atualmente, não possuo informações específicas sobre os impactos das 16 ZOTs e do novo zoneamento em relação a quem ganha ou perde. Recomendo acompanhar os debates e análises realizados pela Prefeitura de Porto Alegre, bem como participar das audiências públicas para compreender melhor os detalhes e possíveis impactos das mudanças propostas.\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+      "success": true,
+      "duration": 6779,
+      "confidence": 0.7,
+      "category": "zonas"
+    },
+    {
+      "id": 431,
+      "question": "Como é feito o zoneamento na nova LUOS?",
+      "expected": "O território foi dividido em 16 ZOTs, com base em características morfológicas, ambientais e funcionais. Cada ZOT possui parâmetros próprios: ZOTs 1 a 3: áreas predominantemente residenciais com baixa transformação; ZOTs 4 a 7: áreas com maior potencial de adensamento e transformação urbana; ZOTs 8 a 13: áreas estratégicas, com maior verticalização e articulação a planos e projetos estruturantes; ZOTs 14 a 16: áreas de transição e proteção ambiental, com parâmetros mais restritivos e foco em usos compatíveis com a preservação.",
+      "actual": "Na nova Lei de Uso e Ocupação do Solo (LUOS) de Porto Alegre, o zoneamento é feito com base em diferentes zonas, cada uma com suas próprias regras de construção. Abaixo estão os indicadores básicos para algumas zonas comuns:\n\n1. **Zona Residencial (ZR)**:\n   - Altura máxima: 12 metros\n   - Coeficiente de aproveitamento mínimo (CA básico): 1.0\n   - Coeficiente de aproveitamento máximo (CA máximo): 1.5\n\n2. **Zona Comercial (ZC)**:\n   - Altura máxima: 40 metros\n   - Coeficiente de aproveitamento mínimo (CA básico): 1.5\n   - Coeficiente de aproveitamento máximo (CA máximo): 2.5\n\n3. **Zona Industrial (ZI)**:\n   - Altura máxima: 20 metros\n   - Coeficiente de aproveitamento mínimo (CA básico): 1.0\n   - Coeficiente de aproveitamento máximo (CA máximo): 1.5\n\nEstes são apenas alguns exemplos de zonas e seus respectivos indicadores. Para mais detalhes sobre outras zonas e seus parâmetros de construção, consulte a LUOS de Porto Alegre.\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+      "success": true,
+      "duration": 6989,
+      "confidence": 0.7,
+      "category": "zonas"
+    },
+    {
+      "id": 424,
+      "question": "Os planos locais (zona Centro, 4º distrito, Ipiranga etc.) enfraquecem a consistência do Plano Diretor?",
+      "expected": "Não. Esses planos locais fazem parte da Componente Espacial, que permite que áreas com desafios e oportunidades específicas tenham diretrizes mais detalhadas, sem contrariar os princípios gerais do Plano Diretor. Eles são estratégicos para ativar o potencial urbano, cultural e econômico de cada território e obedecem aos objetivos e sistemas definidos pelo plano geral. Diversos municípios ao redor do mundo utilizam instrumentos equivalentes aos chamados planos parciais, planos locais, planos de bairro ou planos de detalhamento --- que detalham regras urbanísticas mais específicas em certas áreas da cidade, em complemento ao plano diretor ou plano regulador geral. Esses instrumentos são comuns em cidades que adotam planejamento urbano por zonas, com diferentes níveis de detalhamento espacial. Aqui estão alguns exemplos internacionais relevantes: Paris, Lyon, Bordeaux (França); Berlim, Munique, Hamburgo (Alemanha); Londres, Manchester, Birmingham (Reino Unido); Toronto, Vancouver, Calgary (Canadá); San Francisco, Nova York, Portland (Estados Unidos); Barcelona, Madri, Sevilha (Espanha); Santiago e Valparaíso (Chile); Lisboa e Porto (Portugal); Bogotá (Colômbia).",
+      "actual": "Não, os planos locais (zona Centro, 4º distrito, Ipiranga, etc.) não enfraquecem a consistência do Plano Diretor, pois eles são instrumentos complementares que visam atender às especificidades e necessidades de cada região de forma mais detalhada e adaptada.\n\nℹ️ A inclusão de planos locais pode fortalecer a gestão do território, garantindo a aplicação de diretrizes mais adequadas a determinadas áreas, promovendo um desenvolvimento urbano mais equilibrado e sustentável.\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+      "success": true,
+      "duration": 11297,
+      "confidence": 0.9,
+      "category": "zonas"
+    },
+    {
+      "id": 446,
+      "question": "O Plano diretor contempla ou aborda a Zona Rural?",
+      "expected": "O novo Plano Diretor de Porto Alegre não realiza a revisão da zona rural, mantendo os limites estabelecidos pela legislação vigente. No entanto, a proposta reconhece a importância estratégica da zona rural e prevê que sua revisão será objeto de estudo específico, a ser elaborado posteriormente, com base nos critérios definidos pela Lei Complementar nº 775/2015. Além disso, o plano estabelece que a ZOT 16, incluída no zoneamento da nova LUOS, poderá ser avaliada como área de possível expansão da zona rural, desde que fundamentada por análise técnica e submetida a processo de alteração legislativa adequado. Com isso, o plano mantém a zona rural sob regime próprio, mas abre caminho para ajustes futuros alinhados ao planejamento territorial integrado.",
+      "actual": "O Plano Diretor de Porto Alegre contempla e aborda a Zona Rural com suas respectivas regras. Para mais informações específicas sobre as regulamentações para a Zona Rural, recomenda-se a consulta direta ao Plano Diretor ou aos órgãos competentes.\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+      "success": true,
+      "duration": 4498,
+      "confidence": 0.7,
+      "category": "zonas"
+    },
+    {
+      "id": 481,
+      "question": "Quantas Zonas de Ordenamento Territorial (ZOTs) existem no novo Plano Diretor?",
+      "expected": "Existem 16 ZOTs principais (ZOT 01 a ZOT 16), além de subdivisões específicas nas ZOTs 08.1, 08.2 e 08.3, totalizando 30 tipos diferentes de zoneamento, incluindo também as zonas ESPECIAL e ZONA RURAL.",
+      "actual": "Existem 30 Zonas de Ordenamento Territorial (ZOTs) no novo Plano Diretor de Porto Alegre.\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+      "success": true,
+      "duration": 8566,
+      "confidence": 0.9,
+      "category": "zonas"
+    },
+    {
+      "id": 488,
+      "question": "Quais bairros possuem Zona Especial?",
+      "expected": "Os bairros que possuem Zona Especial são: BOA VISTA e CENTRO HISTÓRICO.",
+      "actual": "1. **BOA VISTA**:\n   • Altura máxima: 40 metros\n   • Coeficiente de aproveitamento mínimo (CA básico): 1.7\n   • Coeficiente de aproveitamento máximo (CA máximo): 3.8\n\n2. **CENTRO HISTÓRICO**:\n   • Altura máxima: 40 metros\n   • Coeficiente de aproveitamento mínimo (CA básico): 1.7\n   • Coeficiente de aproveitamento máximo (CA máximo): 3.8\n\n3. **FARROUPILHA**:\n   • Altura máxima: 40 metros\n   • Coeficiente de aproveitamento mínimo (CA básico): 1.7\n   • Coeficiente de aproveitamento máximo (CA máximo): 3.8\n\n4. **JARDIM EUROPA**:\n   • Altura máxima: Não disponível\n   • Coeficiente de aproveitamento mínimo (CA básico): Não disponível\n   • Coeficiente de aproveitamento máximo (CA máximo): Não disponível\n\n5. **LOMBA DO PINHEIRO**:\n   • Altura máxima: Não disponível\n   • Coeficiente de aproveitamento mínimo (CA básico): Não disponível\n   • Coeficiente de aproveitamento máximo (CA máximo): Não disponível\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+      "success": true,
+      "duration": 11451,
+      "confidence": 0.9,
+      "category": "zonas"
+    },
+    {
+      "id": 489,
+      "question": "Quais bairros possuem Zona Rural?",
+      "expected": "Os bairros que possuem Zona Rural são: BELÉM NOVO, BOA VISTA DO SUL, CHAPÉU DO SOL, EXTREMA, LAGEADO, LAMI, PONTA GROSSA, SÉTIMO CÉU.",
+      "actual": "1. **BELÉM NOVO**\n   - Altura máxima: Não disponível\n   - Coeficiente de aproveitamento mínimo (CA básico): Não disponível\n   - Coeficiente de aproveitamento máximo (CA máximo): Não disponível\n\n2. **BOA VISTA DO SUL**\n   - Altura máxima: Não disponível\n   - Coeficiente de aproveitamento mínimo (CA básico): Não disponível\n   - Coeficiente de aproveitamento máximo (CA máximo): Não disponível\n\n3. **CHAPÉU DO SOL**\n   - Altura máxima: Não disponível\n   - Coeficiente de aproveitamento mínimo (CA básico): Não disponível\n   - Coeficiente de aproveitamento máximo (CA máximo): Não disponível\n\n4. **EXTREMA**\n   - Altura máxima: Não disponível\n   - Coeficiente de aproveitamento mínimo (CA básico): Não disponível\n   - Coeficiente de aproveitamento máximo (CA máximo): Não disponível\n\n5. **LAGEADO**\n   - Altura máxima: Não disponível\n   - Coeficiente de aproveitamento mínimo (CA básico): Não disponível\n   - Coeficiente de aproveitamento máximo (CA máximo): Não disponível\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+      "success": true,
+      "duration": 12062,
+      "confidence": 0.9,
+      "category": "zonas"
+    }
+  ]
+}

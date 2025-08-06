@@ -87,6 +87,18 @@ export const UPDATED_MODEL_CONFIGS: ModelConfig[] = [
   // ============ OPENAI GPT - Modelos atualizados ============
   {
     provider: 'openai',
+    model: 'gpt-4.1',
+    displayName: 'GPT-4.1',
+    costPerInputToken: 0.01 / 1000,
+    costPerOutputToken: 0.03 / 1000,
+    maxTokens: 4096,
+    averageLatency: 3500,
+    contextWindow: 128000,
+    available: true,
+    description: 'GPT-4.1 - Versão otimizada do GPT-4'
+  },
+  {
+    provider: 'openai',
     model: 'gpt-4-turbo-2024-04-09',
     displayName: 'GPT-4 Turbo',
     costPerInputToken: 0.01 / 1000,

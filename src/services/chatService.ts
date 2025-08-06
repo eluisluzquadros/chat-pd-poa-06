@@ -36,7 +36,9 @@ export class ChatService {
           message,
           userRole: userRole || 'citizen',
           sessionId,
-          userId: session.user.id || undefined  // Make userId optional
+          userId: session.user.id || undefined,  // Make userId optional
+          bypassCache: true,  // Always bypass cache to get fresh results
+          model: 'openai/gpt-3.5-turbo'  // Specify model explicitly
         }
       });
 
