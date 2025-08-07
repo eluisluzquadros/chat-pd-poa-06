@@ -17,7 +17,7 @@ interface QATestCase {
   expected_answer: string;
   expected_sql?: string;
   category: string;
-  difficulty: string;
+  difficulty: string | null;
   tags: string[];
   is_active: boolean;
   is_sql_related: boolean;
@@ -142,7 +142,9 @@ export function QATestCasesList() {
     }
   };
 
-  const getDifficultyColor = (difficulty: string) => {
+  const getDifficultyColor = (difficulty: string | null | undefined) => {
+    if (!difficulty) return 'outline';
+    
     switch (difficulty.toLowerCase()) {
       case 'easy': return 'default';
       case 'medium': return 'secondary';
@@ -250,7 +252,7 @@ export function QATestCasesList() {
                     </TableCell>
                     <TableCell>
                       <Badge variant={getDifficultyColor(testCase.difficulty)}>
-                        {testCase.difficulty}
+                        {testCase.difficulty || 'N/A'}
                       </Badge>
                     </TableCell>
                     <TableCell>
