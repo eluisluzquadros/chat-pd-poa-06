@@ -1,6 +1,6 @@
 import React from 'react';
 import { Header } from '@/components/Header';
-import BenchmarkDashboard from "@/components/admin/BenchmarkDashboard";
+import { BenchmarkDashboard } from "@/components/admin/BenchmarkDashboard";
 
 export default function BenchmarkDashboardPage() {
   return (

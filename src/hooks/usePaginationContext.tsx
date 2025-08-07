@@ -1,5 +1,5 @@
 import { createContext, useContext, useReducer, useCallback, useEffect } from 'react';
-import { useRouter } from 'next/router';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 // Types
 export interface PaginationContextState {
@@ -164,11 +164,12 @@ export function usePersistentPagination(
     searchQuery?: string;
   } = {}
 ) {
-  const router = useRouter();
+  const navigate = useNavigate();
+  const location = useLocation();
   const { saveState, restoreState, clearState } = usePaginationContext();
 
   // Generate context key based on route and provided key
-  const contextKey = `${router.pathname}_${key}`;
+  const contextKey = `${location.pathname}_${key}`;
 
   // Get current scroll position
   const getCurrentScrollPosition = useCallback(() => {
@@ -252,53 +253,52 @@ export function usePersistentPagination(
 
 // Hook for URL-based pagination state
 export function useUrlPagination() {
-  const router = useRouter();
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const updateUrl = useCallback((params: Record<string, any>) => {
-    const query = { ...router.query };
+    const searchParams = new URLSearchParams(location.search);
     
     // Update or remove parameters
     Object.entries(params).forEach(([key, value]) => {
       if (value === null || value === undefined || value === '' || 
           (Array.isArray(value) && value.length === 0)) {
-        delete query[key];
+        searchParams.delete(key);
       } else {
-        query[key] = Array.isArray(value) ? value.join(',') : String(value);
+        searchParams.set(key, Array.isArray(value) ? value.join(',') : String(value));
       }
     });
 
     // Update URL without causing a full page reload
-    router.push({
-      pathname: router.pathname,
-      query
-    }, undefined, { shallow: true });
-  }, [router]);
+    const newUrl = searchParams.toString() ? `${location.pathname}?${searchParams.toString()}` : location.pathname;
+    navigate(newUrl, { replace: true });
+  }, [navigate, location]);
 
   const getFromUrl = useCallback((key: string, defaultValue: any = null) => {
-    const value = router.query[key];
+    const searchParams = new URLSearchParams(location.search);
+    const value = searchParams.get(key);
     
     if (!value) return defaultValue;
     
     // Handle arrays (comma-separated values)
     if (typeof defaultValue === 'object' && Array.isArray(defaultValue)) {
-      return typeof value === 'string' ? value.split(',') : value;
+      return value.split(',');
     }
     
     // Handle numbers
     if (typeof defaultValue === 'number') {
-      const num = parseInt(Array.isArray(value) ? value[0] : value);
+      const num = parseInt(value);
       return isNaN(num) ? defaultValue : num;
     }
     
     // Handle booleans
     if (typeof defaultValue === 'boolean') {
-      const str = Array.isArray(value) ? value[0] : value;
-      return str === 'true';
+      return value === 'true';
     }
     
     // Handle strings
-    return Array.isArray(value) ? value[0] : value;
-  }, [router.query]);
+    return value;
+  }, [location.search]);
 
   return {
     updateUrl,
