@@ -76,14 +76,14 @@ export default function Quality() {
   }, []);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-6">
       {/* Header with actions */}
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-2xl font-bold">Dashboard de Qualidade QA</h1>
+      <div className="flex justify-between items-center mb-6">
+        <div className="space-y-1">
+          <h1 className="text-3xl font-bold tracking-tight">Dashboard de Qualidade QA</h1>
           <p className="text-muted-foreground">Monitore e execute validações de qualidade do sistema</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-3">
           <Button variant="outline" onClick={fetchMetrics} size="sm">
             <RefreshCw className="h-4 w-4 mr-2" />
             Atualizar
@@ -93,72 +93,78 @@ export default function Quality() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Execuções QA</CardTitle>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <Card className="p-6">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Execuções QA</CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
+          <CardContent className="p-0">
+            <div className="text-3xl font-bold">
               {isLoading ? '...' : metrics.totalValidationRuns}
             </div>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-sm text-muted-foreground mt-2">
               Total de validações executadas
             </p>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Acurácia Média</CardTitle>
+        <Card className="p-6">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Acurácia Média</CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
+          <CardContent className="p-0">
+            <div className="text-3xl font-bold">
               {isLoading ? '...' : `${metrics.avgAccuracy}%`}
             </div>
-            <Badge variant={metrics.avgAccuracy >= 80 ? 'default' : 'destructive'}>
+            <Badge 
+              variant={metrics.avgAccuracy >= 80 ? 'default' : 'destructive'}
+              className="mt-2"
+            >
               {metrics.avgAccuracy >= 80 ? 'Boa' : 'Baixa'}
             </Badge>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Casos de Teste</CardTitle>
+        <Card className="p-6">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Casos de Teste</CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
+          <CardContent className="p-0">
+            <div className="text-3xl font-bold">
               {isLoading ? '...' : metrics.totalTestCases}
             </div>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-sm text-muted-foreground mt-2">
               Total disponível
             </p>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Tempo Resposta</CardTitle>
+        <Card className="p-6">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Tempo Resposta</CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
+          <CardContent className="p-0">
+            <div className="text-3xl font-bold">
               {isLoading ? '...' : `${metrics.avgResponseTime}ms`}
             </div>
-            <Badge variant={metrics.avgResponseTime <= 3000 ? 'default' : 'destructive'}>
+            <Badge 
+              variant={metrics.avgResponseTime <= 3000 ? 'default' : 'destructive'}
+              className="mt-2"
+            >
               {metrics.avgResponseTime <= 3000 ? 'Rápido' : 'Lento'}
             </Badge>
           </CardContent>
         </Card>
       </div>
 
-      <Tabs defaultValue="execution" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="execution">Histórico de Execuções</TabsTrigger>
-          <TabsTrigger value="testcases">Casos de Teste</TabsTrigger>
-          <TabsTrigger value="models">Dashboard de Modelos</TabsTrigger>
-          <TabsTrigger value="analysis">Análise de Erros</TabsTrigger>
-          <TabsTrigger value="comparison">Comparação</TabsTrigger>
-          <TabsTrigger value="gaps">Gaps de Conhecimento</TabsTrigger>
+      <Tabs defaultValue="execution" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-6 h-12">
+          <TabsTrigger value="execution" className="text-sm">Execuções</TabsTrigger>
+          <TabsTrigger value="testcases" className="text-sm">Casos de Teste</TabsTrigger>
+          <TabsTrigger value="models" className="text-sm">Modelos</TabsTrigger>
+          <TabsTrigger value="analysis" className="text-sm">Análise</TabsTrigger>
+          <TabsTrigger value="comparison" className="text-sm">Comparação</TabsTrigger>
+          <TabsTrigger value="gaps" className="text-sm">Gaps</TabsTrigger>
         </TabsList>
 
         <TabsContent value="execution" className="space-y-4">

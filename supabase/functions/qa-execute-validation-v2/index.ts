@@ -197,21 +197,21 @@ serve(async (req) => {
               if (isCorrect) passedCount++;
               totalAccuracy += accuracy;
 
-              // Store detailed result in database
-              await supabase
-                .from('qa_validation_results')
-                .insert({
-                  validation_run_id: runId,
-                  test_case_id: testCase.id,
-                  model,
-                  actual_answer: actualAnswer.substring(0, 2000),
-                  is_correct: isCorrect,
-                  accuracy_score: accuracy,
-                  response_time_ms: responseTime,
-                  error_type: isCorrect ? null : 'accuracy_below_threshold',
-                  error_details: isCorrect ? null : `Accuracy: ${(accuracy * 100).toFixed(1)}%`,
-                  created_at: new Date().toISOString()
-                });
+                // Store detailed result in database
+                await supabase
+                  .from('qa_validation_results')
+                  .insert({
+                    validation_run_id: runId,
+                    test_case_id: testCase.id.toString(),
+                    model,
+                    actual_answer: actualAnswer.substring(0, 2000),
+                    is_correct: isCorrect,
+                    accuracy_score: accuracy,
+                    response_time_ms: responseTime,
+                    error_type: isCorrect ? null : 'accuracy_below_threshold',
+                    error_details: isCorrect ? null : `Accuracy: ${(accuracy * 100).toFixed(1)}%`,
+                    created_at: new Date().toISOString()
+                  });
 
               return {
                 testCaseId: testCase.id,
@@ -234,7 +234,7 @@ serve(async (req) => {
                 .from('qa_validation_results')
                 .insert({
                   validation_run_id: runId,
-                  test_case_id: testCase.id,
+                  test_case_id: testCase.id.toString(),
                   model,
                   actual_answer: '',
                   is_correct: false,
@@ -269,7 +269,7 @@ serve(async (req) => {
         ? totalAccuracy / casesToRun.length 
         : 0;
       const avgResponseTime = casesToRun.length > 0 
-        ? totalResponseTime / casesToRun.length 
+        ? Math.round(totalResponseTime / casesToRun.length) 
         : 0;
 
       const completedAt = new Date().toISOString();

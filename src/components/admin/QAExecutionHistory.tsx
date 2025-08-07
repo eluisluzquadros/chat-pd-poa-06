@@ -78,12 +78,12 @@ export function QAExecutionHistory() {
 
       if (error) throw error;
       
-      // Get test case details separately
+      // Get test case details separately - handle both string and number IDs
       const testCaseIds = data?.map(r => r.test_case_id).filter(Boolean) || [];
       const { data: testCases } = await supabase
         .from('qa_test_cases')
         .select('id, question, expected_answer, category, difficulty')
-        .in('id', testCaseIds.map(id => parseInt(id)));
+        .in('id', testCaseIds.map(id => typeof id === 'string' ? parseInt(id) : id));
 
       // Merge results with test case data
       const enrichedResults = data?.map(result => ({
