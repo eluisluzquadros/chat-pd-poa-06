@@ -63,7 +63,7 @@ serve(async (req) => {
       categories, 
       difficulties, 
       randomCount = 10,
-      models = ['openai/gpt-3.5-turbo'], // Default para um modelo válido
+      models = ['openai/gpt-4o-mini'], // Default para um modelo válido
       includeSQL = true,
       excludeSQL = false
     }: ValidationRequest = await req.json();
@@ -227,7 +227,7 @@ serve(async (req) => {
                 // Store detailed result in database with retry logic
                 const resultData = {
                   validation_run_id: runId,
-                  test_case_id: testCase.id.toString(),
+                  test_case_id: testCase.test_id, // Use test_id instead of id
                   model,
                   actual_answer: actualAnswer.substring(0, 2000),
                   is_correct: isCorrect,
@@ -284,7 +284,7 @@ serve(async (req) => {
               // Save error result with retry logic
               const errorData = {
                 validation_run_id: runId,
-                test_case_id: testCase.id.toString(),
+                test_case_id: testCase.test_id, // Use test_id instead of id
                 model,
                 actual_answer: '',
                 is_correct: false,

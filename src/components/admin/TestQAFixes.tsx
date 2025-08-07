@@ -28,7 +28,7 @@ export function TestQAFixes() {
         body: {
           mode: 'random',
           randomCount: 2,
-          models: ['agentic-rag'],
+          models: ['openai/gpt-4o-mini'],
           includeSQL: false,
           excludeSQL: false
         }
