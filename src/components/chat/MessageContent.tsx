@@ -33,8 +33,6 @@ export function MessageContent({ content, role, messageId, sessionId, model }: M
           messageId={messageId}
           sessionId={sessionId}
           model={model}
-          content={content}
-          showDetailedModal={true}
         />
       )}
     </div>

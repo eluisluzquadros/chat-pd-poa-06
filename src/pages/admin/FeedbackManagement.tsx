@@ -19,11 +19,11 @@ import { useAuthContext } from "@/context/auth/useAuthContext";
 import { Navigate } from "react-router-dom";
 
 export default function FeedbackManagement() {
-  const { user, profile } = useAuthContext();
+  const { userRole, isAdmin } = useAuthContext();
   const [activeSection, setActiveSection] = useState("dashboard");
 
   // Only admins can access this page
-  if (!user || profile?.role !== 'admin') {
+  if (!isAdmin) {
     return <Navigate to="/auth" replace />;
   }
 

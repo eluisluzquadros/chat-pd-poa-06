@@ -34,7 +34,7 @@ export function useChatOperations(refetchSessions: RefetchFunction) {
 
   const {
     selectedModel,
-    handleModelSelect,
+    switchModel,
   } = useModelSelection();
 
   const handleNewChat = useCallback(() => {
@@ -77,6 +77,6 @@ export function useChatOperations(refetchSessions: RefetchFunction) {
     handleSelectSession,
     handleDeleteSession,
     selectedModel,
-    handleModelSelect,
+    switchModel,
   };
 }

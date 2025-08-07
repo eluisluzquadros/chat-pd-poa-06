@@ -30,7 +30,7 @@ export function useChat(): UseChatHookReturn {
     handleSelectSession,
     handleDeleteSession,
     selectedModel,
-    handleModelSelect,
+    switchModel,
   } = chatOperations;
 
   // Check for initial query from localStorage
@@ -133,6 +133,6 @@ export function useChat(): UseChatHookReturn {
     handleDeleteSession,
     isConnectionError,
     selectedModel,
-    handleModelSelect,
+    switchModel,
   };
 }
