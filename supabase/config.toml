@@ -37,3 +37,9 @@ verify_jwt = true
 
 [functions.predefined-responses]
 verify_jwt = true
+
+[functions.qa-cleanup-runs]
+verify_jwt = true
+
+[functions.qa-batch-execution]
+verify_jwt = true

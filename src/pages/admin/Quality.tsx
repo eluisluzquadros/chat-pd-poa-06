@@ -13,7 +13,7 @@ import { QATestCasesList } from '@/components/admin/QATestCasesList';
 import { QAModelDashboard } from '@/components/admin/QAModelDashboard';
 import { ValidationOptionsDialog } from '@/components/admin/ValidationOptionsDialog';
 import { MultiModelExecutionDialog } from '@/components/admin/MultiModelExecutionDialog';
-import { RefreshCw } from 'lucide-react';
+import { QAMaintenancePanel } from '@/components/admin/QAMaintenancePanel';
 
 export default function Quality() {
   const [metrics, setMetrics] = useState({
@@ -158,13 +158,14 @@ export default function Quality() {
       </div>
 
       <Tabs defaultValue="execution" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-6 h-12">
+        <TabsList className="grid w-full grid-cols-7 h-12">
           <TabsTrigger value="execution" className="text-sm">Execuções</TabsTrigger>
           <TabsTrigger value="testcases" className="text-sm">Casos de Teste</TabsTrigger>
           <TabsTrigger value="models" className="text-sm">Modelos</TabsTrigger>
           <TabsTrigger value="analysis" className="text-sm">Análise</TabsTrigger>
           <TabsTrigger value="comparison" className="text-sm">Comparação</TabsTrigger>
           <TabsTrigger value="gaps" className="text-sm">Gaps</TabsTrigger>
+          <TabsTrigger value="maintenance" className="text-sm">Manutenção</TabsTrigger>
         </TabsList>
 
         <TabsContent value="execution" className="space-y-4">
@@ -189,6 +190,10 @@ export default function Quality() {
 
         <TabsContent value="gaps" className="space-y-4">
           <QAKnowledgeGaps />
+        </TabsContent>
+
+        <TabsContent value="maintenance" className="space-y-4">
+          <QAMaintenancePanel />
         </TabsContent>
       </Tabs>
     </div>

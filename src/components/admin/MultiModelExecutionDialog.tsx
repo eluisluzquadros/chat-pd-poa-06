@@ -17,12 +17,14 @@ interface ModelDisplay extends ModelConfig {
 }
 
 // Convert model configs to display format with calculated metrics
-const AVAILABLE_MODELS: ModelDisplay[] = UPDATED_MODEL_CONFIGS.map(config => ({
-  ...config,
-  quality: Math.round(95 - (config.costPerOutputToken * 10000)), // Higher cost = lower quality estimation
-  speed: config.averageLatency / 1000, // Convert ms to seconds
-  cost: config.costPerOutputToken * 1000 // Convert to per 1K tokens
-}));
+const AVAILABLE_MODELS: ModelDisplay[] = UPDATED_MODEL_CONFIGS
+  .filter(config => config.available)
+  .map(config => ({
+    ...config,
+    quality: Math.round(95 - (config.costPerOutputToken * 10000)), // Higher cost = lower quality estimation
+    speed: config.averageLatency / 1000, // Convert ms to seconds
+    cost: config.costPerOutputToken * 1000 // Convert to per 1K tokens
+  }));
 
 interface ExecutionStatus {
   model: string;
@@ -93,56 +95,64 @@ export function MultiModelExecutionDialog() {
     }));
     setExecutions(initialExecutions);
 
-    // Executar validações em paralelo
-    const promises = selectedModels.map(async (model, index) => {
-      try {
-        setExecutions(prev => 
-          prev.map((exec, i) => 
-            i === index ? { ...exec, status: 'running' } : exec
-          )
-        );
+    try {
+      // Use the new batch execution function
+      const response = await fetch('/functions/v1/qa-batch-execution', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          models: selectedModels,
+          options: {
+            mode: 'random',
+            categories: [],
+            difficulties: [],
+            randomCount: 10,
+            includeSQL: true,
+            excludeSQL: false
+          }
+        })
+      });
 
-        const options = {
-          model,
-          mode: 'random',
-          categories: [],
-          difficulties: [],
-          randomCount: 20,
-          includeSQL: true,
-          excludeSQL: false
-        };
-
-        await runValidation(options);
-
-        setExecutions(prev => 
-          prev.map((exec, i) => 
-            i === index ? { 
-              ...exec, 
-              status: 'completed', 
-              progress: 100,
-              accuracy: Math.round(Math.random() * 30 + 70), // Placeholder
-              responseTime: Math.round(Math.random() * 2000 + 1000) // Placeholder
-            } : exec
-          )
-        );
-
-      } catch (error) {
-        console.error(`Erro na validação do modelo ${model}:`, error);
-        setExecutions(prev => 
-          prev.map((exec, i) => 
-            i === index ? { 
-              ...exec, 
-              status: 'failed', 
-              error: error instanceof Error ? error.message : 'Erro desconhecido'
-            } : exec
-          )
-        );
+      if (!response.ok) {
+        throw new Error(`Batch execution failed: ${response.status}`);
       }
-    });
 
-    await Promise.allSettled(promises);
-    setIsRunning(false);
-    toast.success('Execução paralela concluída!');
+      const result = await response.json();
+      
+      if (result.success) {
+        // Update executions with real results
+        const updatedExecutions: ExecutionStatus[] = selectedModels.map(model => {
+          const modelResult = result.results.find((r: any) => r.model === model);
+          return {
+            model,
+            status: (modelResult?.success ? 'completed' : 'failed') as 'completed' | 'failed',
+            progress: 100,
+            accuracy: modelResult?.summary?.avgAccuracy ? Math.round(modelResult.summary.avgAccuracy) : undefined,
+            responseTime: modelResult?.summary?.avgResponseTime || undefined,
+            error: modelResult?.error || undefined
+          };
+        });
+        
+        setExecutions(updatedExecutions);
+        toast.success(`Execução concluída! ${result.summary.successfulModels}/${result.summary.totalModels} modelos executados com sucesso`);
+      } else {
+        throw new Error(result.error || 'Batch execution failed');
+      }
+
+    } catch (error) {
+      console.error('Erro na execução paralela:', error);
+      // Mark all as failed
+      setExecutions(prev => prev.map(exec => ({
+        ...exec,
+        status: 'failed',
+        error: error instanceof Error ? error.message : 'Erro desconhecido'
+      })));
+      toast.error('Erro na execução paralela');
+    } finally {
+      setIsRunning(false);
+    }
   };
 
   const getStatusIcon = (status: ExecutionStatus['status']) => {
