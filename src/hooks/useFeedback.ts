@@ -1,190 +1,97 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
-import { useAuthContext } from '@/context/auth/useAuthContext';
-import { MessageFeedback, FeedbackMetrics, FeedbackFilters } from '@/types/feedback';
+import { toast } from 'sonner';
+
+export interface Feedback {
+  id: string;
+  helpful: boolean;
+  comment?: string;
+  created_at: string;
+}
+
+export interface FeedbackMetrics {
+  totalFeedback: number;
+  positiveFeedback: number;
+  negativeFeedback: number;
+  satisfactionRate: number;
+}
 
 export function useFeedback() {
+  const [feedbacks, setFeedbacks] = useState<Feedback[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const { toast } = useToast();
-  const { user } = useAuthContext();
 
-  const submitFeedback = async (
-    messageId: string,
-    sessionId: string,
-    model: string,
-    helpful: boolean,
-    comment?: string
-  ) => {
-    if (!user) {
-      toast({
-        title: "Erro",
-        description: "Você precisa estar logado para dar feedback",
-        variant: "destructive",
-      });
-      return false;
-    }
-
+  const fetchFeedbacks = async () => {
     setIsLoading(true);
-    
-    const feedbackData = {
-      message_id: messageId,
-      session_id: sessionId,
-      model: model,
-      helpful: helpful,
-      comment: comment || null,
-    };
-    
+    try {
+      const { data, error } = await supabase
+        .from('message_feedback')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(50);
+
+      if (error) throw error;
+      
+      setFeedbacks(data || []);
+    } catch (error) {
+      console.error('Error fetching feedbacks:', error);
+      toast.error('Erro ao carregar feedbacks');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchFeedbacks();
+  }, []);
+
+  const submitFeedback = async (feedback: Partial<Feedback>) => {
     try {
       const { error } = await supabase
         .from('message_feedback')
-        .insert(feedbackData);
-
+        .insert(feedback);
+      
       if (error) throw error;
-
-      toast({
-        title: "Obrigado pelo feedback!",
-        description: "Seu feedback nos ajuda a melhorar o sistema.",
-      });
-
-      // Trigger alert check for negative feedback
-      if (!helpful) {
-        await checkAndCreateAlert(messageId, sessionId, model, comment);
-      }
-
-      return true;
+      
+      await fetchFeedbacks();
+      toast.success('Feedback enviado com sucesso');
     } catch (error) {
-      console.error('Erro ao enviar feedback:', error);
-      toast({
-        title: "Erro",
-        description: "Não foi possível enviar o feedback. Tente novamente.",
-        variant: "destructive",
-      });
-      return false;
-    } finally {
-      setIsLoading(false);
+      console.error('Error submitting feedback:', error);
+      toast.error('Erro ao enviar feedback');
     }
   };
 
-  const checkAndCreateAlert = async (
-    messageId: string,
-    sessionId: string,
-    model: string,
-    comment?: string
-  ) => {
+  const getFeedbackMetrics = async (): Promise<FeedbackMetrics> => {
     try {
-      // Check if this session has multiple negative feedbacks
-      const { data: sessionFeedbacks } = await supabase
+      const { data } = await supabase
         .from('message_feedback')
-        .select('*')
-        .eq('session_id', sessionId)
-        .eq('helpful', false);
-
-      const severity = sessionFeedbacks && sessionFeedbacks.length >= 3 ? 'high' : 'medium';
-
-      // Create alert
-      await supabase
-        .from('feedback_alerts')
-        .insert({
-          message_id: messageId,
-          session_id: sessionId,
-          model: model,
-          alert_type: 'negative_feedback',
-          severity: severity,
-          comment: comment,
-          resolved: false
-        });
-    } catch (error) {
-      console.error('Error creating feedback alert:', error);
-    }
-  };
-
-  const getFeedback = async (filters?: FeedbackFilters): Promise<MessageFeedback[]> => {
-    setIsLoading(true);
-    
-    let query = supabase
-      .from('message_feedback')
-      .select('*')
-      .order('created_at', { ascending: false });
-
-    if (filters?.dateRange) {
-      query = query
-        .gte('created_at', filters.dateRange.start.toISOString())
-        .lte('created_at', filters.dateRange.end.toISOString());
-    }
-
-    if (filters?.model) {
-      query = query.eq('model', filters.model);
-    }
-
-    if (filters?.helpful !== undefined && filters?.helpful !== null) {
-      query = query.eq('helpful', filters.helpful);
-    }
-
-    if (filters?.hasComment) {
-      query = query.not('comment', 'is', null);
-    }
-
-    if (filters?.sessionId) {
-      query = query.eq('session_id', filters.sessionId);
-    }
-
-    try {
-      const { data, error } = await query;
+        .select('helpful');
       
-      if (error) throw error;
-      
-      return data || [];
-    } catch (error) {
-      console.error('Error fetching feedback:', error);
-      toast({
-        title: "Erro",
-        description: "Não foi possível carregar os feedbacks.",
-        variant: "destructive",
-      });
-      return [];
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const getFeedbackMetrics = async (filters?: FeedbackFilters): Promise<FeedbackMetrics | null> => {
-    try {
-      const feedbacks = await getFeedback(filters);
-      
-      if (feedbacks.length === 0) {
-        return {
-          total_feedback: 0,
-          helpful_count: 0,
-          unhelpful_count: 0,
-          helpful_percentage: 0,
-          avg_rating: 0,
-          comment_count: 0
-        };
-      }
-
-      const helpful_count = feedbacks.filter(f => f.helpful).length;
-      const unhelpful_count = feedbacks.filter(f => !f.helpful).length;
-      const comment_count = feedbacks.filter(f => f.comment && f.comment.trim() !== '').length;
+      const total = data?.length || 0;
+      const positive = data?.filter(f => f.helpful).length || 0;
+      const negative = total - positive;
       
       return {
-        total_feedback: feedbacks.length,
-        helpful_count,
-        unhelpful_count,
-        helpful_percentage: (helpful_count / feedbacks.length) * 100,
-        avg_rating: helpful_count / feedbacks.length,
-        comment_count
+        totalFeedback: total,
+        positiveFeedback: positive,
+        negativeFeedback: negative,
+        satisfactionRate: total > 0 ? positive / total : 0
       };
     } catch (error) {
-      console.error('Error calculating metrics:', error);
-      return null;
+      console.error('Error getting feedback metrics:', error);
+      return {
+        totalFeedback: 0,
+        positiveFeedback: 0,
+        negativeFeedback: 0,
+        satisfactionRate: 0
+      };
     }
   };
 
   return {
+    feedbacks,
+    isLoading,
+    refetch: fetchFeedbacks,
     submitFeedback,
-    getFeedback,
-    getFeedbackMetrics,
-    isLoading
+    getFeedbackMetrics
   };
 }

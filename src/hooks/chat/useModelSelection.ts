@@ -1,46 +1,37 @@
-import { useState, useCallback, useEffect } from "react";
-import { LLMProvider } from "@/types/chat";
+import { useState, useCallback } from 'react';
+
+export type LLMProvider = 'openai' | 'anthropic' | 'google' | 'deepseek' | 'zhipuai';
+
+export interface ModelConfig {
+  name: string;
+  provider: LLMProvider;
+  displayName: string;
+  description: string;
+  contextWindow: number;
+  pricing: {
+    input: number;
+    output: number;
+  };
+}
 
 export function useModelSelection() {
-  // Recuperar modelo preferido do localStorage ou usar padrão
-  const getInitialModel = (): LLMProvider => {
+  const [selectedModel, setSelectedModel] = useState<LLMProvider>('openai');
+  const [isLoading, setIsLoading] = useState(false);
+
+  const switchModel = useCallback(async (provider: LLMProvider) => {
+    setIsLoading(true);
     try {
-      const savedModel = localStorage.getItem('preferredModel');
-      if (savedModel) {
-        return savedModel as LLMProvider;
-      }
+      setSelectedModel(provider);
     } catch (error) {
-      console.error("Error accessing localStorage:", error);
+      console.error('Error switching model:', error);
+    } finally {
+      setIsLoading(false);
     }
-    return "openai/gpt-3.5-turbo";
-  };
-
-  const [selectedModel, setSelectedModel] = useState<LLMProvider>(getInitialModel);
-
-  const handleModelSelect = useCallback((model: LLMProvider) => {
-    setSelectedModel(model);
-    // Salvar no localStorage para persistência
-    try {
-      localStorage.setItem('preferredModel', model);
-    } catch (error) {
-      console.error("Error saving to localStorage:", error);
-    }
-  }, []);
-
-  // Sincronizar com mudanças no localStorage (útil se múltiplas abas)
-  useEffect(() => {
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === 'preferredModel' && e.newValue) {
-        setSelectedModel(e.newValue as LLMProvider);
-      }
-    };
-
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
   return {
     selectedModel,
-    handleModelSelect,
+    isLoading,
+    switchModel
   };
 }
