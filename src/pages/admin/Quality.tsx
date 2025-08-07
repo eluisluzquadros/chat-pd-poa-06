@@ -3,10 +3,14 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { QAErrorAnalysis } from '@/components/admin/QAErrorAnalysis';
 import { QAModelComparison } from '@/components/admin/QAModelComparison';
 import { QAKnowledgeGaps } from '@/components/admin/QAKnowledgeGaps';
+import { QAExecutionHistory } from '@/components/admin/QAExecutionHistory';
+import { ValidationOptionsDialog } from '@/components/admin/ValidationOptionsDialog';
+import { RefreshCw } from 'lucide-react';
 
 export default function Quality() {
   const [metrics, setMetrics] = useState({
@@ -70,6 +74,21 @@ export default function Quality() {
 
   return (
     <div className="space-y-6">
+      {/* Header with actions */}
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-2xl font-bold">Dashboard de Qualidade QA</h1>
+          <p className="text-muted-foreground">Monitore e execute validações de qualidade do sistema</p>
+        </div>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={fetchMetrics} size="sm">
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Atualizar
+          </Button>
+          <ValidationOptionsDialog onValidationComplete={fetchMetrics} />
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -128,12 +147,17 @@ export default function Quality() {
         </Card>
       </div>
 
-      <Tabs defaultValue="analysis" className="space-y-4">
+      <Tabs defaultValue="execution" className="space-y-4">
         <TabsList>
+          <TabsTrigger value="execution">Histórico de Execuções</TabsTrigger>
           <TabsTrigger value="analysis">Análise de Erros</TabsTrigger>
           <TabsTrigger value="comparison">Comparação</TabsTrigger>
           <TabsTrigger value="gaps">Gaps de Conhecimento</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="execution" className="space-y-4">
+          <QAExecutionHistory />
+        </TabsContent>
 
         <TabsContent value="analysis" className="space-y-4">
           <QAErrorAnalysis />
