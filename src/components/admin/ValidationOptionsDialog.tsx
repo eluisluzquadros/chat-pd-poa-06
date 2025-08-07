@@ -12,6 +12,7 @@ import { Play, Settings } from 'lucide-react';
 import { useQAValidator } from '@/hooks/useQAValidator';
 import { supabase } from '@/integrations/supabase/client';
 import { Progress } from '@/components/ui/progress';
+import { UPDATED_MODEL_CONFIGS } from '@/config/llm-models-2025';
 
 interface ValidationOptions {
   model: string;
@@ -31,7 +32,7 @@ interface ValidationOptionsDialogProps {
 export function ValidationOptionsDialog({ onValidationComplete }: ValidationOptionsDialogProps) {
   const [open, setOpen] = useState(false);
   const [options, setOptions] = useState<ValidationOptions>({
-    model: 'agentic-rag',
+    model: 'anthropic/claude-3-5-sonnet-20241022',
     mode: 'all',
     includeSQL: true,
     excludeSQL: false
@@ -43,13 +44,13 @@ export function ValidationOptionsDialog({ onValidationComplete }: ValidationOpti
   
   const { runValidation, isRunning, progress } = useQAValidator();
 
-  const models = [
-    { value: 'agentic-rag', label: 'Agentic RAG (Padrão)' },
-    { value: 'claude-chat', label: 'Claude Chat' },
-    { value: 'gemini-chat', label: 'Gemini Chat' },
-    { value: 'deepseek-chat', label: 'DeepSeek Chat' },
-    { value: 'groq-chat', label: 'Groq Chat' }
-  ];
+  const models = UPDATED_MODEL_CONFIGS.filter(config => config.available).map(config => ({
+    value: `${config.provider}/${config.model}`,
+    label: config.displayName,
+    provider: config.provider,
+    model: config.model,
+    cost: config.costPerInputToken + config.costPerOutputToken
+  }));
 
   // Fetch available categories and difficulties
   useEffect(() => {

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { QAValidator } from "@/lib/qaValidator";
 import { supabase } from "@/integrations/supabase/client";
+import { multiLLMService } from "@/services/multiLLMService";
 import { toast } from "sonner";
 
 interface ValidationProgress {
@@ -19,10 +20,22 @@ export function useQAValidator() {
     setProgress({ current: 0, total: 0, percentage: 0 });
 
     try {
-      // Run validation in a web worker or background process
-      const validator = QAValidator.getInstance();
-      const runId = await validator.runValidation(options);
+      // Use edge function for validation with proper model format
+      const { data, error } = await supabase.functions.invoke('qa-execute-validation-v2', {
+        body: {
+          model: options.model, // Now in format "provider/model"
+          mode: options.mode,
+          categories: options.categories,
+          difficulties: options.difficulties,
+          randomCount: options.randomCount,
+          includeSQL: options.includeSQL,
+          excludeSQL: options.excludeSQL
+        }
+      });
+
+      if (error) throw error;
       
+      const runId = data?.runId;
       setCurrentRunId(runId);
       
       // Monitor progress
