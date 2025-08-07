@@ -60,7 +60,7 @@ export function PaginatedDocumentList({
     errorMessage,
     loadMore,
     reset: resetInfinite
-  } = useInfiniteScroll<Document>();
+  } = useInfiniteScroll();
 
   // Update filters when props change
   useEffect(() => {
@@ -107,7 +107,7 @@ export function PaginatedDocumentList({
     
     if (newMode === 'infinite') {
       resetInfinite();
-      loadMore(loadMoreDocuments);
+      loadMore();
     }
   };
 
@@ -197,7 +197,7 @@ export function PaginatedDocumentList({
           <Button 
             onClick={paginationMode === 'infinite' ? () => {
               resetInfinite();
-              loadMore(loadMoreDocuments);
+              loadMore();
             } : refresh}
             variant="outline" 
             size="sm"
@@ -222,7 +222,7 @@ export function PaginatedDocumentList({
           message={paginationMode === 'infinite' ? errorMessage : error || 'Erro desconhecido'} 
           onRetry={paginationMode === 'infinite' ? () => {
             resetInfinite();
-            loadMore(loadMoreDocuments);
+            loadMore();
           } : refresh}
         />
       )}
@@ -294,10 +294,10 @@ export function PaginatedDocumentList({
               isLoading={infiniteLoading}
               isError={infiniteError}
               errorMessage={errorMessage}
-              onLoadMore={() => loadMore(loadMoreDocuments)}
+              onLoadMore={() => loadMore()}
               onRetry={() => {
                 resetInfinite();
-                loadMore(loadMoreDocuments);
+                loadMore();
               }}
               className="space-y-6"
             >

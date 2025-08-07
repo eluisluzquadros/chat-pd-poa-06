@@ -20,7 +20,7 @@ export default function Chat() {
     handleSelectSession,
     handleDeleteSession,
     selectedModel,
-    handleModelSelect,
+    switchModel,
   } = useChat();
 
   return (
@@ -49,7 +49,7 @@ export default function Chat() {
                 isLoading={chatLoading}
                 onNewChat={handleNewChat}
                 selectedModel={selectedModel}
-                onModelSelect={handleModelSelect}
+                onModelSelect={switchModel}
                 currentSessionId={currentSessionId}
               />
             </SidebarInset>
