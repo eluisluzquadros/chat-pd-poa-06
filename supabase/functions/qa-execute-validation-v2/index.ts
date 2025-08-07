@@ -225,9 +225,12 @@ serve(async (req) => {
               totalAccuracy += accuracy;
 
                 // Store detailed result in database with retry logic
+                const testCaseId = testCase.id.toString();
+                console.log(`[QA-VALIDATION-V2] Preparing result for test case ${testCaseId} (type: ${typeof testCase.id})`);
+                
                 const resultData = {
                   validation_run_id: runId,
-                  test_case_id: testCase.id.toString(), // Use numeric id converted to string
+                  test_case_id: testCaseId, // Ensure string type for TEXT column
                   model,
                   actual_answer: actualAnswer.substring(0, 2000),
                   is_correct: isCorrect,
@@ -282,9 +285,12 @@ serve(async (req) => {
               }
               
               // Save error result with retry logic
+              const testCaseId = testCase.id.toString();
+              console.log(`[QA-VALIDATION-V2] Preparing error result for test case ${testCaseId}`);
+              
               const errorData = {
                 validation_run_id: runId,
-                test_case_id: testCase.id.toString(), // Use numeric id converted to string
+                test_case_id: testCaseId, // Ensure string type for TEXT column
                 model,
                 actual_answer: '',
                 is_correct: false,

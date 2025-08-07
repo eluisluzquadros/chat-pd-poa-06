@@ -53,30 +53,62 @@ export function QAResultsDetailModal({
   const fetchResults = async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase
+      // Since test_case_id is now TEXT and qa_test_cases.id is integer, 
+      // we need to manually join the data instead of using foreign key relationship
+      const { data: resultsData, error: resultsError } = await supabase
         .from('qa_validation_results')
-        .select(`
-          *,
-          qa_test_cases (
-            id,
-            test_id,
-            question,
-            expected_answer,
-            category,
-            difficulty,
-            tags,
-            is_sql_related
-          )
-        `)
+        .select('*')
         .eq('validation_run_id', runId)
         .order('created_at', { ascending: false });
 
-      if (error) {
-        console.error('Error fetching detailed results:', error);
+      if (resultsError) {
+        console.error('Error fetching validation results:', resultsError);
         return;
       }
 
-      setResults((data as any[])?.filter(item => item.qa_test_cases && typeof item.qa_test_cases === 'object') || []);
+      if (!resultsData || resultsData.length === 0) {
+        setResults([]);
+        return;
+      }
+
+      // Get test case IDs, converting from text to integer
+      const testCaseIds = resultsData
+        .map(r => parseInt(r.test_case_id))
+        .filter(id => !isNaN(id));
+      
+      console.log('Fetching test cases for IDs:', testCaseIds);
+
+      // Fetch test case details separately
+      const { data: testCasesData, error: testCasesError } = await supabase
+        .from('qa_test_cases')
+        .select(`
+          id,
+          test_id,
+          question,
+          expected_answer,
+          category,
+          difficulty,
+          tags,
+          is_sql_related
+        `)
+        .in('id', testCaseIds);
+
+      if (testCasesError) {
+        console.error('Error fetching test cases:', testCasesError);
+        return;
+      }
+
+      // Manually join the data
+      const resultsWithTestCases = resultsData.map(result => {
+        const testCase = testCasesData?.find(tc => tc.id.toString() === result.test_case_id);
+        return {
+          ...result,
+          qa_test_cases: testCase || null
+        };
+      }).filter(item => item.qa_test_cases) as DetailedResult[];
+
+      console.log(`Fetched ${resultsWithTestCases.length} results with test case details`);
+      setResults(resultsWithTestCases);
     } catch (error) {
       console.error('Error in fetchResults:', error);
     } finally {
