@@ -12,6 +12,7 @@ import { QAExecutionHistory } from '@/components/admin/QAExecutionHistory';
 import { QATestCasesList } from '@/components/admin/QATestCasesList';
 import { QAModelDashboard } from '@/components/admin/QAModelDashboard';
 import { ValidationOptionsDialog } from '@/components/admin/ValidationOptionsDialog';
+import { MultiModelExecutionDialog } from '@/components/admin/MultiModelExecutionDialog';
 import { RefreshCw } from 'lucide-react';
 
 export default function Quality() {
@@ -88,6 +89,7 @@ export default function Quality() {
             Atualizar
           </Button>
           <ValidationOptionsDialog onValidationComplete={fetchMetrics} />
+          <MultiModelExecutionDialog />
         </div>
       </div>
 
