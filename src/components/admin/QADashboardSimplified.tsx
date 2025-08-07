@@ -27,15 +27,20 @@ interface QAValidationRun {
 interface QATestCase {
   id: string;
   test_id?: string;
-  question: string;
+  question?: string;
   query?: string;
   expected_answer: string;
   category: string;
   difficulty?: string;
   complexity?: string;
-  tags: string[];
-  is_active: boolean;
-  version: number;
+  tags?: string[];
+  is_active?: boolean;
+  version?: number;
+  is_sql_related?: boolean;
+  sql_complexity?: string;
+  expected_sql?: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 interface QAValidationResult {
