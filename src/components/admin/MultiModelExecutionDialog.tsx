@@ -9,6 +9,7 @@ import { useQAValidator } from '@/hooks/useQAValidator';
 import { Play, CheckCircle, XCircle, Clock } from 'lucide-react';
 import { toast } from 'sonner';
 import { UPDATED_MODEL_CONFIGS, ModelConfig } from '@/config/llm-models-2025';
+import { supabase } from '@/integrations/supabase/client';
 
 interface ModelDisplay extends ModelConfig {
   quality: number;
@@ -96,13 +97,9 @@ export function MultiModelExecutionDialog() {
     setExecutions(initialExecutions);
 
     try {
-      // Use the new batch execution function
-      const response = await fetch('/functions/v1/qa-batch-execution', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
+      // Use the new batch execution function via Supabase client
+      const { data: result, error } = await supabase.functions.invoke('qa-batch-execution', {
+        body: {
           models: selectedModels,
           options: {
             mode: 'random',
@@ -112,16 +109,14 @@ export function MultiModelExecutionDialog() {
             includeSQL: true,
             excludeSQL: false
           }
-        })
+        }
       });
 
-      if (!response.ok) {
-        throw new Error(`Batch execution failed: ${response.status}`);
+      if (error) {
+        throw new Error(`Batch execution failed: ${error.message}`);
       }
-
-      const result = await response.json();
       
-      if (result.success) {
+      if (result?.success) {
         // Update executions with real results
         const updatedExecutions: ExecutionStatus[] = selectedModels.map(model => {
           const modelResult = result.results.find((r: any) => r.model === model);
@@ -138,7 +133,7 @@ export function MultiModelExecutionDialog() {
         setExecutions(updatedExecutions);
         toast.success(`Execução concluída! ${result.summary.successfulModels}/${result.summary.totalModels} modelos executados com sucesso`);
       } else {
-        throw new Error(result.error || 'Batch execution failed');
+        throw new Error(result?.error || 'Batch execution failed');
       }
 
     } catch (error) {
