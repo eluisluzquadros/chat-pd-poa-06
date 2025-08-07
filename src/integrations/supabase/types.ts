@@ -127,6 +127,66 @@ export type Database = {
         }
         Relationships: []
       }
+      bairros_risco_desastre: {
+        Row: {
+          areas_criticas: string | null
+          bairro_nome: string
+          bairro_nome_normalizado: string | null
+          created_at: string | null
+          frequencia_anual: number | null
+          id: number
+          nivel_risco_deslizamento: number | null
+          nivel_risco_geral: number | null
+          nivel_risco_inundacao: number | null
+          observacoes: string | null
+          risco_alagamento: boolean | null
+          risco_deslizamento: boolean | null
+          risco_granizo: boolean | null
+          risco_inundacao: boolean | null
+          risco_vendaval: boolean | null
+          ultima_ocorrencia: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          areas_criticas?: string | null
+          bairro_nome: string
+          bairro_nome_normalizado?: string | null
+          created_at?: string | null
+          frequencia_anual?: number | null
+          id?: number
+          nivel_risco_deslizamento?: number | null
+          nivel_risco_geral?: number | null
+          nivel_risco_inundacao?: number | null
+          observacoes?: string | null
+          risco_alagamento?: boolean | null
+          risco_deslizamento?: boolean | null
+          risco_granizo?: boolean | null
+          risco_inundacao?: boolean | null
+          risco_vendaval?: boolean | null
+          ultima_ocorrencia?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          areas_criticas?: string | null
+          bairro_nome?: string
+          bairro_nome_normalizado?: string | null
+          created_at?: string | null
+          frequencia_anual?: number | null
+          id?: number
+          nivel_risco_deslizamento?: number | null
+          nivel_risco_geral?: number | null
+          nivel_risco_inundacao?: number | null
+          observacoes?: string | null
+          risco_alagamento?: boolean | null
+          risco_deslizamento?: boolean | null
+          risco_granizo?: boolean | null
+          risco_inundacao?: boolean | null
+          risco_vendaval?: boolean | null
+          ultima_ocorrencia?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       chat_history: {
         Row: {
           created_at: string
@@ -189,6 +249,79 @@ export type Database = {
         }
         Relationships: []
       }
+      document_chunks: {
+        Row: {
+          chunk_index: number
+          content: string
+          created_at: string | null
+          document_id: number | null
+          embedding: string | null
+          id: number
+          metadata: Json | null
+        }
+        Insert: {
+          chunk_index: number
+          content: string
+          created_at?: string | null
+          document_id?: number | null
+          embedding?: string | null
+          id?: number
+          metadata?: Json | null
+        }
+        Update: {
+          chunk_index?: number
+          content?: string
+          created_at?: string | null
+          document_id?: number | null
+          embedding?: string | null
+          id?: number
+          metadata?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "document_chunks_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "documents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      document_embeddings: {
+        Row: {
+          chunk_metadata: Json | null
+          content_chunk: string
+          created_at: string | null
+          document_id: number | null
+          embedding: string | null
+          id: number
+        }
+        Insert: {
+          chunk_metadata?: Json | null
+          content_chunk: string
+          created_at?: string | null
+          document_id?: number | null
+          embedding?: string | null
+          id?: number
+        }
+        Update: {
+          chunk_metadata?: Json | null
+          content_chunk?: string
+          created_at?: string | null
+          document_id?: number | null
+          embedding?: string | null
+          id?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "document_embeddings_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "documents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       document_metadata: {
         Row: {
           created_at: string | null
@@ -216,55 +349,44 @@ export type Database = {
         }
         Relationships: []
       }
-      document_rows: {
-        Row: {
-          dataset_id: string | null
-          id: number
-          row_data: Json | null
-          user_id: string | null
-        }
-        Insert: {
-          dataset_id?: string | null
-          id?: number
-          row_data?: Json | null
-          user_id?: string | null
-        }
-        Update: {
-          dataset_id?: string | null
-          id?: number
-          row_data?: Json | null
-          user_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "document_rows_dataset_id_fkey"
-            columns: ["dataset_id"]
-            isOneToOne: false
-            referencedRelation: "document_metadata"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       documents: {
         Row: {
           content: string | null
           embedding: string | null
+          file_name: string | null
+          file_path: string | null
           id: number
+          is_processed: boolean | null
+          is_public: boolean | null
           metadata: Json | null
+          title: string | null
+          type: string | null
           user_id: string | null
         }
         Insert: {
           content?: string | null
           embedding?: string | null
+          file_name?: string | null
+          file_path?: string | null
           id?: number
+          is_processed?: boolean | null
+          is_public?: boolean | null
           metadata?: Json | null
+          title?: string | null
+          type?: string | null
           user_id?: string | null
         }
         Update: {
           content?: string | null
           embedding?: string | null
+          file_name?: string | null
+          file_path?: string | null
           id?: number
+          is_processed?: boolean | null
+          is_public?: boolean | null
           metadata?: Json | null
+          title?: string | null
+          type?: string | null
           user_id?: string | null
         }
         Relationships: []
@@ -299,6 +421,102 @@ export type Database = {
           newsletter_opt_in?: boolean
           status?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      llm_metrics: {
+        Row: {
+          completion_tokens: number | null
+          cost: number | null
+          created_at: string
+          error_message: string | null
+          execution_time_ms: number | null
+          id: string
+          metadata: Json | null
+          model_name: string
+          prompt_tokens: number | null
+          provider: string | null
+          request_type: string | null
+          session_id: string | null
+          success: boolean | null
+          total_tokens: number | null
+          user_id: string | null
+        }
+        Insert: {
+          completion_tokens?: number | null
+          cost?: number | null
+          created_at?: string
+          error_message?: string | null
+          execution_time_ms?: number | null
+          id?: string
+          metadata?: Json | null
+          model_name: string
+          prompt_tokens?: number | null
+          provider?: string | null
+          request_type?: string | null
+          session_id?: string | null
+          success?: boolean | null
+          total_tokens?: number | null
+          user_id?: string | null
+        }
+        Update: {
+          completion_tokens?: number | null
+          cost?: number | null
+          created_at?: string
+          error_message?: string | null
+          execution_time_ms?: number | null
+          id?: string
+          metadata?: Json | null
+          model_name?: string
+          prompt_tokens?: number | null
+          provider?: string | null
+          request_type?: string | null
+          session_id?: string | null
+          success?: boolean | null
+          total_tokens?: number | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      llm_model_configs: {
+        Row: {
+          average_latency: number | null
+          capabilities: Json | null
+          cost_per_input_token: number
+          cost_per_output_token: number
+          created_at: string | null
+          id: number
+          is_active: boolean | null
+          max_tokens: number
+          model: string
+          provider: string
+          updated_at: string | null
+        }
+        Insert: {
+          average_latency?: number | null
+          capabilities?: Json | null
+          cost_per_input_token: number
+          cost_per_output_token: number
+          created_at?: string | null
+          id?: number
+          is_active?: boolean | null
+          max_tokens: number
+          model: string
+          provider: string
+          updated_at?: string | null
+        }
+        Update: {
+          average_latency?: number | null
+          capabilities?: Json | null
+          cost_per_input_token?: number
+          cost_per_output_token?: number
+          created_at?: string | null
+          id?: number
+          is_active?: boolean | null
+          max_tokens?: number
+          model?: string
+          provider?: string
+          updated_at?: string | null
         }
         Relationships: []
       }
@@ -337,6 +555,50 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      messages: {
+        Row: {
+          content: string
+          created_at: string | null
+          feedback: Json | null
+          id: string
+          metadata: Json | null
+          model: string | null
+          role: string
+          session_id: string | null
+          tokens_used: number | null
+        }
+        Insert: {
+          content: string
+          created_at?: string | null
+          feedback?: Json | null
+          id?: string
+          metadata?: Json | null
+          model?: string | null
+          role: string
+          session_id?: string | null
+          tokens_used?: number | null
+        }
+        Update: {
+          content?: string
+          created_at?: string | null
+          feedback?: Json | null
+          id?: string
+          metadata?: Json | null
+          model?: string | null
+          role?: string
+          session_id?: string | null
+          tokens_used?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "sessions"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       n8n_chat_histories: {
         Row: {
@@ -383,6 +645,66 @@ export type Database = {
           full_name?: string | null
           id?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      qa_automated_reports: {
+        Row: {
+          all_passed: boolean
+          created_at: string | null
+          critical_failures: number | null
+          id: string
+          results: Json
+          run_date: string
+          scenarios_tested: number
+        }
+        Insert: {
+          all_passed: boolean
+          created_at?: string | null
+          critical_failures?: number | null
+          id?: string
+          results: Json
+          run_date: string
+          scenarios_tested: number
+        }
+        Update: {
+          all_passed?: boolean
+          created_at?: string | null
+          critical_failures?: number | null
+          id?: string
+          results?: Json
+          run_date?: string
+          scenarios_tested?: number
+        }
+        Relationships: []
+      }
+      qa_benchmarks: {
+        Row: {
+          created_at: string | null
+          id: number
+          metadata: Json | null
+          results: Json
+          summaries: Json
+          timestamp: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: number
+          metadata?: Json | null
+          results: Json
+          summaries: Json
+          timestamp?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: number
+          metadata?: Json | null
+          results?: Json
+          summaries?: Json
+          timestamp?: string | null
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -468,63 +790,172 @@ export type Database = {
           test_case_id?: string
           version?: number
         }
-        Relationships: [
-          {
-            foreignKeyName: "qa_test_case_history_test_case_id_fkey"
-            columns: ["test_case_id"]
-            isOneToOne: false
-            referencedRelation: "qa_test_cases"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       qa_test_cases: {
         Row: {
           category: string
-          created_at: string
-          difficulty: string | null
-          expected_answer: string
+          complexity: string
+          created_at: string | null
+          expected_answer: string | null
+          expected_keywords: string[]
+          expected_response: string | null
           expected_sql: string | null
-          id: string
-          is_active: boolean
+          id: number
+          is_active: boolean | null
           is_sql_related: boolean | null
-          question: string
+          min_response_length: number | null
+          query: string
+          question: string | null
           sql_complexity: string | null
           tags: string[] | null
-          updated_at: string
+          test_id: string
+          updated_at: string | null
           version: number | null
         }
         Insert: {
           category: string
-          created_at?: string
-          difficulty?: string | null
-          expected_answer: string
+          complexity: string
+          created_at?: string | null
+          expected_answer?: string | null
+          expected_keywords: string[]
+          expected_response?: string | null
           expected_sql?: string | null
-          id?: string
-          is_active?: boolean
+          id?: number
+          is_active?: boolean | null
           is_sql_related?: boolean | null
-          question: string
+          min_response_length?: number | null
+          query: string
+          question?: string | null
           sql_complexity?: string | null
           tags?: string[] | null
-          updated_at?: string
+          test_id: string
+          updated_at?: string | null
           version?: number | null
         }
         Update: {
           category?: string
-          created_at?: string
-          difficulty?: string | null
-          expected_answer?: string
+          complexity?: string
+          created_at?: string | null
+          expected_answer?: string | null
+          expected_keywords?: string[]
+          expected_response?: string | null
           expected_sql?: string | null
-          id?: string
-          is_active?: boolean
+          id?: number
+          is_active?: boolean | null
           is_sql_related?: boolean | null
-          question?: string
+          min_response_length?: number | null
+          query?: string
+          question?: string | null
           sql_complexity?: string | null
           tags?: string[] | null
-          updated_at?: string
+          test_id?: string
+          updated_at?: string | null
           version?: number | null
         }
         Relationships: []
+      }
+      qa_test_cases_backup: {
+        Row: {
+          category: string | null
+          created_at: string | null
+          difficulty: string | null
+          expected_answer: string | null
+          expected_sql: string | null
+          id: string | null
+          is_active: boolean | null
+          is_sql_related: boolean | null
+          question: string | null
+          sql_complexity: string | null
+          tags: string[] | null
+          test_id: string | null
+          updated_at: string | null
+          version: number | null
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string | null
+          difficulty?: string | null
+          expected_answer?: string | null
+          expected_sql?: string | null
+          id?: string | null
+          is_active?: boolean | null
+          is_sql_related?: boolean | null
+          question?: string | null
+          sql_complexity?: string | null
+          tags?: string[] | null
+          test_id?: string | null
+          updated_at?: string | null
+          version?: number | null
+        }
+        Update: {
+          category?: string | null
+          created_at?: string | null
+          difficulty?: string | null
+          expected_answer?: string | null
+          expected_sql?: string | null
+          id?: string | null
+          is_active?: boolean | null
+          is_sql_related?: boolean | null
+          question?: string | null
+          sql_complexity?: string | null
+          tags?: string[] | null
+          test_id?: string | null
+          updated_at?: string | null
+          version?: number | null
+        }
+        Relationships: []
+      }
+      qa_token_usage: {
+        Row: {
+          created_at: string | null
+          estimated_cost: number | null
+          id: string
+          input_tokens: number
+          model: string
+          output_tokens: number
+          test_case_id: string | null
+          total_tokens: number
+          validation_run_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          estimated_cost?: number | null
+          id?: string
+          input_tokens: number
+          model: string
+          output_tokens: number
+          test_case_id?: string | null
+          total_tokens: number
+          validation_run_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          estimated_cost?: number | null
+          id?: string
+          input_tokens?: number
+          model?: string
+          output_tokens?: number
+          test_case_id?: string | null
+          total_tokens?: number
+          validation_run_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "qa_token_usage_validation_run_id_fkey"
+            columns: ["validation_run_id"]
+            isOneToOne: false
+            referencedRelation: "qa_validation_runs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "qa_token_usage_validation_run_id_fkey"
+            columns: ["validation_run_id"]
+            isOneToOne: false
+            referencedRelation: "qa_validation_token_stats"
+            referencedColumns: ["validation_run_id"]
+          },
+        ]
       }
       qa_validation_preferences: {
         Row: {
@@ -614,15 +1045,7 @@ export type Database = {
           test_case_id?: string
           validation_run_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "qa_validation_results_test_case_id_fkey"
-            columns: ["test_case_id"]
-            isOneToOne: false
-            referencedRelation: "qa_test_cases"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       qa_validation_runs: {
         Row: {
@@ -663,27 +1086,396 @@ export type Database = {
         }
         Relationships: []
       }
-      secrets: {
+      quality_alerts: {
         Row: {
-          created_at: string
+          created_at: string | null
           id: string
-          name: string
-          secret_value: string
-          updated_at: string
+          issues: Json
+          level: string
+          metrics: Json | null
+          resolved: boolean | null
+          resolved_at: string | null
         }
         Insert: {
-          created_at?: string
+          created_at?: string | null
           id?: string
-          name: string
-          secret_value: string
-          updated_at?: string
+          issues: Json
+          level: string
+          metrics?: Json | null
+          resolved?: boolean | null
+          resolved_at?: string | null
         }
         Update: {
-          created_at?: string
+          created_at?: string | null
           id?: string
+          issues?: Json
+          level?: string
+          metrics?: Json | null
+          resolved?: boolean | null
+          resolved_at?: string | null
+        }
+        Relationships: []
+      }
+      quality_metrics: {
+        Row: {
+          category: string | null
+          confidence: number | null
+          created_at: string | null
+          has_beta_message: boolean | null
+          has_table: boolean | null
+          has_valid_response: boolean | null
+          id: string
+          query: string
+          response: string | null
+          response_time: number
+          session_id: string
+        }
+        Insert: {
+          category?: string | null
+          confidence?: number | null
+          created_at?: string | null
+          has_beta_message?: boolean | null
+          has_table?: boolean | null
+          has_valid_response?: boolean | null
+          id?: string
+          query: string
+          response?: string | null
+          response_time: number
+          session_id: string
+        }
+        Update: {
+          category?: string | null
+          confidence?: number | null
+          created_at?: string | null
+          has_beta_message?: boolean | null
+          has_table?: boolean | null
+          has_valid_response?: boolean | null
+          id?: string
+          query?: string
+          response?: string | null
+          response_time?: number
+          session_id?: string
+        }
+        Relationships: []
+      }
+      query_cache: {
+        Row: {
+          category: string | null
+          confidence: number | null
+          created_at: string | null
+          hit_count: number | null
+          key: string
+          last_accessed: string | null
+          query: string
+          response: string
+          timestamp: string | null
+        }
+        Insert: {
+          category?: string | null
+          confidence?: number | null
+          created_at?: string | null
+          hit_count?: number | null
+          key: string
+          last_accessed?: string | null
+          query: string
+          response: string
+          timestamp?: string | null
+        }
+        Update: {
+          category?: string | null
+          confidence?: number | null
+          created_at?: string | null
+          hit_count?: number | null
+          key?: string
+          last_accessed?: string | null
+          query?: string
+          response?: string
+          timestamp?: string | null
+        }
+        Relationships: []
+      }
+      regime_urbanistico: {
+        Row: {
+          afastamento_frente: string | null
+          afastamento_fundos: string | null
+          afastamento_lateral: string | null
+          altura_maxima: number | null
+          area_maxima_quarteirao: string | null
+          area_minima_lote: number | null
+          area_minima_quarteirao: string | null
+          area_publica_equip_desmembramento_t1: string | null
+          area_publica_equip_desmembramento_t2: string | null
+          area_publica_equip_desmembramento_t3: string | null
+          area_publica_equip_fracionamento: string | null
+          area_publica_equip_loteamento: string | null
+          area_publica_viaria_desmembramento_t1: string | null
+          area_publica_viaria_desmembramento_t2: string | null
+          area_publica_viaria_desmembramento_t3: string | null
+          area_publica_viaria_fracionamento: string | null
+          area_publica_viaria_loteamento: string | null
+          bairro: string
+          coef_aproveitamento_basico: number | null
+          coef_aproveitamento_maximo: number | null
+          coef_basico_4d: string | null
+          coef_maximo_4d: string | null
+          comercio_atacadista_ia1: string | null
+          comercio_atacadista_ia2: string | null
+          comercio_atacadista_ia3: string | null
+          comercio_varejista_ia1: string | null
+          comercio_varejista_ia2: string | null
+          comercio_varejista_inocuo: string | null
+          created_at: string | null
+          enquadramento_desmembramento_t1: string | null
+          enquadramento_desmembramento_t2: string | null
+          enquadramento_desmembramento_t3: string | null
+          enquadramento_fracionamento: string | null
+          enquadramento_loteamento: string | null
+          face_maxima_quarteirao: string | null
+          fator_conversao_permeabilidade: string | null
+          id: number
+          industria_inocua: string | null
+          industria_interferencia_ambiental: string | null
+          modulo_fracionamento: string | null
+          nivel_controle_entretenimento: string | null
+          recuo_jardim: string | null
+          servico_ia1: string | null
+          servico_ia2: string | null
+          servico_ia3: string | null
+          servico_inocuo: string | null
+          taxa_permeabilidade_acima_1500: string | null
+          taxa_permeabilidade_ate_1500: string | null
+          testada_minima_lote: number | null
+          updated_at: string | null
+          zona: string
+        }
+        Insert: {
+          afastamento_frente?: string | null
+          afastamento_fundos?: string | null
+          afastamento_lateral?: string | null
+          altura_maxima?: number | null
+          area_maxima_quarteirao?: string | null
+          area_minima_lote?: number | null
+          area_minima_quarteirao?: string | null
+          area_publica_equip_desmembramento_t1?: string | null
+          area_publica_equip_desmembramento_t2?: string | null
+          area_publica_equip_desmembramento_t3?: string | null
+          area_publica_equip_fracionamento?: string | null
+          area_publica_equip_loteamento?: string | null
+          area_publica_viaria_desmembramento_t1?: string | null
+          area_publica_viaria_desmembramento_t2?: string | null
+          area_publica_viaria_desmembramento_t3?: string | null
+          area_publica_viaria_fracionamento?: string | null
+          area_publica_viaria_loteamento?: string | null
+          bairro: string
+          coef_aproveitamento_basico?: number | null
+          coef_aproveitamento_maximo?: number | null
+          coef_basico_4d?: string | null
+          coef_maximo_4d?: string | null
+          comercio_atacadista_ia1?: string | null
+          comercio_atacadista_ia2?: string | null
+          comercio_atacadista_ia3?: string | null
+          comercio_varejista_ia1?: string | null
+          comercio_varejista_ia2?: string | null
+          comercio_varejista_inocuo?: string | null
+          created_at?: string | null
+          enquadramento_desmembramento_t1?: string | null
+          enquadramento_desmembramento_t2?: string | null
+          enquadramento_desmembramento_t3?: string | null
+          enquadramento_fracionamento?: string | null
+          enquadramento_loteamento?: string | null
+          face_maxima_quarteirao?: string | null
+          fator_conversao_permeabilidade?: string | null
+          id?: number
+          industria_inocua?: string | null
+          industria_interferencia_ambiental?: string | null
+          modulo_fracionamento?: string | null
+          nivel_controle_entretenimento?: string | null
+          recuo_jardim?: string | null
+          servico_ia1?: string | null
+          servico_ia2?: string | null
+          servico_ia3?: string | null
+          servico_inocuo?: string | null
+          taxa_permeabilidade_acima_1500?: string | null
+          taxa_permeabilidade_ate_1500?: string | null
+          testada_minima_lote?: number | null
+          updated_at?: string | null
+          zona: string
+        }
+        Update: {
+          afastamento_frente?: string | null
+          afastamento_fundos?: string | null
+          afastamento_lateral?: string | null
+          altura_maxima?: number | null
+          area_maxima_quarteirao?: string | null
+          area_minima_lote?: number | null
+          area_minima_quarteirao?: string | null
+          area_publica_equip_desmembramento_t1?: string | null
+          area_publica_equip_desmembramento_t2?: string | null
+          area_publica_equip_desmembramento_t3?: string | null
+          area_publica_equip_fracionamento?: string | null
+          area_publica_equip_loteamento?: string | null
+          area_publica_viaria_desmembramento_t1?: string | null
+          area_publica_viaria_desmembramento_t2?: string | null
+          area_publica_viaria_desmembramento_t3?: string | null
+          area_publica_viaria_fracionamento?: string | null
+          area_publica_viaria_loteamento?: string | null
+          bairro?: string
+          coef_aproveitamento_basico?: number | null
+          coef_aproveitamento_maximo?: number | null
+          coef_basico_4d?: string | null
+          coef_maximo_4d?: string | null
+          comercio_atacadista_ia1?: string | null
+          comercio_atacadista_ia2?: string | null
+          comercio_atacadista_ia3?: string | null
+          comercio_varejista_ia1?: string | null
+          comercio_varejista_ia2?: string | null
+          comercio_varejista_inocuo?: string | null
+          created_at?: string | null
+          enquadramento_desmembramento_t1?: string | null
+          enquadramento_desmembramento_t2?: string | null
+          enquadramento_desmembramento_t3?: string | null
+          enquadramento_fracionamento?: string | null
+          enquadramento_loteamento?: string | null
+          face_maxima_quarteirao?: string | null
+          fator_conversao_permeabilidade?: string | null
+          id?: number
+          industria_inocua?: string | null
+          industria_interferencia_ambiental?: string | null
+          modulo_fracionamento?: string | null
+          nivel_controle_entretenimento?: string | null
+          recuo_jardim?: string | null
+          servico_ia1?: string | null
+          servico_ia2?: string | null
+          servico_ia3?: string | null
+          servico_inocuo?: string | null
+          taxa_permeabilidade_acima_1500?: string | null
+          taxa_permeabilidade_ate_1500?: string | null
+          testada_minima_lote?: number | null
+          updated_at?: string | null
+          zona?: string
+        }
+        Relationships: []
+      }
+      regime_urbanistico_backup: {
+        Row: {
+          altura_max_m: number | null
+          area_total_ha: number | null
+          bairro: string | null
+          ca_max: number | null
+          created_at: string | null
+          densidade_hab_ha: number | null
+          divisao_lote: boolean | null
+          domicilios: number | null
+          id: number | null
+          metadata: Json | null
+          populacao: number | null
+          quarteirao_padrao_m: number | null
+          quota_ideal_m2: number | null
+          recuo_fundos_m: number | null
+          recuo_jardim_m: number | null
+          recuo_lateral_m: number | null
+          remembramento: boolean | null
+          taxa_permeabilidade: number | null
+          to_base: number | null
+          to_max: number | null
+          updated_at: string | null
+          zona: string | null
+        }
+        Insert: {
+          altura_max_m?: number | null
+          area_total_ha?: number | null
+          bairro?: string | null
+          ca_max?: number | null
+          created_at?: string | null
+          densidade_hab_ha?: number | null
+          divisao_lote?: boolean | null
+          domicilios?: number | null
+          id?: number | null
+          metadata?: Json | null
+          populacao?: number | null
+          quarteirao_padrao_m?: number | null
+          quota_ideal_m2?: number | null
+          recuo_fundos_m?: number | null
+          recuo_jardim_m?: number | null
+          recuo_lateral_m?: number | null
+          remembramento?: boolean | null
+          taxa_permeabilidade?: number | null
+          to_base?: number | null
+          to_max?: number | null
+          updated_at?: string | null
+          zona?: string | null
+        }
+        Update: {
+          altura_max_m?: number | null
+          area_total_ha?: number | null
+          bairro?: string | null
+          ca_max?: number | null
+          created_at?: string | null
+          densidade_hab_ha?: number | null
+          divisao_lote?: boolean | null
+          domicilios?: number | null
+          id?: number | null
+          metadata?: Json | null
+          populacao?: number | null
+          quarteirao_padrao_m?: number | null
+          quota_ideal_m2?: number | null
+          recuo_fundos_m?: number | null
+          recuo_jardim_m?: number | null
+          recuo_lateral_m?: number | null
+          remembramento?: boolean | null
+          taxa_permeabilidade?: number | null
+          to_base?: number | null
+          to_max?: number | null
+          updated_at?: string | null
+          zona?: string | null
+        }
+        Relationships: []
+      }
+      secrets: {
+        Row: {
+          created_at: string | null
+          id: number
+          name: string
+          updated_at: string | null
+          value: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: number
+          name: string
+          updated_at?: string | null
+          value: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: number
           name?: string
-          secret_value?: string
-          updated_at?: string
+          updated_at?: string | null
+          value?: string
+        }
+        Relationships: []
+      }
+      sessions: {
+        Row: {
+          created_at: string | null
+          id: string
+          metadata: Json | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          metadata?: Json | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          metadata?: Json | null
+          updated_at?: string | null
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -767,6 +1559,95 @@ export type Database = {
         }
         Relationships: []
       }
+      user_feedback: {
+        Row: {
+          categories: string[] | null
+          comment: string | null
+          created_at: string | null
+          id: string
+          message_id: string | null
+          metadata: Json | null
+          rating: string | null
+          session_id: string | null
+        }
+        Insert: {
+          categories?: string[] | null
+          comment?: string | null
+          created_at?: string | null
+          id?: string
+          message_id?: string | null
+          metadata?: Json | null
+          rating?: string | null
+          session_id?: string | null
+        }
+        Update: {
+          categories?: string[] | null
+          comment?: string | null
+          created_at?: string | null
+          id?: string
+          message_id?: string | null
+          metadata?: Json | null
+          rating?: string | null
+          session_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_feedback_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "messages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_feedback_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_queries: {
+        Row: {
+          confidence_score: number | null
+          created_at: string | null
+          entities: Json | null
+          id: string
+          intent: string | null
+          normalized_query: string | null
+          query: string
+          session_id: string | null
+        }
+        Insert: {
+          confidence_score?: number | null
+          created_at?: string | null
+          entities?: Json | null
+          id?: string
+          intent?: string | null
+          normalized_query?: string | null
+          query: string
+          session_id?: string | null
+        }
+        Update: {
+          confidence_score?: number | null
+          created_at?: string | null
+          entities?: Json | null
+          id?: string
+          intent?: string | null
+          normalized_query?: string | null
+          query?: string
+          session_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_queries_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -791,8 +1672,193 @@ export type Database = {
         }
         Relationships: []
       }
+      zots_bairros: {
+        Row: {
+          bairro: string
+          created_at: string | null
+          id: number
+          tem_zona_especial: string | null
+          total_zonas_no_bairro: number | null
+          updated_at: string | null
+          zona: string
+        }
+        Insert: {
+          bairro: string
+          created_at?: string | null
+          id?: number
+          tem_zona_especial?: string | null
+          total_zonas_no_bairro?: number | null
+          updated_at?: string | null
+          zona: string
+        }
+        Update: {
+          bairro?: string
+          created_at?: string | null
+          id?: number
+          tem_zona_especial?: string | null
+          total_zonas_no_bairro?: number | null
+          updated_at?: string | null
+          zona?: string
+        }
+        Relationships: []
+      }
+      zots_bairros_backup: {
+        Row: {
+          bairro: string | null
+          created_at: string | null
+          id: number | null
+          tem_zona_especial: boolean | null
+          total_zonas_no_bairro: number | null
+          updated_at: string | null
+          zona: string | null
+        }
+        Insert: {
+          bairro?: string | null
+          created_at?: string | null
+          id?: number | null
+          tem_zona_especial?: boolean | null
+          total_zonas_no_bairro?: number | null
+          updated_at?: string | null
+          zona?: string | null
+        }
+        Update: {
+          bairro?: string | null
+          created_at?: string | null
+          id?: number | null
+          tem_zona_especial?: boolean | null
+          total_zonas_no_bairro?: number | null
+          updated_at?: string | null
+          zona?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
+      benchmark_analysis: {
+        Row: {
+          avg_cost_per_query: number | null
+          avg_quality_score: number | null
+          avg_response_time: number | null
+          model: string | null
+          provider: string | null
+          recommendation: string | null
+          success_rate: number | null
+          timestamp: string | null
+          total_cost: number | null
+        }
+        Relationships: []
+      }
+      cache_effectiveness: {
+        Row: {
+          active_last_hour: number | null
+          avg_hits_per_entry: number | null
+          categories: number | null
+          high_confidence_entries: number | null
+          total_entries: number | null
+          total_hits: number | null
+        }
+        Relationships: []
+      }
+      cost_projections: {
+        Row: {
+          avg_daily_cost: number | null
+          avg_daily_queries: number | null
+          avg_daily_tokens: number | null
+          avg_daily_users: number | null
+          avg_queries_per_user: number | null
+          projected_monthly_cost: number | null
+          projected_yearly_cost: number | null
+          user_projections: Json | null
+        }
+        Relationships: []
+      }
+      feedback_statistics: {
+        Row: {
+          comments_count: number | null
+          date: string | null
+          negative_feedback: number | null
+          positive_feedback: number | null
+          satisfaction_rate: number | null
+          total_feedback: number | null
+          unique_sessions: number | null
+        }
+        Relationships: []
+      }
+      model_feedback_stats: {
+        Row: {
+          comments_count: number | null
+          model: string | null
+          satisfaction_rate: number | null
+          total_feedback: number | null
+        }
+        Relationships: []
+      }
+      popular_queries: {
+        Row: {
+          category: string | null
+          confidence: number | null
+          hit_count: number | null
+          last_accessed: string | null
+          query: string | null
+          response: string | null
+          timestamp: string | null
+        }
+        Relationships: []
+      }
+      qa_quality_monitoring: {
+        Row: {
+          alert_status: string | null
+          hour: string | null
+          low_quality_runs: number | null
+          negative_feedback: number | null
+          positive_feedback: number | null
+          qa_accuracy: number | null
+          qa_runs: number | null
+          user_satisfaction_rate: number | null
+        }
+        Relationships: []
+      }
+      qa_validation_token_stats: {
+        Row: {
+          avg_cost_per_test: number | null
+          completed_at: string | null
+          model: string | null
+          overall_accuracy: number | null
+          passed_tests: number | null
+          started_at: string | null
+          total_estimated_cost: number | null
+          total_input_tokens: number | null
+          total_output_tokens: number | null
+          total_tests: number | null
+          total_tokens: number | null
+          validation_run_id: string | null
+        }
+        Relationships: []
+      }
+      quality_metrics_daily: {
+        Row: {
+          avg_confidence: number | null
+          avg_response_time: number | null
+          beta_rate: number | null
+          date: string | null
+          total_queries: number | null
+          unique_sessions: number | null
+          valid_response_rate: number | null
+        }
+        Relationships: []
+      }
+      quality_metrics_hourly: {
+        Row: {
+          avg_confidence: number | null
+          avg_response_time: number | null
+          beta_rate: number | null
+          category: string | null
+          hour: string | null
+          total_queries: number | null
+          unique_sessions: number | null
+        }
+        Relationships: []
+      }
       token_usage_summary: {
         Row: {
           message_count: number | null
@@ -820,13 +1886,53 @@ export type Database = {
         }
         Returns: boolean
       }
+      check_quality_thresholds: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          metric_name: string
+          current_value: number
+          threshold_value: number
+          status: string
+        }[]
+      }
+      clean_expired_cache: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       execute_sql_query: {
         Args: { query_text: string }
         Returns: Json
       }
+      get_best_model_for_query: {
+        Args: { query_type: string; priority?: string }
+        Returns: {
+          provider: string
+          model: string
+          score: number
+        }[]
+      }
       get_current_user_role: {
         Args: Record<PropertyKey, never>
         Returns: string
+      }
+      get_riscos_bairro: {
+        Args: { nome_bairro: string }
+        Returns: {
+          bairro: string
+          riscos_ativos: string[]
+          nivel_risco: number
+          descricao_riscos: string
+        }[]
+      }
+      get_session_feedback_summary: {
+        Args: { p_session_id: string }
+        Returns: {
+          total_messages: number
+          messages_with_feedback: number
+          positive_feedback: number
+          negative_feedback: number
+          satisfaction_rate: number
+        }[]
       }
       halfvec_avg: {
         Args: { "": number[] }
@@ -899,12 +2005,76 @@ export type Database = {
         Returns: undefined
       }
       match_documents: {
-        Args: { query_embedding: string; match_count?: number; filter?: Json }
+        Args:
+          | { query_embedding: string; match_count: number }
+          | { query_embedding: string; match_count?: number; filter?: Json }
+          | {
+              query_embedding: string
+              match_threshold?: number
+              match_count?: number
+            }
+        Returns: {
+          content_chunk: string
+          similarity: number
+          document_id: number
+          chunk_metadata: Json
+        }[]
+      }
+      match_embeddings: {
+        Args: {
+          query_embedding: string
+          match_threshold?: number
+          match_count?: number
+        }
         Returns: {
           id: number
+          document_id: number
           content: string
-          metadata: Json
           similarity: number
+        }[]
+      }
+      match_hierarchical_documents: {
+        Args: {
+          query_embedding: string
+          match_count: number
+          query_text?: string
+        }
+        Returns: {
+          content_chunk: string
+          similarity: number
+          chunk_metadata: Json
+          boosted_score: number
+          document_id: number
+        }[]
+      }
+      search_content_by_similarity: {
+        Args: { search_query: string; match_count?: number }
+        Returns: {
+          content: string
+          similarity: number
+          document_id: number
+        }[]
+      }
+      search_regime_urbanistico: {
+        Args: { search_bairro?: string; search_zona?: string }
+        Returns: {
+          id: number
+          bairro: string
+          zona: string
+          altura_maxima: number
+          coef_aproveitamento_basico: number
+          coef_aproveitamento_maximo: number
+          area_minima_lote: number
+          testada_minima_lote: number
+        }[]
+      }
+      search_zots_by_bairro: {
+        Args: { search_bairro: string }
+        Returns: {
+          bairro: string
+          zona: string
+          total_zonas_no_bairro: number
+          tem_zona_especial: string
         }[]
       }
       sparsevec_out: {
@@ -918,6 +2088,10 @@ export type Database = {
       sparsevec_typmod_in: {
         Args: { "": unknown[] }
         Returns: number
+      }
+      update_chunk_metadata: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
       }
       vector_avg: {
         Args: { "": number[] }
