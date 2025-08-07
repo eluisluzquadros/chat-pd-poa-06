@@ -10,6 +10,7 @@ import { QAModelComparison } from '@/components/admin/QAModelComparison';
 import { QAKnowledgeGaps } from '@/components/admin/QAKnowledgeGaps';
 import { QAExecutionHistory } from '@/components/admin/QAExecutionHistory';
 import { QATestCasesList } from '@/components/admin/QATestCasesList';
+import { QAModelDashboard } from '@/components/admin/QAModelDashboard';
 import { ValidationOptionsDialog } from '@/components/admin/ValidationOptionsDialog';
 import { RefreshCw } from 'lucide-react';
 
@@ -152,6 +153,7 @@ export default function Quality() {
         <TabsList>
           <TabsTrigger value="execution">Histórico de Execuções</TabsTrigger>
           <TabsTrigger value="testcases">Casos de Teste</TabsTrigger>
+          <TabsTrigger value="models">Dashboard de Modelos</TabsTrigger>
           <TabsTrigger value="analysis">Análise de Erros</TabsTrigger>
           <TabsTrigger value="comparison">Comparação</TabsTrigger>
           <TabsTrigger value="gaps">Gaps de Conhecimento</TabsTrigger>
@@ -163,6 +165,10 @@ export default function Quality() {
 
         <TabsContent value="testcases" className="space-y-4">
           <QATestCasesList />
+        </TabsContent>
+
+        <TabsContent value="models" className="space-y-4">
+          <QAModelDashboard />
         </TabsContent>
 
         <TabsContent value="analysis" className="space-y-4">

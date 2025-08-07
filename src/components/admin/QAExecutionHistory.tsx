@@ -72,20 +72,26 @@ export function QAExecutionHistory() {
       setDetailsLoading(true);
       const { data, error } = await supabase
         .from('qa_validation_results')
-        .select(`
-          *,
-          qa_test_cases (
-            question,
-            expected_answer,
-            category,
-            difficulty
-          )
-        `)
+        .select('*')
         .eq('validation_run_id', runId)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setRunResults(data || []);
+      
+      // Get test case details separately
+      const testCaseIds = data?.map(r => r.test_case_id).filter(Boolean) || [];
+      const { data: testCases } = await supabase
+        .from('qa_test_cases')
+        .select('id, question, expected_answer, category, difficulty')
+        .in('id', testCaseIds);
+
+      // Merge results with test case data
+      const enrichedResults = data?.map(result => ({
+        ...result,
+        test_case: testCases?.find(tc => tc.id === result.test_case_id)
+      })) || [];
+
+      setRunResults(enrichedResults);
     } catch (error) {
       console.error('Error fetching run details:', error);
     } finally {
