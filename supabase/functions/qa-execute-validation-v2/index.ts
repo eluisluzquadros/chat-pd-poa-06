@@ -49,6 +49,9 @@ serve(async (req) => {
     return new Response('ok', { headers: corsHeaders });
   }
 
+  const requestStartTime = Date.now();
+  let totalRunsCreated = 0;
+
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
@@ -64,6 +67,9 @@ serve(async (req) => {
       includeSQL = true,
       excludeSQL = false
     }: ValidationRequest = await req.json();
+
+    console.log(`[QA-VALIDATION-V2] Starting validation at ${new Date().toISOString()}`);
+    console.log(`[QA-VALIDATION-V2] Request params:`, { mode, models, randomCount, includeSQL, excludeSQL });
 
     console.log('Starting QA validation with options:', { mode, models, randomCount });
 
@@ -111,8 +117,11 @@ serve(async (req) => {
     const validationPromises = models.map(async (model) => {
       // Generate a valid UUID v4
       const runId = crypto.randomUUID();
+      totalRunsCreated++;
       
-      // Create validation run
+      console.log(`[QA-VALIDATION-V2] Creating validation run for model: ${model} with ID: ${runId}`);
+      
+      // Create validation run with proper error handling
       const { error: runError } = await supabase
         .from('qa_validation_runs')
         .insert({
@@ -127,8 +136,11 @@ serve(async (req) => {
         });
 
       if (runError) {
-        console.error(`Error creating validation run for ${model}:`, runError);
+        console.error(`[QA-VALIDATION-V2] CRITICAL: Error creating validation run for ${model}:`, runError);
+        throw new Error(`Failed to create validation run for ${model}: ${runError.message}`);
       }
+
+      console.log(`[QA-VALIDATION-V2] Successfully created validation run for ${model}`);
 
       // Execute tests for this model
       const results: TestResult[] = [];
@@ -136,18 +148,30 @@ serve(async (req) => {
       let totalResponseTime = 0;
       let totalAccuracy = 0;
 
-      // Process tests in batches to avoid overwhelming the system
-      const batchSize = 5;
+      // Process tests in batches to avoid overwhelming the system with better error handling
+      const batchSize = 3; // Reduced batch size for better error handling
+      let processedTests = 0;
+      console.log(`[QA-VALIDATION-V2] Processing ${casesToRun.length} tests for model ${model} in batches of ${batchSize}`);
+      
       for (let i = 0; i < casesToRun.length; i += batchSize) {
         const batch = casesToRun.slice(i, i + batchSize);
+        
+        console.log(`[QA-VALIDATION-V2] Processing batch ${Math.floor(i/batchSize) + 1}/${Math.ceil(casesToRun.length/batchSize)} for model ${model}`);
         
         const batchResults = await Promise.all(
           batch.map(async (testCase) => {
             const startTime = Date.now();
+            const testTimeout = 30000; // 30 second timeout per test
             
             try {
               // Always use agentic-rag endpoint which supports all models
               const endpoint = 'agentic-rag';
+              
+              console.log(`[QA-VALIDATION-V2] Testing case ${testCase.id} with model ${model}`);
+              
+              // Add timeout to the fetch request
+              const controller = new AbortController();
+              const timeoutId = setTimeout(() => controller.abort(), testTimeout);
               
               const response = await fetch(`${supabaseUrl}/functions/v1/${endpoint}`, {
                 method: 'POST',
@@ -157,11 +181,14 @@ serve(async (req) => {
                 },
                 body: JSON.stringify({
                   message: testCase.query || testCase.question,
-                  sessionId: `qa_validation_${model.replace('/', '_')}`,
+                  sessionId: `qa_validation_${model.replace('/', '_')}_${Date.now()}`,
                   model: model,
                   bypassCache: true // Force fresh results for validation
-                })
+                }),
+                signal: controller.signal
               });
+              
+              clearTimeout(timeoutId);
 
               const responseTime = Date.now() - startTime;
               totalResponseTime += responseTime;
@@ -197,24 +224,36 @@ serve(async (req) => {
               if (isCorrect) passedCount++;
               totalAccuracy += accuracy;
 
-                // Store detailed result in database
-                const { error: insertError } = await supabase
-                  .from('qa_validation_results')
-                  .insert({
-                    validation_run_id: runId,
-                    test_case_id: testCase.id.toString(),
-                    model,
-                    actual_answer: actualAnswer.substring(0, 2000),
-                    is_correct: isCorrect,
-                    accuracy_score: accuracy,
-                    response_time_ms: responseTime,
-                    error_type: isCorrect ? null : 'accuracy_below_threshold',
-                    error_details: isCorrect ? null : `Accuracy: ${(accuracy * 100).toFixed(1)}%`,
-                    created_at: new Date().toISOString()
-                  });
+                // Store detailed result in database with retry logic
+                const resultData = {
+                  validation_run_id: runId,
+                  test_case_id: testCase.id.toString(),
+                  model,
+                  actual_answer: actualAnswer.substring(0, 2000),
+                  is_correct: isCorrect,
+                  accuracy_score: accuracy,
+                  response_time_ms: responseTime,
+                  error_type: isCorrect ? null : 'accuracy_below_threshold',
+                  error_details: isCorrect ? null : `Accuracy: ${(accuracy * 100).toFixed(1)}%`,
+                  created_at: new Date().toISOString()
+                };
 
-                if (insertError) {
-                  console.error(`Error inserting result for test ${testCase.id}:`, insertError);
+                let insertSuccess = false;
+                for (let retry = 0; retry < 3; retry++) {
+                  const { error: insertError } = await supabase
+                    .from('qa_validation_results')
+                    .insert(resultData);
+
+                  if (!insertError) {
+                    insertSuccess = true;
+                    console.log(`[QA-VALIDATION-V2] Successfully saved result for test ${testCase.id}`);
+                    break;
+                  } else {
+                    console.error(`[QA-VALIDATION-V2] Error inserting result for test ${testCase.id} (attempt ${retry + 1}):`, insertError);
+                    if (retry === 2) {
+                      console.error(`[QA-VALIDATION-V2] CRITICAL: Failed to save result after 3 attempts for test ${testCase.id}`);
+                    }
+                  }
                 }
 
               return {
@@ -230,27 +269,43 @@ serve(async (req) => {
               };
 
             } catch (error) {
-              console.error(`Error testing case ${testCase.id} with ${model}:`, error);
+              console.error(`[QA-VALIDATION-V2] Error testing case ${testCase.id} with ${model}:`, error);
               
               const responseTime = Date.now() - startTime;
               
-              const { error: insertError } = await supabase
-                .from('qa_validation_results')
-                .insert({
-                  validation_run_id: runId,
-                  test_case_id: testCase.id.toString(),
-                  model,
-                  actual_answer: '',
-                  is_correct: false,
-                  accuracy_score: 0,
-                  response_time_ms: responseTime,
-                  error_type: 'execution_error',
-                  error_details: error.message,
-                  created_at: new Date().toISOString()
-                });
+              // Determine error type based on error message
+              let errorType = 'execution_error';
+              if (error.name === 'AbortError' || error.message.includes('timeout')) {
+                errorType = 'timeout_error';
+              } else if (error.message.includes('fetch')) {
+                errorType = 'network_error';
+              }
+              
+              // Save error result with retry logic
+              const errorData = {
+                validation_run_id: runId,
+                test_case_id: testCase.id.toString(),
+                model,
+                actual_answer: '',
+                is_correct: false,
+                accuracy_score: 0,
+                response_time_ms: responseTime,
+                error_type: errorType,
+                error_details: error.message.substring(0, 1000),
+                created_at: new Date().toISOString()
+              };
 
-              if (insertError) {
-                console.error(`Error inserting error result for test ${testCase.id}:`, insertError);
+              for (let retry = 0; retry < 3; retry++) {
+                const { error: insertError } = await supabase
+                  .from('qa_validation_results')
+                  .insert(errorData);
+
+                if (!insertError) {
+                  console.log(`[QA-VALIDATION-V2] Successfully saved error result for test ${testCase.id}`);
+                  break;
+                } else {
+                  console.error(`[QA-VALIDATION-V2] Error inserting error result for test ${testCase.id} (attempt ${retry + 1}):`, insertError);
+                }
               }
 
               return {
@@ -270,6 +325,14 @@ serve(async (req) => {
         );
         
         results.push(...batchResults);
+        processedTests += batch.length;
+        
+        console.log(`[QA-VALIDATION-V2] Completed batch for model ${model}: ${processedTests}/${casesToRun.length} tests processed`);
+        
+        // Add small delay between batches to avoid overwhelming the system
+        if (i + batchSize < casesToRun.length) {
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        }
       }
 
       // Update validation run with final results
@@ -283,6 +346,8 @@ serve(async (req) => {
       const completedAt = new Date().toISOString();
       
       // Always update to completed status, even if there were errors
+      console.log(`[QA-VALIDATION-V2] Finalizing run ${runId} for model ${model}: ${passedCount}/${casesToRun.length} passed, accuracy: ${(overallAccuracy * 100).toFixed(1)}%`);
+      
       const { error: updateError } = await supabase
         .from('qa_validation_runs')
         .update({
@@ -295,7 +360,18 @@ serve(async (req) => {
         .eq('id', runId);
         
       if (updateError) {
-        console.error(`Error updating validation run ${runId}:`, updateError);
+        console.error(`[QA-VALIDATION-V2] CRITICAL: Error updating validation run ${runId}:`, updateError);
+        // Try to mark as failed instead
+        await supabase
+          .from('qa_validation_runs')
+          .update({
+            status: 'failed',
+            error_message: `Failed to update run: ${updateError.message}`,
+            completed_at: completedAt
+          })
+          .eq('id', runId);
+      } else {
+        console.log(`[QA-VALIDATION-V2] Successfully completed validation run ${runId} for model ${model}`);
       }
 
       return {
@@ -312,29 +388,50 @@ serve(async (req) => {
       };
     });
 
-    // Wait for all models to complete
-    const allResults = await Promise.all(validationPromises);
+    console.log(`[QA-VALIDATION-V2] Waiting for all ${models.length} model validations to complete...`);
+    
+    // Wait for all models to complete with better error handling
+    const allResults = await Promise.allSettled(validationPromises);
+    
+    // Separate successful and failed results
+    const successfulResults = allResults
+      .filter(result => result.status === 'fulfilled')
+      .map(result => (result as PromiseFulfilledResult<any>).value);
+    
+    const failedResults = allResults
+      .filter(result => result.status === 'rejected')
+      .map(result => (result as PromiseRejectedResult).reason);
+    
+    if (failedResults.length > 0) {
+      console.error(`[QA-VALIDATION-V2] ${failedResults.length} model validations failed:`, failedResults);
+    }
 
-    // Calculate aggregate statistics
-    const totalRuns = allResults.length;
-    const avgAccuracy = allResults.reduce((sum, r) => sum + r.overallAccuracy, 0) / totalRuns;
-    const avgResponseTime = allResults.reduce((sum, r) => sum + r.avgResponseTime, 0) / totalRuns;
-    const totalTestsRun = allResults.reduce((sum, r) => sum + r.totalTests, 0);
-    const totalPassed = allResults.reduce((sum, r) => sum + r.passedTests, 0);
+    // Calculate aggregate statistics only from successful results
+    const totalRuns = successfulResults.length;
+    const avgAccuracy = totalRuns > 0 ? successfulResults.reduce((sum, r) => sum + r.overallAccuracy, 0) / totalRuns : 0;
+    const avgResponseTime = totalRuns > 0 ? successfulResults.reduce((sum, r) => sum + r.avgResponseTime, 0) / totalRuns : 0;
+    const totalTestsRun = successfulResults.reduce((sum, r) => sum + r.totalTests, 0);
+    const totalPassed = successfulResults.reduce((sum, r) => sum + r.passedTests, 0);
+    const executionTime = Date.now() - requestStartTime;
+
+    console.log(`[QA-VALIDATION-V2] Validation completed in ${executionTime}ms. Success: ${totalRuns}/${models.length} models, ${totalPassed}/${totalTestsRun} tests passed`);
 
     return new Response(
       JSON.stringify({
-        success: true,
-        runId: allResults.length === 1 ? allResults[0].runId : null, // For single model compatibility
+        success: totalRuns > 0, // Success if at least one model completed
+        runId: successfulResults.length === 1 ? successfulResults[0].runId : null, // For single model compatibility
         summary: {
           totalModels: totalRuns,
           totalTestsRun,
           totalPassed,
           avgAccuracy,
           avgResponseTime,
-          executionTime: Date.now() - Date.parse(allResults[0].startedAt)
+          executionTime,
+          failedModels: failedResults.length,
+          successfulModels: totalRuns
         },
-        runs: allResults
+        runs: successfulResults,
+        errors: failedResults.length > 0 ? failedResults.map(err => err.message) : undefined
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
