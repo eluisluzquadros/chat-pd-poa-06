@@ -83,12 +83,12 @@ export function QAExecutionHistory() {
       const { data: testCases } = await supabase
         .from('qa_test_cases')
         .select('id, question, expected_answer, category, difficulty')
-        .in('id', testCaseIds);
+        .in('id', testCaseIds.map(id => parseInt(id)));
 
       // Merge results with test case data
       const enrichedResults = data?.map(result => ({
         ...result,
-        test_case: testCases?.find(tc => tc.id === result.test_case_id)
+        test_case: testCases?.find(tc => tc.id.toString() === result.test_case_id)
       })) || [];
 
       setRunResults(enrichedResults);

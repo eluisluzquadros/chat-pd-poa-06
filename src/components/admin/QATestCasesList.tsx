@@ -67,7 +67,15 @@ export function QATestCasesList() {
 
       if (error) throw error;
 
-      setTestCases(data || []);
+      if (data) {
+        // Convert database response to match interface
+        const mappedData = data.map(item => ({
+          ...item,
+          id: item.id.toString(), // Convert number to string for interface compatibility
+          difficulty: item.difficulty || item.complexity || null
+        }));
+        setTestCases(mappedData as QATestCase[]);
+      }
     } catch (error) {
       console.error('Error fetching test cases:', error);
       toast.error('Erro ao carregar casos de teste');
@@ -111,7 +119,7 @@ export function QATestCasesList() {
       const { error } = await supabase
         .from('qa_test_cases')
         .update({ is_active: !currentStatus })
-        .eq('id', id);
+        .eq('id', parseInt(id)); // Convert string id back to number for query
 
       if (error) throw error;
 
@@ -130,7 +138,7 @@ export function QATestCasesList() {
       const { error } = await supabase
         .from('qa_test_cases')
         .delete()
-        .eq('id', id);
+        .eq('id', parseInt(id)); // Convert string id back to number for query
 
       if (error) throw error;
 

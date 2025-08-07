@@ -66,7 +66,8 @@ export class QAValidator {
       .eq('is_active', true);
 
     if (options.mode === 'selected' && options.testCaseIds?.length) {
-      query = query.in('id', options.testCaseIds);
+      const numericIds = options.testCaseIds.map(id => typeof id === 'string' ? parseInt(id) : id);
+      query = query.in('id', numericIds);
     }
 
     if (options.categories?.length) {

@@ -1,6 +1,6 @@
 // Unified QA types to prevent conflicts across components
 export interface QATestCase {
-  id: string;
+  id: string | number;
   test_id?: string;
   question?: string;
   query?: string;

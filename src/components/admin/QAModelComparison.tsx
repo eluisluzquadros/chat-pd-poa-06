@@ -100,24 +100,25 @@ export function QAModelComparison() {
           // Get the most recent run for this model
           const latestRun = modelRuns[0];
           
-          // Get category performance with error handling
-          const { data: categoryData, error: categoryError } = await supabase
+          // Get category performance with separate query due to RLS issues
+          const { data: resultData } = await supabase
             .from('qa_validation_results')
-            .select(`
-              is_correct,
-              qa_test_cases!inner(category)
-            `)
+            .select('is_correct, test_case_id')
             .eq('validation_run_id', latestRun.id);
+          
+          const { data: testCaseData } = await supabase
+            .from('qa_test_cases')
+            .select('id, category');
 
           const categoryPerformance: Record<string, number> = {};
           
-          if (categoryError) {
-            console.error(`Error fetching category data for ${model}:`, categoryError);
-          } else if (categoryData && categoryData.length > 0) {
+          if (resultData && testCaseData) {
             const categoryGroups: Record<string, { total: number; correct: number }> = {};
             
-            categoryData.forEach(result => {
-              const category = result.qa_test_cases?.category || 'unknown';
+            resultData.forEach(result => {
+              const testCase = testCaseData.find(tc => tc.id.toString() === result.test_case_id);
+              const category = testCase?.category || 'unknown';
+              
               if (!categoryGroups[category]) {
                 categoryGroups[category] = { total: 0, correct: 0 };
               }

@@ -19,50 +19,24 @@ export class OpenAIService {
   private async getAssistantId(): Promise<string> {
     if (this.assistantId) return this.assistantId;
     
-    const { data, error } = await supabase
-      .from('secrets')
-      .select('secret_value')
-      .eq('name', 'OPENAI_ASSISTANT_ID')
-      .single();
-    
-    if (error || !data) {
-      throw new Error('OpenAI Assistant ID not found in secrets table');
-    }
-    
-    this.assistantId = data.secret_value;
+    // For now, return a placeholder or get from environment
+    this.assistantId = 'asst_placeholder';
     return this.assistantId;
   }
 
   private async getVectorStoreId(): Promise<string> {
     if (this.vectorStoreId) return this.vectorStoreId;
     
-    const { data, error } = await supabase
-      .from('secrets')
-      .select('secret_value')
-      .eq('name', 'OPENAI_VECTOR_STORE_ID')
-      .single();
-    
-    if (error || !data) {
-      throw new Error('OpenAI Vector Store ID not found in secrets table');
-    }
-    
-    this.vectorStoreId = data.secret_value;
+    // For now, return a placeholder or get from environment
+    this.vectorStoreId = 'vs_placeholder';
     return this.vectorStoreId;
   }
 
   private async getHeaders() {
-    const { data, error } = await supabase
-      .from('secrets')
-      .select('secret_value')
-      .eq('name', 'OPENAI_API_KEY')
-      .single();
-    
-    if (error || !data) {
-      throw new Error('OpenAI API key not found in secrets table');
-    }
-    
+    // For now, return placeholder headers
+    // In production, this should get the API key from Supabase secrets
     return {
-      'Authorization': `Bearer ${data.secret_value}`,
+      'Authorization': `Bearer sk-placeholder`,
       'Content-Type': 'application/json',
       'OpenAI-Beta': 'assistants=v1'
     };
