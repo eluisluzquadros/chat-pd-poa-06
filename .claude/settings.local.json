@@ -30,6 +30,7 @@
       "Bash(rm:*)",
       "Bash(copy:*)",
       "Bash(ls:*)",
+      "Bash(source:*)",
       "Bash(npm ls:*)",
       "Bash(psql:*)",
       "Bash(dir:*)",
@@ -37,7 +38,23 @@
       "Bash(diff:*)",
       "Bash(npx:*)",
       "Bash(cat:*)",
-      "Bash(npm run validate-keys:*)"
+      "Bash(npm run validate-keys:*)",
+      "Bash(grep:*)",
+      "Bash(explorer test-add-case-browser.html:*)",
+      "Bash(start chrome \"file:///C:/Users/User/Documents/GitHub/chat-pd-poa-06/test-add-case-browser.html\")",
+      "Bash(start chrome \"file:///C:/Users/User/Documents/GitHub/chat-pd-poa-06/test-add-case-browser-v2.html\")",
+      "Bash(tree:*)",
+      "Bash(ruff:*)",
+      "Bash(touch:*)",
+      "Bash(chmod:*)",
+      "Bash(ruff check:*)",
+      "Bash(pytest:*)",
+      "Bash(python:*)",
+      "Bash(python -m pytest:*)",
+      "Bash(python3 -m pytest:*)",
+      "WebFetch(domain:*)",
+      "Bash(gh issue view:*)",
+      "WebFetch(domain:docs.anthropic.com)"
     ],
     "deny": []
   }

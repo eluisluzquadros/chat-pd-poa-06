@@ -7,16 +7,15 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
-import { X, Plus } from "lucide-react";
+import { X, Plus, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 interface AddTestCaseDialogProps {
   onTestCaseAdded: () => void;
 }
 
 export function AddTestCaseDialog({ onTestCaseAdded }: AddTestCaseDialogProps) {
-  const { toast } = useToast();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -51,58 +50,40 @@ export function AddTestCaseDialog({ onTestCaseAdded }: AddTestCaseDialogProps) {
     console.log('Form submitted with data:', formData, 'tags:', tags);
     
     if (!formData.question.trim() || !formData.expected_answer.trim() || !formData.category) {
-      toast({
-        title: "Erro",
-        description: "Preencha todos os campos obrigatórios",
-        variant: "destructive"
-      });
+      toast.error("Preencha todos os campos obrigatórios");
       return;
     }
 
     setLoading(true);
 
     try {
-      // Gerar test_id baseado na categoria e timestamp
-      const testId = `${formData.category}_${Date.now()}`;
+      // Usar Edge Function para contornar RLS
+      console.log('Calling Edge Function qa-add-test-case...');
       
-      // Converter expected_answer em keywords se necessário
-      const expectedKeywords = formData.expected_answer
-        .toLowerCase()
-        .split(/\s+/)
-        .filter(word => word.length > 3)
-        .slice(0, 10); // Pegar até 10 palavras-chave
-      
-      const { data, error } = await supabase
-        .from('qa_test_cases')
-        .insert({
-          test_id: testId,
-          query: formData.question.trim(),
-          expected_keywords: expectedKeywords,
-          expected_response: formData.expected_answer.trim(),
+      const { data, error } = await supabase.functions.invoke('qa-add-test-case', {
+        body: {
+          question: formData.question.trim(),
+          expected_answer: formData.expected_answer.trim(),
           category: formData.category,
-          complexity: formData.difficulty,
-          min_response_length: 50,
-          is_active: formData.is_active
-        })
-        .select();
+          difficulty: formData.difficulty, // A Edge Function fará o mapeamento para complexity
+          tags: tags.length > 0 ? tags : ['geral'],
+          is_active: formData.is_active,
+          is_sql_related: false
+        }
+      });
 
       if (error) {
-        console.error('Supabase error:', error);
-        
-        // Handle specific permission errors
-        if (error.code === '42501' || error.message.includes('permission denied') || error.message.includes('row-level security')) {
-          throw new Error('Você não tem permissão para criar casos de teste. Entre em contato com um administrador.');
-        }
-        
+        console.error('Edge Function error:', error);
         throw error;
+      }
+      
+      if (!data?.success) {
+        throw new Error(data?.error || 'Erro ao adicionar caso de teste');
       }
 
       console.log('Test case created successfully:', data);
 
-      toast({
-        title: "Sucesso",
-        description: "Caso de teste adicionado com sucesso!"
-      });
+      toast.success("Caso de teste adicionado com sucesso!");
       
       // Reset form
       setFormData({
@@ -120,11 +101,7 @@ export function AddTestCaseDialog({ onTestCaseAdded }: AddTestCaseDialogProps) {
     } catch (error) {
       console.error('Error adding test case:', error);
       const errorMessage = error instanceof Error ? error.message : "Erro ao adicionar caso de teste";
-      toast({
-        title: "Erro",
-        description: errorMessage,
-        variant: "destructive"
-      });
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -275,6 +252,7 @@ export function AddTestCaseDialog({ onTestCaseAdded }: AddTestCaseDialogProps) {
               Cancelar
             </Button>
             <Button type="submit" disabled={loading}>
+              {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {loading ? "Salvando..." : "Salvar Caso de Teste"}
             </Button>
           </div>

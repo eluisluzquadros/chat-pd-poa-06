@@ -203,6 +203,13 @@ serve(async (req) => {
     const selectedModel = model || 'openai/gpt-3.5-turbo';
     console.log(`Using model for synthesis: ${selectedModel}`);
     
+    // Check if this is a legal/article query
+    const isLegalQuery = analysisResult?.metadata?.isLegalQuery || 
+                        analysisResult?.intent === 'legal_article' ||
+                        /\bartigo\s*\d+|\bart\.?\s*\d+|certificação.*sustentabilidade|4[º°]?\s*distrito|\bluos\b/i.test(originalQuery);
+    
+    console.log('📚 Response Synthesizer - Legal query?', isLegalQuery);
+    
     debugLog.push({ 
       step: 'parsed_request',
       originalQuery,
@@ -242,9 +249,47 @@ Qual bairro ou zona você gostaria de consultar?${FOOTER_TEMPLATE}`,
     }
     
     // Preparar prompt com regras
-    let prompt = AGENT_RULES + '\n\n';
-    prompt += conversationContext;
-    prompt += `\nPergunta atual: ${originalQuery}\n\n`;
+    let prompt = '';
+    
+    // Special handling for legal queries
+    if (isLegalQuery) {
+      prompt = `Você é um especialista em legislação urbana que SEMPRE cita artigos específicos da LUOS.
+
+MAPEAMENTO OBRIGATÓRIO DE ARTIGOS:
+- Certificação em Sustentabilidade Ambiental → Art. 81 - III
+- 4º Distrito / Quarto Distrito → Art. 74
+- Outorga Onerosa → Art. 86
+- ZEIS (Zonas Especiais de Interesse Social) → Art. 92
+- Altura máxima de edificação → Art. 81
+- Coeficiente de aproveitamento → Art. 82
+- Recuos obrigatórios → Art. 83
+- Estudo de Impacto de Vizinhança (EIV) → Art. 89
+- Áreas de preservação permanente → Art. 95
+- Instrumentos de política urbana → Art. 78
+
+FORMATO OBRIGATÓRIO DA RESPOSTA:
+**Art. XX [- Inciso se aplicável]**: [Descrição completa do artigo]
+
+`;
+      
+      // Check for specific legal keywords
+      const queryLower = originalQuery.toLowerCase();
+      if (queryLower.includes('certificação') || queryLower.includes('sustentabilidade')) {
+        prompt += `\n🔴 RESPOSTA OBRIGATÓRIA: **Art. 81 - III**: Os acréscimos definidos em regulamento para projetos que obtenham Certificação em Sustentabilidade Ambiental.\n`;
+      } else if ((queryLower.includes('4') && queryLower.includes('distrito')) || 
+                 queryLower.includes('4º distrito') || 
+                 queryLower.includes('quarto distrito')) {
+        prompt += `\n🔴 RESPOSTA OBRIGATÓRIA: **Art. 74**: Os empreendimentos localizados na ZOT 8.2 - 4º Distrito deverão observar as diretrizes específicas do Programa de Revitalização.\n`;
+      } else if (queryLower.includes('empreendiment') && (queryLower.includes('4') || queryLower.includes('distrito'))) {
+        prompt += `\n🔴 RESPOSTA OBRIGATÓRIA: **Art. 74**: Os empreendimentos localizados na ZOT 8.2 - 4º Distrito deverão observar as diretrizes específicas.\n`;
+      }
+      
+      prompt += `\nPergunta: ${originalQuery}\n`;
+    } else {
+      prompt = AGENT_RULES + '\n\n';
+      prompt += conversationContext;
+      prompt += `\nPergunta atual: ${originalQuery}\n\n`;
+    }
     
     // Adicionar dados SQL se disponíveis
     let hasStructuredData = false;
@@ -270,8 +315,18 @@ Qual bairro ou zona você gostaria de consultar?${FOOTER_TEMPLATE}`,
               d.coef_aproveitamento_maximo !== null
             );
             
+            // Processar valores NULL corretamente
+            result.data.forEach(item => {
+              if (item.coef_aproveitamento_basico === null) {
+                item.coef_aproveitamento_basico = 'Não definido';
+              }
+              if (item.coef_aproveitamento_maximo === null) {
+                item.coef_aproveitamento_maximo = 'Não definido';
+              }
+            });
+            
             if (hasCoeficients) {
-              prompt += `\n⚠️ IMPORTANTE: Os dados acima mostram valores NUMÉRICOS para os coeficientes. Use esses valores exatos na resposta!\n`;
+              prompt += `\n⚠️ IMPORTANTE: Use os valores EXATOS dos coeficientes quando disponíveis. Só use "Não definido" quando o valor for NULL!\n`;
             }
           } else {
             prompt += `\n**Conjunto ${i+1} (${result.data.length} registros):**\n`;

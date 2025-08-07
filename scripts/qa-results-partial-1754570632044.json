@@ -1,0 +1,302 @@
+[
+  {
+    "testId": 409,
+    "question": "O que muda na forma como Porto Alegre cuida dos seus espaços públicos?",
+    "category": "geral",
+    "response": "A forma como Porto Alegre cuida dos seus espaços públicos é determinada pelo Plano Diretor da cidade, que estabelece regras e diretrizes para o uso do solo urbano. Essas diretrizes incluem a definição de parâmetros como altura máxima, coeficiente de aproveitamento mínimo e máximo, entre outros.\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+    "success": true,
+    "executionTime": 5657,
+    "confidence": 0.7,
+    "passed": true
+  },
+  {
+    "testId": 410,
+    "question": "Como o Guaíba vai fazer mais parte da vida das pessoas com o novo Plano Diretor?",
+    "category": "conceitual",
+    "response": "Atualmente, o novo Plano Diretor de Porto Alegre não inclui medidas específicas para aumentar a integração do Guaíba na vida das pessoas. No entanto, existem diretrizes gerais que visam o desenvolvimento sustentável e a preservação ambiental, o que indiretamente pode impactar a relação das pessoas com o Guaíba.\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+    "success": true,
+    "executionTime": 7108,
+    "confidence": 0.7,
+    "passed": true
+  },
+  {
+    "testId": 411,
+    "question": "Como o novo Plano Diretor vai ajudar as pessoas a perderem menos tempo no trânsito?",
+    "category": "conceitual",
+    "response": "O novo Plano Diretor de Porto Alegre pode ajudar as pessoas a perderem menos tempo no trânsito através de diretrizes que promovem o adensamento urbano, a diversidade de usos do solo e a proximidade entre moradia, trabalho e serviços. Isso contribui para reduzir a necessidade de deslocamentos longos e frequentes, incentivando a mobilidade sustentável e a utilização de meios de transporte mais eficientes.\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+    "success": true,
+    "executionTime": 5092,
+    "confidence": 0.7,
+    "passed": true
+  },
+  {
+    "testId": 412,
+    "question": "O novo Plano Diretor ajuda mesmo a melhorar a mobilidade em Porto Alegre?",
+    "category": "conceitual",
+    "response": "O novo Plano Diretor de Porto Alegre busca melhorar a mobilidade na cidade através de diretrizes que incentivam o desenvolvimento de áreas mais adensadas e com diversidade de usos. Isso pode contribuir para reduzir a necessidade de deslocamento e promover a acessibilidade aos serviços básicos. Além disso, a integração entre o transporte público e a localização de empreendimentos é um dos focos do Plano Diretor.\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+    "success": true,
+    "executionTime": 4977,
+    "confidence": 0.7,
+    "passed": true
+  },
+  {
+    "testId": 413,
+    "question": "Como o novo Plano Diretor vai ajudar a reduzir o custo da moradia?",
+    "category": "conceitual",
+    "response": "O novo Plano Diretor de Porto Alegre contribui para a redução do custo da moradia através de medidas que visam a promoção de uma maior densidade urbana, o que pode favorecer a oferta de mais unidades habitacionais em uma mesma área, ajudando a reduzir os preços dos imóveis. Além disso, ao incentivar a diversidade de usos do solo e a ocupação de áreas próximas a transporte público, o Plano Diretor busca promover a acessibilidade e a redução da necessidade de deslocamentos, o que pode impactar positivamente nos custos de moradia.\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+    "success": true,
+    "executionTime": 4068,
+    "confidence": 0.7,
+    "passed": true
+  },
+  {
+    "testId": 414,
+    "question": "Como a simplificação das regras urbanísticas reduz o custo da habitação?",
+    "category": "habitacao",
+    "response": "A simplificação das regras urbanísticas pode reduzir o custo da habitação ao tornar o processo de construção mais eficiente e menos burocrático. Isso pode resultar em redução de custos para os empreendimentos, o que pode impactar positivamente no preço final dos imóveis.\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+    "success": true,
+    "executionTime": 4477,
+    "confidence": 0.7,
+    "passed": true
+  },
+  {
+    "testId": 415,
+    "question": "Onde a moradia vai ficar mais acessível com o novo Plano Diretor?",
+    "category": "conceitual",
+    "response": "No novo Plano Diretor de Porto Alegre, a moradia mais acessível estará nas seguintes zonas:\n\n1. **Zona de Ocupação Transitória (ZOT) 03**:\n   - Altura máxima: 25 metros\n   - Coeficiente de aproveitamento mínimo (CA básico): 1.5\n   - Coeficiente de aproveitamento máximo (CA máximo): 2.0\n\n2. **Zona de Ocupação Transitória (ZOT) 05**:\n   - Altura máxima: 25 metros\n   - Coeficiente de aproveitamento mínimo (CA básico): 1.5\n   - Coeficiente de aproveitamento máximo (CA máximo): 2.0\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+    "success": true,
+    "executionTime": 4493,
+    "confidence": 0.7,
+    "passed": true
+  },
+  {
+    "testId": 416,
+    "question": "Como o novo Plano Diretor vai preparar Porto Alegre para os efeitos das mudanças climáticas?",
+    "category": "conceitual",
+    "response": "O novo Plano Diretor de Porto Alegre inclui medidas para lidar com os efeitos das mudanças climáticas, visando tornar a cidade mais resiliente e sustentável. Entre as diretrizes relacionadas a esse tema, destacam-se a promoção de áreas verdes, incentivo à drenagem urbana sustentável e ações para redução do impacto ambiental das construções.\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+    "success": true,
+    "executionTime": 3737,
+    "confidence": 0.7,
+    "passed": true
+  },
+  {
+    "testId": 417,
+    "question": "O novo Plano Diretor ajuda a reduzir as emissões que causam as mudanças climáticas?",
+    "category": "conceitual",
+    "response": "O novo Plano Diretor de Porto Alegre tem como objetivo contribuir para a redução das emissões que causam as mudanças climáticas por meio de diretrizes urbanísticas que promovem a sustentabilidade ambiental. Para isso, são estabelecidos parâmetros que incentivam a construção de edifícios mais eficientes e a utilização racional do solo urbano.\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+    "success": true,
+    "executionTime": 4810,
+    "confidence": 0.7,
+    "passed": true
+  },
+  {
+    "testId": 418,
+    "question": "Como o novo Plano Diretor ajuda Porto Alegre a atrair investimentos e gerar desenvolvimento?",
+    "category": "conceitual",
+    "response": "O novo Plano Diretor de Porto Alegre contribui para atrair investimentos e gerar desenvolvimento na cidade através de regras claras e atualizadas que promovem um ambiente favorável para o crescimento urbano sustentável. Alguns dos benefícios que ajudam nesse sentido incluem:\n\n1. **Zoneamento e Aproveitamento do Solo**:\n   - **Zona A**: \n     - Altura máxima: 36 metros\n     - CA básico: 2.0\n     - CA máximo: 4.0\n\n   - **Zona B**:\n     - Altura máxima: 24 metros\n     - CA básico: 1.5\n     - CA máximo: 2.5\n\n2. **Incentivo à Verticalização**:\n   - Permitindo maior altura e coeficiente de aproveitamento em áreas estratégicas, favorecendo o uso mais eficiente do solo urbano.\n\n3. **Estímulo à Renovação Urbana**:\n   - Incentivando a requalificação de áreas degradadas e subutilizadas, possibilitando a revitalização de regiões e atração de novos investimentos.\n\nEssas diretrizes do Plano Diretor proporcionam segurança jurídica e previsibilidade para investidores e empreendedores, estimulando o crescimento econômico da cidade de forma sustentável e ordenada.\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+    "success": true,
+    "executionTime": 5508,
+    "confidence": 0.7,
+    "passed": true
+  },
+  {
+    "testId": 419,
+    "question": "Como o novo Plano Diretor garante que a cidade acompanhe suas transformações e tome decisões com base em dados?",
+    "category": "conceitual",
+    "response": "O novo Plano Diretor de Porto Alegre garante que a cidade acompanhe suas transformações e tome decisões com base em dados por meio de diretrizes e instrumentos que regulam o uso e ocupação do solo de forma sustentável e planejada. Isso é alcançado através de indicadores como altura máxima, coeficiente de aproveitamento mínimo e máximo, que são aplicados em diferentes zonas da cidade.\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+    "success": true,
+    "executionTime": 4310,
+    "confidence": 0.7,
+    "passed": true
+  },
+  {
+    "testId": 420,
+    "question": "Como o novo Plano Diretor garante que os recursos gerados pelo desenvolvimento urbano sejam bem aplicados?",
+    "category": "conceitual",
+    "response": "O novo Plano Diretor de Porto Alegre garante que os recursos gerados pelo desenvolvimento urbano sejam bem aplicados através de diretrizes e instrumentos que promovem o uso adequado do solo e a valorização das áreas urbanas. Isso é feito por meio de regulamentações que buscam equilibrar o crescimento da cidade com a qualidade de vida da população, a preservação ambiental e a eficiência na utilização dos recursos públicos.\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+    "success": true,
+    "executionTime": 4844,
+    "confidence": 0.7,
+    "passed": true
+  },
+  {
+    "testId": 421,
+    "question": "O plano está sendo conduzido em benefício do mercado imobiliário em detrimento da população?",
+    "category": "geral",
+    "response": "O Plano Diretor de Porto Alegre é uma ferramenta de planejamento urbano que busca equilibrar o desenvolvimento da cidade, considerando diversos aspectos, incluindo o mercado imobiliário e o bem-estar da população. Os parâmetros de altura e coeficientes de aproveitamento definidos para cada zona buscam garantir um crescimento ordenado e sustentável, sem favorecer exclusivamente o mercado imobiliário.\n\nℹ️ Em relação à pergunta sobre se o plano está sendo conduzido em benefício do mercado imobiliário em detrimento da população, é importante ressaltar que o objetivo do Plano Diretor é conciliar os interesses da cidade como um todo, promovendo um desenvolvimento que atenda às necessidades da população e ao mesmo tempo respeite as diretrizes urbanísticas estabelecidas.\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+    "success": true,
+    "executionTime": 4182,
+    "confidence": 0.7,
+    "passed": true
+  },
+  {
+    "testId": 422,
+    "question": "O processo é realmente participativo ou só formal?",
+    "category": "geral",
+    "response": "O processo de revisão do Plano Diretor de Porto Alegre é participativo, envolvendo a sociedade civil, instituições, órgãos públicos e demais interessados. Há espaços para contribuições, sugestões e participação nas audiências públicas, garantindo a transparência e a democracia na construção das diretrizes urbanísticas para a cidade.\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+    "success": true,
+    "executionTime": 4082,
+    "confidence": 0.7,
+    "passed": false
+  },
+  {
+    "testId": 423,
+    "question": "Quem ganha e quem perde com as 16 ZOTs e o novo zoneamento?",
+    "category": "zonas",
+    "response": "1. **Quem ganha com as 16 ZOTs e o novo zoneamento**:\n   - Proprietários de terrenos e imóveis em áreas com potencial de maior adensamento urbano.\n   - Setor imobiliário, que pode aproveitar melhor o potencial construtivo dos terrenos.\n   - Possíveis novos investidores interessados em empreendimentos imobiliários.\n   - A cidade como um todo, ao potencializar o desenvolvimento urbano de forma mais sustentável.\n\n2. **Quem perde com as 16 ZOTs e o novo zoneamento**:\n   - Residentes em áreas que possam sofrer alterações significativas no entorno, como aumento do gabarito de edificações.\n   - Comunidades que temem a descaracterização de bairros tradicionais.\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+    "success": true,
+    "executionTime": 4280,
+    "confidence": 0.7,
+    "passed": true
+  },
+  {
+    "testId": 424,
+    "question": "Os planos locais (zona Centro, 4º distrito, Ipiranga etc.) enfraquecem a consistência do Plano Diretor?",
+    "category": "zonas",
+    "response": "Os planos locais, como o 4º Distrito, não necessariamente enfraquecem a consistência do Plano Diretor, mas sim complementam e especificam diretrizes para áreas específicas dentro do município.\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+    "success": true,
+    "executionTime": 2469,
+    "confidence": 0.7,
+    "passed": true
+  },
+  {
+    "testId": 425,
+    "question": "O novo plano responde às enchentes de 2024 ou continua ignorando a necessidade de manutenção da infraestrutura de drenagem e diques?",
+    "category": "taxa_permeabilidade",
+    "response": "Desculpe, mas a minha programação como assistente virtual não me permite responder a perguntas sobre políticas públicas futuras ou avaliações sobre a eficácia de planos em relação a eventos hipotéticos. Posso te ajudar com informações sobre os indicadores de zoneamento e uso do solo de Porto Alegre. Se tiver alguma dúvida nesse sentido, por favor, me avise!\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+    "success": true,
+    "executionTime": 5005,
+    "confidence": 0.7,
+    "passed": false
+  },
+  {
+    "testId": 426,
+    "question": "O plano aborda o déficit habitacional e regularização de favelas?",
+    "category": "habitacao",
+    "response": "O Plano Diretor de Porto Alegre aborda sim o tema do déficit habitacional e a regularização de favelas. Esses temas são importantes para a promoção de políticas públicas de habitação e urbanismo inclusivos e sustentáveis.\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+    "success": true,
+    "executionTime": 5013,
+    "confidence": 0.7,
+    "passed": true
+  },
+  {
+    "testId": 427,
+    "question": "A revisão chega tarde demais: é eficaz após 5 anos de atraso e eventos críticos como enchentes?",
+    "category": "ambiental",
+    "response": "A revisão do Plano Diretor de Porto Alegre é um processo importante para guiar o desenvolvimento urbano de forma sustentável, considerando a realidade atual e futuras demandas da cidade. Em relação ao atraso de 5 anos e eventos críticos como enchentes, é fundamental ressaltar a importância de atualizar as diretrizes para promover um planejamento urbano mais eficaz e resiliente.\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+    "success": true,
+    "executionTime": 5119,
+    "confidence": 0.7,
+    "passed": true
+  },
+  {
+    "testId": 428,
+    "question": "Como saber se o Plano Diretor está funcionando? Existem metas mensuráveis?",
+    "category": "conceitual",
+    "response": "O monitoramento e avaliação do Plano Diretor de Porto Alegre são fundamentais para verificar se está funcionando adequadamente. Existem sim metas mensuráveis estabelecidas para acompanhar a eficácia do plano, tais como:\n\n1. Taxa de ocupação do solo\n2. Densidade demográfica\n3. Índice de verticalização\n4. Qualidade ambiental\n5. Acessibilidade e mobilidade urbana\n\nEsses indicadores são utilizados para acompanhar o desenvolvimento da cidade e garantir que as diretrizes do Plano Diretor estejam sendo cumpridas de forma sustentável e equilibrada.\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+    "success": true,
+    "executionTime": 5630,
+    "confidence": 0.7,
+    "passed": true
+  },
+  {
+    "testId": 429,
+    "question": "O que muda no novo plano diretor de porto alegre?",
+    "category": "conceitual",
+    "response": "O novo Plano Diretor de Porto Alegre traz algumas mudanças significativas em relação ao plano anterior. Alguns dos pontos de destaque incluem:\n\n1. **Altura máxima**: 108 metros\n   **CA básico**: 4.0\n   **CA máximo**: 4.0\n\n2. **Altura máxima**: 72 metros\n   **CA básico**: 2.0\n   **CA máximo**: 2.0\n\n3. **Altura máxima**: Não disponível\n   **CA básico**: 1.5\n   **CA máximo**: 1.5\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+    "success": true,
+    "executionTime": 4090,
+    "confidence": 0.7,
+    "passed": false
+  },
+  {
+    "testId": 430,
+    "question": "Como o plano diretor de porto alegre trata as áreas de risco?",
+    "category": "conceitual",
+    "response": "O Plano Diretor de Porto Alegre trata das áreas de risco estabelecendo parâmetros urbanísticos específicos para garantir a segurança e a prevenção de desastres. Esses parâmetros podem variar de acordo com a localização da área de risco e as diretrizes estabelecidas para cada zona. Abaixo estão os indicadores básicos para algumas zonas de Porto Alegre:\n\n1. **Zona de Ocupação Transitória 04 (ZOT 04) - Áreas de Risco**\n   - Altura máxima: Não disponível\n   - Coeficiente de aproveitamento mínimo (CA básico): 2.0\n   - Coeficiente de aproveitamento máximo (CA máximo): 4.0\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+    "success": true,
+    "executionTime": 5991,
+    "confidence": 0.7,
+    "passed": false
+  },
+  {
+    "testId": 431,
+    "question": "Como é feito o zoneamento na nova LUOS?",
+    "category": "zonas",
+    "response": "**Art. 78**: Define os instrumentos de política urbana a serem adotados no município.\n\n**Art. 81 - III**: Estabelece a certificação em sustentabilidade ambiental como um dos critérios para a concessão de incentivos fiscais.\n\n**Art. 74**: Regulamenta as diretrizes específicas para o 4º Distrito / Quarto Distrito.\n\n**Art. 86**: Discorre sobre a outorga onerosa do direito de construir.\n\n**Art. 92**: Define as Zonas Especiais de Interesse Social (ZEIS) e suas características.\n\n**Art. 81**: Estabelece a altura máxima de edificação nos diversos bairros e zonas do município.\n\n**Art. 82**: Define o coeficiente de aproveitamento como parâmetro para o uso e ocupação do solo.\n\n**Art. 83**: Regula os recuos obrigatórios a serem respeitados nas construções.\n\n**Art. 89**: Estabelece a obrigatoriedade do Estudo de Impacto de Vizinhança (EIV) em determinados empreendimentos.\n\n**Art. 95**: Delimita as áreas de preservação permanente no município.\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+    "success": true,
+    "executionTime": 4983,
+    "confidence": 0.7,
+    "passed": false
+  },
+  {
+    "testId": 432,
+    "question": "O que é o Plano Diretor Urbano Sustentável (PDUS)?",
+    "category": "conceitual",
+    "response": "O Plano Diretor Urbano Sustentável (PDUS) é um instrumento de política urbana que visa orientar o desenvolvimento e a ocupação do território de forma sustentável, considerando aspectos sociais, econômicos e ambientais. O PDUS tem como objetivo promover a melhoria da qualidade de vida da população, a redução das desigualdades urbanas, a preservação do meio ambiente e o desenvolvimento econômico equilibrado.\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+    "success": true,
+    "executionTime": 4800,
+    "confidence": 0.7,
+    "passed": true
+  },
+  {
+    "testId": 433,
+    "question": "O que pode ser construído no bairro Três Figueiras?",
+    "category": "bairros",
+    "response": "1. **ZOT 08.3 - C:**\n   - Altura máxima: 90 metros\n   - Coeficiente de aproveitamento mínimo (CA básico): Não disponível\n   - Coeficiente de aproveitamento máximo (CA máximo): Não disponível\n\n2. **ZOT 04:**\n   - Altura máxima: 18 metros\n   - Coeficiente de aproveitamento mínimo (CA básico): 2.0\n   - Coeficiente de aproveitamento máximo (CA máximo): 4.0\n\n3. **ZOT 07:**\n   - Altura máxima: 60 metros\n   - Coeficiente de aproveitamento mínimo (CA básico): Não disponível\n   - Coeficiente de aproveitamento máximo (CA máximo): Não disponível\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+    "success": true,
+    "executionTime": 12227,
+    "confidence": 0.9,
+    "passed": false
+  },
+  {
+    "testId": 434,
+    "question": "Quais as ZOT com coeficiente de aproveitamento maior do que 4?",
+    "category": "coeficiente_aproveitamento",
+    "response": "1. **ZOT 11**:\n   - Altura máxima: Não definida\n   - Coeficiente de aproveitamento mínimo (CA básico): Não definido\n   - Coeficiente de aproveitamento máximo (CA máximo): 5.0\n\n2. **ZOT 06**:\n   - Altura máxima: Não definida\n   - Coeficiente de aproveitamento mínimo (CA básico): Não definido\n   - Coeficiente de aproveitamento máximo (CA máximo): 5.0\n\n3. **ZOT 08.1 - B**:\n   - Altura máxima: Não definida\n   - Coeficiente de aproveitamento mínimo (CA básico): Não definido\n   - Coeficiente de aproveitamento máximo (CA máximo): 7.0\n\n4. **ZOT 08.1 - G**:\n   - Altura máxima: Não definida\n   - Coeficiente de aproveitamento mínimo (CA básico): Não definido\n   - Coeficiente de aproveitamento máximo (CA máximo): 6.0\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+    "success": true,
+    "executionTime": 9577,
+    "confidence": 0.9,
+    "passed": false
+  },
+  {
+    "testId": 435,
+    "question": "Como o novo Plano Diretor trata a Habitação de Interesse Social?",
+    "category": "habitacao",
+    "response": "O novo Plano Diretor de Porto Alegre aborda a Habitação de Interesse Social com políticas e diretrizes específicas para promover o acesso à moradia digna para a população de baixa renda. Algumas das principais medidas incluem a definição de áreas para habitação social, incentivos para produção de moradias de interesse social e parâmetros urbanísticos específicos para essas áreas.\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+    "success": true,
+    "executionTime": 4549,
+    "confidence": 0.7,
+    "passed": true
+  },
+  {
+    "testId": 436,
+    "question": "Como o Plano Diretor aborda as ZEIS (Zonas Especiais de Interesse Social)?",
+    "category": "zonas",
+    "response": "**Art. 92**: As Zonas Especiais de Interesse Social (ZEIS) são áreas destinadas à implementação de políticas públicas de habitação de interesse social, visando garantir o direito à moradia digna. Nessas zonas, são estabelecidas diretrizes específicas para promover a produção ou regularização de habitações de interesse social, com o objetivo de reduzir o déficit habitacional e promover a inclusão social.\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+    "success": true,
+    "executionTime": 3853,
+    "confidence": 0.7,
+    "passed": true
+  },
+  {
+    "testId": 437,
+    "question": "Como o novo Plano Diretor trata a regularização fundiária?",
+    "category": "conceitual",
+    "response": "O novo Plano Diretor de Porto Alegre aborda a regularização fundiária de forma a promover a regularização de assentamentos precários e irregulares, buscando garantir o direito à moradia digna e o acesso a serviços públicos essenciais.\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+    "success": true,
+    "executionTime": 4307,
+    "confidence": 0.7,
+    "passed": true
+  },
+  {
+    "testId": 438,
+    "question": "O que o plano prevê sobre a política ambiental do município?",
+    "category": "ambiental",
+    "response": "O Plano Diretor de Porto Alegre prevê a política ambiental do município através de diretrizes que visam a proteção, conservação e uso sustentável dos recursos naturais, bem como a promoção do desenvolvimento urbano de forma integrada e equilibrada com o meio ambiente.\n\n📍 **Explore mais:**\n• Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗\n• Contribua com sugestões: https://bit.ly/4o7AWqb ↗\n• Participe da Audiência Pública: https://bit.ly/4oefZKm ↗\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br",
+    "success": true,
+    "executionTime": 7219,
+    "confidence": 0.7,
+    "passed": false
+  }
+]

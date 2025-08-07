@@ -24,12 +24,12 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
 
 // Configurações otimizadas
 const CONFIG = {
-  BATCH_SIZE: 5, // Processar 5 testes por vez
-  TIMEOUT_MS: 30000, // 30 segundos por teste
-  RETRY_ATTEMPTS: 2, // Tentar 2 vezes em caso de erro
-  DELAY_BETWEEN_BATCHES: 2000, // 2 segundos entre lotes
+  BATCH_SIZE: 3, // Processar 3 testes por vez (reduzido para estabilidade)
+  TIMEOUT_MS: 45000, // 45 segundos por teste (aumentado)
+  RETRY_ATTEMPTS: 1, // Tentar 1 vez em caso de erro (reduzido)
+  DELAY_BETWEEN_BATCHES: 3000, // 3 segundos entre lotes
   SAVE_PARTIAL_RESULTS: true, // Salvar resultados parciais
-  MAX_CONCURRENT_TESTS: 3 // Máximo de testes simultâneos
+  MAX_CONCURRENT_TESTS: 2 // Máximo de testes simultâneos (reduzido)
 };
 
 // Análise de padrões de falha melhorada
@@ -100,10 +100,14 @@ class FailureAnalyzer {
   }
   
   extractCriticalKeywords(expected) {
+    if (!expected || typeof expected !== 'string') {
+      return [];
+    }
+    
     const keywords = [];
     
     // Extrair números (alturas, coeficientes)
-    const numbers = expected.match(/\d+/g);
+    const numbers = expected.match(/\d+(?:\.\d+)?/g);
     if (numbers) keywords.push(...numbers);
     
     // Extrair zonas
@@ -113,13 +117,23 @@ class FailureAnalyzer {
     // Extrair bairros importantes
     const neighborhoods = [
       'TRÊS FIGUEIRAS', 'PETRÓPOLIS', 'CENTRO HISTÓRICO', 
-      'AZENHA', 'CIDADE BAIXA', 'CRISTAL'
+      'AZENHA', 'CIDADE BAIXA', 'CRISTAL', 'MOINHOS DE VENTO',
+      'AUXILIADORA', 'MONT SERRAT', 'FLORESTA', 'INDEPENDÊNCIA',
+      'BOM FIM', 'SANTANA', 'FARROUPILHA', 'MENINO DEUS'
     ];
     for (const n of neighborhoods) {
-      if (expected.includes(n)) keywords.push(n);
+      if (expected && expected.toUpperCase().includes(n)) keywords.push(n);
     }
     
-    return keywords;
+    // Adicionar valores críticos de coeficientes
+    if (expected && expected.includes('coeficiente')) {
+      const coefValues = ['2.0', '2,0', '4.0', '4,0', '1.0', '1,0', '3.0', '3,0'];
+      coefValues.forEach(val => {
+        if (expected.includes(val)) keywords.push(val);
+      });
+    }
+    
+    return keywords.filter(k => k && k.length > 0);
   }
   
   categorizeFailure(testCase, result, response, expected) {

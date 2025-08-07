@@ -5,7 +5,7 @@ import { Progress } from "@/components/ui/progress";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle, TrendingUp, TrendingDown, Clock, CheckCircle } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { QADashboardWrapper } from "@/components/admin/QADashboardWrapper";
+import { QADashboardSimplified } from "@/components/admin/QADashboardSimplified";
 import { QAKnowledgeGaps } from "@/components/admin/QAKnowledgeGaps";
 import { QAErrorAnalysis } from "@/components/admin/QAErrorAnalysis";
 import { QAModelComparison } from "@/components/admin/QAModelComparison";
@@ -110,11 +110,10 @@ export default function Quality() {
 
         {!loading && !error && metrics && (
           <Tabs defaultValue="indicators" className="space-y-4">
-            <TabsList className="grid w-full grid-cols-7">
+            <TabsList className="grid w-full grid-cols-6">
               <TabsTrigger value="indicators">Indicadores</TabsTrigger>
               <TabsTrigger value="runs">Execuções</TabsTrigger>
               <TabsTrigger value="cases">Casos de Teste</TabsTrigger>
-              <TabsTrigger value="results">Resultados</TabsTrigger>
               <TabsTrigger value="errors">Análise de Erros</TabsTrigger>
               <TabsTrigger value="comparison">Comparação</TabsTrigger>
               <TabsTrigger value="knowledge-gaps">Gaps de Conhecimento</TabsTrigger>
@@ -236,15 +235,11 @@ export default function Quality() {
             </TabsContent>
             
             <TabsContent value="runs">
-              <QADashboardWrapper tab="runs" />
+              <QADashboardSimplified tab="runs" />
             </TabsContent>
             
             <TabsContent value="cases">
-              <QADashboardWrapper tab="cases" />
-            </TabsContent>
-            
-            <TabsContent value="results">
-              <QADashboardWrapper tab="results" />
+              <QADashboardSimplified tab="cases" />
             </TabsContent>
             
             <TabsContent value="errors">

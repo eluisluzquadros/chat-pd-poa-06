@@ -181,8 +181,9 @@ export function ValidationOptionsDialog({
             Opções de Validação QA
           </DialogTitle>
           <DialogDescription>
-            Configure como deseja executar a validação para o modelo <Badge variant="outline">{selectedModel}</Badge>
+            Configure como deseja executar a validação para o modelo
           </DialogDescription>
+          <Badge variant="outline" className="mt-2">{selectedModel}</Badge>
         </DialogHeader>
 
         <div className="space-y-6">

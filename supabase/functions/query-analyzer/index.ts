@@ -68,13 +68,63 @@ serve(async (req) => {
       }
     }
 
-    // Check for predefined objectives questions first
+    // Detect legal/article queries FIRST (highest priority)
+    const legalQueryPatterns = [
+      /\bartigo\s*\d+/i,
+      /\bart\.?\s*\d+/i,
+      /\binciso\s+[IVX]+/i,
+      /\bparágrafo\s*\d+/i,
+      /\b§\s*\d+/i,
+      /\bluos\b/i,
+      /\blei\s+(complementar\s+)?n[º°]?\s*\d+/i,
+      /certificação.*sustentabilidade/i,
+      /sustentabilidade.*ambiental/i,
+      /estudo.*impacto.*vizinhança/i,
+      /\beiv\b/i,
+      /outorga\s+onerosa/i,
+      /\bzeis\b/i,
+      /instrumentos.*política.*urbana/i,
+      /4[º°]?\s*distrito/i,
+      /quarto\s+distrito/i,
+      /empreendimento.*4[º°]?\s*distrito/i,
+      /regra.*4[º°]?\s*distrito/i
+    ];
+    
+    const queryLower = (query || '').toString().toLowerCase();
+    const isLegalQuery = legalQueryPatterns.some(pattern => pattern.test(query));
+    
+    // If it's a legal query, return immediately with specific handling
+    if (isLegalQuery) {
+      console.log('🎯 Query legal detectada:', query);
+      
+      const legalResponse: QueryAnalysisResponse = {
+        intent: 'legal_article' as any, // Using 'conceptual' but marking as legal
+        entities: {
+          parametros: ['artigo', 'lei', 'luos']
+        },
+        requiredDatasets: ['document_sections'],
+        confidence: 0.95,
+        strategy: 'unstructured_only', // Force document search
+        isConstructionQuery: false,
+        metadata: {
+          isLegalQuery: true,
+          queryType: 'legal_article'
+        } as any
+      };
+      
+      return new Response(JSON.stringify(legalResponse), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    
+    // Check for predefined objectives questions
     const objectivesKeywords = [
       'objetivos', 'objetivo', 'cinco principais', 'principais objetivos',
       'quais os objetivos', 'me fale sobre os objetivos', 'objetivos do plano diretor',
       'cinco principais objetivos', 'quais são os objetivos'
     ];
     
+    // Continue with original detection logic
     // Comprehensive synonym arrays for urban parameters
     const coeficienteAproveitamentoTerms = [
       'coeficiente de aproveitamento', 'ca', 'índice de aproveitamento', 'potencial construtivo',
@@ -134,7 +184,6 @@ serve(async (req) => {
       /\bzona\s+de\s+ordenamento/gi
     ];
     
-    const queryLower = (query || '').toString().toLowerCase();
     const hasObjectivesKeyword = objectivesKeywords.some(keyword => 
       queryLower.includes(keyword.toLowerCase())
     );

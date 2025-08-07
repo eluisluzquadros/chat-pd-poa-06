@@ -192,10 +192,73 @@ export function QADashboardWrapper({ tab }: QADashboardWrapperProps) {
   };
 
   const executeValidation = async (options: ValidationExecutionOptions) => {
-    // Implementation would be similar to QADashboard
-    // This is a simplified version for the wrapper
     setIsRunning(true);
+    const tempRunId = `temp-${Date.now()}`;
+    setCurrentRunId(tempRunId);
+    
     toast.info("Iniciando validação QA...");
+    
+    try {
+      // Chamar a Edge Function qa-execute-validation
+      const { data, error } = await supabase.functions.invoke('qa-execute-validation', {
+        body: {
+          mode: options.mode,
+          selectedIds: options.selectedIds,
+          categories: options.categories,
+          difficulties: options.difficulties,
+          randomCount: options.randomCount,
+          model: options.selectedModels?.[0] || 'agentic-rag'
+        }
+      });
+      
+      if (error) {
+        throw error;
+      }
+      
+      if (data?.runId) {
+        setCurrentRunId(data.runId);
+        
+        // Iniciar progresso
+        setValidationProgress({
+          current: 0,
+          total: data.totalTests || 10,
+          percentage: 0
+        });
+        
+        // Simular progresso enquanto a validação ocorre
+        const progressInterval = setInterval(() => {
+          setValidationProgress(prev => {
+            if (!prev) return null;
+            const newCurrent = Math.min(prev.current + 1, prev.total);
+            return {
+              current: newCurrent,
+              total: prev.total,
+              percentage: Math.round((newCurrent / prev.total) * 100)
+            };
+          });
+        }, 1000);
+        
+        // Limpar intervalo quando terminar
+        setTimeout(() => {
+          clearInterval(progressInterval);
+          setIsRunning(false);
+          setCurrentRunId(null);
+          if (validationProgress) {
+            setLastCompletedProgress(validationProgress);
+          }
+          setValidationProgress(null);
+          toast.success(`Validação QA concluída! ${data.passedTests}/${data.totalTests} testes passaram.`);
+          fetchData(); // Recarregar dados
+        }, Math.max(3000, data.totalTests * 500)); // Tempo baseado no número de testes
+      }
+      
+    } catch (error) {
+      console.error('Error executing validation:', error);
+      setIsRunning(false);
+      setCurrentRunId(null);
+      setValidationProgress(null);
+      toast.error("Erro ao executar validação");
+    }
   };
 
   const fetchRunResults = async (runId: string) => {

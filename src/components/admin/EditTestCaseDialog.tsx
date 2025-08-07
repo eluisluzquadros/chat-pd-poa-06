@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
-import { X, Save, History, Trash2 } from "lucide-react";
+import { X, Save, History, Trash2, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -93,30 +93,34 @@ export function EditTestCaseDialog({ testCase, open, onOpenChange, onTestCaseUpd
     setLoading(true);
 
     try {
-      const updateData: any = {
-        question: formData.question.trim(),
-        expected_answer: formData.expected_answer.trim(),
-        category: formData.category,
-        difficulty: formData.difficulty,
-        tags: tags,
-        is_active: formData.is_active,
-        is_sql_related: formData.is_sql_related
-      };
+      // Usar Edge Function para contornar RLS
+      console.log('Calling Edge Function qa-update-test-case...');
+      
+      const { data, error } = await supabase.functions.invoke('qa-update-test-case', {
+        body: {
+          id: testCase.id,
+          question: formData.question.trim(),
+          expected_answer: formData.expected_answer.trim(),
+          category: formData.category,
+          difficulty: formData.difficulty,
+          tags: tags.length > 0 ? tags : ['geral'],
+          is_active: formData.is_active,
+          is_sql_related: formData.is_sql_related,
+          expected_sql: formData.is_sql_related ? formData.expected_sql.trim() : null,
+          sql_complexity: formData.is_sql_related ? formData.sql_complexity : null
+        }
+      });
 
-      if (formData.is_sql_related) {
-        updateData.expected_sql = formData.expected_sql.trim();
-        updateData.sql_complexity = formData.sql_complexity;
-      } else {
-        updateData.expected_sql = null;
-        updateData.sql_complexity = null;
+      if (error) {
+        console.error('Edge Function error:', error);
+        throw error;
       }
-
-      const { error } = await supabase
-        .from('qa_test_cases')
-        .update(updateData)
-        .eq('id', testCase.id);
-
-      if (error) throw error;
+      
+      if (!data?.success) {
+        throw new Error(data?.error || 'Erro ao atualizar caso de teste');
+      }
+      
+      console.log('Test case updated successfully:', data);
 
       toast.success("Caso de teste atualizado com sucesso!");
       onOpenChange(false);
@@ -155,12 +159,23 @@ export function EditTestCaseDialog({ testCase, open, onOpenChange, onTestCaseUpd
     
     setLoading(true);
     try {
-      const { error } = await supabase
-        .from('qa_test_cases')
-        .delete()
-        .eq('id', testCase.id);
+      // Usar Edge Function para contornar RLS
+      console.log('Calling Edge Function qa-delete-test-case...');
+      
+      const { data, error } = await supabase.functions.invoke('qa-delete-test-case', {
+        body: {
+          id: testCase.id
+        }
+      });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Edge Function error:', error);
+        throw error;
+      }
+      
+      if (!data?.success) {
+        throw new Error(data?.error || 'Erro ao excluir caso de teste');
+      }
 
       toast.success("Caso de teste excluído com sucesso!");
       setShowDeleteConfirm(false);
@@ -168,7 +183,8 @@ export function EditTestCaseDialog({ testCase, open, onOpenChange, onTestCaseUpd
       onTestCaseUpdated();
     } catch (error) {
       console.error('Error deleting test case:', error);
-      toast.error("Erro ao excluir caso de teste");
+      const errorMessage = error instanceof Error ? error.message : "Erro ao excluir caso de teste";
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -351,6 +367,7 @@ export function EditTestCaseDialog({ testCase, open, onOpenChange, onTestCaseUpd
                 Cancelar
               </Button>
               <Button type="submit" disabled={loading}>
+                {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 {loading ? "Salvando..." : "Salvar Alterações"}
               </Button>
             </div>

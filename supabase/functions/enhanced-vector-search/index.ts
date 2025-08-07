@@ -26,6 +26,21 @@ serve(async (req) => {
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
+    
+    // Check if this is a legal/article query
+    const legalPatterns = [
+      /\bartigo\s*\d+/i,
+      /\bart\.?\s*\d+/i,
+      /certificação.*sustentabilidade/i,
+      /4[º°]?\s*distrito/i,
+      /\bluos\b/i,
+      /outorga\s+onerosa/i,
+      /\bzeis\b/i,
+      /estudo.*impacto.*vizinhança/i
+    ];
+    
+    const isLegalQuery = legalPatterns.some(p => p.test(message));
+    console.log('🔍 Vector search - Legal query?', isLegalQuery, 'Message:', message.substring(0, 100));
 
     // Initialize cache middleware for vector search
     const cacheMiddleware = createCacheMiddleware(
@@ -39,8 +54,36 @@ serve(async (req) => {
       }
     );
 
-    // Implementa busca fuzzy melhorada e expandida para queries de altura
+    // For legal queries, enhance the search terms
     let enhancedMessage = message;
+    
+    if (isLegalQuery) {
+      // Add legal-specific search terms
+      const legalEnhancements = [];
+      
+      if (message.toLowerCase().includes('certificação') || message.toLowerCase().includes('sustentabilidade')) {
+        legalEnhancements.push('artigo 81', 'inciso III', 'certificação sustentabilidade ambiental', 'acréscimos');
+      }
+      
+      if (message.toLowerCase().includes('4') && message.toLowerCase().includes('distrito')) {
+        legalEnhancements.push('artigo 74', 'ZOT 8.2', 'quarto distrito', '4º distrito', 'revitalização');
+      }
+      
+      if (message.toLowerCase().includes('outorga')) {
+        legalEnhancements.push('artigo 86', 'outorga onerosa', 'direito de construir', 'contrapartida');
+      }
+      
+      if (message.toLowerCase().includes('zeis')) {
+        legalEnhancements.push('artigo 92', 'zonas especiais interesse social', 'habitação', 'regularização');
+      }
+      
+      if (legalEnhancements.length > 0) {
+        enhancedMessage = `${message} ${legalEnhancements.join(' ')}`;
+        console.log('📚 Legal query enhanced:', enhancedMessage);
+      }
+    }
+    
+    // Implementa busca fuzzy melhorada e expandida para queries de altura
     const alturaKeywords = ['altura', 'gabarito', 'elevação', 'height', 'metros', 'limite de altura', 'limite vertical'];
     const messageContainsAltura = alturaKeywords.some(keyword => 
       message.toLowerCase().includes(keyword.toLowerCase())
