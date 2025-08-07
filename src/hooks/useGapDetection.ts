@@ -16,6 +16,11 @@ export interface GapDetectionResult {
   description: string;
   confidence: number;
   created_at: string;
+  gapDetected?: boolean;
+  severity?: string;
+  topic?: string;
+  suggestions?: string[];
+  shouldEscalate?: boolean;
 }
 
 export function useGapDetection() {

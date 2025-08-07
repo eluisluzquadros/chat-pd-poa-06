@@ -13,7 +13,10 @@ export type LLMProvider =
   | "gemini-pro-vision" 
   | "llama" 
   | "deepseek" 
-  | "groq";
+  | "groq"
+  | "anthropic"
+  | "google"
+  | "zhipuai";
 
 export interface Message {
   id: string;

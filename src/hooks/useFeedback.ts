@@ -7,6 +7,10 @@ export interface Feedback {
   helpful: boolean;
   comment?: string;
   created_at: string;
+  message_id: string;
+  model: string;
+  session_id: string;
+  user_id?: string;
 }
 
 export interface FeedbackMetrics {
@@ -14,6 +18,8 @@ export interface FeedbackMetrics {
   positiveFeedback: number;
   negativeFeedback: number;
   satisfactionRate: number;
+  total_feedback: number;
+  helpful_percentage: number;
 }
 
 export function useFeedback() {
@@ -44,7 +50,7 @@ export function useFeedback() {
     fetchFeedbacks();
   }, []);
 
-  const submitFeedback = async (feedback: Partial<Feedback>) => {
+  const submitFeedback = async (feedback: Omit<Feedback, 'id' | 'created_at'>) => {
     try {
       const { error } = await supabase
         .from('message_feedback')
@@ -74,7 +80,9 @@ export function useFeedback() {
         totalFeedback: total,
         positiveFeedback: positive,
         negativeFeedback: negative,
-        satisfactionRate: total > 0 ? positive / total : 0
+        satisfactionRate: total > 0 ? positive / total : 0,
+        total_feedback: total,
+        helpful_percentage: total > 0 ? (positive / total) * 100 : 0
       };
     } catch (error) {
       console.error('Error getting feedback metrics:', error);
@@ -82,7 +90,9 @@ export function useFeedback() {
         totalFeedback: 0,
         positiveFeedback: 0,
         negativeFeedback: 0,
-        satisfactionRate: 0
+        satisfactionRate: 0,
+        total_feedback: 0,
+        helpful_percentage: 0
       };
     }
   };
