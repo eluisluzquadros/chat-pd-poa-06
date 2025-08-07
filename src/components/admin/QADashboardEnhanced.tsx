@@ -228,7 +228,7 @@ export function QADashboardEnhanced({ tab }: QADashboardEnhancedProps) {
         setCurrentExecutions(data.runs);
         
         // Store run IDs for persistence across refreshes
-        const newRunIds = new Set(data.runs.map((r: ExecutionResult) => r.runId));
+        const newRunIds = new Set(data.runs.map((r: ExecutionResult) => r.runId)) as Set<string>;
         setRecentRunIds(newRunIds);
         
         // Expand all new runs by default
@@ -581,15 +581,15 @@ export function QADashboardEnhanced({ tab }: QADashboardEnhancedProps) {
                             <Collapsible open={isExpanded}>
                               <CollapsibleContent>
                                 <div className="mt-2 pl-4">
-                                  {selectedResults && selectedResults
-                                    .filter(r => r && r.validation_run_id === run.id)
+                          {selectedResults && selectedResults
+                                     .filter(r => r && r.test_case_id === run.id)
                                     .length > 0 ? (
                                     <Card>
                                       <CardContent className="pt-4">
                                         <ScrollArea className="h-[300px]">
                                           <div className="space-y-2">
-                                            {selectedResults
-                                              .filter(r => r && r.validation_run_id === run.id)
+                                             {selectedResults
+                                               .filter(r => r && r.test_case_id === run.id)
                                               .map((result) => (
                                                 <div key={result.id} className="p-3 border rounded-lg">
                                                   <div className="flex items-start gap-2">
@@ -696,14 +696,14 @@ export function QADashboardEnhanced({ tab }: QADashboardEnhancedProps) {
                         <CollapsibleContent>
                           <div className="mt-2 pl-4">
                             {selectedResults && selectedResults
-                              .filter(r => r && r.validation_run_id === run.id)
+                              .filter(r => r && r.test_case_id === run.id)
                               .length > 0 ? (
                               <Card>
                                 <CardContent className="pt-4">
                                   <ScrollArea className="h-[300px]">
                                     <div className="space-y-2">
-                                      {selectedResults
-                                        .filter(r => r && r.validation_run_id === run.id)
+                                       {selectedResults
+                                         .filter(r => r && r.test_case_id === run.id)
                                         .map((result) => (
                                           <div key={result.id} className="p-3 border rounded-lg">
                                             <div className="flex items-start gap-2">

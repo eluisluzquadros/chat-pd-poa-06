@@ -306,8 +306,7 @@ export function QADashboard() {
         console.log('Calling function:', functionName);
         
         response = await supabase.functions.invoke(functionName, {
-          body,
-          signal: controller.signal
+          body
         });
         clearTimeout(timeoutId);
         console.log('Function call completed');
@@ -659,11 +658,11 @@ export function QADashboard() {
                           <Badge variant="outline">{testCase.category}</Badge>
                           <Badge 
                             variant={
-                              (testCase.difficulty || testCase.complexity) === 'simple' ? 'secondary' :
-                              (testCase.difficulty || testCase.complexity) === 'medium' ? 'default' : 'destructive'
+                              testCase.difficulty === 'simple' ? 'secondary' :
+                              testCase.difficulty === 'medium' ? 'default' : 'destructive'
                             }
                           >
-                            {testCase.difficulty || testCase.complexity || 'medium'}
+                            {testCase.difficulty || 'medium'}
                           </Badge>
                           {testCase.is_sql_related && (
                             <Badge variant="outline" className="bg-blue-50 text-blue-700">
@@ -677,9 +676,9 @@ export function QADashboard() {
                             </Badge>
                           )}
                         </div>
-                        <h4 className="font-medium">{testCase.question || testCase.query}</h4>
+                        <h4 className="font-medium">{testCase.question || 'Sem pergunta'}</h4>
                         <p className="text-sm text-muted-foreground">
-                          {testCase.expected_answer || testCase.expected_response || 'Sem resposta esperada definida'}
+                          {testCase.expected_answer || 'Sem resposta esperada definida'}
                         </p>
                         {testCase.expected_sql && (
                           <div className="bg-muted/50 p-2 rounded text-xs font-mono">

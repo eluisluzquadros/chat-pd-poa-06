@@ -28,7 +28,7 @@ export function PaginatedDocumentList({
   className,
   enableInfiniteScroll = false
 }: PaginatedDocumentListProps) {
-  const [paginationMode, setPaginationMode] = useState<'traditional' | 'infinite'>>(
+  const [paginationMode, setPaginationMode] = useState<'traditional' | 'infinite'>(
     enableInfiniteScroll ? 'infinite' : 'traditional'
   );
   
