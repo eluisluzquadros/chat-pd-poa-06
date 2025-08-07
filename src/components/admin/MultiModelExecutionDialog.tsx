@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,19 +8,21 @@ import { Progress } from '@/components/ui/progress';
 import { useQAValidator } from '@/hooks/useQAValidator';
 import { Play, CheckCircle, XCircle, Clock } from 'lucide-react';
 import { toast } from 'sonner';
+import { UPDATED_MODEL_CONFIGS, ModelConfig } from '@/config/llm-models-2025';
 
-const AVAILABLE_MODELS = [
-  { provider: 'openai', model: 'gpt-4.1', label: 'GPT-4.1', quality: 97, speed: 3.5, cost: 0.015 },
-  { provider: 'openai', model: 'gpt-4o', label: 'GPT-4o', quality: 95, speed: 3, cost: 0.005 },
-  { provider: 'openai', model: 'gpt-4o-mini', label: 'GPT-4o Mini', quality: 88, speed: 2, cost: 0.00015 },
-  { provider: 'anthropic', model: 'claude-4-opus', label: 'Claude 4 Opus', quality: 98, speed: 4.5, cost: 0.015 },
-  { provider: 'anthropic', model: 'claude-4-sonnet', label: 'Claude 4 Sonnet', quality: 96, speed: 3.8, cost: 0.008 },
-  { provider: 'anthropic', model: 'claude-3.5-sonnet', label: 'Claude 3.5 Sonnet', quality: 94, speed: 3.5, cost: 0.003 },
-  { provider: 'google', model: 'gemini-2.0-flash', label: 'Gemini 2.0 Flash', quality: 92, speed: 1.5, cost: 0.00025 },
-  { provider: 'google', model: 'gemini-1.5-pro', label: 'Gemini 1.5 Pro', quality: 90, speed: 3, cost: 0.00125 },
-  { provider: 'deepseek', model: 'deepseek-chat', label: 'DeepSeek Chat', quality: 86, speed: 2, cost: 0.00014 },
-  { provider: 'zhipuai', model: 'glm-4.5', label: 'GLM-4.5', quality: 88, speed: 2.8, cost: 0.00015 },
-];
+interface ModelDisplay extends ModelConfig {
+  quality: number;
+  speed: number;
+  cost: number;
+}
+
+// Convert model configs to display format with calculated metrics
+const AVAILABLE_MODELS: ModelDisplay[] = UPDATED_MODEL_CONFIGS.map(config => ({
+  ...config,
+  quality: Math.round(95 - (config.costPerOutputToken * 10000)), // Higher cost = lower quality estimation
+  speed: config.averageLatency / 1000, // Convert ms to seconds
+  cost: config.costPerOutputToken * 1000 // Convert to per 1K tokens
+}));
 
 interface ExecutionStatus {
   model: string;
@@ -218,7 +220,7 @@ export function MultiModelExecutionDialog() {
                         checked={isSelected}
                         onChange={() => handleModelToggle(modelKey)}
                       />
-                      <CardTitle className="text-sm">{model.label}</CardTitle>
+                      <CardTitle className="text-sm">{model.displayName}</CardTitle>
                     </div>
                   </CardHeader>
                   <CardContent className="pt-0">
@@ -261,7 +263,7 @@ export function MultiModelExecutionDialog() {
                       <div key={execution.model} className="flex items-center space-x-4 p-3 rounded-lg border">
                         <div className="flex items-center space-x-2 min-w-0 flex-1">
                           {getStatusIcon(execution.status)}
-                          <span className="font-medium">{model?.label}</span>
+                          <span className="font-medium">{model?.displayName}</span>
                           {execution.status === 'running' && (
                             <Progress value={execution.progress} className="flex-1 max-w-32" />
                           )}
