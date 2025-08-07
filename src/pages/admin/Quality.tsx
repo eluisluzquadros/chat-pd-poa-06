@@ -13,6 +13,7 @@ import { QATestCasesList } from '@/components/admin/QATestCasesList';
 import { QAModelDashboard } from '@/components/admin/QAModelDashboard';
 import { ValidationOptionsDialog } from '@/components/admin/ValidationOptionsDialog';
 import { MultiModelExecutionDialog } from '@/components/admin/MultiModelExecutionDialog';
+import { RefreshCw } from 'lucide-react';
 import { QAMaintenancePanel } from '@/components/admin/QAMaintenancePanel';
 
 export default function Quality() {
