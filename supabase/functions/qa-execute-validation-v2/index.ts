@@ -325,6 +325,7 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({
         success: true,
+        runId: allResults.length === 1 ? allResults[0].runId : null, // For single model compatibility
         summary: {
           totalModels: totalRuns,
           totalTestsRun,

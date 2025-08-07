@@ -41,24 +41,24 @@ serve(async (req) => {
       console.log(`Executing validation for model: ${model}`);
       
       try {
-        // Call the qa-execute-validation-v2 function for each model
-        const response = await fetch(`${supabaseUrl}/functions/v1/qa-execute-validation-v2`, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${supabaseServiceKey}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            ...options,
-            models: [model] // Single model for this execution
-          })
+        // Call the qa-execute-validation-v2 function for each model using Supabase client
+        const { data: result, error: validationError } = await supabase.functions.invoke('qa-execute-validation-v2', {
+          body: {
+            models: [model], // Single model for this execution
+            mode: options.mode,
+            selectedIds: options.selectedIds,
+            categories: options.categories,
+            difficulties: options.difficulties,
+            randomCount: options.randomCount,
+            includeSQL: options.includeSQL,
+            excludeSQL: options.excludeSQL
+          }
         });
 
-        if (!response.ok) {
-          throw new Error(`Validation failed for ${model}: ${response.status}`);
+        if (validationError) {
+          throw new Error(`Validation failed for ${model}: ${validationError.message}`);
         }
 
-        const result = await response.json();
         results.push({
           model,
           success: true,

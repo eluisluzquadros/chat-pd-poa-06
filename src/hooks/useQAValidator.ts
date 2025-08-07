@@ -23,7 +23,7 @@ export function useQAValidator() {
       // Use edge function for validation with proper model format
       const { data, error } = await supabase.functions.invoke('qa-execute-validation-v2', {
         body: {
-          model: options.model, // Now in format "provider/model"
+          models: [options.model], // Send as array for consistency
           mode: options.mode,
           categories: options.categories,
           difficulties: options.difficulties,
@@ -35,7 +35,7 @@ export function useQAValidator() {
 
       if (error) throw error;
       
-      const runId = data?.runId;
+      const runId = data?.runId || (data?.runs && data.runs[0]?.runId);
       setCurrentRunId(runId);
       
       // Monitor progress
