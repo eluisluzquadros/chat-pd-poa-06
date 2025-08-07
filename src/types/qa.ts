@@ -8,7 +8,7 @@ export interface QATestCase {
   expected_response?: string;
   expected_sql?: string;
   category: string;
-  difficulty?: string;
+  difficulty?: string | null;
   complexity?: string;
   tags?: string[];
   is_active?: boolean;

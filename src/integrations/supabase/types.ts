@@ -797,6 +797,7 @@ export type Database = {
           category: string
           complexity: string
           created_at: string | null
+          difficulty: string | null
           expected_answer: string | null
           expected_keywords: string[]
           expected_response: string | null
@@ -817,6 +818,7 @@ export type Database = {
           category: string
           complexity: string
           created_at?: string | null
+          difficulty?: string | null
           expected_answer?: string | null
           expected_keywords: string[]
           expected_response?: string | null
@@ -837,6 +839,7 @@ export type Database = {
           category?: string
           complexity?: string
           created_at?: string | null
+          difficulty?: string | null
           expected_answer?: string | null
           expected_keywords?: string[]
           expected_response?: string | null

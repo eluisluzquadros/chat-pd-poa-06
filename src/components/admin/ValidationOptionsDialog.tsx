@@ -55,14 +55,14 @@ export function ValidationOptionsDialog({ onValidationComplete }: ValidationOpti
   // Fetch available categories and difficulties
   useEffect(() => {
     const fetchMetadata = async () => {
-      const { data } = await supabase
-        .from('qa_test_cases')
-        .select('category, difficulty')
-        .eq('is_active', true);
+        const { data } = await supabase
+          .from('qa_test_cases')
+          .select('category, difficulty, complexity')
+          .eq('is_active', true);
 
-      if (data) {
-        const uniqueCategories = Array.from(new Set(data.map(item => item.category).filter(Boolean)));
-        const uniqueDifficulties = Array.from(new Set(data.map(item => item.difficulty).filter(Boolean)));
+        if (data) {
+          const uniqueCategories = Array.from(new Set(data.map(item => item.category).filter(Boolean)));
+          const uniqueDifficulties = Array.from(new Set(data.map(item => item.difficulty || item.complexity).filter(Boolean)));
         
         setCategories(uniqueCategories);
         setDifficulties(uniqueDifficulties);
