@@ -73,58 +73,92 @@ export function QADashboardSimplified({ tab }: QADashboardSimplifiedProps) {
 
   const fetchData = async () => {
     try {
-      // Fetch validation runs directly (RLS disabled)
-      const { data: runs, error: runsError } = await supabase
-        .from('qa_validation_runs')
-        .select('*')
-        .order('started_at', { ascending: false })
-        .limit(50);
-
-      if (runsError) {
-        console.error('Error fetching runs:', runsError);
-        toast.error("Erro ao carregar execuções");
-      } else {
-        setValidationRuns(runs || []);
-      }
-
-      // Fetch test cases
-      const { data: cases, error: casesError } = await supabase
-        .from('qa_test_cases')
-        .select('*')
-        .eq('is_active', true)
-        .order('created_at', { ascending: false });
-
-      if (casesError) {
-        console.error('Error fetching cases:', casesError);
-        toast.error("Erro ao carregar casos de teste");
-      } else {
-        setTestCases(cases || []);
-      }
-
-      // Fetch results for all runs
-      if (runs && runs.length > 0) {
-        const runIds = runs.map(r => r.id);
-        const { data: results, error: resultsError } = await supabase
-          .from('qa_validation_results')
+      let hasErrors = false;
+      
+      // Fetch validation runs with better error handling
+      try {
+        const { data: runs, error: runsError } = await supabase
+          .from('qa_validation_runs')
           .select('*')
-          .in('validation_run_id', runIds)
+          .order('started_at', { ascending: false })
+          .limit(50);
+
+        if (runsError) {
+          console.error('Error fetching runs:', runsError);
+          toast.error("Erro ao carregar execuções de validação");
+          hasErrors = true;
+        } else {
+          setValidationRuns(runs || []);
+        }
+      } catch (error) {
+        console.error('Exception fetching runs:', error);
+        setValidationRuns([]);
+        hasErrors = true;
+      }
+
+      // Fetch test cases with better error handling
+      try {
+        const { data: cases, error: casesError } = await supabase
+          .from('qa_test_cases')
+          .select('*')
+          .eq('is_active', true)
           .order('created_at', { ascending: false });
 
-        if (!resultsError && results) {
-          // Group results by run ID
-          const resultsMap = new Map<string, QAValidationResult[]>();
-          results.forEach(result => {
-            const runId = result.validation_run_id;
-            if (!resultsMap.has(runId)) {
-              resultsMap.set(runId, []);
-            }
-            resultsMap.get(runId)!.push(result);
-          });
-          setRunResults(resultsMap);
+        if (casesError) {
+          console.error('Error fetching cases:', casesError);
+          toast.error("Erro ao carregar casos de teste");
+          hasErrors = true;
+        } else {
+          setTestCases(cases || []);
+        }
+      } catch (error) {
+        console.error('Exception fetching cases:', error);
+        setTestCases([]);
+        hasErrors = true;
+      }
+
+      // Fetch results for all runs only if we have runs
+      const currentRuns = validationRuns.length > 0 ? validationRuns : [];
+      if (currentRuns.length > 0) {
+        try {
+          const runIds = currentRuns.map(r => r.id);
+          const { data: results, error: resultsError } = await supabase
+            .from('qa_validation_results')
+            .select('*')
+            .in('validation_run_id', runIds)
+            .order('created_at', { ascending: false });
+
+          if (resultsError) {
+            console.error('Error fetching results:', resultsError);
+            hasErrors = true;
+          } else if (results) {
+            // Group results by run ID
+            const resultsMap = new Map<string, QAValidationResult[]>();
+            results.forEach(result => {
+              const runId = result.validation_run_id;
+              if (!resultsMap.has(runId)) {
+                resultsMap.set(runId, []);
+              }
+              resultsMap.get(runId)!.push(result);
+            });
+            setRunResults(resultsMap);
+          }
+        } catch (error) {
+          console.error('Exception fetching results:', error);
+          setRunResults(new Map());
+          hasErrors = true;
         }
       }
+
+      // Show overall error message if there were issues
+      if (hasErrors) {
+        toast.error("Alguns dados podem estar indisponíveis. Tentando novamente em 10s...", {
+          duration: 3000
+        });
+      }
     } catch (error) {
-      console.error('Error fetching data:', error);
+      console.error('Critical error fetching data:', error);
+      toast.error("Erro crítico ao carregar dados");
     } finally {
       setLoading(false);
     }
@@ -182,7 +216,30 @@ export function QADashboardSimplified({ tab }: QADashboardSimplifiedProps) {
   };
 
   if (loading) {
-    return <div className="p-6">Carregando dados QA...</div>;
+    return (
+      <div className="space-y-4">
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-4">
+            <div className="h-10 w-40 bg-muted rounded animate-pulse"></div>
+            <div className="h-10 w-24 bg-muted rounded animate-pulse"></div>
+          </div>
+        </div>
+        
+        <Card>
+          <CardHeader>
+            <div className="h-6 w-48 bg-muted rounded animate-pulse"></div>
+            <div className="h-4 w-32 bg-muted rounded animate-pulse"></div>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {[1, 2, 3].map(i => (
+                <div key={i} className="h-20 bg-muted rounded animate-pulse"></div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
   }
 
   // Render Runs Tab

@@ -65,71 +65,97 @@ export function QAModelComparison() {
 
   const loadModelComparison = async () => {
     try {
-      // Get validation runs for selected models
-      const { data: runs } = await supabase
+      // Get validation runs for selected models with error handling
+      const { data: runs, error: runsError } = await supabase
         .from('qa_validation_runs')
         .select('*')
         .in('model', selectedModels)
         .eq('status', 'completed')
         .order('completed_at', { ascending: false });
 
-      if (!runs || runs.length === 0) return;
+      if (runsError) {
+        console.error('Error fetching validation runs:', runsError);
+        setModelMetrics([]);
+        setComparisonData([]);
+        setRadarData([]);
+        return;
+      }
+
+      if (!runs || runs.length === 0) {
+        // No data available for comparison
+        setModelMetrics([]);
+        setComparisonData([]);
+        setRadarData([]);
+        return;
+      }
 
       // Get detailed results for each model
       const metrics: ModelMetrics[] = [];
       
       for (const model of selectedModels) {
-        const modelRuns = runs.filter(r => r.model === model);
-        if (modelRuns.length === 0) continue;
+        try {
+          const modelRuns = runs.filter(r => r.model === model);
+          if (modelRuns.length === 0) continue;
 
-        // Get the most recent run for this model
-        const latestRun = modelRuns[0];
-        
-        // Get category performance
-        const { data: categoryData } = await supabase
-          .from('qa_validation_results')
-          .select(`
-            is_correct,
-            qa_test_cases!inner(category)
-          `)
-          .eq('validation_run_id', latestRun.id);
-
-        const categoryPerformance: Record<string, number> = {};
-        if (categoryData) {
-          const categoryGroups: Record<string, { total: number; correct: number }> = {};
+          // Get the most recent run for this model
+          const latestRun = modelRuns[0];
           
-          categoryData.forEach(result => {
-            const category = result.qa_test_cases.category;
-            if (!categoryGroups[category]) {
-              categoryGroups[category] = { total: 0, correct: 0 };
-            }
-            categoryGroups[category].total++;
-            if (result.is_correct) {
-              categoryGroups[category].correct++;
-            }
-          });
+          // Get category performance with error handling
+          const { data: categoryData, error: categoryError } = await supabase
+            .from('qa_validation_results')
+            .select(`
+              is_correct,
+              qa_test_cases!inner(category)
+            `)
+            .eq('validation_run_id', latestRun.id);
 
-          Object.entries(categoryGroups).forEach(([category, stats]) => {
-            categoryPerformance[category] = (stats.correct / stats.total) * 100;
+          const categoryPerformance: Record<string, number> = {};
+          
+          if (categoryError) {
+            console.error(`Error fetching category data for ${model}:`, categoryError);
+          } else if (categoryData && categoryData.length > 0) {
+            const categoryGroups: Record<string, { total: number; correct: number }> = {};
+            
+            categoryData.forEach(result => {
+              const category = result.qa_test_cases?.category || 'unknown';
+              if (!categoryGroups[category]) {
+                categoryGroups[category] = { total: 0, correct: 0 };
+              }
+              categoryGroups[category].total++;
+              if (result.is_correct) {
+                categoryGroups[category].correct++;
+              }
+            });
+
+            Object.entries(categoryGroups).forEach(([category, stats]) => {
+              categoryPerformance[category] = stats.total > 0 ? (stats.correct / stats.total) * 100 : 0;
+            });
+          }
+
+          metrics.push({
+            model: model,
+            accuracy: (latestRun.overall_accuracy || 0) * 100,
+            avgResponseTime: latestRun.avg_response_time_ms || 0,
+            totalTests: latestRun.total_tests || 0,
+            passedTests: latestRun.passed_tests || 0,
+            costPerTest: modelCosts[model] || 0.001,
+            categoryPerformance
           });
+        } catch (modelError) {
+          console.error(`Error processing model ${model}:`, modelError);
+          // Continue with other models even if one fails
         }
-
-        metrics.push({
-          model: model,
-          accuracy: latestRun.overall_accuracy * 100,
-          avgResponseTime: latestRun.avg_response_time_ms,
-          totalTests: latestRun.total_tests,
-          passedTests: latestRun.passed_tests,
-          costPerTest: modelCosts[model] || 0.001,
-          categoryPerformance
-        });
       }
 
       setModelMetrics(metrics);
       prepareComparisonData(metrics);
       prepareRadarData(metrics);
     } catch (error) {
-      console.error('Error loading model comparison:', error);
+      console.error('Critical error loading model comparison:', error);
+      // Set empty data to prevent crashes
+      setModelMetrics([]);
+      setComparisonData([]);
+      setRadarData([]);
     } finally {
       setLoading(false);
     }
@@ -180,7 +206,82 @@ export function QAModelComparison() {
   };
 
   if (loading) {
-    return <div>Carregando comparação de modelos...</div>;
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between mb-4">
+          <div className="h-6 w-48 bg-muted rounded animate-pulse"></div>
+          <div className="h-10 w-[300px] bg-muted rounded animate-pulse"></div>
+        </div>
+        
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          {[1, 2, 3, 4].map(i => (
+            <Card key={i}>
+              <CardHeader className="pb-3">
+                <div className="h-4 w-24 bg-muted rounded animate-pulse"></div>
+              </CardHeader>
+              <CardContent>
+                <div className="h-8 w-16 bg-muted rounded animate-pulse mb-2"></div>
+                <div className="h-2 w-full bg-muted rounded animate-pulse"></div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+        
+        <div className="grid gap-6 md:grid-cols-2">
+          {[1, 2].map(i => (
+            <Card key={i}>
+              <CardHeader>
+                <div className="h-4 w-48 bg-muted rounded animate-pulse"></div>
+                <div className="h-3 w-32 bg-muted rounded animate-pulse"></div>
+              </CardHeader>
+              <CardContent>
+                <div className="h-[300px] bg-muted rounded animate-pulse"></div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  // Show message when no model data is available
+  if (modelMetrics.length === 0) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-semibold">Comparação entre Modelos</h3>
+          <Select
+            value={selectedModels.join(',')}
+            onValueChange={(value) => setSelectedModels(value.split(','))}
+          >
+            <SelectTrigger className="w-[300px]">
+              <SelectValue placeholder="Selecione modelos para comparar" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="agentic-rag,claude-chat">RAG vs Claude</SelectItem>
+              <SelectItem value="agentic-rag,gemini-chat">RAG vs Gemini</SelectItem>
+              <SelectItem value="agentic-rag,llama-chat,deepseek-chat">RAG vs Llama vs DeepSeek</SelectItem>
+              <SelectItem value={availableModels.join(',')}>Todos os Modelos</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        
+        <Card>
+          <CardContent className="p-8 text-center">
+            <div className="space-y-4">
+              <BarChart3 className="h-12 w-12 text-muted-foreground mx-auto" />
+              <div>
+                <h4 className="text-lg font-medium">Nenhum dado de comparação disponível</h4>
+                <p className="text-muted-foreground">
+                  Não há validações concluídas para os modelos selecionados: {selectedModels.join(', ')}.
+                  Execute validações para gerar dados de comparação.
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
   }
 
   return (

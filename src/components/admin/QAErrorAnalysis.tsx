@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { AlertTriangle, TrendingDown, Brain, FileText } from "lucide-react";
+import { AlertTriangle, TrendingDown, Brain, FileText, CheckCircle } from "lucide-react";
 import {
   BarChart,
   Bar,
@@ -45,7 +45,7 @@ export function QAErrorAnalysis() {
   const loadErrorAnalysis = async () => {
     try {
       // Get failed test results with test case details
-      const { data: failedResults } = await supabase
+      const { data: failedResults, error } = await supabase
         .from('qa_validation_results')
         .select(`
           *,
@@ -61,21 +61,47 @@ export function QAErrorAnalysis() {
         .order('created_at', { ascending: false })
         .limit(100);
 
-      if (failedResults) {
-        // Analyze error patterns
-        const patterns = analyzeErrorPatterns(failedResults);
-        setErrorPatterns(patterns);
+      if (error) {
+        console.error('Error fetching failed results:', error);
+        // Set empty data but don't crash
+        setErrorPatterns([]);
+        setDifficultyAnalysis([]);
+        setCategoryErrors([]);
+        return;
+      }
 
-        // Analyze by difficulty
-        const diffAnalysis = analyzeDifficulty(failedResults);
-        setDifficultyAnalysis(diffAnalysis);
+      if (failedResults && failedResults.length > 0) {
+        try {
+          // Analyze error patterns
+          const patterns = analyzeErrorPatterns(failedResults);
+          setErrorPatterns(patterns);
 
-        // Analyze by category
-        const catAnalysis = analyzeCategories(failedResults);
-        setCategoryErrors(catAnalysis);
+          // Analyze by difficulty
+          const diffAnalysis = analyzeDifficulty(failedResults);
+          setDifficultyAnalysis(diffAnalysis);
+
+          // Analyze by category
+          const catAnalysis = analyzeCategories(failedResults);
+          setCategoryErrors(catAnalysis);
+        } catch (analysisError) {
+          console.error('Error analyzing patterns:', analysisError);
+          // Partial failure - show what we can
+          setErrorPatterns([]);
+          setDifficultyAnalysis([]);
+          setCategoryErrors([]);
+        }
+      } else {
+        // No failed results found
+        setErrorPatterns([]);
+        setDifficultyAnalysis([]);
+        setCategoryErrors([]);
       }
     } catch (error) {
-      console.error('Error loading error analysis:', error);
+      console.error('Critical error loading error analysis:', error);
+      // Set empty data to prevent crashes
+      setErrorPatterns([]);
+      setDifficultyAnalysis([]);
+      setCategoryErrors([]);
     } finally {
       setLoading(false);
     }
@@ -161,7 +187,62 @@ export function QAErrorAnalysis() {
   const COLORS = ['#ef4444', '#f59e0b', '#3b82f6', '#10b981', '#8b5cf6', '#ec4899'];
 
   if (loading) {
-    return <div>Carregando análise de erros...</div>;
+    return (
+      <div className="space-y-6">
+        <div className="h-6 w-64 bg-muted rounded animate-pulse"></div>
+        
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {[1, 2, 3].map(i => (
+            <Card key={i}>
+              <CardHeader className="pb-3">
+                <div className="h-4 w-32 bg-muted rounded animate-pulse"></div>
+              </CardHeader>
+              <CardContent>
+                <div className="h-8 w-16 bg-muted rounded animate-pulse mb-2"></div>
+                <div className="h-2 w-full bg-muted rounded animate-pulse"></div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+        
+        <div className="grid gap-6 md:grid-cols-2">
+          {[1, 2].map(i => (
+            <Card key={i}>
+              <CardHeader>
+                <div className="h-4 w-48 bg-muted rounded animate-pulse"></div>
+                <div className="h-3 w-32 bg-muted rounded animate-pulse"></div>
+              </CardHeader>
+              <CardContent>
+                <div className="h-[300px] bg-muted rounded animate-pulse"></div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  // Show message when no error data is available
+  if (errorPatterns.length === 0 && categoryErrors.length === 0) {
+    return (
+      <div className="space-y-6">
+        <h3 className="text-lg font-semibold mb-4">Análise de Padrões de Erro</h3>
+        <Card>
+          <CardContent className="p-8 text-center">
+            <div className="space-y-4">
+              <CheckCircle className="h-12 w-12 text-green-500 mx-auto" />
+              <div>
+                <h4 className="text-lg font-medium">Nenhum erro recente encontrado</h4>
+                <p className="text-muted-foreground">
+                  Não há dados de testes falhados nas últimas validações. 
+                  Execute uma validação para gerar dados de análise de erros.
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
   }
 
   return (

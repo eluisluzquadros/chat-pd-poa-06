@@ -200,29 +200,47 @@ export function QAKnowledgeGaps() {
   const triggerKnowledgeUpdate = async (gap: KnowledgeGap) => {
     setAnalysisInProgress(true);
     try {
-      // Call knowledge updater agent
-      const { data, error } = await supabase.functions.invoke('knowledge-updater', {
-        body: {
-          gap,
-          action: 'analyze_and_suggest'
-        }
-      });
-
-      if (error) throw error;
-
-      toast.success("Análise de atualização concluída");
+      // Simplified knowledge update - just generate insights locally
+      // Since the edge function doesn't exist, we'll analyze locally
+      const insights = generateLocalInsights(gap);
       
-      // Show results in modal
-      setUpdateAnalysisData(data);
+      toast.success("Análise local de conhecimento concluída");
+      
+      // Show results in a simple format
+      setUpdateAnalysisData({
+        insights,
+        gap,
+        recommendations: generateRecommendations(gap)
+      });
       setShowUpdateDialog(true);
-      console.log('Knowledge update analysis:', data);
 
     } catch (error) {
       console.error('Error triggering knowledge update:', error);
-      toast.error("Erro ao iniciar atualização de conhecimento");
+      toast.error("Erro ao analisar gap de conhecimento");
     } finally {
       setAnalysisInProgress(false);
     }
+  };
+
+  const generateLocalInsights = (gap: KnowledgeGap) => {
+    return {
+      analysis: `Identificado gap em ${gap.topic} (${gap.category}) com ${gap.failedTests.length} falhas.`,
+      patterns: gap.failedTests.map(test => ({
+        issue: test.actual_answer.includes('não tenho') ? 'Falta de informação' : 'Resposta imprecisa',
+        question: test.question,
+        expectedAnswer: test.expected_answer
+      })),
+      severity: gap.severity
+    };
+  };
+
+  const generateRecommendations = (gap: KnowledgeGap) => {
+    return [
+      `Adicionar mais documentação sobre ${gap.topic}`,
+      `Melhorar exemplos para categoria ${gap.category}`,
+      `Revisar prompt do sistema para incluir ${gap.topic}`,
+      'Considerar adicionar casos de teste específicos'
+    ];
   };
 
   const getSeverityColor = (severity: string) => {
@@ -236,7 +254,29 @@ export function QAKnowledgeGaps() {
   };
 
   if (loading) {
-    return <div className="p-6">Analisando gaps de conhecimento...</div>;
+    return (
+      <div className="space-y-6">
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Brain className="h-5 w-5" />
+                <div className="h-6 w-48 bg-muted rounded animate-pulse"></div>
+              </div>
+              <div className="h-9 w-24 bg-muted rounded animate-pulse"></div>
+            </div>
+            <div className="h-4 w-64 bg-muted rounded animate-pulse"></div>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {[1, 2, 3].map(i => (
+                <div key={i} className="h-24 bg-muted rounded animate-pulse"></div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
   }
 
   return (

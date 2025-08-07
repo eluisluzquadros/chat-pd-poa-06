@@ -30,17 +30,17 @@ export default function Quality() {
 
   const loadMetrics = async () => {
     try {
-      // Fetch quality metrics from the last 24 hours
+      setError(null);
+      
+      // Try to fetch quality metrics first
       const { data: metricsData, error: metricsError } = await supabase
         .from('quality_metrics')
         .select('*')
         .gte('created_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
         .order('created_at', { ascending: false });
 
-      if (metricsError) throw metricsError;
-
       if (metricsData && metricsData.length > 0) {
-        // Calculate metrics
+        // Calculate metrics from quality_metrics table
         const totalQueries = metricsData.length;
         const betaMessages = metricsData.filter(m => m.has_beta_message).length;
         const validResponses = metricsData.filter(m => m.has_valid_response).length;
@@ -57,18 +57,77 @@ export default function Quality() {
           uniqueSessions
         });
       } else {
-        setMetrics({
-          betaRate: 0,
-          avgResponseTime: 0,
-          successRate: 100,
-          totalQueries: 0,
-          avgConfidence: 0,
-          uniqueSessions: 0
-        });
+        // Fallback: Calculate metrics from QA validation data
+        console.log('Quality metrics table empty, using QA validation fallback');
+        
+        const { data: qaRuns, error: qaError } = await supabase
+          .from('qa_validation_runs')
+          .select(`
+            *,
+            qa_validation_results (
+              response_time_ms,
+              is_correct,
+              accuracy_score,
+              actual_answer
+            )
+          `)
+          .eq('status', 'completed')
+          .gte('completed_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
+          .order('completed_at', { ascending: false })
+          .limit(10);
+
+        if (qaRuns && qaRuns.length > 0) {
+          // Calculate fallback metrics from QA data
+          const allResults = qaRuns.flatMap(run => run.qa_validation_results || []);
+          const totalQueries = allResults.length;
+          
+          if (totalQueries > 0) {
+            const betaMessages = allResults.filter(r => 
+              r.actual_answer?.toLowerCase().includes('não consigo') || 
+              r.actual_answer?.toLowerCase().includes('versão beta') ||
+              r.actual_answer?.toLowerCase().includes('não tenho')
+            ).length;
+            
+            const validResponses = allResults.filter(r => r.is_correct).length;
+            const avgResponseTime = allResults.reduce((sum, r) => sum + (r.response_time_ms || 0), 0) / totalQueries;
+            const avgAccuracy = allResults.reduce((sum, r) => sum + (r.accuracy_score || 0), 0) / totalQueries;
+            
+            setMetrics({
+              betaRate: (betaMessages / totalQueries) * 100,
+              avgResponseTime: avgResponseTime / 1000,
+              successRate: (validResponses / totalQueries) * 100,
+              totalQueries,
+              avgConfidence: avgAccuracy * 100,
+              uniqueSessions: qaRuns.length // Approximate with number of runs
+            });
+          } else {
+            throw new Error('No QA data available');
+          }
+        } else {
+          // No data available at all
+          setMetrics({
+            betaRate: 0,
+            avgResponseTime: 0,
+            successRate: 0,
+            totalQueries: 0,
+            avgConfidence: 0,
+            uniqueSessions: 0
+          });
+        }
       }
     } catch (err) {
       console.error('Error loading metrics:', err);
-      setError('Erro ao carregar métricas de qualidade');
+      setError('Erro ao carregar métricas de qualidade. Dados podem estar temporariamente indisponíveis.');
+      
+      // Set default metrics on error
+      setMetrics({
+        betaRate: 0,
+        avgResponseTime: 0,
+        successRate: 0,
+        totalQueries: 0,
+        avgConfidence: 0,
+        uniqueSessions: 0
+      });
     } finally {
       setLoading(false);
     }
@@ -92,10 +151,19 @@ export default function Quality() {
 
         {loading && (
           <div className="animate-pulse space-y-4">
-            <div className="h-8 bg-gray-200 rounded w-1/4"></div>
+            <div className="h-8 bg-muted rounded w-1/4"></div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {[1, 2, 3, 4, 5, 6].map(i => (
-                <div key={i} className="h-32 bg-gray-200 rounded"></div>
+                <Card key={i} className="h-32">
+                  <CardHeader className="space-y-2">
+                    <div className="h-4 bg-muted rounded w-3/4"></div>
+                    <div className="h-3 bg-muted rounded w-1/2"></div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="h-8 bg-muted rounded w-1/3 mb-2"></div>
+                    <div className="h-2 bg-muted rounded w-full"></div>
+                  </CardContent>
+                </Card>
               ))}
             </div>
           </div>
