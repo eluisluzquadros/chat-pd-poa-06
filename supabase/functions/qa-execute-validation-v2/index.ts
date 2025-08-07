@@ -198,7 +198,7 @@ serve(async (req) => {
               totalAccuracy += accuracy;
 
                 // Store detailed result in database
-                await supabase
+                const { error: insertError } = await supabase
                   .from('qa_validation_results')
                   .insert({
                     validation_run_id: runId,
@@ -212,6 +212,10 @@ serve(async (req) => {
                     error_details: isCorrect ? null : `Accuracy: ${(accuracy * 100).toFixed(1)}%`,
                     created_at: new Date().toISOString()
                   });
+
+                if (insertError) {
+                  console.error(`Error inserting result for test ${testCase.id}:`, insertError);
+                }
 
               return {
                 testCaseId: testCase.id,
@@ -230,7 +234,7 @@ serve(async (req) => {
               
               const responseTime = Date.now() - startTime;
               
-              await supabase
+              const { error: insertError } = await supabase
                 .from('qa_validation_results')
                 .insert({
                   validation_run_id: runId,
@@ -244,6 +248,10 @@ serve(async (req) => {
                   error_details: error.message,
                   created_at: new Date().toISOString()
                 });
+
+              if (insertError) {
+                console.error(`Error inserting error result for test ${testCase.id}:`, insertError);
+              }
 
               return {
                 testCaseId: testCase.id,

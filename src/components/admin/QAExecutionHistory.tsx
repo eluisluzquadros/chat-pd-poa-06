@@ -8,6 +8,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Eye, Clock, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { QAResultsDetailModal } from './QAResultsDetailModal';
 
 interface QAValidationRun {
   id: string;
@@ -44,6 +45,8 @@ export function QAExecutionHistory() {
   const [runResults, setRunResults] = useState<QAValidationResult[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [detailsLoading, setDetailsLoading] = useState(false);
+  const [selectedRunId, setSelectedRunId] = useState<string | null>(null);
+  const [selectedRunData, setSelectedRunData] = useState<any>(null);
 
   useEffect(() => {
     fetchRuns();
@@ -190,109 +193,23 @@ export function QAExecutionHistory() {
                       locale: ptBR 
                     })}
                   </TableCell>
-                  <TableCell>
-                    <Dialog>
-                      <DialogTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => {
-                            setSelectedRun(run);
-                            fetchRunDetails(run.id);
-                          }}
-                        >
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-                        <DialogHeader>
-                          <DialogTitle>
-                            Detalhes da Execução - {run.model}
-                          </DialogTitle>
-                        </DialogHeader>
-                        
-                        {detailsLoading ? (
-                          <div className="text-center py-8">Carregando detalhes...</div>
-                        ) : (
-                          <div className="space-y-4">
-                            {/* Summary */}
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                              <Card>
-                                <CardContent className="pt-4">
-                                  <div className="text-2xl font-bold">{run.total_tests}</div>
-                                  <p className="text-xs text-muted-foreground">Total de Testes</p>
-                                </CardContent>
-                              </Card>
-                              <Card>
-                                <CardContent className="pt-4">
-                                  <div className="text-2xl font-bold text-green-600">{run.passed_tests}</div>
-                                  <p className="text-xs text-muted-foreground">Aprovados</p>
-                                </CardContent>
-                              </Card>
-                              <Card>
-                                <CardContent className="pt-4">
-                                  <div className="text-2xl font-bold">{Math.round(run.overall_accuracy * 100)}%</div>
-                                  <p className="text-xs text-muted-foreground">Acurácia</p>
-                                </CardContent>
-                              </Card>
-                              <Card>
-                                <CardContent className="pt-4">
-                                  <div className="text-2xl font-bold">{run.avg_response_time_ms}ms</div>
-                                  <p className="text-xs text-muted-foreground">Tempo Médio</p>
-                                </CardContent>
-                              </Card>
-                            </div>
-
-                            {/* Results Table */}
-                            <div className="border rounded-lg">
-                              <Table>
-                                <TableHeader>
-                                  <TableRow>
-                                    <TableHead>Status</TableHead>
-                                    <TableHead>Pergunta</TableHead>
-                                    <TableHead>Categoria</TableHead>
-                                    <TableHead>Dificuldade</TableHead>
-                                    <TableHead>Tempo</TableHead>
-                                  </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                  {runResults.slice(0, 50).map((result) => (
-                                    <TableRow key={result.id}>
-                                      <TableCell>
-                                        {result.is_correct ? (
-                                          <CheckCircle className="h-4 w-4 text-green-500" />
-                                        ) : (
-                                          <XCircle className="h-4 w-4 text-red-500" />
-                                        )}
-                                      </TableCell>
-                                      <TableCell className="max-w-md truncate">
-                                        {result.qa_test_cases?.question || 'N/A'}
-                                      </TableCell>
-                                      <TableCell>
-                                        <Badge variant="outline">
-                                          {result.qa_test_cases?.category || 'N/A'}
-                                        </Badge>
-                                      </TableCell>
-                                      <TableCell>
-                                        <Badge variant="secondary">
-                                          {result.qa_test_cases?.difficulty || 'N/A'}
-                                        </Badge>
-                                      </TableCell>
-                                      <TableCell>{result.response_time_ms}ms</TableCell>
-                                    </TableRow>
-                                  ))}
-                                </TableBody>
-                              </Table>
-                              {runResults.length > 50 && (
-                                <div className="p-4 text-center text-sm text-muted-foreground">
-                                  Mostrando primeiros 50 resultados de {runResults.length} total
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        )}
-                      </DialogContent>
-                    </Dialog>
+                   <TableCell>
+                     <Button
+                       variant="ghost"
+                       size="sm"
+                       onClick={() => {
+                         setSelectedRunId(run.id);
+                         setSelectedRunData({
+                           model: run.model,
+                           totalTests: run.total_tests,
+                           passedTests: run.passed_tests,
+                           accuracy: (run.overall_accuracy || 0) * 100,
+                           startedAt: run.started_at
+                         });
+                       }}
+                     >
+                       <Eye className="h-4 w-4" />
+                     </Button>
                   </TableCell>
                 </TableRow>
               ))}
@@ -300,6 +217,19 @@ export function QAExecutionHistory() {
           </Table>
         )}
       </CardContent>
+      
+      {/* Results Detail Modal */}
+      <QAResultsDetailModal
+        open={!!selectedRunId}
+        onOpenChange={(open) => {
+          if (!open) {
+            setSelectedRunId(null);
+            setSelectedRunData(null);
+          }
+        }}
+        runId={selectedRunId || ''}
+        runData={selectedRunData}
+      />
     </Card>
   );
 }
