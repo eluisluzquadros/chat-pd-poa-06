@@ -3,6 +3,7 @@ import { Toaster } from "sonner";
 import { ThemeProvider } from "./components/ui/theme-provider";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AuthProvider } from "./context/AuthContext";
+import React from "react";
 
 // Pages
 import Auth from "./pages/Auth";
@@ -20,6 +21,7 @@ import FeedbackManagement from "./pages/admin/FeedbackManagement";
 import UserSettings from "./pages/UserSettings";
 import Reports from "./pages/Reports";
 import BenchmarkDashboard from "./pages/admin/BenchmarkDashboard";
+const KnowledgeBaseAdminLazy = React.lazy(() => import("./pages/admin/KnowledgeBaseAdmin"));
 
 // Components
 import { SimpleAuthGuard } from "./components/SimpleAuthGuard";
@@ -117,6 +119,16 @@ function App() {
                 <SimpleAuthGuard>
                   <SimpleRoleGuard adminOnly={true}>
                     <BenchmarkDashboard />
+                  </SimpleRoleGuard>
+                </SimpleAuthGuard>
+              } />
+              <Route path="/admin/kb" element={
+                <SimpleAuthGuard>
+                  <SimpleRoleGuard adminOnly={true}>
+                    { /* Knowledge Base Admin */ }
+                    <React.Suspense fallback={null}>
+                      <KnowledgeBaseAdminLazy />
+                    </React.Suspense>
                   </SimpleRoleGuard>
                 </SimpleAuthGuard>
               } />
