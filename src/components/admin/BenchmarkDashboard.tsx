@@ -3,10 +3,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { RefreshCw, Crown, Zap, DollarSign, Target, TrendingUp, AlertCircle, Play } from 'lucide-react';
+import { RefreshCw, Crown, Zap, DollarSign, TrendingUp, AlertCircle } from 'lucide-react';
 import { useBenchmark } from '@/hooks/useBenchmark';
 import { BenchmarkModelTable } from '@/components/admin/BenchmarkModelTable';
 import { BenchmarkCharts } from '@/components/admin/BenchmarkCharts';
+import { BenchmarkOptionsDialog } from './BenchmarkOptionsDialog';
+import { BenchmarkExecutionHistory } from './BenchmarkExecutionHistory';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
 export function BenchmarkDashboard() {
@@ -21,6 +23,30 @@ export function BenchmarkDashboard() {
     executeBenchmark,
     isBenchmarkRunning
   } = useBenchmark();
+
+  // Mock execution history data for now
+  const mockExecutions = [
+    {
+      id: '1',
+      timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+      status: 'completed' as const,
+      modelsTested: 3,
+      testCases: 5,
+      avgQuality: 87.5,
+      avgResponseTime: 2456,
+      duration: 180
+    },
+    {
+      id: '2', 
+      timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
+      status: 'completed' as const,
+      modelsTested: 5,
+      testCases: 5,
+      avgQuality: 84.2,
+      avgResponseTime: 3124,
+      duration: 245
+    }
+  ];
 
   if (error) {
     return (
@@ -59,15 +85,10 @@ export function BenchmarkDashboard() {
             <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
             Atualizar
           </Button>
-          <Button 
-            variant="default" 
-            size="sm"
-            onClick={executeBenchmark}
-            disabled={isBenchmarkRunning || isLoading}
-          >
-            <Play className={`h-4 w-4 mr-2 ${isBenchmarkRunning ? 'animate-spin' : ''}`} />
-            {isBenchmarkRunning ? 'Executando...' : 'Executar Benchmark'}
-          </Button>
+          <BenchmarkOptionsDialog 
+            onExecute={executeBenchmark}
+            isRunning={isBenchmarkRunning}
+          />
         </div>
       </div>
 
@@ -139,10 +160,11 @@ export function BenchmarkDashboard() {
 
       {/* Detailed Analysis Tabs */}
       <Tabs defaultValue="overview" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4 h-12">
+        <TabsList className="grid w-full grid-cols-5 h-12">
           <TabsTrigger value="overview" className="text-sm">📊 Visão Geral</TabsTrigger>
           <TabsTrigger value="models" className="text-sm">🤖 Modelos</TabsTrigger>
           <TabsTrigger value="charts" className="text-sm">📈 Gráficos</TabsTrigger>
+          <TabsTrigger value="executions" className="text-sm">🔄 Execuções</TabsTrigger>
           <TabsTrigger value="insights" className="text-sm">💡 Insights</TabsTrigger>
         </TabsList>
 
@@ -207,6 +229,14 @@ export function BenchmarkDashboard() {
             qualityByModel={qualityByModel}
             costByProvider={costByProvider}
             isLoading={isLoading}
+          />
+        </TabsContent>
+
+        <TabsContent value="executions" className="space-y-4">
+          <BenchmarkExecutionHistory 
+            executions={mockExecutions}
+            isLoading={isLoading}
+            onRefresh={refetch}
           />
         </TabsContent>
 

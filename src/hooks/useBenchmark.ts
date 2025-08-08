@@ -31,7 +31,7 @@ export interface BenchmarkData {
   error: string | null;
 }
 
-export function useBenchmark(): BenchmarkData & { refetch: () => Promise<void>; executeBenchmark: () => Promise<void>; isBenchmarkRunning: boolean } {
+export function useBenchmark(): BenchmarkData & { refetch: () => Promise<void>; executeBenchmark: (options?: { models?: string[] }) => Promise<void>; isBenchmarkRunning: boolean } {
   const [data, setData] = useState<BenchmarkData>({
     metrics: {
       totalBenchmarks: 0,
@@ -93,7 +93,7 @@ export function useBenchmark(): BenchmarkData & { refetch: () => Promise<void>; 
             avgQualityScore: Math.round((item.avg_quality_score || 0) * 100) / 100,
             avgResponseTime: Math.round(item.avg_response_time || 0),
             avgCostPerQuery: Math.round((item.avg_cost_per_query || 0) * 10000) / 10000,
-            successRate: Math.round((item.success_rate || 0) * 100),
+            successRate: Math.min(100, Math.round((item.success_rate || 0) * 100)),
             totalTests: 0,
             recommendation: item.recommendation || ''
           });
@@ -113,7 +113,7 @@ export function useBenchmark(): BenchmarkData & { refetch: () => Promise<void>; 
                   avgQualityScore: Math.round((summary.avgQualityScore || 0) * 100) / 100,
                   avgResponseTime: Math.round(summary.avgResponseTime || 0),
                   avgCostPerQuery: Math.round((summary.avgCostPerQuery || 0) * 10000) / 10000,
-                  successRate: Math.round((summary.successRate || 0) * 100),
+                  successRate: Math.min(100, Math.round((summary.successRate || 0) * 100)),
                   totalTests: summary.totalTests || 0,
                   recommendation: summary.recommendation || ''
                 });
@@ -145,7 +145,7 @@ export function useBenchmark(): BenchmarkData & { refetch: () => Promise<void>; 
         : { model: 'N/A', avgCostPerQuery: 0 };
 
       const overallSuccessRate = modelPerformance.length > 0
-        ? Math.round(modelPerformance.reduce((sum, model) => sum + model.successRate, 0) / modelPerformance.length)
+        ? Math.min(100, Math.round(modelPerformance.reduce((sum, model) => sum + model.successRate, 0) / modelPerformance.length))
         : 0;
 
       // Prepare chart data
@@ -200,38 +200,31 @@ export function useBenchmark(): BenchmarkData & { refetch: () => Promise<void>; 
     fetchBenchmarkData();
   }, []);
 
-  const executeBenchmark = async () => {
+  const executeBenchmark = async (options?: { models?: string[] }) => {
+    setIsBenchmarkRunning(true);
+    
     try {
-      setIsBenchmarkRunning(true);
-      console.log('Starting benchmark execution...');
-      
-      const { data: result, error } = await supabase.functions.invoke('run-benchmark', {
-        body: {},
+      const { data, error } = await supabase.functions.invoke('run-benchmark', {
+        body: { 
+          models: options?.models || ['gpt-4o-mini-2024-07-18', 'claude-3-5-sonnet-20241022', 'gemini-1.5-flash-002']
+        }
       });
       
       if (error) {
         console.error('Benchmark execution error:', error);
-        setData(prev => ({ ...prev, error: error.message }));
-        toast.error("Erro ao executar benchmark: " + (error.message || "Falha na execução do benchmark"));
-        return;
+        toast.error(error.message || "Falha ao executar o benchmark");
+      } else {
+        const modelsCount = options?.models?.length || 3;
+        const testCasesCount = data?.testCasesCount || 5;
+        
+        toast.success(`Benchmark executado com sucesso! ${modelsCount} modelos testados com ${testCasesCount} casos de teste`);
+        
+        // Refetch data after benchmark completion
+        await fetchBenchmarkData();
       }
-      
-      console.log('Benchmark completed:', result);
-      
-      toast.success(`Benchmark executado com sucesso! ${result.totalModels} modelos testados com ${result.totalTestCases} casos de teste`);
-      
-      // Refresh data after benchmark completion
-      setTimeout(() => {
-        fetchBenchmarkData();
-      }, 1000);
-      
     } catch (error) {
       console.error('Error executing benchmark:', error);
-      setData(prev => ({ 
-        ...prev, 
-        error: error instanceof Error ? error.message : 'Erro ao executar benchmark'
-      }));
-      toast.error("Erro ao executar benchmark: Falha na comunicação com o servidor");
+      toast.error("Falha na comunicação com o servidor");
     } finally {
       setIsBenchmarkRunning(false);
     }

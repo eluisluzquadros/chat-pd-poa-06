@@ -13,9 +13,9 @@ const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
 const MODELS_TO_TEST = [
-  { name: 'gpt-4o-mini', provider: 'openai' },
-  { name: 'claude-3-5-haiku-20241022', provider: 'anthropic' },
-  { name: 'gemini-1.5-flash', provider: 'google' }
+  { model: 'gpt-4o-mini-2024-07-18', provider: 'openai' },
+  { model: 'claude-3-5-sonnet-20241022', provider: 'anthropic' },
+  { model: 'gemini-1.5-flash-002', provider: 'google' }
 ];
 
 interface TestCase {
@@ -33,6 +33,9 @@ serve(async (req) => {
 
   try {
     console.log('Starting benchmark execution...');
+    
+    const requestBody = await req.json();
+    const selectedModels = requestBody?.models || MODELS_TO_TEST.map(m => m.model);
     
     // Fetch active test cases
     const { data: testCases, error: testCasesError } = await supabase
@@ -58,9 +61,14 @@ serve(async (req) => {
     const results: any[] = [];
     const summaries: any[] = [];
 
-    // Run tests for each model
-    for (const model of MODELS_TO_TEST) {
-      console.log(`Testing model: ${model.name} (${model.provider})`);
+    // Filter models based on selection
+    const modelsToTest = MODELS_TO_TEST.filter(model => 
+      selectedModels.includes(model.model)
+    );
+
+    // Test each selected model
+    for (const modelConfig of modelsToTest) {
+      console.log(`Testing model: ${modelConfig.model} (${modelConfig.provider})`);
       
       const modelResults = [];
       let totalCorrect = 0;
@@ -98,7 +106,7 @@ serve(async (req) => {
           });
 
         } catch (error) {
-          console.error(`Unexpected error for ${model.name} on test ${testCase.id}:`, error);
+          console.error(`Unexpected error for ${modelConfig.model} on test ${testCase.id}:`, error);
           modelResults.push({
             testCaseId: testCase.id,
             query: testCase.query,
@@ -125,8 +133,8 @@ serve(async (req) => {
       else recommendation = 'Balanceado para uso geral';
 
       const summary = {
-        provider: model.provider,
-        model: model.name,
+        provider: modelConfig.provider,
+        model: modelConfig.model,
         totalTests: testCases.length,
         passedTests: totalCorrect,
         avgResponseTime: Math.round(avgResponseTime),
@@ -138,8 +146,8 @@ serve(async (req) => {
 
       summaries.push(summary);
       results.push({
-        model: model.name,
-        provider: model.provider,
+        model: modelConfig.model,
+        provider: modelConfig.provider,
         results: modelResults
       });
     }
@@ -151,7 +159,7 @@ serve(async (req) => {
         results,
         summaries,
         metadata: {
-          totalModels: MODELS_TO_TEST.length,
+          totalModels: modelsToTest.length,
           totalTestCases: testCases.length,
           executionTime: Date.now(),
           version: '1.0'
@@ -172,8 +180,9 @@ serve(async (req) => {
         success: true,
         benchmarkId: benchmarkData.id,
         summaries,
-        totalModels: MODELS_TO_TEST.length,
-        totalTestCases: testCases.length
+        testCasesCount: testCases.length,
+        modelsCount: modelsToTest.length,
+        message: 'Benchmark completed successfully'
       }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
