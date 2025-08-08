@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -9,6 +9,7 @@ import { BenchmarkModelTable } from '@/components/admin/BenchmarkModelTable';
 import { BenchmarkCharts } from '@/components/admin/BenchmarkCharts';
 import { BenchmarkOptionsDialog } from './BenchmarkOptionsDialog';
 import { BenchmarkExecutionHistory } from './BenchmarkExecutionHistory';
+import { BenchmarkResultsDialog } from './BenchmarkResultsDialog';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
 export function BenchmarkDashboard() {
@@ -23,6 +24,10 @@ export function BenchmarkDashboard() {
     executeBenchmark,
     isBenchmarkRunning
   } = useBenchmark();
+
+  const [showOptionsDialog, setShowOptionsDialog] = useState(false);
+  const [showResultsDialog, setShowResultsDialog] = useState(false);
+  const [selectedModelResults, setSelectedModelResults] = useState<any>(null);
 
   // Get real execution history from benchmark data
   const executionHistory = React.useMemo(() => {
@@ -93,10 +98,12 @@ export function BenchmarkDashboard() {
             <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
             Atualizar
           </Button>
-          <BenchmarkOptionsDialog 
-            onExecute={executeBenchmark}
-            isRunning={isBenchmarkRunning}
-          />
+          <Button 
+            onClick={() => setShowOptionsDialog(true)}
+            disabled={isBenchmarkRunning}
+          >
+            {isBenchmarkRunning ? 'Executando...' : 'Executar Benchmark'}
+          </Button>
         </div>
       </div>
 
@@ -228,7 +235,13 @@ export function BenchmarkDashboard() {
         </TabsContent>
 
         <TabsContent value="models" className="space-y-4">
-          <BenchmarkModelTable models={modelPerformance} isLoading={isLoading} />
+          <BenchmarkModelTable 
+            modelPerformance={modelPerformance} 
+            onViewResults={(model) => {
+              setSelectedModelResults(model);
+              setShowResultsDialog(true);
+            }}
+          />
         </TabsContent>
 
         <TabsContent value="charts" className="space-y-4">
@@ -280,6 +293,31 @@ export function BenchmarkDashboard() {
           </Card>
         </TabsContent>
       </Tabs>
+
+      <BenchmarkOptionsDialog
+        onExecute={async (options) => {
+          await executeBenchmark(options);
+          setShowOptionsDialog(false);
+        }}
+        isRunning={isBenchmarkRunning}
+      />
+
+      {selectedModelResults && (
+        <BenchmarkResultsDialog
+          open={showResultsDialog}
+          onOpenChange={setShowResultsDialog}
+          model={selectedModelResults.model}
+          provider={selectedModelResults.provider}
+          results={[]} // TODO: Fetch actual results from qa_validation_results
+          summary={{
+            totalTests: selectedModelResults.totalTests,
+            passedTests: Math.round(selectedModelResults.totalTests * (selectedModelResults.successRate / 100)),
+            avgQualityScore: selectedModelResults.avgQualityScore,
+            avgResponseTime: selectedModelResults.avgResponseTime,
+            successRate: selectedModelResults.successRate
+          }}
+        />
+      )}
     </div>
   );
 }

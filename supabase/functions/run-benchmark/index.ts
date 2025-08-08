@@ -12,7 +12,7 @@ const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-// Available models configuration - synchronized with frontend config
+// Available models configuration - synchronized with llm-models-2025.ts
 const AVAILABLE_MODELS = [
   // ANTHROPIC CLAUDE MODELS
   { model: 'claude-opus-4-1-20250805', provider: 'anthropic' },
@@ -20,49 +20,30 @@ const AVAILABLE_MODELS = [
   { model: 'claude-sonnet-4-20250122', provider: 'anthropic' },
   { model: 'claude-sonnet-3-7-20250122', provider: 'anthropic' },
   { model: 'claude-3-5-sonnet-20241022', provider: 'anthropic' },
-  { model: 'claude-3-5-haiku-20241022', provider: 'anthropic' },
-  { model: 'claude-3-opus-20240229', provider: 'anthropic' },
-  { model: 'claude-3-sonnet-20240229', provider: 'anthropic' },
   { model: 'claude-3-haiku-20240307', provider: 'anthropic' },
   
   // OPENAI GPT MODELS
-  { model: 'gpt-5', provider: 'openai' },
   { model: 'gpt-4.1', provider: 'openai' },
-  { model: 'gpt-4o-2024-11-20', provider: 'openai' },
-  { model: 'gpt-4o-2024-08-06', provider: 'openai' },
-  { model: 'gpt-4o-mini-2024-07-18', provider: 'openai' },
   { model: 'gpt-4-turbo-2024-04-09', provider: 'openai' },
   { model: 'gpt-4-0125-preview', provider: 'openai' },
-  { model: 'gpt-4-0613', provider: 'openai' },
+  { model: 'gpt-4o-2024-11-20', provider: 'openai' },
+  { model: 'gpt-4o-mini-2024-07-18', provider: 'openai' },
+  { model: 'gpt-5', provider: 'openai' },
   { model: 'gpt-3.5-turbo-0125', provider: 'openai' },
   
   // GOOGLE GEMINI MODELS
   { model: 'gemini-2.0-flash-exp', provider: 'google' },
-  { model: 'gemini-exp-1206', provider: 'google' },
   { model: 'gemini-1.5-pro-002', provider: 'google' },
-  { model: 'gemini-1.5-pro', provider: 'google' },
-  { model: 'gemini-1.5-flash-8b', provider: 'google' },
-  { model: 'gemini-1.5-flash', provider: 'google' },
-  { model: 'gemini-1.0-pro', provider: 'google' },
+  { model: 'gemini-1.5-flash-002', provider: 'google' },
   
   // DEEPSEEK MODELS
-  { model: 'deepseek-reasoner', provider: 'deepseek' },
   { model: 'deepseek-chat', provider: 'deepseek' },
   { model: 'deepseek-coder', provider: 'deepseek' },
   
-  // ZHIPUAI GLM MODELS
+  // ZHIPUAI GLM MODELS  
   { model: 'glm-4-plus', provider: 'zhipuai' },
-  { model: 'glm-4-0520', provider: 'zhipuai' },
-  { model: 'glm-4-long', provider: 'zhipuai' },
-  { model: 'glm-4-air', provider: 'zhipuai' },
-  { model: 'glm-4-airx', provider: 'zhipuai' },
   { model: 'glm-4-flash', provider: 'zhipuai' },
-  { model: 'glm-4', provider: 'zhipuai' },
-  
-  // MOONSHOT MODELS
-  { model: 'moonshot-v1-8k', provider: 'moonshot' },
-  { model: 'moonshot-v1-32k', provider: 'moonshot' },
-  { model: 'moonshot-v1-128k', provider: 'moonshot' }
+  { model: 'glm-4', provider: 'zhipuai' }
 ];
 
 interface TestCase {
@@ -127,90 +108,95 @@ serve(async (req) => {
     
     console.log(`Testing ${modelsToTest.length} models:`, modelsToTest.map(m => m.model));
 
-    // Test each selected model
+    // Execute real validations using the qa-execute-validation-v2 function
+    console.log('Executing real validations using qa-execute-validation-v2...');
+    
+    const validationResults = [];
+    
     for (const modelConfig of modelsToTest) {
       console.log(`Testing model: ${modelConfig.model} (${modelConfig.provider})`);
       
-      const modelResults = [];
-      let totalCorrect = 0;
-      let totalResponseTime = 0;
-      let totalCost = 0;
+      try {
+        // Call the qa-execute-validation-v2 function for real validation
+        const { data: validationData, error: validationError } = await supabase.functions.invoke('qa-execute-validation-v2', {
+          body: {
+            models: [modelConfig.model], // Single model per execution
+            mode: 'all', // Use all active test cases
+            includeSQL: true,
+            excludeSQL: false
+          }
+        });
 
-      for (const testCase of testCases as TestCase[]) {
-        const startTime = Date.now();
-        
-        try {
-          // Simulate response for testing - replace with actual call later
-          await new Promise(resolve => setTimeout(resolve, Math.random() * 1000 + 500)); // 0.5-1.5s delay
-          
-          const responseTime = Date.now() - startTime;
-          const mockResponse = `Mock response for: ${testCase.query}`;
-          
-          // Simple quality calculation based on query length
-          const qualityScore = Math.min(95, 70 + Math.random() * 25);
-
-          const isCorrect = qualityScore >= 70;
-          
-          if (isCorrect) totalCorrect++;
-          totalResponseTime += responseTime;
-          totalCost += 0.001;
-
-          modelResults.push({
-            testCaseId: testCase.id,
-            query: testCase.query,
-            expectedKeywords: testCase.expected_keywords,
-            actualResponse: mockResponse,
-            responseTime,
-            isCorrect,
-            qualityScore,
-            error: null
-          });
-
-        } catch (error) {
-          console.error(`Unexpected error for ${modelConfig.model} on test ${testCase.id}:`, error);
-          modelResults.push({
-            testCaseId: testCase.id,
-            query: testCase.query,
-            expectedKeywords: testCase.expected_keywords,
-            actualResponse: null,
-            responseTime: Date.now() - startTime,
-            isCorrect: false,
-            qualityScore: 0,
-            error: error.message
-          });
+        if (validationError) {
+          console.error(`Validation error for ${modelConfig.model}:`, validationError);
+          throw validationError;
         }
+
+        if (validationData?.runs && validationData.runs.length > 0) {
+          const run = validationData.runs[0];
+          
+          const summary = {
+            provider: modelConfig.provider,
+            model: modelConfig.model,
+            totalTests: run.totalTests,
+            passedTests: run.passedTests,
+            avgResponseTime: Math.round(run.avgResponseTime),
+            avgQualityScore: Math.round(run.overallAccuracy * 100),
+            successRate: Math.round((run.passedTests / run.totalTests) * 100),
+            avgCostPerQuery: 0.001, // Placeholder cost calculation
+            recommendation: run.overallAccuracy >= 0.9 ? 'Excelente para tarefas complexas' :
+                           run.avgResponseTime <= 2000 ? 'Ótimo para respostas rápidas' :
+                           'Balanceado para uso geral'
+          };
+
+          summaries.push(summary);
+          
+          // Transform results to match expected format
+          const transformedResults = run.results.map(result => ({
+            testCaseId: result.testCaseId,
+            query: result.question,
+            expectedKeywords: [], // Not available in validation results
+            actualResponse: result.actualAnswer,
+            responseTime: result.responseTime,
+            isCorrect: result.success,
+            qualityScore: result.accuracy * 100,
+            error: result.error || null
+          }));
+
+          results.push({
+            model: modelConfig.model,
+            provider: modelConfig.provider,
+            results: transformedResults
+          });
+
+          validationResults.push(run);
+        } else {
+          console.error(`No validation results for ${modelConfig.model}`);
+          throw new Error(`No validation results returned for ${modelConfig.model}`);
+        }
+
+      } catch (error) {
+        console.error(`Error testing model ${modelConfig.model}:`, error);
+        
+        // Add failed model to summaries with zero scores
+        summaries.push({
+          provider: modelConfig.provider,
+          model: modelConfig.model,
+          totalTests: testCases.length,
+          passedTests: 0,
+          avgResponseTime: 0,
+          avgQualityScore: 0,
+          successRate: 0,
+          avgCostPerQuery: 0,
+          recommendation: 'Falha na execução'
+        });
+
+        results.push({
+          model: modelConfig.model,
+          provider: modelConfig.provider,
+          results: []
+        });
       }
-
-      // Calculate summary metrics
-      const avgResponseTime = totalResponseTime / testCases.length;
-      const avgQualityScore = modelResults.reduce((sum, r) => sum + r.qualityScore, 0) / testCases.length;
-      const successRate = (totalCorrect / testCases.length) * 100;
-      const avgCostPerQuery = totalCost / testCases.length;
-
-      let recommendation = '';
-      if (avgQualityScore >= 90) recommendation = 'Excelente para tarefas complexas';
-      else if (avgResponseTime <= 2000) recommendation = 'Ótimo para respostas rápidas';
-      else if (avgCostPerQuery <= 0.0005) recommendation = 'Econômico para alto volume';
-      else recommendation = 'Balanceado para uso geral';
-
-      const summary = {
-        provider: modelConfig.provider,
-        model: modelConfig.model,
-        totalTests: testCases.length,
-        passedTests: totalCorrect,
-        avgResponseTime: Math.round(avgResponseTime),
-        avgQualityScore: Math.round(avgQualityScore * 100) / 100,
-        successRate: Math.round(successRate * 100) / 100,
-        avgCostPerQuery: Math.round(avgCostPerQuery * 10000) / 10000,
-        recommendation
-      };
-
-      summaries.push(summary);
-      results.push({
-        model: modelConfig.model,
-        provider: modelConfig.provider,
-        results: modelResults
-      });
     }
 
     // Save benchmark results to database
@@ -268,6 +254,8 @@ serve(async (req) => {
         summaries,
         testCasesCount: testCases.length,
         modelsCount: modelsToTest.length,
+        executedModels: modelsToTest.map(m => m.model),
+        validationResults,
         message: 'Benchmark completed successfully'
       }),
       { 
