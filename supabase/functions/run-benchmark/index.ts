@@ -12,7 +12,7 @@ const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-// Available models configuration
+// Available models configuration - matching exactly with UI
 const AVAILABLE_MODELS = [
   { model: 'gpt-4o-mini-2024-07-18', provider: 'openai' },
   { model: 'claude-3-5-sonnet-20241022', provider: 'anthropic' },
@@ -34,7 +34,20 @@ const AVAILABLE_MODELS = [
   { model: 'glm-4-flash', provider: 'zhipuai' },
   { model: 'moonshot-v1-8k', provider: 'moonshot' },
   { model: 'moonshot-v1-32k', provider: 'moonshot' },
-  { model: 'moonshot-v1-128k', provider: 'moonshot' }
+  { model: 'moonshot-v1-128k', provider: 'moonshot' },
+  // Additional models from UI
+  { model: 'claude-sonnet-4-20250122', provider: 'anthropic' },
+  { model: 'claude-sonnet-3-7-20250122', provider: 'anthropic' },
+  { model: 'claude-3-haiku-20240307', provider: 'anthropic' },
+  { model: 'gpt-4.1', provider: 'openai' },
+  { model: 'gpt-4-0125-preview', provider: 'openai' },
+  { model: 'gpt-4o-2024-11-20', provider: 'openai' },
+  { model: 'gpt-5', provider: 'openai' },
+  { model: 'gpt-3.5-turbo-0125', provider: 'openai' },
+  { model: 'deepseek-coder', provider: 'deepseek' },
+  { model: 'glm-4', provider: 'zhipuai' },
+  { model: 'claude-opus-4-1-20250805', provider: 'anthropic' },
+  { model: 'claude-opus-4-20250122', provider: 'anthropic' }
 ];
 
 interface TestCase {
@@ -82,10 +95,21 @@ serve(async (req) => {
     const results: any[] = [];
     const summaries: any[] = [];
 
-    // Filter models based on selection
-    const modelsToTest = AVAILABLE_MODELS.filter(model => 
-      selectedModels.includes(model.model)
-    );
+    // Filter models based on selection or use default fallbacks for unknown models
+    const modelsToTest = selectedModels.map(selectedModel => {
+      const foundModel = AVAILABLE_MODELS.find(m => m.model === selectedModel);
+      if (foundModel) {
+        return foundModel;
+      }
+      // Fallback: try to infer provider from model name
+      let provider = 'openai';
+      if (selectedModel.includes('claude')) provider = 'anthropic';
+      else if (selectedModel.includes('gemini')) provider = 'google';
+      else if (selectedModel.includes('deepseek')) provider = 'deepseek';
+      else if (selectedModel.includes('glm')) provider = 'zhipuai';
+      
+      return { model: selectedModel, provider };
+    });
     
     if (modelsToTest.length === 0) {
       return new Response(

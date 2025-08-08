@@ -99,9 +99,10 @@ export function BenchmarkOptionsDialog({ onExecute, isRunning, progress }: Bench
     
     try {
       await onExecute({ models: selectedModels });
-      setOpen(false);
+      // Keep dialog open to show progress, it will close automatically when benchmark completes
     } catch (error) {
       console.error('Error executing benchmark:', error);
+      setOpen(false);
     }
   };
 
