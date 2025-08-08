@@ -54,21 +54,35 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
+    console.log("kb-reprocess-all: Starting execution");
+    console.log("Request method:", req.method);
+    console.log("Request headers:", Object.fromEntries(req.headers));
+
     const body = await req.json().catch(() => ({}));
+    console.log("Request body:", body);
+    
     const only: string = body.only ?? "all"; // structured | docx | qa | all
     const callStructured = only === "all" || only === "structured";
     const callDocx = only === "all" || only === "docx";
     const callQa = only === "all" || only === "qa";
 
+    console.log("Execution flags:", { callStructured, callDocx, callQa });
+
     const results: Record<string, any> = {};
 
     if (callStructured) {
+      console.log("Calling import-structured-kb...");
       const { data, error } = await supabase.functions.invoke("import-structured-kb", { body: {} });
-      if (error) throw new Error(`Erro em import-structured-kb: ${error.message}`);
+      if (error) {
+        console.error("import-structured-kb error:", error);
+        throw new Error(`Erro em import-structured-kb: ${error.message}`);
+      }
+      console.log("import-structured-kb result:", data);
       results.structured = data;
     }
 
     if (callDocx) {
+      console.log("Processing DOCX files...");
       const files = [
         "PDPOA2025-Minuta_Preliminar_LUOS.docx",
         "PDPOA2025-Minuta_Preliminar_PLANO_DIRETOR.docx",
@@ -79,9 +93,12 @@ serve(async (req) => {
       const processed: any[] = [];
       for (const f of files) {
         try {
+          console.log(`Processing ${f}...`);
           const r = await processDocByFilename(f, "DOCX");
+          console.log(`Processed ${f}:`, r);
           processed.push({ file: f, ...r });
         } catch (e) {
+          console.error(`Error processing ${f}:`, e);
           processed.push({ file: f, error: String(e) });
         }
       }
@@ -89,21 +106,29 @@ serve(async (req) => {
     }
 
     if (callQa) {
+      console.log("Calling qa-ingest-kb...");
       const { data, error } = await supabase.functions.invoke("qa-ingest-kb", {
         body: { overwrite: true },
       });
-      if (error) throw new Error(`Erro em qa-ingest-kb: ${error.message}`);
+      if (error) {
+        console.error("qa-ingest-kb error:", error);
+        throw new Error(`Erro em qa-ingest-kb: ${error.message}`);
+      }
+      console.log("qa-ingest-kb result:", data);
       results.qa = data;
     }
 
+    console.log("kb-reprocess-all: Completed successfully", results);
     return new Response(JSON.stringify({ ok: true, results }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e) {
     console.error("kb-reprocess-all error:", e);
+    console.error("Error stack:", e.stack);
     return new Response(JSON.stringify({ ok: false, error: String(e) }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
+});
 });
