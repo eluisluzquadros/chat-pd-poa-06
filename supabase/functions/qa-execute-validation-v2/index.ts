@@ -173,28 +173,48 @@ serve(async (req) => {
               const controller = new AbortController();
               const timeoutId = setTimeout(() => controller.abort(), testTimeout);
               
-              const response = await fetch(`${supabaseUrl}/functions/v1/${endpoint}`, {
-                method: 'POST',
-                headers: {
-                  'Authorization': `Bearer ${supabaseServiceKey}`,
-                  'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                  message: testCase.query || testCase.question,
-                  sessionId: `qa_validation_${model.replace('/', '_')}_${Date.now()}`,
-                  model: model,
-                  bypassCache: true // Force fresh results for validation
-                }),
-                signal: controller.signal
-              });
+              // Try multiple endpoints for better compatibility
+              const endpoints = ['agentic-rag', 'chat-openai', 'chat-anthropic', 'chat-google'];
+              let response;
+              let lastError;
+              
+              for (const currentEndpoint of endpoints) {
+                try {
+                  response = await fetch(`${supabaseUrl}/functions/v1/${currentEndpoint}`, {
+                    method: 'POST',
+                    headers: {
+                      'Authorization': `Bearer ${supabaseServiceKey}`,
+                      'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                      message: testCase.query || testCase.question,
+                      sessionId: `qa_validation_${model.replace('/', '_')}_${Date.now()}`,
+                      model: model,
+                      bypassCache: true // Force fresh results for validation
+                    }),
+                    signal: controller.signal
+                  });
+                  
+                  if (response.ok) {
+                    console.log(`[QA-VALIDATION-V2] Successfully used endpoint: ${currentEndpoint} for model ${model}`);
+                    break;
+                  } else {
+                    console.warn(`[QA-VALIDATION-V2] Endpoint ${currentEndpoint} returned ${response.status} for model ${model}`);
+                    lastError = `${currentEndpoint}: ${response.status}`;
+                  }
+                } catch (endpointError) {
+                  console.warn(`[QA-VALIDATION-V2] Endpoint ${currentEndpoint} failed for model ${model}:`, endpointError.message);
+                  lastError = `${currentEndpoint}: ${endpointError.message}`;
+                }
+              }
               
               clearTimeout(timeoutId);
 
               const responseTime = Date.now() - startTime;
               totalResponseTime += responseTime;
 
-              if (!response.ok) {
-                throw new Error(`Function returned ${response.status}`);
+              if (!response || !response.ok) {
+                throw new Error(`All endpoints failed. Last error: ${lastError}`);
               }
 
               const result = await response.json();

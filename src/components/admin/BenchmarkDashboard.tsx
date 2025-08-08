@@ -12,6 +12,7 @@ import { BenchmarkExecutionHistory } from './BenchmarkExecutionHistory';
 import { BenchmarkResultsDialog } from './BenchmarkResultsDialog';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 export function BenchmarkDashboard() {
   const { 
@@ -259,37 +260,47 @@ export function BenchmarkDashboard() {
               setShowResultsDialog(true);
               
               try {
-                // Fetch detailed results from qa_validation_results for this model
+                // Fetch detailed results with JOIN to get real questions and expected answers
                 const { data: validationResults, error } = await supabase
                   .from('qa_validation_results')
                   .select(`
                     *,
-                    test_case_id,
-                    actual_answer,
-                    is_correct,
-                    accuracy_score,
-                    response_time_ms,
-                    error_details
+                    qa_test_cases!inner(
+                      id,
+                      query,
+                      question,
+                      expected_answer,
+                      expected_keywords,
+                      category,
+                      complexity
+                    )
                   `)
                   .eq('model', model.model)
                   .order('created_at', { ascending: false })
-                  .limit(20);
+                  .limit(50);
 
                 if (error) {
                   console.error('Error fetching detailed results:', error);
+                  toast.error('Erro ao carregar resultados detalhados');
                   setDetailedResults([]);
                 } else {
-                  // Transform the data to match BenchmarkResult interface
-                  const transformedResults = validationResults?.map((result: any) => ({
-                    testCaseId: result.test_case_id,
-                    question: `Caso de teste ${result.test_case_id}`,
-                    expectedAnswer: '', // Will be filled from test cases if needed
-                    actualAnswer: result.actual_answer || 'Nenhuma resposta',
-                    success: result.is_correct || false,
-                    accuracy: result.accuracy_score || 0,
-                    responseTime: result.response_time_ms || 0,
-                    error: result.error_details
-                  })) || [];
+                  // Transform the data to match BenchmarkResult interface using utility functions
+                  const transformedResults = validationResults?.map((result: any) => {
+                    const testCase = result.qa_test_cases;
+                    
+                    return {
+                      testCaseId: result.test_case_id,
+                      question: testCase?.query || testCase?.question || `Caso de teste ${result.test_case_id}`,
+                      expectedAnswer: testCase?.expected_keywords?.length > 0 
+                        ? `Palavras-chave esperadas: ${testCase.expected_keywords.join(', ')}`
+                        : testCase?.expected_answer || 'Não especificada',
+                      actualAnswer: result.actual_answer || 'Nenhuma resposta',
+                      success: result.is_correct || false,
+                      accuracy: result.accuracy_score || 0,
+                      responseTime: result.response_time_ms || 0,
+                      error: result.error_details
+                    };
+                  }) || [];
                   
                   setDetailedResults(transformedResults);
                 }

@@ -219,39 +219,60 @@ export function useBenchmark(): BenchmarkData & { refetch: () => Promise<void>; 
   const executeBenchmark = async (options?: { models?: string[] }) => {
     setIsBenchmarkRunning(true);
     
-    // Show initial feedback
-    toast.info(`Iniciando benchmark com ${options?.models?.length || 0} modelos...`);
-    
     try {
-      const { data, error } = await supabase.functions.invoke('run-benchmark', {
-        body: { 
-          models: options?.models || ['gpt-4o-mini-2024-07-18', 'claude-3-5-sonnet-20241022', 'gemini-1.5-flash-002']
-        }
-      });
+      const requestData = {
+        mode: 'all',
+        includeSQL: true,
+        excludeSQL: false,
+        ...(options?.models && { models: options.models })
+      };
+
+      console.log('Executing benchmark with data:', requestData);
       
+      const { data, error } = await supabase.functions.invoke('run-benchmark', {
+        body: requestData
+      });
+
       if (error) {
         console.error('Benchmark execution error:', error);
-        toast.error(error.message || "Falha ao executar o benchmark");
-      } else {
-        const modelsCount = data?.modelsCount || options?.models?.length || 0;
-        const testCasesCount = data?.testCasesCount || 5;
-        const executedModels = data?.executedModels || [];
         
-        toast.success(`Benchmark executado com sucesso! ${modelsCount} modelos testados com ${testCasesCount} casos de teste`);
+        // Enhanced error handling for different error types
+        if (error.message.includes('Failed to send a request to the Edge Function')) {
+          toast.error('Erro de conexão: Verifique se as Edge Functions estão funcionando');
+        } else if (error.message.includes('500')) {
+          toast.error('Erro interno do servidor: Alguns modelos podem estar indisponíveis');
+        } else if (error.message.includes('timeout')) {
+          toast.error('Timeout: O benchmark está demorando mais que o esperado');
+        } else {
+          toast.error(`Erro ao executar benchmark: ${error.message}`);
+        }
+        return;
+      }
+
+      if (data?.success) {
+        const successCount = data.summary?.successfulModels || 0;
+        const totalCount = data.summary?.totalModels || 0;
+        const failedCount = data.summary?.failedModels || 0;
         
-        if (executedModels.length > 0) {
-          console.log('Modelos executados:', executedModels);
+        if (failedCount > 0) {
+          toast.success(`Benchmark concluído: ${successCount}/${totalCount} modelos executados com sucesso`);
+          toast.warning(`${failedCount} modelo(s) falharam - verifique os logs para detalhes`);
+        } else {
+          toast.success(`Benchmark executado com sucesso! ${successCount} modelos testados`);
         }
         
-        // Force refresh data after benchmark completion
-        setTimeout(async () => {
-          await fetchBenchmarkData();
-          toast.success("Dashboard atualizado com novos resultados!");
-        }, 3000); // Increased delay to ensure data is processed
+        // Add longer delay to ensure all data is properly saved
+        setTimeout(() => {
+          fetchBenchmarkData();
+        }, 3000);
+      } else {
+        console.error('Benchmark failed:', data);
+        const errorMsg = data?.error || data?.errors?.join(', ') || 'Erro desconhecido';
+        toast.error(`Falha no benchmark: ${errorMsg}`);
       }
     } catch (error) {
       console.error('Error executing benchmark:', error);
-      toast.error("Falha na comunicação com o servidor");
+      toast.error('Erro ao conectar com o servidor de benchmark');
     } finally {
       setIsBenchmarkRunning(false);
     }
