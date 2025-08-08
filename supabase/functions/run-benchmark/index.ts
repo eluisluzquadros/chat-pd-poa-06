@@ -63,9 +63,18 @@ serve(async (req) => {
     console.log('Starting benchmark execution...');
     
     const requestBody = await req.json();
-    const selectedModels = requestBody?.models || [];
+    const { 
+      models: selectedModels = [],
+      mode = 'all',
+      categories,
+      difficulties,
+      randomCount,
+      includeSQL = true,
+      excludeSQL = false
+    } = requestBody;
     
     console.log('Selected models for testing:', selectedModels);
+    console.log('Execution options:', { mode, categories, difficulties, randomCount, includeSQL, excludeSQL });
     
     // Fetch active test cases
     const { data: testCases, error: testCasesError } = await supabase
@@ -121,9 +130,12 @@ serve(async (req) => {
         const { data: validationData, error: validationError } = await supabase.functions.invoke('qa-execute-validation-v2', {
           body: {
             models: [modelConfig.model], // Single model per execution
-            mode: 'all', // Use all active test cases
-            includeSQL: true,
-            excludeSQL: false
+            mode,
+            categories,
+            difficulties,
+            randomCount,
+            includeSQL,
+            excludeSQL
           }
         });
 
