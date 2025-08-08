@@ -141,6 +141,19 @@ export const UPDATED_MODEL_CONFIGS: ModelConfig[] = [
     contextWindow: 128000,
     available: true
   },
+  // Experimental next-gen model (fallbacks apply if unavailable)
+  {
+    provider: 'openai',
+    model: 'gpt-5',
+    displayName: 'GPT-5',
+    costPerInputToken: 0.01 / 1000, // provisional until benchmarked
+    costPerOutputToken: 0.03 / 1000, // provisional until benchmarked
+    maxTokens: 4096,
+    averageLatency: 4000,
+    contextWindow: 128000,
+    available: true,
+    description: 'Modelo de última geração da OpenAI (configuração provisória)'
+  },
   {
     provider: 'openai',
     model: 'gpt-3.5-turbo-0125',

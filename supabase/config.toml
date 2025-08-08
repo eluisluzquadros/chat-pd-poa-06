@@ -43,3 +43,6 @@ verify_jwt = true
 
 [functions.qa-batch-execution]
 verify_jwt = true
+
+[functions.qa-ingest-kb]
+verify_jwt = true
