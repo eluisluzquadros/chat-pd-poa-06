@@ -29,6 +29,8 @@ export function BenchmarkDashboard() {
   const [showOptionsDialog, setShowOptionsDialog] = useState(false);
   const [showResultsDialog, setShowResultsDialog] = useState(false);
   const [selectedModelResults, setSelectedModelResults] = useState<any>(null);
+  const [detailedResults, setDetailedResults] = useState<any[]>([]);
+  const [loadingResults, setLoadingResults] = useState(false);
 
   // Get real execution history from qa_benchmarks table
   const [executionHistory, setExecutionHistory] = useState<any[]>([]);
@@ -251,9 +253,52 @@ export function BenchmarkDashboard() {
         <TabsContent value="models" className="space-y-4">
           <BenchmarkModelTable 
             modelPerformance={modelPerformance} 
-            onViewResults={(model) => {
+            onViewResults={async (model) => {
               setSelectedModelResults(model);
+              setLoadingResults(true);
               setShowResultsDialog(true);
+              
+              try {
+                // Fetch detailed results from qa_validation_results for this model
+                const { data: validationResults, error } = await supabase
+                  .from('qa_validation_results')
+                  .select(`
+                    *,
+                    test_case_id,
+                    actual_answer,
+                    is_correct,
+                    accuracy_score,
+                    response_time_ms,
+                    error_details
+                  `)
+                  .eq('model', model.model)
+                  .order('created_at', { ascending: false })
+                  .limit(20);
+
+                if (error) {
+                  console.error('Error fetching detailed results:', error);
+                  setDetailedResults([]);
+                } else {
+                  // Transform the data to match BenchmarkResult interface
+                  const transformedResults = validationResults?.map((result: any) => ({
+                    testCaseId: result.test_case_id,
+                    question: `Caso de teste ${result.test_case_id}`,
+                    expectedAnswer: '', // Will be filled from test cases if needed
+                    actualAnswer: result.actual_answer || 'Nenhuma resposta',
+                    success: result.is_correct || false,
+                    accuracy: result.accuracy_score || 0,
+                    responseTime: result.response_time_ms || 0,
+                    error: result.error_details
+                  })) || [];
+                  
+                  setDetailedResults(transformedResults);
+                }
+              } catch (error) {
+                console.error('Error fetching results:', error);
+                setDetailedResults([]);
+              } finally {
+                setLoadingResults(false);
+              }
             }}
           />
         </TabsContent>
@@ -312,10 +357,16 @@ export function BenchmarkDashboard() {
       {selectedModelResults && (
         <BenchmarkResultsDialog
           open={showResultsDialog}
-          onOpenChange={setShowResultsDialog}
+          onOpenChange={(open) => {
+            setShowResultsDialog(open);
+            if (!open) {
+              setDetailedResults([]);
+              setSelectedModelResults(null);
+            }
+          }}
           model={selectedModelResults.model}
           provider={selectedModelResults.provider}
-          results={[]} // TODO: Fetch actual results from qa_validation_results
+          results={detailedResults}
           summary={{
             totalTests: selectedModelResults.totalTests,
             passedTests: Math.round(selectedModelResults.totalTests * (selectedModelResults.successRate / 100)),
