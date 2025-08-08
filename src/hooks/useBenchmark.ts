@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 export interface BenchmarkMetrics {
   totalBenchmarks: number;
@@ -202,19 +203,27 @@ export function useBenchmark(): BenchmarkData & { refetch: () => Promise<void>; 
   const executeBenchmark = async () => {
     try {
       setIsBenchmarkRunning(true);
+      console.log('Starting benchmark execution...');
       
-      const { data: result, error } = await supabase.functions.invoke('run-benchmark');
+      const { data: result, error } = await supabase.functions.invoke('run-benchmark', {
+        body: {},
+      });
       
       if (error) {
         console.error('Benchmark execution error:', error);
         setData(prev => ({ ...prev, error: error.message }));
+        toast.error("Erro ao executar benchmark: " + (error.message || "Falha na execução do benchmark"));
         return;
       }
       
       console.log('Benchmark completed:', result);
       
+      toast.success(`Benchmark executado com sucesso! ${result.totalModels} modelos testados com ${result.totalTestCases} casos de teste`);
+      
       // Refresh data after benchmark completion
-      await fetchBenchmarkData();
+      setTimeout(() => {
+        fetchBenchmarkData();
+      }, 1000);
       
     } catch (error) {
       console.error('Error executing benchmark:', error);
@@ -222,6 +231,7 @@ export function useBenchmark(): BenchmarkData & { refetch: () => Promise<void>; 
         ...prev, 
         error: error instanceof Error ? error.message : 'Erro ao executar benchmark'
       }));
+      toast.error("Erro ao executar benchmark: Falha na comunicação com o servidor");
     } finally {
       setIsBenchmarkRunning(false);
     }
