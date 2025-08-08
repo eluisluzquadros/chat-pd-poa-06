@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,8 +7,24 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { Play, Settings } from 'lucide-react';
-import { UPDATED_MODEL_CONFIGS } from '@/config/llm-models-2025';
+import { UPDATED_MODEL_CONFIGS, ModelConfig } from '@/config/llm-models-2025';
 import { Progress } from '@/components/ui/progress';
+
+interface ModelDisplay extends ModelConfig {
+  quality: number;
+  speed: number;
+  cost: number;
+}
+
+// Convert model configs to display format with calculated metrics
+const AVAILABLE_MODELS: ModelDisplay[] = UPDATED_MODEL_CONFIGS
+  .filter(config => config.available)
+  .map(config => ({
+    ...config,
+    quality: Math.round(95 - (config.costPerOutputToken * 10000)), // Higher cost = lower quality estimation
+    speed: config.averageLatency / 1000, // Convert ms to seconds
+    cost: config.costPerOutputToken * 1000 // Convert to per 1K tokens
+  }));
 
 interface BenchmarkOptions {
   models: string[];
@@ -28,14 +44,14 @@ export function BenchmarkOptionsDialog({ onExecute, isRunning, progress }: Bench
     'gemini-1.5-flash-002'
   ]);
 
-  const availableModels = UPDATED_MODEL_CONFIGS
-    .filter(config => config.available)
-    .map(config => ({
-      value: config.model,
-      label: config.displayName,
-      provider: config.provider,
-      cost: config.costPerInputToken + config.costPerOutputToken
-    }));
+  const availableModels = AVAILABLE_MODELS.map(model => ({
+    value: model.model,
+    label: model.displayName,
+    provider: model.provider,
+    cost: model.cost,
+    quality: model.quality,
+    speed: model.speed
+  }));
 
   const handleModelToggle = (modelValue: string, checked: boolean) => {
     if (checked) {
@@ -43,6 +59,39 @@ export function BenchmarkOptionsDialog({ onExecute, isRunning, progress }: Bench
     } else {
       setSelectedModels(prev => prev.filter(m => m !== modelValue));
     }
+  };
+
+  const handleSelectPreset = (preset: 'top-quality' | 'fastest' | 'cost-effective' | 'all' | 'clear') => {
+    let models: string[] = [];
+    
+    switch (preset) {
+      case 'top-quality':
+        models = AVAILABLE_MODELS
+          .sort((a, b) => b.quality - a.quality)
+          .slice(0, 5)
+          .map(m => m.model);
+        break;
+      case 'fastest':
+        models = AVAILABLE_MODELS
+          .sort((a, b) => a.speed - b.speed)
+          .slice(0, 5)
+          .map(m => m.model);
+        break;
+      case 'cost-effective':
+        models = AVAILABLE_MODELS
+          .sort((a, b) => a.cost - b.cost)
+          .slice(0, 5)
+          .map(m => m.model);
+        break;
+      case 'all':
+        models = AVAILABLE_MODELS.map(m => m.model);
+        break;
+      case 'clear':
+        models = [];
+        break;
+    }
+    
+    setSelectedModels(models);
   };
 
   const handleExecute = async () => {
@@ -63,13 +112,12 @@ export function BenchmarkOptionsDialog({ onExecute, isRunning, progress }: Bench
     return Math.round(totalTime / 60); // Convert to minutes
   };
 
-  const groupedModels = availableModels.reduce((acc, model) => {
-    if (!acc[model.provider]) {
-      acc[model.provider] = [];
-    }
-    acc[model.provider].push(model);
-    return acc;
-  }, {} as Record<string, typeof availableModels>);
+  const getQualityColor = (quality: number) => {
+    if (quality >= 95) return 'bg-green-100 text-green-800';
+    if (quality >= 90) return 'bg-blue-100 text-blue-800';
+    if (quality >= 85) return 'bg-yellow-100 text-yellow-800';
+    return 'bg-red-100 text-red-800';
+  };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -115,35 +163,71 @@ export function BenchmarkOptionsDialog({ onExecute, isRunning, progress }: Bench
           </Card>
         ) : (
           <div className="space-y-6">
-            {/* Model Selection */}
+            {/* Filter Buttons */}
+            <div className="flex gap-2 flex-wrap">
+              <Button variant="outline" size="sm" onClick={() => handleSelectPreset('top-quality')}>
+                Top 5 Qualidade
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => handleSelectPreset('fastest')}>
+                Top 5 Velocidade
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => handleSelectPreset('cost-effective')}>
+                Top 5 Custo-Benefício
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => handleSelectPreset('all')}>
+                Todos os Modelos
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => handleSelectPreset('clear')}>
+                Limpar Seleção
+              </Button>
+            </div>
+
+            {/* Model Selection Grid */}
             <div className="space-y-4">
               <Label className="text-base font-semibold">Selecionar Modelos para Benchmark</Label>
-              
-              {Object.entries(groupedModels).map(([provider, models]) => (
-                <Card key={provider}>
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-lg capitalize">{provider}</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid grid-cols-2 gap-3">
-                      {models.map(model => (
-                        <div key={model.value} className="flex items-start space-x-3">
-                          <Checkbox
-                            checked={selectedModels.includes(model.value)}
-                            onCheckedChange={(checked) => handleModelToggle(model.value, checked as boolean)}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {availableModels.map((model) => {
+                  const isSelected = selectedModels.includes(model.value);
+                  
+                  return (
+                    <Card 
+                      key={model.value} 
+                      className={`cursor-pointer transition-all ${
+                        isSelected ? 'ring-2 ring-primary' : ''
+                      }`}
+                      onClick={() => handleModelToggle(model.value, !isSelected)}
+                    >
+                      <CardHeader className="pb-2">
+                        <div className="flex items-center space-x-2">
+                          <Checkbox 
+                            checked={isSelected}
+                            onChange={() => handleModelToggle(model.value, !isSelected)}
                           />
-                          <div className="flex-1 min-w-0">
-                            <Label className="text-sm font-medium">{model.label}</Label>
-                            <div className="text-xs text-muted-foreground">
-                              Custo: ${(model.cost * 1000).toFixed(4)}/1K tokens
-                            </div>
+                          <CardTitle className="text-sm">{model.label}</CardTitle>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="pt-0">
+                        <div className="space-y-2">
+                          <div className="flex justify-between text-xs">
+                            <span>Qualidade:</span>
+                            <Badge className={getQualityColor(model.quality)}>
+                              {model.quality}%
+                            </Badge>
+                          </div>
+                          <div className="flex justify-between text-xs">
+                            <span>Velocidade:</span>
+                            <span>{model.speed}s</span>
+                          </div>
+                          <div className="flex justify-between text-xs">
+                            <span>Custo:</span>
+                            <span>${model.cost.toFixed(4)}/1K</span>
                           </div>
                         </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
             </div>
 
             <Separator />
