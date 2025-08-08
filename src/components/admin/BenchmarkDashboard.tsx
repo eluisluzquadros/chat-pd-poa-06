@@ -3,14 +3,24 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { RefreshCw, Crown, Zap, DollarSign, Target, TrendingUp, AlertCircle } from 'lucide-react';
+import { RefreshCw, Crown, Zap, DollarSign, Target, TrendingUp, AlertCircle, Play } from 'lucide-react';
 import { useBenchmark } from '@/hooks/useBenchmark';
 import { BenchmarkModelTable } from '@/components/admin/BenchmarkModelTable';
 import { BenchmarkCharts } from '@/components/admin/BenchmarkCharts';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
 export function BenchmarkDashboard() {
-  const { metrics, modelPerformance, qualityByModel, costByProvider, isLoading, error, refetch } = useBenchmark();
+  const { 
+    metrics, 
+    modelPerformance, 
+    qualityByModel, 
+    costByProvider, 
+    isLoading, 
+    error, 
+    refetch,
+    executeBenchmark,
+    isBenchmarkRunning
+  } = useBenchmark();
 
   if (error) {
     return (
@@ -45,13 +55,18 @@ export function BenchmarkDashboard() {
           <p className="text-muted-foreground">Monitore o desempenho comparativo dos modelos de IA</p>
         </div>
         <div className="flex gap-3">
-          <Button variant="outline" onClick={refetch} size="sm" disabled={isLoading}>
+          <Button variant="outline" onClick={refetch} size="sm" disabled={isLoading || isBenchmarkRunning}>
             <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
             Atualizar
           </Button>
-          <Button variant="default" size="sm">
-            <Target className="h-4 w-4 mr-2" />
-            Executar Benchmark
+          <Button 
+            variant="default" 
+            size="sm"
+            onClick={executeBenchmark}
+            disabled={isBenchmarkRunning || isLoading}
+          >
+            <Play className={`h-4 w-4 mr-2 ${isBenchmarkRunning ? 'animate-spin' : ''}`} />
+            {isBenchmarkRunning ? 'Executando...' : 'Executar Benchmark'}
           </Button>
         </div>
       </div>

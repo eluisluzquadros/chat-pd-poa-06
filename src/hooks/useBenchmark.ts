@@ -30,7 +30,7 @@ export interface BenchmarkData {
   error: string | null;
 }
 
-export function useBenchmark(): BenchmarkData & { refetch: () => Promise<void> } {
+export function useBenchmark(): BenchmarkData & { refetch: () => Promise<void>; executeBenchmark: () => Promise<void>; isBenchmarkRunning: boolean } {
   const [data, setData] = useState<BenchmarkData>({
     metrics: {
       totalBenchmarks: 0,
@@ -46,6 +46,8 @@ export function useBenchmark(): BenchmarkData & { refetch: () => Promise<void> }
     isLoading: true,
     error: null
   });
+
+  const [isBenchmarkRunning, setIsBenchmarkRunning] = useState(false);
 
   const fetchBenchmarkData = async () => {
     try {
@@ -197,8 +199,38 @@ export function useBenchmark(): BenchmarkData & { refetch: () => Promise<void> }
     fetchBenchmarkData();
   }, []);
 
+  const executeBenchmark = async () => {
+    try {
+      setIsBenchmarkRunning(true);
+      
+      const { data: result, error } = await supabase.functions.invoke('run-benchmark');
+      
+      if (error) {
+        console.error('Benchmark execution error:', error);
+        setData(prev => ({ ...prev, error: error.message }));
+        return;
+      }
+      
+      console.log('Benchmark completed:', result);
+      
+      // Refresh data after benchmark completion
+      await fetchBenchmarkData();
+      
+    } catch (error) {
+      console.error('Error executing benchmark:', error);
+      setData(prev => ({ 
+        ...prev, 
+        error: error instanceof Error ? error.message : 'Erro ao executar benchmark'
+      }));
+    } finally {
+      setIsBenchmarkRunning(false);
+    }
+  };
+
   return {
     ...data,
-    refetch: fetchBenchmarkData
+    refetch: fetchBenchmarkData,
+    executeBenchmark,
+    isBenchmarkRunning
   };
 }
