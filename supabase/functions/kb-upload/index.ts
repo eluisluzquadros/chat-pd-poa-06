@@ -5,10 +5,12 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.52.1";
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+const ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
 
 const supabaseAdmin = createClient(SUPABASE_URL, SERVICE_KEY);
 
@@ -17,15 +19,19 @@ async function requireAdmin(req: Request) {
   const token = auth.replace("Bearer ", "").trim();
   if (!token) return { ok: false, error: "missing token" };
 
+  // Validate JWT
   const { data: userData, error } = await supabaseAdmin.auth.getUser(token);
   if (error || !userData?.user) return { ok: false, error: "invalid token" };
 
-  // Check role via RPC
-  const { data: roleRows, error: roleErr } = await supabaseAdmin
-    .rpc("get_current_user_role");
+  // Use user-scoped client so auth.uid() works inside RPC
+  const supabaseUser = createClient(SUPABASE_URL, ANON_KEY, {
+    global: { headers: { Authorization: `Bearer ${token}` } },
+  });
+
+  const { data: roleData, error: roleErr } = await supabaseUser.rpc("get_current_user_role");
   if (roleErr) return { ok: false, error: roleErr.message };
 
-  const role = (Array.isArray(roleRows) ? roleRows?.[0] : roleRows) as unknown as string | null;
+  const role = typeof roleData === "string" ? roleData : (Array.isArray(roleData) ? roleData[0] : null);
   if (role !== "admin" && role !== "supervisor") return { ok: false, error: "forbidden" };
   return { ok: true };
 }
