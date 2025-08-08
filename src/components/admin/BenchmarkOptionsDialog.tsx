@@ -98,8 +98,10 @@ export function BenchmarkOptionsDialog({ onExecute, isRunning, progress }: Bench
     if (selectedModels.length === 0) return;
     
     try {
+      console.log('Executing benchmark with models:', selectedModels);
       await onExecute({ models: selectedModels });
-      // Keep dialog open to show progress, it will close automatically when benchmark completes
+      // Close dialog after successful execution
+      setTimeout(() => setOpen(false), 1000);
     } catch (error) {
       console.error('Error executing benchmark:', error);
       setOpen(false);

@@ -12,42 +12,57 @@ const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-// Available models configuration - matching exactly with UI
+// Available models configuration - synchronized with frontend config
 const AVAILABLE_MODELS = [
-  { model: 'gpt-4o-mini-2024-07-18', provider: 'openai' },
-  { model: 'claude-3-5-sonnet-20241022', provider: 'anthropic' },
-  { model: 'gemini-1.5-flash-002', provider: 'google' },
-  { model: 'claude-3-5-haiku-20241022', provider: 'anthropic' },
-  { model: 'gpt-4o-2024-08-06', provider: 'openai' },
-  { model: 'claude-opus-4-20250514', provider: 'anthropic' },
-  { model: 'claude-sonnet-4-20250514', provider: 'anthropic' },
-  { model: 'gemini-1.5-pro-002', provider: 'google' },
-  { model: 'gemini-2.0-flash-exp', provider: 'google' },
-  { model: 'o1-preview-2024-09-12', provider: 'openai' },
-  { model: 'o1-mini-2024-09-12', provider: 'openai' },
-  { model: 'gpt-4-turbo-2024-04-09', provider: 'openai' },
-  { model: 'deepseek-chat', provider: 'deepseek' },
-  { model: 'deepseek-reasoner', provider: 'deepseek' },
-  { model: 'glm-4-plus', provider: 'zhipuai' },
-  { model: 'glm-4-0520', provider: 'zhipuai' },
-  { model: 'glm-4v-plus', provider: 'zhipuai' },
-  { model: 'glm-4-flash', provider: 'zhipuai' },
-  { model: 'moonshot-v1-8k', provider: 'moonshot' },
-  { model: 'moonshot-v1-32k', provider: 'moonshot' },
-  { model: 'moonshot-v1-128k', provider: 'moonshot' },
-  // Additional models from UI
+  // ANTHROPIC CLAUDE MODELS
+  { model: 'claude-opus-4-1-20250805', provider: 'anthropic' },
+  { model: 'claude-opus-4-20250122', provider: 'anthropic' },
   { model: 'claude-sonnet-4-20250122', provider: 'anthropic' },
   { model: 'claude-sonnet-3-7-20250122', provider: 'anthropic' },
+  { model: 'claude-3-5-sonnet-20241022', provider: 'anthropic' },
+  { model: 'claude-3-5-haiku-20241022', provider: 'anthropic' },
+  { model: 'claude-3-opus-20240229', provider: 'anthropic' },
+  { model: 'claude-3-sonnet-20240229', provider: 'anthropic' },
   { model: 'claude-3-haiku-20240307', provider: 'anthropic' },
-  { model: 'gpt-4.1', provider: 'openai' },
-  { model: 'gpt-4-0125-preview', provider: 'openai' },
-  { model: 'gpt-4o-2024-11-20', provider: 'openai' },
+  
+  // OPENAI GPT MODELS
   { model: 'gpt-5', provider: 'openai' },
+  { model: 'gpt-4.1', provider: 'openai' },
+  { model: 'gpt-4o-2024-11-20', provider: 'openai' },
+  { model: 'gpt-4o-2024-08-06', provider: 'openai' },
+  { model: 'gpt-4o-mini-2024-07-18', provider: 'openai' },
+  { model: 'gpt-4-turbo-2024-04-09', provider: 'openai' },
+  { model: 'gpt-4-0125-preview', provider: 'openai' },
+  { model: 'gpt-4-0613', provider: 'openai' },
   { model: 'gpt-3.5-turbo-0125', provider: 'openai' },
+  
+  // GOOGLE GEMINI MODELS
+  { model: 'gemini-2.0-flash-exp', provider: 'google' },
+  { model: 'gemini-exp-1206', provider: 'google' },
+  { model: 'gemini-1.5-pro-002', provider: 'google' },
+  { model: 'gemini-1.5-pro', provider: 'google' },
+  { model: 'gemini-1.5-flash-8b', provider: 'google' },
+  { model: 'gemini-1.5-flash', provider: 'google' },
+  { model: 'gemini-1.0-pro', provider: 'google' },
+  
+  // DEEPSEEK MODELS
+  { model: 'deepseek-reasoner', provider: 'deepseek' },
+  { model: 'deepseek-chat', provider: 'deepseek' },
   { model: 'deepseek-coder', provider: 'deepseek' },
+  
+  // ZHIPUAI GLM MODELS
+  { model: 'glm-4-plus', provider: 'zhipuai' },
+  { model: 'glm-4-0520', provider: 'zhipuai' },
+  { model: 'glm-4-long', provider: 'zhipuai' },
+  { model: 'glm-4-air', provider: 'zhipuai' },
+  { model: 'glm-4-airx', provider: 'zhipuai' },
+  { model: 'glm-4-flash', provider: 'zhipuai' },
   { model: 'glm-4', provider: 'zhipuai' },
-  { model: 'claude-opus-4-1-20250805', provider: 'anthropic' },
-  { model: 'claude-opus-4-20250122', provider: 'anthropic' }
+  
+  // MOONSHOT MODELS
+  { model: 'moonshot-v1-8k', provider: 'moonshot' },
+  { model: 'moonshot-v1-32k', provider: 'moonshot' },
+  { model: 'moonshot-v1-128k', provider: 'moonshot' }
 ];
 
 interface TestCase {
@@ -95,21 +110,13 @@ serve(async (req) => {
     const results: any[] = [];
     const summaries: any[] = [];
 
-    // Filter models based on selection or use default fallbacks for unknown models
-    const modelsToTest = selectedModels.map(selectedModel => {
-      const foundModel = AVAILABLE_MODELS.find(m => m.model === selectedModel);
-      if (foundModel) {
-        return foundModel;
-      }
-      // Fallback: try to infer provider from model name
-      let provider = 'openai';
-      if (selectedModel.includes('claude')) provider = 'anthropic';
-      else if (selectedModel.includes('gemini')) provider = 'google';
-      else if (selectedModel.includes('deepseek')) provider = 'deepseek';
-      else if (selectedModel.includes('glm')) provider = 'zhipuai';
-      
-      return { model: selectedModel, provider };
-    });
+    // Filter models based on selection - only test models that are actually selected
+    const modelsToTest = selectedModels
+      .map(selectedModel => AVAILABLE_MODELS.find(m => m.model === selectedModel))
+      .filter(Boolean) as Array<{ model: string; provider: string }>;
+    
+    console.log('Selected models:', selectedModels);
+    console.log('Models to test:', modelsToTest.map(m => m.model));
     
     if (modelsToTest.length === 0) {
       return new Response(

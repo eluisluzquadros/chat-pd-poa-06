@@ -217,16 +217,21 @@ export function useBenchmark(): BenchmarkData & { refetch: () => Promise<void>; 
         console.error('Benchmark execution error:', error);
         toast.error(error.message || "Falha ao executar o benchmark");
       } else {
-        const modelsCount = data?.modelsCount || options?.models?.length || 3;
+        const modelsCount = data?.modelsCount || options?.models?.length || 0;
         const testCasesCount = data?.testCasesCount || 5;
+        const executedModels = data?.executedModels || [];
         
         toast.success(`Benchmark executado com sucesso! ${modelsCount} modelos testados com ${testCasesCount} casos de teste`);
         
-        // Force refresh data after benchmark completion with a small delay
+        if (executedModels.length > 0) {
+          console.log('Modelos executados:', executedModels);
+        }
+        
+        // Force refresh data after benchmark completion
         setTimeout(async () => {
           await fetchBenchmarkData();
           toast.success("Dashboard atualizado com novos resultados!");
-        }, 1000);
+        }, 2000);
       }
     } catch (error) {
       console.error('Error executing benchmark:', error);
