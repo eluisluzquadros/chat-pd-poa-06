@@ -6,6 +6,7 @@ import { createHierarchicalChunks, processDocumentWithHierarchicalChunking, Hier
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
 }
 
 interface ProcessDocumentRequest {
@@ -147,7 +148,7 @@ async function getDocumentContent(supabase: ReturnType<typeof createClient>, doc
   
   const { data: document, error } = await supabase
     .from('documents')
-    .select('content, type, file_path, url, metadata, file_name')
+    .select('content, type, file_path, metadata, file_name')
     .eq('id', documentId)
     .single();
 
@@ -164,7 +165,6 @@ async function getDocumentContent(supabase: ReturnType<typeof createClient>, doc
     type: document.type,
     hasContent: !!document.content,
     hasFilePath: !!document.file_path,
-    hasUrl: !!document.url,
     fileName: document.file_name
   });
 
@@ -179,8 +179,6 @@ async function getDocumentContent(supabase: ReturnType<typeof createClient>, doc
       } else {
         content = await downloadFileContent(supabase, document.file_path);
       }
-    } else if (document.url) {
-      content = await fetchUrlContent(document.url);
     }
   }
 

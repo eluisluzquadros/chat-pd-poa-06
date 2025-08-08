@@ -1,7 +1,7 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.52.1";
-import * as XLSX from "https://esm.sh/xlsx@0.18.5";
+import { read, utils } from "https://esm.sh/xlsx@0.18.5";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -69,11 +69,11 @@ async function readXlsxFromStorage(path: string): Promise<any[] | null> {
     return null;
   }
   const buf = new Uint8Array(await data.arrayBuffer());
-  const wb = XLSX.read(buf, { type: "array" });
+  const wb = read(buf, { type: "array" });
   const sheetName = wb.SheetNames?.[0];
   if (!sheetName) return null;
   const ws = wb.Sheets[sheetName];
-  const rows = XLSX.utils.sheet_to_json(ws);
+  const rows = utils.sheet_to_json(ws);
   return rows as any[];
 }
 
