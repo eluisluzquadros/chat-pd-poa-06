@@ -200,17 +200,32 @@ export function QAKnowledgeGaps() {
   const triggerKnowledgeUpdate = async (gap: KnowledgeGap) => {
     setAnalysisInProgress(true);
     try {
-      // Simplified knowledge update - just generate insights locally
-      // Since the edge function doesn't exist, we'll analyze locally
+      // Enhanced local analysis with more actionable insights
       const insights = generateLocalInsights(gap);
+      const recommendations = generateRecommendations(gap);
       
-      toast.success("Análise local de conhecimento concluída");
+      // Save insight to qa_learning_insights table
+      await supabase.from('qa_learning_insights').insert({
+        insight_type: 'knowledge_gap',
+        category: gap.category,
+        model: 'system',
+        insight_data: {
+          topic: gap.topic,
+          severity: gap.severity,
+          failed_tests_count: gap.failedTests.length,
+          avg_accuracy: gap.failedTests.reduce((sum, t) => sum + t.accuracy_score, 0) / gap.failedTests.length,
+          suggested_action: gap.suggestedAction,
+          failed_questions: gap.failedTests.map(t => t.question)
+        },
+        confidence_score: gap.severity === 'critical' ? 0.9 : gap.severity === 'high' ? 0.8 : 0.7
+      });
       
-      // Show results in a simple format
+      toast.success("Gap de conhecimento registrado para ação");
+      
       setUpdateAnalysisData({
         insights,
         gap,
-        recommendations: generateRecommendations(gap)
+        recommendations
       });
       setShowUpdateDialog(true);
 

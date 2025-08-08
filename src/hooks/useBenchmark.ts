@@ -247,7 +247,7 @@ export function useBenchmark(): BenchmarkData & { refetch: () => Promise<void>; 
         setTimeout(async () => {
           await fetchBenchmarkData();
           toast.success("Dashboard atualizado com novos resultados!");
-        }, 2000);
+        }, 3000); // Increased delay to ensure data is processed
       }
     } catch (error) {
       console.error('Error executing benchmark:', error);
