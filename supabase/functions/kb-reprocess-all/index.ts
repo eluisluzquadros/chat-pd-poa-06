@@ -89,13 +89,14 @@ serve(async (req) => {
         const { data, error } = await supabase.functions.invoke("import-structured-kb", { body: {} });
         if (error) {
           console.error("import-structured-kb error details:", JSON.stringify(error, null, 2));
-          throw new Error(`Erro em import-structured-kb: ${error.message}`);
+          results.structured_error = { message: error.message || 'Unknown error', details: error };
+        } else {
+          console.log("import-structured-kb success:", data);
+          results.structured = data;
         }
-        console.log("import-structured-kb success:", data);
-        results.structured = data;
       } catch (structuredError) {
         console.error("=== STRUCTURED ERROR ===", structuredError);
-        throw structuredError;
+        results.structured_error = String(structuredError);
       }
     }
 

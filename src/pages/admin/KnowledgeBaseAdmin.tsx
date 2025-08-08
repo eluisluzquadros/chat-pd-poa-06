@@ -7,6 +7,7 @@ export default function KnowledgeBaseAdmin() {
   const [processing, setProcessing] = useState(false);
   const [result, setResult] = useState<any | null>(null);
   const [files, setFiles] = useState<FileList | null>(null);
+  const [mode, setMode] = useState<"all" | "structured" | "docx" | "qa">("all");
 
   // SEO basics
   useEffect(() => {
@@ -62,18 +63,20 @@ export default function KnowledgeBaseAdmin() {
     setResult(null);
     try {
       const { data, error } = await supabase.functions.invoke("kb-reprocess-all", {
-        body: { only: "all" },
+        body: { only: mode },
       });
       if (error) throw error;
       setResult(data);
-      toast.success("Reprocessamento iniciado/concluído");
+      toast.success("Reprocessamento concluído");
     } catch (e: any) {
       console.error(e);
-      toast.error(e.message || "Erro ao reprocessar");
+      const msg = e?.message || "Erro ao reprocessar";
+      toast.error(msg);
+      setResult({ ok: false, error: msg, context: e?.context ?? null });
     } finally {
       setProcessing(false);
     }
-  }, []);
+  }, [mode]);
 
   return (
     <div className="container mx-auto max-w-4xl px-4 py-8">
@@ -105,13 +108,27 @@ export default function KnowledgeBaseAdmin() {
 
         <section className="rounded-lg border p-4">
           <h2 className="text-lg font-medium">Reprocessar Knowledge Base</h2>
-          <p className="text-sm opacity-80 mb-3">Executa import-structured-kb, processa DOCX e ingere QA</p>
+          <p className="text-sm opacity-80 mb-3">Escolha o modo e execute: structured, DOCX, QA ou tudo</p>
+          <div className="flex items-center gap-3 mb-3">
+            <label htmlFor="kb-mode" className="text-sm">Modo:</label>
+            <select
+              id="kb-mode"
+              value={mode}
+              onChange={(e) => setMode(e.target.value as any)}
+              className="border rounded-md px-2 py-1"
+            >
+              <option value="all">Tudo</option>
+              <option value="structured">Somente Structured (XLSX)</option>
+              <option value="docx">Somente DOCX</option>
+              <option value="qa">Somente QA</option>
+            </select>
+          </div>
           <button
             onClick={runReprocess}
             disabled={processing}
             className="inline-flex items-center rounded-md px-4 py-2 border disabled:opacity-50"
           >
-            {processing ? "Processando..." : "Reprocessar tudo"}
+            {processing ? "Processando..." : "Executar"}
           </button>
         </section>
 
