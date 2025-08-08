@@ -12,10 +12,29 @@ const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-const MODELS_TO_TEST = [
+// Available models configuration
+const AVAILABLE_MODELS = [
   { model: 'gpt-4o-mini-2024-07-18', provider: 'openai' },
   { model: 'claude-3-5-sonnet-20241022', provider: 'anthropic' },
-  { model: 'gemini-1.5-flash-002', provider: 'google' }
+  { model: 'gemini-1.5-flash-002', provider: 'google' },
+  { model: 'claude-3-5-haiku-20241022', provider: 'anthropic' },
+  { model: 'gpt-4o-2024-08-06', provider: 'openai' },
+  { model: 'claude-opus-4-20250514', provider: 'anthropic' },
+  { model: 'claude-sonnet-4-20250514', provider: 'anthropic' },
+  { model: 'gemini-1.5-pro-002', provider: 'google' },
+  { model: 'gemini-2.0-flash-exp', provider: 'google' },
+  { model: 'o1-preview-2024-09-12', provider: 'openai' },
+  { model: 'o1-mini-2024-09-12', provider: 'openai' },
+  { model: 'gpt-4-turbo-2024-04-09', provider: 'openai' },
+  { model: 'deepseek-chat', provider: 'deepseek' },
+  { model: 'deepseek-reasoner', provider: 'deepseek' },
+  { model: 'glm-4-plus', provider: 'zhipuai' },
+  { model: 'glm-4-0520', provider: 'zhipuai' },
+  { model: 'glm-4v-plus', provider: 'zhipuai' },
+  { model: 'glm-4-flash', provider: 'zhipuai' },
+  { model: 'moonshot-v1-8k', provider: 'moonshot' },
+  { model: 'moonshot-v1-32k', provider: 'moonshot' },
+  { model: 'moonshot-v1-128k', provider: 'moonshot' }
 ];
 
 interface TestCase {
@@ -35,7 +54,9 @@ serve(async (req) => {
     console.log('Starting benchmark execution...');
     
     const requestBody = await req.json();
-    const selectedModels = requestBody?.models || MODELS_TO_TEST.map(m => m.model);
+    const selectedModels = requestBody?.models || [];
+    
+    console.log('Selected models for testing:', selectedModels);
     
     // Fetch active test cases
     const { data: testCases, error: testCasesError } = await supabase
@@ -62,9 +83,18 @@ serve(async (req) => {
     const summaries: any[] = [];
 
     // Filter models based on selection
-    const modelsToTest = MODELS_TO_TEST.filter(model => 
+    const modelsToTest = AVAILABLE_MODELS.filter(model => 
       selectedModels.includes(model.model)
     );
+    
+    if (modelsToTest.length === 0) {
+      return new Response(
+        JSON.stringify({ error: 'No valid models selected for testing' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+    
+    console.log(`Testing ${modelsToTest.length} models:`, modelsToTest.map(m => m.model));
 
     // Test each selected model
     for (const modelConfig of modelsToTest) {
@@ -153,6 +183,8 @@ serve(async (req) => {
     }
 
     // Save benchmark results to database
+    console.log('Saving benchmark results to database...');
+    
     const { data: benchmarkData, error: saveError } = await supabase
       .from('qa_benchmarks')
       .insert({
@@ -162,7 +194,8 @@ serve(async (req) => {
           totalModels: modelsToTest.length,
           totalTestCases: testCases.length,
           executionTime: Date.now(),
-          version: '1.0'
+          version: '1.0',
+          selectedModels: selectedModels
         }
       })
       .select()
@@ -171,6 +204,28 @@ serve(async (req) => {
     if (saveError) {
       console.error('Error saving benchmark:', saveError);
       throw saveError;
+    }
+
+    // Also save individual analysis records for easier querying
+    const analysisRecords = summaries.map(summary => ({
+      model: summary.model,
+      provider: summary.provider,
+      avg_quality_score: summary.avgQualityScore / 100, // Convert to 0-1 scale
+      avg_response_time: summary.avgResponseTime,
+      avg_cost_per_query: summary.avgCostPerQuery,
+      success_rate: summary.successRate / 100, // Convert to 0-1 scale
+      recommendation: summary.recommendation,
+      total_cost: summary.avgCostPerQuery * summary.totalTests,
+      timestamp: new Date().toISOString()
+    }));
+
+    const { error: analysisError } = await supabase
+      .from('benchmark_analysis')
+      .insert(analysisRecords);
+
+    if (analysisError) {
+      console.error('Error saving analysis:', analysisError);
+      // Don't throw here, just log the error
     }
 
     console.log('Benchmark completed successfully');
