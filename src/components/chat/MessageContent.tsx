@@ -1,5 +1,5 @@
 import { parseMarkdown } from "@/utils/markdownUtils";
-import { EnhancedMessageFeedback } from "@/components/feedback/EnhancedMessageFeedback";
+import { MessageFeedback } from "@/components/chat/MessageFeedback";
 
 interface MessageContentProps {
   content: string;
@@ -29,7 +29,7 @@ export function MessageContent({ content, role, messageId, sessionId, model }: M
         dangerouslySetInnerHTML={{ __html: htmlContent }}
       />
       {messageId && sessionId && model && (
-        <EnhancedMessageFeedback 
+        <MessageFeedback 
           messageId={messageId}
           sessionId={sessionId}
           model={model}

@@ -7,7 +7,8 @@ export class ChatService {
   async processMessage(
     message: string, 
     userRole?: string, 
-    sessionId?: string
+    sessionId?: string,
+    model?: string
   ): Promise<{
     response: string;
     confidence: number;
@@ -37,8 +38,8 @@ export class ChatService {
           userRole: userRole || 'citizen',
           sessionId,
           userId: session.user.id || undefined,  // Make userId optional
-          bypassCache: true,  // Always bypass cache to get fresh results
-          model: 'openai/gpt-3.5-turbo'  // Specify model explicitly
+          bypassCache: false,  // Use cache when available
+          model: model || 'openai/gpt-3.5-turbo'  // Use provided model or default
         }
       });
 

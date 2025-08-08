@@ -34,6 +34,77 @@ serve(async (req) => {
     
     const agentTrace = [];
     
+    // Definir authKey no início
+    const authKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || Deno.env.get('SUPABASE_ANON_KEY');
+    
+    // ========================================
+    // VERIFICAR CACHE PRIMEIRO
+    // ========================================
+    if (!bypassCache) {
+      console.log('🔍 Checking cache for query:', userMessage);
+      
+      try {
+        // Normalizar query para busca no cache
+        const normalizedQuery = userMessage.toLowerCase().trim();
+        
+        // Buscar no cache pelo texto normalizado
+        const { data: cachedResult } = await supabase
+          .from('query_cache')
+          .select('*')
+          .eq('query_text', normalizedQuery)
+          .single();
+        
+        if (cachedResult && cachedResult.expires_at > new Date().toISOString()) {
+          console.log('✅ Cache HIT! Returning cached response');
+          
+          // Incrementar hit count
+          await supabase
+            .from('query_cache')
+            .update({ 
+              hit_count: (cachedResult.hit_count || 0) + 1,
+              last_accessed: new Date().toISOString()
+            })
+            .eq('id', cachedResult.id);
+          
+          // Formatar resposta se necessário
+          let formattedResponse = cachedResult.result;
+          if (cachedResult.query_type === 'regime') {
+            const formatResponse = await fetch(`${supabaseUrl}/functions/v1/format-table-response`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${authKey}`,
+              },
+              body: JSON.stringify({
+                query: userMessage,
+                response: cachedResult.result,
+                type: 'regime'
+              })
+            });
+            
+            if (formatResponse.ok) {
+              const formatted = await formatResponse.json();
+              formattedResponse = formatted.formatted || cachedResult.result;
+            }
+          }
+          
+          return new Response(JSON.stringify({
+            response: formattedResponse.resposta || formattedResponse,
+            confidence: 1.0,
+            sources: { cached: true },
+            executionTime: Date.now() - startTime,
+            agentTrace: [{ step: 'cache_hit', timestamp: Date.now() }],
+            conversationId: convId
+          }), {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          });
+        }
+      } catch (cacheError) {
+        console.error('Cache check error:', cacheError);
+        // Continue sem cache se houver erro
+      }
+    }
+    
     // ========================================
     // Pipeline RAG otimizado para regime_urbanistico
     // ========================================
@@ -44,8 +115,6 @@ serve(async (req) => {
       conversationMemory.set(convId, []);
     }
     const conversationHistory = conversationMemory.get(convId)!;
-    
-    const authKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || Deno.env.get('SUPABASE_ANON_KEY');
     
     // Step 1: Query Analysis
     console.log('🔍 Analyzing query:', userMessage);
@@ -161,9 +230,86 @@ serve(async (req) => {
     const synthesisResult = await synthesisResponse.json();
     agentTrace.push({ step: 'response_synthesis_complete' });
     
+    // Formatar resposta se for sobre regime urbanístico
+    let finalResponse = synthesisResult.response;
+    if (analysisResult.strategy === 'structured_only' && sqlResults?.executionResults?.length > 0) {
+      try {
+        const formatResponse = await fetch(`${supabaseUrl}/functions/v1/format-table-response`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${authKey}`,
+          },
+          body: JSON.stringify({
+            query: userMessage,
+            response: sqlResults.executionResults[0]?.data || sqlResults.executionResults,
+            type: 'regime'
+          })
+        });
+        
+        if (formatResponse.ok) {
+          const formatted = await formatResponse.json();
+          if (formatted.formatted && formatted.has_table) {
+            finalResponse = formatted.formatted;
+            agentTrace.push({ step: 'table_formatting_applied' });
+          }
+        }
+      } catch (formatError) {
+        console.error('Format error:', formatError);
+      }
+    }
+    
+    // Salvar no cache se a resposta for bem-sucedida
+    if (!bypassCache && synthesisResult.confidence > 0.7) {
+      try {
+        const normalizedQuery = userMessage.toLowerCase().trim();
+        
+        // Criar um hash simples para compatibilidade
+        let hash = 0;
+        for (let i = 0; i < normalizedQuery.length; i++) {
+          const char = normalizedQuery.charCodeAt(i);
+          hash = ((hash << 5) - hash) + char;
+          hash = hash & hash; // Convert to 32bit integer
+        }
+        const simpleHash = Math.abs(hash).toString(16);
+        
+        // Determinar tipo de query
+        let queryType = 'general';
+        if (analysisResult.strategy === 'structured_only') {
+          queryType = 'regime';
+        } else if (userMessage.toLowerCase().includes('o que') || userMessage.includes('?')) {
+          queryType = 'qa';
+        }
+        
+        // Salvar no cache
+        await supabase
+          .from('query_cache')
+          .upsert({
+            query_hash: simpleHash,
+            query_text: normalizedQuery,
+            query_type: queryType,
+            result: {
+              resposta: finalResponse,
+              confidence: synthesisResult.confidence,
+              sources: synthesisResult.sources
+            },
+            response_time_ms: executionTime,
+            expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 dias
+            created_at: new Date().toISOString(),
+            hit_count: 0
+          }, {
+            onConflict: 'query_text' // Usar query_text como chave única
+          });
+        
+        agentTrace.push({ step: 'cached_response' });
+      } catch (cacheError) {
+        console.error('Cache save error:', cacheError);
+      }
+    }
+    
     // Adicionar à memória da conversa
     conversationHistory.push({ role: 'user', content: userMessage });
-    conversationHistory.push({ role: 'assistant', content: synthesisResult.response });
+    conversationHistory.push({ role: 'assistant', content: finalResponse });
     
     // Limitar memória a 20 mensagens
     if (conversationHistory.length > 20) {
@@ -173,7 +319,7 @@ serve(async (req) => {
     const executionTime = Date.now() - startTime;
     
     return new Response(JSON.stringify({
-      response: synthesisResult.response,
+      response: finalResponse,
       confidence: synthesisResult.confidence,
       sources: synthesisResult.sources,
       executionTime,

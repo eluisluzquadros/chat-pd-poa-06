@@ -5,7 +5,6 @@ import { Message, LLMProvider } from "@/types/chat";
 import { useToast } from "@/hooks/use-toast";
 import { getCurrentAuthenticatedSession } from "@/utils/authUtils";
 import { ChatService } from "@/services/chatService";
-import { multiLLMService } from "@/services/multiLLMService";
 import { useTokenTracking } from "@/hooks/useTokenTracking";
 
 interface UseMessageSubmitProps {
@@ -108,7 +107,7 @@ export function useMessageSubmit({
         userId: session.user.id
       });
       
-      const result = await multiLLMService.processMessage();
+      const result = await chatService.processMessage(currentInput, userRole, sessionId, selectedModel);
 
       console.log(`✅ ${selectedModel} response received:`, result);
 

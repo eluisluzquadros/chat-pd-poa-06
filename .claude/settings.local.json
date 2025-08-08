@@ -54,7 +54,10 @@
       "Bash(python3 -m pytest:*)",
       "WebFetch(domain:*)",
       "Bash(gh issue view:*)",
-      "WebFetch(domain:docs.anthropic.com)"
+      "WebFetch(domain:docs.anthropic.com)",
+      "Bash(timeout:*)",
+      "Bash(echo \"Iniciando teste completo dos 121 casos...\" node scripts/test-qa-simple.mjs)",
+      "Bash(start chrome \"file:///%CD%/test-chat-browser.html\")"
     ],
     "deny": []
   }
