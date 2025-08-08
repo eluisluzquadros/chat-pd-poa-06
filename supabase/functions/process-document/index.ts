@@ -147,7 +147,7 @@ async function getDocumentContent(supabase: ReturnType<typeof createClient>, doc
   
   const { data: document, error } = await supabase
     .from('documents')
-    .select('content, url_content, type, file_path, url, metadata, file_name')
+    .select('content, type, file_path, url, metadata, file_name')
     .eq('id', documentId)
     .single();
 
@@ -163,7 +163,6 @@ async function getDocumentContent(supabase: ReturnType<typeof createClient>, doc
   console.log('Document data retrieved:', {
     type: document.type,
     hasContent: !!document.content,
-    hasUrlContent: !!document.url_content,
     hasFilePath: !!document.file_path,
     hasUrl: !!document.url,
     fileName: document.file_name
@@ -173,9 +172,7 @@ async function getDocumentContent(supabase: ReturnType<typeof createClient>, doc
 
   // Se não houver conteúdo direto, tentamos outras fontes
   if (!content || content.trim() === '') {
-    if (document.url_content) {
-      content = document.url_content;
-    } else if (document.file_path) {
+    if (document.file_path) {
       // Verificar se é DOCX e usar parser específico
       if (document.type === 'DOCX' || document.file_path?.endsWith('.docx')) {
         content = await extractDocxContent(document.file_path);
