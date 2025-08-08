@@ -51,34 +51,52 @@ async function processDocByFilename(file: string, type = "DOCX") {
 }
 
 serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+  console.log("=== KB-REPROCESS-ALL STARTED ===");
+  console.log("Method:", req.method);
+  console.log("URL:", req.url);
+  
+  if (req.method === "OPTIONS") {
+    console.log("Returning CORS preflight response");
+    return new Response(null, { headers: corsHeaders });
+  }
 
   try {
-    console.log("kb-reprocess-all: Starting execution");
+    console.log("=== STARTING TRY BLOCK ===");
     console.log("Request method:", req.method);
-    console.log("Request headers:", Object.fromEntries(req.headers));
+    console.log("Request headers count:", req.headers ? Array.from(req.headers).length : 0);
 
-    const body = await req.json().catch(() => ({}));
-    console.log("Request body:", body);
+    let body;
+    try {
+      body = await req.json();
+      console.log("Request body parsed successfully:", body);
+    } catch (jsonError) {
+      console.log("Failed to parse JSON, using empty object:", jsonError);
+      body = {};
+    }
     
     const only: string = body.only ?? "all"; // structured | docx | qa | all
     const callStructured = only === "all" || only === "structured";
     const callDocx = only === "all" || only === "docx";
     const callQa = only === "all" || only === "qa";
 
-    console.log("Execution flags:", { callStructured, callDocx, callQa });
+    console.log("Execution flags:", { only, callStructured, callDocx, callQa });
 
     const results: Record<string, any> = {};
 
     if (callStructured) {
-      console.log("Calling import-structured-kb...");
-      const { data, error } = await supabase.functions.invoke("import-structured-kb", { body: {} });
-      if (error) {
-        console.error("import-structured-kb error:", error);
-        throw new Error(`Erro em import-structured-kb: ${error.message}`);
+      console.log("=== CALLING import-structured-kb ===");
+      try {
+        const { data, error } = await supabase.functions.invoke("import-structured-kb", { body: {} });
+        if (error) {
+          console.error("import-structured-kb error details:", JSON.stringify(error, null, 2));
+          throw new Error(`Erro em import-structured-kb: ${error.message}`);
+        }
+        console.log("import-structured-kb success:", data);
+        results.structured = data;
+      } catch (structuredError) {
+        console.error("=== STRUCTURED ERROR ===", structuredError);
+        throw structuredError;
       }
-      console.log("import-structured-kb result:", data);
-      results.structured = data;
     }
 
     if (callDocx) {
