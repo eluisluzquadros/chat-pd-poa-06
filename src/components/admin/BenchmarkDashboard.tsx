@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { RefreshCw, Crown, Zap, DollarSign, TrendingUp, AlertCircle } from 'lucide-react';
+import { RefreshCw, Crown, Zap, DollarSign, TrendingUp, AlertCircle, Settings } from 'lucide-react';
 import { useBenchmark } from '@/hooks/useBenchmark';
 import { BenchmarkModelTable } from '@/components/admin/BenchmarkModelTable';
 import { BenchmarkCharts } from '@/components/admin/BenchmarkCharts';
@@ -98,12 +98,10 @@ export function BenchmarkDashboard() {
             <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
             Atualizar
           </Button>
-          <Button 
-            onClick={() => setShowOptionsDialog(true)}
-            disabled={isBenchmarkRunning}
-          >
-            {isBenchmarkRunning ? 'Executando...' : 'Executar Benchmark'}
-          </Button>
+          <BenchmarkOptionsDialog
+            onExecute={executeBenchmark}
+            isRunning={isBenchmarkRunning}
+          />
         </div>
       </div>
 
@@ -294,13 +292,6 @@ export function BenchmarkDashboard() {
         </TabsContent>
       </Tabs>
 
-      <BenchmarkOptionsDialog
-        onExecute={async (options) => {
-          await executeBenchmark(options);
-          setShowOptionsDialog(false);
-        }}
-        isRunning={isBenchmarkRunning}
-      />
 
       {selectedModelResults && (
         <BenchmarkResultsDialog
