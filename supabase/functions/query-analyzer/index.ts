@@ -32,6 +32,8 @@ interface QueryAnalysisResponse {
   isConstructionQuery?: boolean;
   needsClarification?: boolean;
   clarificationMessage?: string;
+  needsRiskData?: boolean;
+  queryType?: 'regime' | 'risk' | 'counting' | 'general';
 }
 
 serve(async (req) => {
@@ -161,6 +163,14 @@ serve(async (req) => {
                              query.toLowerCase().includes('mais alta')) ||
                             (query.toLowerCase().includes('maior altura'));
 
+    // Risk and disaster detection terms
+    const riskKeywords = [
+      'risco', 'riscos', 'inundação', 'inundacao', 'alagamento', 'enchente', 'cheia',
+      'deslizamento', 'vendaval', 'granizo', 'desastre', 'desastres',
+      'cota de inundação', 'cota', 'área de risco', 'zona de risco',
+      'acima da cota', 'abaixo da cota', 'sujeito a inundação'
+    ];
+
     // Enhanced construction detection - now includes specific neighborhood/ZOT queries
     const constructionKeywords = [
       'o que pode ser construído', 'o que posso construir', 'posso construir', 'construir', 'construído', 'edificar',
@@ -212,11 +222,17 @@ serve(async (req) => {
                           queryLower.includes('zot') ||
                           queryLower.includes('zona');
     
-    // Detect counting/aggregation queries FIRST
+    // Detect risk/disaster queries FIRST
+    const hasRiskTerms = riskKeywords.some(keyword => 
+      queryLower.includes(keyword.toLowerCase())
+    );
+
+    // Detect counting/aggregation queries 
     const hasCountingTerms = countingKeywords.some(keyword => 
       queryLower.includes(keyword.toLowerCase())
     );
     const isCountingQuery = hasCountingTerms && (queryLower.includes('bairro') || queryLower.includes('zona') || queryLower.includes('zot'));
+    const isRiskQuery = hasRiskTerms;
     
     // Check if query asks for neighborhood data (zones, parameters)
     const asksForNeighborhoodData = !isCountingQuery && !isMaxHeightQuery && (
@@ -247,7 +263,9 @@ serve(async (req) => {
       isCountingQuery: isCountingQuery,
       isMaxHeightQuery: isMaxHeightQuery,
       asksForNeighborhoodData: asksForNeighborhoodData,
-      isConstructionQuery: isConstructionQuery
+      isConstructionQuery: isConstructionQuery,
+      isRiskQuery: isRiskQuery,
+      hasRiskTerms: hasRiskTerms
     });
 
     if (hasObjectivesKeyword) {
@@ -279,11 +297,12 @@ serve(async (req) => {
     const systemPrompt = `Você é um analisador de consultas especializado no Plano Diretor Urbano Sustentável (PDUS 2025) de Porto Alegre.
 
 ORDEM DE ANÁLISE OBRIGATÓRIA:
-1º - Se contém "Quantos", "Quantas", "Total de" → É CONTAGEM (isConstructionQuery: false)
-2º - Se pergunta sobre "altura máxima mais alta" ou "maior altura" → É AGREGAÇÃO (intent: tabular, isConstructionQuery: false)
-3º - Se contém "construir", "edificar" + bairro/endereço → É CONSTRUÇÃO (isConstructionQuery: true)  
-4º - SE A QUERY É CURTA (1-3 palavras) E PARECE SER NOME DE BAIRRO → É CONSULTA DE BAIRRO (isConstructionQuery: true)
-5º - Outras análises
+1º - Se contém "risco", "inundação", "cota", "alagamento", "desastre" → É QUERY DE RISCO (needsRiskData: true, queryType: 'risk')
+2º - Se contém "Quantos", "Quantas", "Total de" → É CONTAGEM (isConstructionQuery: false, queryType: 'counting')
+3º - Se pergunta sobre "altura máxima mais alta" ou "maior altura" → É AGREGAÇÃO (intent: tabular, isConstructionQuery: false)
+4º - Se contém "construir", "edificar" + bairro/endereço → É CONSTRUÇÃO (isConstructionQuery: true, queryType: 'regime')  
+5º - SE A QUERY É CURTA (1-3 palavras) E PARECE SER NOME DE BAIRRO → É CONSULTA DE BAIRRO (isConstructionQuery: true, queryType: 'regime')
+6º - Outras análises
 
 REGRA CRÍTICA PARA QUERIES CURTAS:
 - "três figueiras" → DEVE retornar dados do bairro (intent: tabular, isConstructionQuery: true)
@@ -338,7 +357,14 @@ Analise a consulta do usuário e determine:
    - SEMPRE inclua os datasets de regime urbanístico e ZOTs vs Bairros
    - O usuário QUER ver as zonas e parâmetros urbanísticos do bairro
 
-7. COUNTING/AGGREGATION QUERIES - Identifique PRIMEIRO se é uma pergunta de contagem:
+7. RISK/DISASTER QUERIES - PRIORITY MÁXIMA para detectar queries de risco:
+   - "risco de inundação", "cota de inundação", "acima da cota" → needsRiskData: true, queryType: 'risk'
+   - "bairros com risco", "quantos bairros acima da cota" → intent: "tabular", strategy: "structured_only"
+   - "57 bairros acima da cota" → DEVE retornar dados da tabela bairros_risco_desastre
+   - SEMPRE marque needsRiskData: true para essas queries
+   - NUNCA confunda com queries de regime urbanístico
+
+8. COUNTING/AGGREGATION QUERIES - Identifique se é uma pergunta de contagem:
    - "Quantos bairros tem..." → intent: "tabular", dataset: "1FTENHpX4aLxmAoxvrEeGQn0fej-wxTMQRQs_XBjPQPY", isConstructionQuery: false
    - "Quantos", "Quantas", "Total de" → são consultas de CONTAGEM, NÃO de construção
    - "Lista de zonas..." → intent: "tabular"
@@ -376,22 +402,28 @@ Responda APENAS com JSON válido no formato especificado.`;
             Contexto do usuário: ${userRole || 'citizen'}
             É uma consulta sobre construção/bairro: ${isConstructionQuery}
             É uma consulta de contagem/agregação: ${isCountingQuery}
+            É uma consulta de risco/inundação: ${isRiskQuery}
             É uma consulta de altura máxima agregada: ${isMaxHeightQuery}
             Query é curta (possível nome de bairro): ${isShortQuery}
             
             REGRAS CRÍTICAS:
-            1. Se isCountingQuery = true, SEMPRE defina isConstructionQuery: false no JSON
-            2. Se isMaxHeightQuery = true (altura máxima mais alta), SEMPRE:
+            1. Se isRiskQuery = true, SEMPRE defina:
+               - needsRiskData: true
+               - queryType: "risk"
+               - strategy: "structured_only"
+               - isConstructionQuery: false
+            2. Se isCountingQuery = true, SEMPRE defina isConstructionQuery: false no JSON
+            3. Se isMaxHeightQuery = true (altura máxima mais alta), SEMPRE:
                - intent: "tabular"
                - strategy: "structured_only" 
                - isConstructionQuery: false
                - requiredDatasets: ["17_GMWnJC1sKff-YS0wesgxsvo3tnZdgSSb4JZ0ZjpCk"]
-            3. Se a query é CURTA (1-3 palavras) e NÃO é contagem, ASSUMA que é nome de bairro:
+            4. Se a query é CURTA (1-3 palavras) e NÃO é contagem, ASSUMA que é nome de bairro:
                - intent: "tabular" 
                - isConstructionQuery: true
                - requiredDatasets: DEVE incluir "17_GMWnJC1sKff-YS0wesgxsvo3tnZdgSSb4JZ0ZjpCk" e "1FTENHpX4aLxmAoxvrEeGQn0fej-wxTMQRQs_XBjPQPY"
                - strategy: "structured_only"
-            3. Para queries como "três figueiras", "petrópolis", "cristal":
+            5. Para queries como "três figueiras", "petrópolis", "cristal":
                - Extraia o nome como bairro em entities.bairros
                - SEMPRE retorne dados tabulares do regime urbanístico
             
@@ -406,7 +438,9 @@ Responda APENAS com JSON válido no formato especificado.`;
               "requiredDatasets": ["lista de dataset IDs necessários"],
               "confidence": 0.95,
               "strategy": "structured_only|unstructured_only|hybrid",
-              "isConstructionQuery": ${isConstructionQuery}
+              "isConstructionQuery": ${isConstructionQuery},
+              "needsRiskData": ${isRiskQuery},
+              "queryType": "${isRiskQuery ? 'risk' : isCountingQuery ? 'counting' : isConstructionQuery ? 'regime' : 'general'}"
             }`
           }
         ],

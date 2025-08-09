@@ -39,10 +39,12 @@ serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
 
-    // Sistema aprimorado para regime_urbanistico
+    // Sistema aprimorado com TODAS as tabelas estruturadas
     const systemPrompt = `Você é um especialista em geração de consultas SQL para o banco de dados do PDUS 2025.
 
-TABELA PRINCIPAL: regime_urbanistico (385 registros)
+TABELAS DISPONÍVEIS:
+
+1. TABELA: regime_urbanistico (385 registros)
 Colunas principais:
 - bairro (VARCHAR) - Nome do bairro (ex: "PETRÓPOLIS", "CENTRO HISTÓRICO")
 - zona (VARCHAR) - Nome da zona (ex: "ZOT 07", "ZOT 08.3 - B")
@@ -58,12 +60,38 @@ Colunas principais:
 - afastamento_lateral (TEXT) - Afastamento lateral
 - afastamento_fundos (TEXT) - Afastamento de fundos
 
+2. TABELA: bairros_risco_desastre (dados de risco)
+Colunas principais:
+- bairro_nome (TEXT) - Nome do bairro
+- risco_inundacao (BOOLEAN) - Se tem risco de inundação
+- risco_deslizamento (BOOLEAN) - Se tem risco de deslizamento
+- risco_alagamento (BOOLEAN) - Se tem risco de alagamento
+- risco_vendaval (BOOLEAN) - Se tem risco de vendaval
+- risco_granizo (BOOLEAN) - Se tem risco de granizo
+- nivel_risco_geral (INTEGER) - Nível geral de risco (1-5)
+- nivel_risco_inundacao (INTEGER) - Nível específico de risco de inundação
+- nivel_risco_deslizamento (INTEGER) - Nível específico de risco de deslizamento
+
+3. TABELA: zots_bairros (relacionamento zonas-bairros)
+Colunas principais:
+- bairro (TEXT) - Nome do bairro
+- zona (TEXT) - Nome da zona
+- total_zonas_no_bairro (INTEGER) - Total de zonas no bairro
+- tem_zona_especial (VARCHAR) - Se tem zona especial
+
+LÓGICA DE SELEÇÃO DE TABELA:
+- Se a query contém "risco", "inundação", "alagamento", "deslizamento", "vendaval", "granizo", "desastre" → USE bairros_risco_desastre
+- Se a query contém "altura", "coeficiente", "aproveitamento", "zona", "zot", "regime" → USE regime_urbanistico
+- Se a query contém "quantos bairros", "total", "contagem" → USE ambas as tabelas conforme necessário
+- Para queries sobre "cota de inundação" → USE bairros_risco_desastre (risco_inundacao = true)
+
 OBSERVAÇÕES IMPORTANTES:
-1. Os bairros estão em MAIÚSCULAS na tabela (ex: "PETRÓPOLIS", não "Petrópolis")
-2. As zonas têm formato "ZOT XX" ou "ZOT XX.X - Y" (ex: "ZOT 07", "ZOT 08.3 - B")
-3. Um bairro pode ter múltiplas zonas (ex: Petrópolis tem ZOT 07, ZOT 08.3-B, ZOT 08.3-C)
-4. Use UPPER() para normalizar nomes de bairros na busca
-5. Para altura máxima, considere que pode haver múltiplas zonas no mesmo bairro
+1. Os bairros estão em MAIÚSCULAS em regime_urbanistico (ex: "PETRÓPOLIS")
+2. Em bairros_risco_desastre, use bairro_nome (pode estar em formato diferente)
+3. As zonas têm formato "ZOT XX" ou "ZOT XX.X - Y" (ex: "ZOT 07", "ZOT 08.3 - B")
+4. Um bairro pode ter múltiplas zonas
+5. Use UPPER() para normalizar nomes de bairros na busca
+6. Para contagem de bairros com risco, use COUNT(DISTINCT bairro_nome)
 
 QUERIES EXEMPLO:
 
@@ -104,11 +132,43 @@ QUERIES EXEMPLO:
    WHERE bairro IS NOT NULL
    ORDER BY bairro
 
+6. Bairros com risco de inundação (ACIMA DA COTA):
+   SELECT bairro_nome, nivel_risco_inundacao
+   FROM bairros_risco_desastre 
+   WHERE risco_inundacao = true
+   ORDER BY nivel_risco_inundacao DESC
+
+7. Contar bairros com risco de inundação:
+   SELECT COUNT(DISTINCT bairro_nome) as total_bairros_risco
+   FROM bairros_risco_desastre 
+   WHERE risco_inundacao = true
+
+8. Bairros SEM risco de inundação (NÃO ACIMA DA COTA):
+   SELECT bairro_nome
+   FROM bairros_risco_desastre 
+   WHERE risco_inundacao = false OR risco_inundacao IS NULL
+   ORDER BY bairro_nome
+
+9. Todos os riscos de um bairro específico:
+   SELECT bairro_nome, risco_inundacao, risco_deslizamento, risco_alagamento, nivel_risco_geral
+   FROM bairros_risco_desastre 
+   WHERE UPPER(bairro_nome) = UPPER('Petrópolis')
+
+10. Cross-table: Regime + Risco para um bairro:
+    SELECT r.bairro, r.zona, r.altura_maxima, b.risco_inundacao, b.nivel_risco_geral
+    FROM regime_urbanistico r
+    LEFT JOIN bairros_risco_desastre b ON UPPER(r.bairro) = UPPER(b.bairro_nome)
+    WHERE UPPER(r.bairro) = UPPER('Petrópolis')
+
 CONTEXTO DA QUERY: ${JSON.stringify(analysisResult)}
 HINTS: ${JSON.stringify(hints)}
 
-Gere consultas SQL otimizadas usando APENAS a tabela regime_urbanistico. 
-IMPORTANTE: NÃO use document_rows, use APENAS regime_urbanistico!
+Gere consultas SQL otimizadas usando as tabelas: regime_urbanistico, bairros_risco_desastre, zots_bairros.
+CRÍTICO: 
+- Para queries de RISCO/INUNDAÇÃO/DESASTRE use bairros_risco_desastre
+- Para queries de ALTURA/COEFICIENTE/ZONA use regime_urbanistico  
+- Para queries de CONTAGEM use a tabela mais apropriada
+- NUNCA use document_rows ou outras tabelas não listadas
 Responda APENAS com JSON válido.`;
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -128,10 +188,12 @@ Responda APENAS com JSON válido.`;
 Análise prévia: ${JSON.stringify(analysisResult)}
 
 LEMBRE-SE: 
-- Use APENAS a tabela regime_urbanistico
-- Os bairros estão em MAIÚSCULAS
+- DETECTE o tipo de query primeiro (risco vs regime vs contagem)
+- Use bairros_risco_desastre para queries de risco/inundação
+- Use regime_urbanistico para queries de altura/zona/coeficiente
+- Os bairros podem ter grafias diferentes entre tabelas
 - Use UPPER() para normalizar buscas
-- Um bairro pode ter múltiplas zonas
+- Para "acima da cota de inundação" = risco_inundacao = true
 
 Responda com JSON válido seguindo esta estrutura:
 {
@@ -195,6 +257,21 @@ Responda com JSON válido seguindo esta estrutura:
             query: `SELECT bairro, zona, altura_maxima FROM regime_urbanistico WHERE altura_maxima IS NOT NULL ORDER BY altura_maxima DESC LIMIT 10`,
             table: 'regime_urbanistico',
             purpose: 'Buscar alturas máximas mais altas da cidade'
+          });
+        }
+      } else if (queryLower.includes('risco') || queryLower.includes('inundação') || queryLower.includes('cota')) {
+        // Query de risco/inundação
+        if (queryLower.includes('quantos') || queryLower.includes('total')) {
+          fallbackQueries.push({
+            query: `SELECT COUNT(DISTINCT bairro_nome) as total_bairros FROM bairros_risco_desastre WHERE risco_inundacao = true`,
+            table: 'bairros_risco_desastre',
+            purpose: 'Contar bairros com risco de inundação'
+          });
+        } else {
+          fallbackQueries.push({
+            query: `SELECT bairro_nome, risco_inundacao, nivel_risco_inundacao FROM bairros_risco_desastre WHERE risco_inundacao = true ORDER BY nivel_risco_inundacao DESC`,
+            table: 'bairros_risco_desastre',
+            purpose: 'Buscar bairros com risco de inundação'
           });
         }
       } else if (queryLower.includes('índices') || queryLower.includes('parâmetros')) {
