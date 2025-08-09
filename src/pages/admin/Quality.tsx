@@ -16,6 +16,7 @@ import { MultiModelExecutionDialog } from '@/components/admin/MultiModelExecutio
 import { RefreshCw } from 'lucide-react';
 import { QAMaintenancePanel } from '@/components/admin/QAMaintenancePanel';
 import { TestQAFixes } from '@/components/admin/TestQAFixes';
+import { CrossValidationPanel } from '@/components/admin/CrossValidationPanel';
 
 export default function Quality() {
   const [metrics, setMetrics] = useState({
@@ -160,10 +161,11 @@ export default function Quality() {
       </div>
 
       <Tabs defaultValue="fixes" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-8 h-12">
+        <TabsList className="grid w-full grid-cols-9 h-12">
           <TabsTrigger value="fixes" className="text-sm">🔧 Correções</TabsTrigger>
+          <TabsTrigger value="crossval" className="text-sm">⚡ Cross-Val</TabsTrigger>
           <TabsTrigger value="execution" className="text-sm">Execuções</TabsTrigger>
-          <TabsTrigger value="testcases" className="text-sm">Casos de Teste</TabsTrigger>
+          <TabsTrigger value="testcases" className="text-sm">Casos</TabsTrigger>
           <TabsTrigger value="models" className="text-sm">Modelos</TabsTrigger>
           <TabsTrigger value="analysis" className="text-sm">Análise</TabsTrigger>
           <TabsTrigger value="comparison" className="text-sm">Comparação</TabsTrigger>
@@ -173,6 +175,10 @@ export default function Quality() {
 
         <TabsContent value="fixes" className="space-y-4">
           <TestQAFixes />
+        </TabsContent>
+
+        <TabsContent value="crossval" className="space-y-4">
+          <CrossValidationPanel />
         </TabsContent>
 
         <TabsContent value="execution" className="space-y-4">

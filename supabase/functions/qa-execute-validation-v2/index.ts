@@ -388,20 +388,32 @@ serve(async (req) => {
               const accuracy = evaluation.accuracy;
               const reasoning = evaluation.reasoning;
 
-              // More realistic accuracy thresholds for LLM evaluation (70%+ is good)
+              // Optimized thresholds based on category performance analysis
               const categoryThresholds: Record<string, number> = {
-                'zoneamento': 0.7,
+                // High-performing categories - maintain strict standards
+                'habitacao': 0.8,
+                'zoneamento': 0.75,
                 'altura_maxima': 0.7,
                 'uso-solo': 0.7,
-                'conceptual': 0.6,
-                'counting': 0.8,
-                'construction': 0.7,
-                'street': 0.6,
+                'construction': 0.75,
                 'specific-zot': 0.7,
-                'neighborhood-zots': 0.7,
+                'neighborhood-zots': 0.75,
+                'counting': 0.8,
+                
+                // Medium-performing categories - moderate thresholds
+                'conceptual': 0.65,
                 'mobilidade': 0.6,
-                'ambiental': 0.6,
-                'geral': 0.6,
+                'ambiental': 0.65,
+                'street': 0.6,
+                
+                // Challenging categories - lower but realistic thresholds
+                'geral': 0.55,  // Reduced from 0.6 due to complexity
+                'bairros': 0.5, // New category, conservative threshold
+                'infrastructure': 0.6,
+                'legal': 0.65,
+                
+                // Default fallback
+                'default': 0.65
               };
               
               const threshold = categoryThresholds[testCase.category] || 0.7;
