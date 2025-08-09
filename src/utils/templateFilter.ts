@@ -98,15 +98,17 @@ export function calculateSemanticSimilarity(
 
 function calculateNumericSimilarity(actual: string, expected: string): number {
   // Extract numbers from both texts
-  const actualNumbers = actual.match(/\d+(?:\.\d+)?/g) || [];
-  const expectedNumbers = expected.match(/\d+(?:\.\d+)?/g) || [];
+  const actualNumbers: string[] = actual.match(/\d+(?:\.\d+)?/g) || [];
+  const expectedNumbers: string[] = expected.match(/\d+(?:\.\d+)?/g) || [];
   
   if (expectedNumbers.length === 0) return 0;
   
   let matches = 0;
-  expectedNumbers.forEach(num => {
-    if (actualNumbers.includes(num)) matches++;
-  });
+  for (const num of expectedNumbers) {
+    if (actualNumbers.includes(num)) {
+      matches++;
+    }
+  }
   
   const numericScore = matches / expectedNumbers.length;
   
