@@ -304,29 +304,34 @@ FORMATO OBRIGATÓRIO DA RESPOSTA:
       prompt += `\nPergunta atual: ${originalQuery}\n\n`;
     }
     
-    // Adicionar dados SQL se disponíveis
+    // 🎯 UX CONSISTENCY: ALWAYS force tabular formatting for neighborhood queries
     let hasStructuredData = false;
+    const isNeighborhoodQuery = analysisResult?.entities?.bairros?.length > 0 || 
+                               /bairro|zona|zot|distrito/i.test(originalQuery);
+    
+    console.log('🎯 UX CONSISTENCY CHECK:', {
+      isNeighborhoodQuery,
+      hasBairros: analysisResult?.entities?.bairros?.length > 0,
+      queryPattern: /bairro|zona|zot|distrito/i.test(originalQuery),
+      sqlResultsAvailable: !!sqlResults?.executionResults?.length
+    });
+    
     if (sqlResults?.executionResults?.length > 0) {
       hasStructuredData = true;
       prompt += 'Dados encontrados no banco:\n';
       
       sqlResults.executionResults.forEach((result: any, i: number) => {
         if (result.data && result.data.length > 0) {
-          // Verificar se são dados de regime urbanístico
+          // 🔥 FORÇA FORMATAÇÃO TABULAR SEMPRE para queries de bairros
           const isRegimeData = result.data[0].hasOwnProperty('altura_maxima') || 
                              result.data[0].hasOwnProperty('coef_aproveitamento_basico') ||
                              result.data[0].hasOwnProperty('coef_aproveitamento_maximo') ||
                              result.data[0].hasOwnProperty('coef_basico_4d');
           
-          if (isRegimeData) {
-            prompt += `\n**Indicadores do Regime Urbanístico:**\n`;
+          if (isRegimeData || isNeighborhoodQuery) {
+            console.log('📊 FORCING TABULAR FORMAT - Regime/Neighborhood data detected');
+            prompt += `\n**🔥 FORMATAÇÃO OBRIGATÓRIA - Indicadores do Regime Urbanístico:**\n`;
             prompt += extractBasicIndicators(result.data);
-            
-            // Adicionar instrução específica para dados com coeficientes
-            const hasCoeficients = result.data.some(d => 
-              d.coef_aproveitamento_basico !== null || 
-              d.coef_aproveitamento_maximo !== null
-            );
             
             // Processar valores NULL corretamente
             result.data.forEach(item => {
@@ -338,9 +343,8 @@ FORMATO OBRIGATÓRIO DA RESPOSTA:
               }
             });
             
-            if (hasCoeficients) {
-              prompt += `\n⚠️ IMPORTANTE: Use os valores EXATOS dos coeficientes quando disponíveis. Só use "Não definido" quando o valor for NULL!\n`;
-            }
+            prompt += `\n🎯 UX OBRIGATÓRIA: SEMPRE use formatação tabular estruturada para dados de bairros!\n`;
+            prompt += `⚠️ IMPORTANTE: Use os valores EXATOS dos coeficientes quando disponíveis!\n`;
           } else {
             prompt += `\n**Conjunto ${i+1} (${result.data.length} registros):**\n`;
             if (result.data.length <= 5) {
@@ -372,20 +376,36 @@ FORMATO OBRIGATÓRIO DA RESPOSTA:
       }
     }
     
+    // 🎯 UX CONSISTENCY: Additional formatting instructions for neighborhood queries
+    if (isNeighborhoodQuery && hasStructuredData) {
+      prompt += '\n\n🔥 FORMATAÇÃO UX OBRIGATÓRIA PARA BAIRROS:\n';
+      prompt += 'SEMPRE use esta estrutura EXATA quando responder sobre bairros:\n\n';
+      prompt += '**Para [Nome do Bairro], as regras construtivas são:**\n\n';
+      prompt += '| Bairro | Zona | Altura Máxima | CA Básico | CA Máximo |\n';
+      prompt += '|--------|------|---------------|-----------|------------|\n';
+      prompt += '| [dados] | [dados] | [dados] | [dados] | [dados] |\n\n';
+      prompt += '**Detalhamento:**\n';
+      prompt += '• **Altura máxima**: [X] metros\n';
+      prompt += '• **Coeficiente de aproveitamento básico (CA básico)**: [X.X]\n';
+      prompt += '• **Coeficiente de aproveitamento máximo (CA máximo)**: [X.X]\n\n';
+      prompt += '🎯 ESTA FORMATAÇÃO É OBRIGATÓRIA - garante experiência consistente!\n\n';
+    }
+    
     prompt += '\n\n🔴 INSTRUÇÕES OBRIGATÓRIAS:\n';
-    prompt += '1. Se a pergunta for sobre um bairro/zona, SEMPRE forneça:\n';
+    prompt += '1. 🎯 FORMATAÇÃO UX: Para bairros, SEMPRE use tabela + detalhamento estruturado\n';
+    prompt += '2. Se a pergunta for sobre um bairro/zona, SEMPRE forneça:\n';
     prompt += '   • Altura máxima: X metros\n';
     prompt += '   • Coeficiente de aproveitamento mínimo (CA básico): X.X\n';
     prompt += '   • Coeficiente de aproveitamento máximo (CA máximo): X.X\n';
-    prompt += '2. REGRA DOS COEFICIENTES:\n';
+    prompt += '3. REGRA DOS COEFICIENTES:\n';
     prompt += '   • Se o dado mostra um NÚMERO (como 2, 4, 1.5), SEMPRE mostre o número\n';
     prompt += '   • Só diga "Não disponível" se o campo estiver como "-" ou vazio\n';
     prompt += '   • Para ZOT 04: SEMPRE tem CA básico = 2 e CA máximo = 4\n';
-    prompt += '3. Se um bairro tem múltiplas zonas, liste TODAS com seus indicadores\n';
-    prompt += '4. Use os valores EXATOS dos dados fornecidos. NUNCA invente valores!\n';
-    prompt += '4. Se perguntado sobre "altura máxima mais alta", use o valor do primeiro registro dos dados\n';
-    prompt += '5. NÃO adicione texto desnecessário como "Explore mais:" antes do template\n';
-    prompt += '6. Sua resposta DEVE terminar EXATAMENTE com o template fornecido\n';
+    prompt += '4. Se um bairro tem múltiplas zonas, liste TODAS com seus indicadores\n';
+    prompt += '5. Use os valores EXATOS dos dados fornecidos. NUNCA invente valores!\n';
+    prompt += '6. Se perguntado sobre "altura máxima mais alta", use o valor do primeiro registro dos dados\n';
+    prompt += '7. NÃO adicione texto desnecessário como "Explore mais:" antes do template\n';
+    prompt += '8. Sua resposta DEVE terminar EXATAMENTE com o template fornecido\n';
     prompt += '\nResponda de forma clara, direta e estruturada:';
     
     debugLog.push({
