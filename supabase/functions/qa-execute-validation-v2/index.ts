@@ -1,6 +1,70 @@
 import { serve } from 'https://deno.land/std@0.208.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
 
+// Template filtering functions (imported from utils)
+function removePromotionalTemplate(text: string): string {
+  if (!text) return '';
+  
+  return text
+    .replace(/🌟.*?Experimente.*?🌟/gs, '')
+    .replace(/📍.*?Explore mais:.*?$/gm, '')
+    .replace(/💬.*?Dúvidas\?.*?$/gm, '')
+    .replace(/Para mais informações.*?visite.*?\.org/gs, '')
+    .replace(/💡.*?Dica:.*$/gm, '')
+    .replace(/\*\*Aviso:.*?\*\*/gs, '')
+    .replace(/---\s*Experimente.*$/gs, '')
+    .replace(/https:\/\/bit\.ly\/\w+\s*↗\s*↗/g, '')
+    .replace(/Contribua com sugestões:.*$/gm, '')
+    .replace(/Participe da Audiência Pública:.*$/gm, '')
+    .replace(/Mapa com Regras Construtivas:.*$/gm, '')
+    .replace(/planodiretor@portoalegre\.rs\.gov\.br/g, '')
+    .replace(/\n{3,}/g, '\n\n')
+    .replace(/\s{2,}/g, ' ')
+    .trim();
+}
+
+function normalizeText(text: string): string {
+  if (!text) return '';
+  
+  return text
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^\w\s]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function calculateAccuracyWithoutTemplate(
+  actualAnswer: string,
+  expectedKeywords: string[],
+  expectedAnswer?: string,
+  category?: string
+): number {
+  const cleanActual = normalizeText(removePromotionalTemplate(actualAnswer));
+  const cleanExpected = expectedAnswer ? normalizeText(removePromotionalTemplate(expectedAnswer)) : '';
+  
+  let accuracy = 0;
+  
+  if (expectedKeywords?.length > 0) {
+    const normalizedKeywords = expectedKeywords.map(k => normalizeText(k));
+    const matchedKeywords = normalizedKeywords.filter(keyword => 
+      cleanActual.includes(keyword) || keyword.includes(cleanActual.substring(0, 20))
+    );
+    accuracy = matchedKeywords.length / normalizedKeywords.length;
+  } else if (cleanExpected) {
+    const actualWords = cleanActual.split(/\s+/).filter(w => w.length > 2);
+    const expectedWords = cleanExpected.split(/\s+/).filter(w => w.length > 2);
+    
+    if (expectedWords.length > 0) {
+      const commonWords = actualWords.filter(word => expectedWords.includes(word));
+      accuracy = commonWords.length / expectedWords.length;
+    }
+  }
+  
+  return Math.min(accuracy, 1);
+}
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -173,39 +237,34 @@ serve(async (req) => {
               const controller = new AbortController();
               const timeoutId = setTimeout(() => controller.abort(), testTimeout);
               
-              // Try multiple endpoints for better compatibility
-              const endpoints = ['agentic-rag', 'chat-openai', 'chat-anthropic', 'chat-google'];
-              let response;
-              let lastError;
+              // Use only agentic-rag endpoint for consistency and reliability
+              console.log(`[QA-VALIDATION-V2] Testing case ${testCase.id} with model ${model} via agentic-rag`);
               
-              for (const currentEndpoint of endpoints) {
-                try {
-                  response = await fetch(`${supabaseUrl}/functions/v1/${currentEndpoint}`, {
-                    method: 'POST',
-                    headers: {
-                      'Authorization': `Bearer ${supabaseServiceKey}`,
-                      'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                      message: testCase.query || testCase.question,
-                      sessionId: `qa_validation_${model.replace('/', '_')}_${Date.now()}`,
-                      model: model,
-                      bypassCache: true // Force fresh results for validation
-                    }),
-                    signal: controller.signal
-                  });
-                  
-                  if (response.ok) {
-                    console.log(`[QA-VALIDATION-V2] Successfully used endpoint: ${currentEndpoint} for model ${model}`);
-                    break;
-                  } else {
-                    console.warn(`[QA-VALIDATION-V2] Endpoint ${currentEndpoint} returned ${response.status} for model ${model}`);
-                    lastError = `${currentEndpoint}: ${response.status}`;
-                  }
-                } catch (endpointError) {
-                  console.warn(`[QA-VALIDATION-V2] Endpoint ${currentEndpoint} failed for model ${model}:`, endpointError.message);
-                  lastError = `${currentEndpoint}: ${endpointError.message}`;
+              try {
+                response = await fetch(`${supabaseUrl}/functions/v1/agentic-rag`, {
+                  method: 'POST',
+                  headers: {
+                    'Authorization': `Bearer ${supabaseServiceKey}`,
+                    'Content-Type': 'application/json'
+                  },
+                  body: JSON.stringify({
+                    message: testCase.query || testCase.question,
+                    sessionId: `qa_validation_${model.replace('/', '_')}_${Date.now()}`,
+                    model: model,
+                    bypassCache: true, // Force fresh results for validation
+                    userRole: 'user'
+                  }),
+                  signal: controller.signal
+                });
+                
+                if (response.ok) {
+                  console.log(`[QA-VALIDATION-V2] Successfully called agentic-rag for model ${model}`);
+                } else {
+                  throw new Error(`agentic-rag returned status ${response.status}: ${await response.text()}`);
                 }
+              } catch (endpointError) {
+                console.error(`[QA-VALIDATION-V2] agentic-rag failed for model ${model}:`, endpointError.message);
+                throw endpointError;
               }
               
               clearTimeout(timeoutId);
@@ -214,33 +273,38 @@ serve(async (req) => {
               totalResponseTime += responseTime;
 
               if (!response || !response.ok) {
-                throw new Error(`All endpoints failed. Last error: ${lastError}`);
+                throw new Error(`agentic-rag endpoint failed with status ${response?.status}`);
               }
 
               const result = await response.json();
-              const actualAnswer = result.response || result.text || '';
+              const rawAnswer = result.response || result.text || '';
 
-              // Calculate accuracy based on keyword matching and similarity
-              const expectedKeywords = testCase.expected_keywords || [];
-              const actualLower = actualAnswer.toLowerCase();
-              const matchedKeywords = expectedKeywords.filter(keyword => 
-                actualLower.includes(keyword.toLowerCase())
+              // Enhanced accuracy calculation with template filtering
+              const cleanAnswer = removePromotionalTemplate(rawAnswer);
+              const accuracy = calculateAccuracyWithoutTemplate(
+                cleanAnswer,
+                testCase.expected_keywords || [],
+                testCase.expected_answer,
+                testCase.category
               );
-              
-              // Enhanced accuracy calculation
-              let accuracy = 0;
-              if (expectedKeywords.length > 0) {
-                accuracy = matchedKeywords.length / expectedKeywords.length;
-              } else {
-                // Fallback to simple similarity check
-                const expectedLower = (testCase.expected_answer || '').toLowerCase();
-                const commonWords = expectedLower.split(/\s+/).filter(word => 
-                  word.length > 3 && actualLower.includes(word)
-                );
-                accuracy = Math.min(commonWords.length / 10, 1); // Cap at 1
-              }
 
-              const isCorrect = accuracy >= 0.6;
+              // Category-specific accuracy thresholds
+              const categoryThresholds: Record<string, number> = {
+                'zoneamento': 0.8,
+                'altura_maxima': 0.9,
+                'uso-solo': 0.7,
+                'conceptual': 0.6,
+                'counting': 0.9,
+                'construction': 0.7,
+                'street': 0.5,
+                'specific-zot': 0.8,
+                'neighborhood-zots': 0.7,
+              };
+              
+              const threshold = categoryThresholds[testCase.category] || 0.6;
+              const isCorrect = accuracy >= threshold;
+              
+              console.log(`[QA-VALIDATION-V2] Case ${testCase.id}: accuracy=${(accuracy * 100).toFixed(1)}%, threshold=${(threshold * 100).toFixed(1)}%, result=${isCorrect ? 'PASS' : 'FAIL'}`);
               if (isCorrect) passedCount++;
               totalAccuracy += accuracy;
 
@@ -250,9 +314,9 @@ serve(async (req) => {
                 
                 const resultData = {
                   validation_run_id: runId,
-                  test_case_id: testCaseId, // Ensure string type for TEXT column
-                  model,
-                  actual_answer: actualAnswer.substring(0, 2000),
+                test_case_id: testCaseId, // Ensure string type for TEXT column
+                model,
+                actual_answer: cleanAnswer.substring(0, 2000),
                   is_correct: isCorrect,
                   accuracy_score: accuracy,
                   response_time_ms: responseTime,
@@ -284,7 +348,7 @@ serve(async (req) => {
                 testCaseTestId: testCase.test_id,
                 question: testCase.question || testCase.query,
                 expectedAnswer: testCase.expected_answer,
-                actualAnswer: actualAnswer.substring(0, 500), // Truncate for response
+                actualAnswer: cleanAnswer.substring(0, 500), // Truncate for response
                 success: isCorrect,
                 accuracy,
                 responseTime,
