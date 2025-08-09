@@ -54,9 +54,20 @@ export function CrossValidationPanelV2() {
     try {
       console.log('Starting cross-validation between /chat and /admin/quality interfaces...');
       
+      // Pre-validation checks
+      if (!testQueries.length || testQueries.some(q => !q.trim())) {
+        throw new Error('Please provide valid test queries');
+      }
+      
+      if (!model.trim()) {
+        throw new Error('Please specify a model');
+      }
+      
+      toast.info('Executando validação cruzada... Isso pode levar alguns minutos.');
+      
       const { data, error } = await supabase.functions.invoke('cross-validation-v2', {
         body: {
-          testQueries,
+          testQueries: testQueries.filter(q => q.trim()),
           model,
           alertThreshold,
           source: 'admin-panel'
@@ -64,25 +75,43 @@ export function CrossValidationPanelV2() {
       });
 
       if (error) {
-        throw error;
+        console.error('Supabase function error:', error);
+        throw new Error(`Function call failed: ${error.message || error.details || 'Unknown error'}`);
+      }
+
+      if (!data) {
+        throw new Error('No data received from validation function');
       }
 
       if (data.success) {
-        setResults(data.results);
+        setResults(data.results || []);
         setSummary(data.summary);
         
-        if (data.summary.alertTriggered) {
-          toast.warning(`Encontradas ${data.summary.divergentQueries} discrepâncias entre interfaces!`);
+        const { summary } = data;
+        if (summary?.alertTriggered) {
+          toast.warning(
+            `Encontradas ${summary.divergentQueries} discrepâncias e ${summary.errorQueries} erros entre interfaces!`,
+            { description: `Divergência média: ${summary.averageDivergence}%` }
+          );
         } else {
-          toast.success('Interfaces estão consistentes!');
+          toast.success(
+            'Interfaces estão consistentes!',
+            { description: `${summary?.totalQueries || 0} queries testadas com sucesso` }
+          );
         }
       } else {
-        throw new Error(data.error || 'Unknown error');
+        throw new Error(data.error || 'Validation failed with unknown error');
       }
 
     } catch (error) {
       console.error('Cross-validation error:', error);
-      toast.error(`Erro na validação cruzada: ${error.message}`);
+      const errorMessage = error.message || 'Erro desconhecido na validação cruzada';
+      toast.error(`Erro na validação cruzada: ${errorMessage}`);
+      
+      // Provide helpful troubleshooting info
+      if (errorMessage.includes('Failed to send a request')) {
+        toast.error('A função cross-validation-v2 pode não estar implantada. Verifique os logs do Edge Functions.');
+      }
     } finally {
       setIsRunning(false);
     }

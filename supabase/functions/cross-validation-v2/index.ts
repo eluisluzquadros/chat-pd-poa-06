@@ -58,109 +58,187 @@ serve(async (req) => {
       console.log(`[CROSS-VALIDATION-V2] Testing query: ${query}`);
       
       try {
-        // Test via /chat interface (agentic-rag)
+        // Test via /chat interface (agentic-rag) with timeout
         const chatStartTime = Date.now();
-        const chatResponse = await fetch(`${supabaseUrl}/functions/v1/agentic-rag`, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${supabaseKey}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            message: query,
-            sessionId: `${sessionId}-chat`,
-            model,
-            userRole: 'citizen',
-            bypassCache: true
-          }),
-        });
-        const chatResult = await chatResponse.json();
-        const chatTime = Date.now() - chatStartTime;
-
-        // Test via /admin/quality interface (qa-execute-validation-v2)
-        const adminStartTime = Date.now();
         
-        // First, find a test case that matches this query
-        const { data: testCases } = await supabase
-          .from('qa_test_cases')
-          .select('*')
-          .or(`question.ilike.%${query.substring(0, 20)}%,query.ilike.%${query.substring(0, 20)}%`)
-          .limit(1);
-
-        let adminResult = null;
-        let adminTime = 0;
-
-        if (testCases?.[0]) {
-          const adminResponse = await fetch(`${supabaseUrl}/functions/v1/qa-execute-validation-v2`, {
+        const chatController = new AbortController();
+        const chatTimeoutId = setTimeout(() => chatController.abort(), 30000); // 30s timeout
+        
+        let chatResponse, chatResult, chatTime = 0;
+        
+        try {
+          chatResponse = await fetch(`${supabaseUrl}/functions/v1/agentic-rag`, {
             method: 'POST',
             headers: {
               'Authorization': `Bearer ${supabaseKey}`,
               'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-              mode: 'selected',
-              selectedIds: [testCases[0].id],
-              models: [model],
-              includeSQL: false,
-              excludeSQL: true
+              message: query,
+              sessionId: `${sessionId}-chat`,
+              model,
+              userRole: 'citizen',
+              bypassCache: true
             }),
+            signal: chatController.signal
           });
-          adminResult = await adminResponse.json();
-          adminTime = Date.now() - adminStartTime;
-        } else {
-          // If no test case found, create a temporary one
-          adminResult = {
-            response: "No test case found for this query",
+          
+          clearTimeout(chatTimeoutId);
+          
+          if (!chatResponse.ok) {
+            throw new Error(`Chat interface failed: ${chatResponse.status} ${chatResponse.statusText}`);
+          }
+          
+          chatResult = await chatResponse.json();
+          chatTime = Date.now() - chatStartTime;
+          
+          console.log(`[CROSS-VALIDATION-V2] Chat response for "${query}": ${chatResponse.status}`);
+          
+        } catch (chatError) {
+          clearTimeout(chatTimeoutId);
+          console.error(`[CROSS-VALIDATION-V2] Chat interface error for "${query}":`, chatError);
+          chatResult = {
+            response: null,
             confidence: 0,
-            executionTime: 0
+            error: chatError.message || 'Chat interface failed'
+          };
+          chatTime = Date.now() - chatStartTime;
+        }
+
+        // Test via /admin/quality interface (qa-execute-validation-v2)
+        const adminStartTime = Date.now();
+        let adminResult = null;
+        let adminTime = 0;
+        
+        try {
+          // First, find a test case that matches this query
+          const { data: testCases, error: testCaseError } = await supabase
+            .from('qa_test_cases')
+            .select('*')
+            .or(`question.ilike.%${query.substring(0, 20)}%,query.ilike.%${query.substring(0, 20)}%`)
+            .limit(1);
+
+          if (testCaseError) {
+            throw new Error(`Failed to fetch test cases: ${testCaseError.message}`);
+          }
+
+          if (testCases?.[0]) {
+            const adminController = new AbortController();
+            const adminTimeoutId = setTimeout(() => adminController.abort(), 30000); // 30s timeout
+            
+            try {
+              const adminResponse = await fetch(`${supabaseUrl}/functions/v1/qa-execute-validation-v2`, {
+                method: 'POST',
+                headers: {
+                  'Authorization': `Bearer ${supabaseKey}`,
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  mode: 'selected',
+                  selectedIds: [testCases[0].id],
+                  models: [model],
+                  includeSQL: false,
+                  excludeSQL: true
+                }),
+                signal: adminController.signal
+              });
+              
+              clearTimeout(adminTimeoutId);
+              
+              if (!adminResponse.ok) {
+                throw new Error(`Admin interface failed: ${adminResponse.status} ${adminResponse.statusText}`);
+              }
+              
+              adminResult = await adminResponse.json();
+              adminTime = Date.now() - adminStartTime;
+              
+              console.log(`[CROSS-VALIDATION-V2] Admin response for "${query}": ${adminResponse.status}`);
+              
+            } catch (adminError) {
+              clearTimeout(adminTimeoutId);
+              throw adminError;
+            }
+          } else {
+            // If no test case found, create a temporary one
+            console.log(`[CROSS-VALIDATION-V2] No test case found for query: "${query}"`);
+            adminResult = {
+              response: "No test case found for this query",
+              confidence: 0,
+              executionTime: 0,
+              testCaseFound: false
+            };
+            adminTime = Date.now() - adminStartTime;
+          }
+          
+        } catch (adminError) {
+          console.error(`[CROSS-VALIDATION-V2] Admin interface error for "${query}":`, adminError);
+          adminResult = {
+            response: null,
+            confidence: 0,
+            error: adminError.message || 'Admin interface failed',
+            testCaseFound: false
           };
           adminTime = Date.now() - adminStartTime;
         }
 
-        // Calculate divergence
+        // Calculate divergence with improved error handling
         let divergenceScore = 0;
         let status: 'CONSISTENT' | 'DIVERGENT' | 'ERROR' = 'CONSISTENT';
         let details = '';
 
-        if (chatResult.response && adminResult) {
-          // Compare response content similarity
-          const chatText = chatResult.response?.toLowerCase() || '';
-          const adminText = adminResult.response?.toLowerCase() || '';
+        // Check for errors in either response
+        if (chatResult?.error || adminResult?.error) {
+          status = 'ERROR';
+          const errors = [];
+          if (chatResult?.error) errors.push(`Chat: ${chatResult.error}`);
+          if (adminResult?.error) errors.push(`Admin: ${adminResult.error}`);
+          details = `Errors encountered - ${errors.join(', ')}`;
+          divergenceScore = 100;
+        } else if (chatResult?.response && adminResult?.response) {
+          // Both responses exist, compare them
+          const chatText = String(chatResult.response || '').toLowerCase();
+          const adminText = String(adminResult.response || '').toLowerCase();
           
-          // Simple text similarity calculation
-          const commonWords = chatText.split(' ').filter(word => 
-            adminText.includes(word) && word.length > 3
-          );
-          const totalWords = Math.max(
-            chatText.split(' ').length, 
-            adminText.split(' ').length
-          );
-          const textSimilarity = commonWords.length / totalWords;
-          
-          // Compare confidence scores
-          const chatConfidence = chatResult.confidence || 0;
-          const adminConfidence = adminResult.confidence || 0;
-          const confidenceDiff = Math.abs(chatConfidence - adminConfidence);
-          
-          // Compare response times (should be within reasonable range)
-          const timeDivergence = Math.abs(chatTime - adminTime) / Math.max(chatTime, adminTime) * 100;
-          
-          // Calculate overall divergence
-          divergenceScore = Math.max(
-            (1 - textSimilarity) * 100,
-            confidenceDiff * 100,
-            timeDivergence * 0.1 // Weight time less heavily
-          );
-          
-          if (divergenceScore > alertThreshold) {
-            status = 'DIVERGENT';
-            details = `Text similarity: ${(textSimilarity * 100).toFixed(1)}%, Confidence diff: ${(confidenceDiff * 100).toFixed(1)}%, Time diff: ${timeDivergence.toFixed(1)}%`;
+          if (chatText.length === 0 || adminText.length === 0) {
+            status = 'ERROR';
+            details = 'One or both responses are empty';
+            divergenceScore = 100;
           } else {
-            details = `Responses consistent - Text similarity: ${(textSimilarity * 100).toFixed(1)}%, Confidence diff: ${(confidenceDiff * 100).toFixed(1)}%`;
+            // Improved text similarity calculation
+            const chatWords = chatText.split(/\s+/).filter(word => word.length > 3);
+            const adminWords = adminText.split(/\s+/).filter(word => word.length > 3);
+            
+            const commonWords = chatWords.filter(word => adminWords.includes(word));
+            const totalUniqueWords = new Set([...chatWords, ...adminWords]).size;
+            const textSimilarity = totalUniqueWords > 0 ? commonWords.length / totalUniqueWords : 0;
+            
+            // Compare confidence scores with better handling
+            const chatConfidence = Number(chatResult.confidence) || 0;
+            const adminConfidence = Number(adminResult.confidence) || 0;
+            const confidenceDiff = Math.abs(chatConfidence - adminConfidence);
+            
+            // Compare response times
+            const timeDivergence = chatTime > 0 && adminTime > 0 ? 
+              Math.abs(chatTime - adminTime) / Math.max(chatTime, adminTime) * 100 : 0;
+            
+            // Calculate overall divergence with weighted scoring
+            divergenceScore = Math.max(
+              (1 - textSimilarity) * 70,  // Text similarity weighted more heavily
+              confidenceDiff * 100,
+              timeDivergence * 0.1        // Time difference weighted less
+            );
+            
+            if (divergenceScore > alertThreshold) {
+              status = 'DIVERGENT';
+              details = `Text similarity: ${(textSimilarity * 100).toFixed(1)}%, Confidence diff: ${(confidenceDiff * 100).toFixed(1)}%, Time diff: ${timeDivergence.toFixed(1)}%`;
+            } else {
+              status = 'CONSISTENT';
+              details = `Responses consistent - Text similarity: ${(textSimilarity * 100).toFixed(1)}%, Confidence diff: ${(confidenceDiff * 100).toFixed(1)}%`;
+            }
           }
         } else {
           status = 'ERROR';
-          details = 'Unable to compare - missing responses';
+          details = 'Unable to compare - missing or invalid responses';
           divergenceScore = 100;
         }
 

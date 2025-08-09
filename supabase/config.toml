@@ -49,3 +49,9 @@ verify_jwt = true
 
 [functions.run-benchmark]
 verify_jwt = false
+
+[functions.qa-execute-validation-v2]
+verify_jwt = true
+
+[functions.cross-validation-v2]
+verify_jwt = true
