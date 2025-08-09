@@ -31,7 +31,6 @@ serve(async (req) => {
       : ['anthropic', selectedModel];
     
     console.log(`🔥 AGENTIC-RAG: Parsed - Provider: ${provider}, Model: ${modelName}`);
-    console.log(`🔥 AGENTIC-RAG: Session ID: ${sessionId}, User Role: ${userRole}`);
     
     if (!userMessage) {
       throw new Error('Query or message is required');
@@ -171,17 +170,7 @@ serve(async (req) => {
     
     // Step 2: SQL Generation (if needed)
     let sqlResults = null;
-    
-    // Força SQL para perguntas sobre bairros e ZOTs específicas
-    const isZotBairroQuery = userMessage.toLowerCase().includes('bairros') && 
-                            (userMessage.toLowerCase().includes('zot') || userMessage.toLowerCase().includes('zona'));
-    
-    console.log(`🔥 AGENTIC-RAG: Query: "${userMessage}"`);
-    console.log(`🔥 AGENTIC-RAG: Analysis strategy: ${analysisResult.strategy}`);
-    console.log(`🔥 AGENTIC-RAG: Is ZOT-Bairro query: ${isZotBairroQuery}`);
-    console.log(`🔥 AGENTIC-RAG: Will use SQL: ${analysisResult.strategy === 'structured_only' || analysisResult.strategy === 'hybrid' || isZotBairroQuery}`);
-    
-    if (analysisResult.strategy === 'structured_only' || analysisResult.strategy === 'hybrid' || isZotBairroQuery) {
+    if (analysisResult.strategy === 'structured_only' || analysisResult.strategy === 'hybrid') {
       console.log('🔧 Generating SQL...');
       agentTrace.push({ step: 'sql_generation', timestamp: Date.now() });
       
