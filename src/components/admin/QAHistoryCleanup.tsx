@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface CleanupStats {
   validationRuns: number;
@@ -19,6 +20,7 @@ interface CleanupStats {
 
 export function QAHistoryCleanup() {
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [isClearing, setIsClearing] = useState(false);
   const [confirmStep, setConfirmStep] = useState(0);
   const [lastCleanup, setLastCleanup] = useState<{
@@ -47,6 +49,14 @@ export function QAHistoryCleanup() {
       setLastCleanup(data);
       setConfirmStep(0);
       
+      // Invalidate all QA-related queries to refresh the UI
+      await queryClient.invalidateQueries({ 
+        predicate: (query) => {
+          const key = query.queryKey[0] as string;
+          return key?.includes('qa') || key?.includes('validation') || key?.includes('test');
+        }
+      });
+
       if (data.success) {
         toast({
           title: "🧹 Histórico QA Limpo",
