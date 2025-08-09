@@ -24,7 +24,7 @@ export function useQAValidator() {
       // Use the enhanced SmartQAValidator for better accuracy
       const validator = SmartQAValidator.getInstance();
       const runId = await validator.runValidation({
-        model: options.model || 'agentic-rag',
+        models: options.models || [options.model || 'anthropic/claude-3-5-sonnet-20241022'], // Use real model names
         mode: options.mode,
         categories: options.categories,
         difficulties: options.difficulties,

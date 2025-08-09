@@ -100,7 +100,8 @@ serve(async (req) => {
       const startTime = Date.now();
       
       try {
-        // Call the agentic-rag function
+        // Call the agentic-rag function with a real model
+        const actualModel = model === 'agentic-rag' ? 'anthropic/claude-3-5-sonnet-20241022' : model;
         const response = await fetch(`${supabaseUrl}/functions/v1/agentic-rag`, {
           method: 'POST',
           headers: {
@@ -108,8 +109,10 @@ serve(async (req) => {
             'Content-Type': 'application/json'
           },
           body: JSON.stringify({
-            message: testCase.query || testCase.question,
-            sessionId: `qa_validation_${runId}`
+            query: testCase.query || testCase.question,
+            sessionId: `qa_validation_${runId}`,
+            model: actualModel, // Pass the real model name
+            userRole: 'user'
           })
         });
 

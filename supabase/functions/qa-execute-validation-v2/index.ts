@@ -127,7 +127,7 @@ serve(async (req) => {
       categories, 
       difficulties, 
       randomCount = 10,
-      models = ['openai/gpt-4o-mini'], // Default para um modelo válido
+      models = ['anthropic/claude-3-5-sonnet-20241022'], // Default para um modelo válido real
       includeSQL = true,
       excludeSQL = false
     }: ValidationRequest = await req.json();
@@ -228,18 +228,16 @@ serve(async (req) => {
             const testTimeout = 30000; // 30 second timeout per test
             
             try {
-              // Always use agentic-rag endpoint which supports all models
-              const endpoint = 'agentic-rag';
-              
               console.log(`[QA-VALIDATION-V2] Testing case ${testCase.id} with model ${model}`);
               
               // Add timeout to the fetch request
               const controller = new AbortController();
               const timeoutId = setTimeout(() => controller.abort(), testTimeout);
               
-              // Use only agentic-rag endpoint for consistency and reliability
+              // Call agentic-rag endpoint with the specified model
               console.log(`[QA-VALIDATION-V2] Testing case ${testCase.id} with model ${model} via agentic-rag`);
               
+              let response;
               try {
                 response = await fetch(`${supabaseUrl}/functions/v1/agentic-rag`, {
                   method: 'POST',
@@ -248,9 +246,9 @@ serve(async (req) => {
                     'Content-Type': 'application/json'
                   },
                   body: JSON.stringify({
-                    message: testCase.query || testCase.question,
+                    query: testCase.query || testCase.question,
                     sessionId: `qa_validation_${model.replace('/', '_')}_${Date.now()}`,
-                    model: model,
+                    model: model, // Pass the specific model to use
                     bypassCache: true, // Force fresh results for validation
                     userRole: 'user'
                   }),

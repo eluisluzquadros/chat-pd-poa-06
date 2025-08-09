@@ -3,6 +3,7 @@ import { removePromotionalTemplate, calculateAccuracyWithoutTemplate, normalizeT
 
 interface QAValidationOptions {
   model?: string;
+  models?: string[]; // Support for multiple models
   mode?: 'all' | 'selected' | 'filtered' | 'random';
   testCaseIds?: string[];
   categories?: string[];
@@ -46,46 +47,43 @@ export class SmartQAValidator {
 
   async runValidation(options: QAValidationOptions) {
     const { 
-      model = 'agentic-rag',
+      model = 'anthropic/claude-3-5-sonnet-20241022',
+      models = [model || 'anthropic/claude-3-5-sonnet-20241022'],
       mode = 'all',
       ...rest 
     } = options;
 
-    console.log(`[SmartQAValidator] Starting validation with model: ${model}, mode: ${mode}`);
+    console.log(`[SmartQAValidator] Using new qa-execute-validation-v2 with models:`, models);
 
-    // Get test cases to validate
-    const testCases = await this.getTestCases(options);
-    if (testCases.length === 0) {
-      throw new Error('No test cases found');
+    // Use the improved qa-execute-validation-v2 function
+    const { data, error } = await supabase.functions.invoke('qa-execute-validation-v2', {
+      body: {
+        mode,
+        models,
+        categories: options.categories,
+        difficulties: options.difficulties,
+        randomCount: options.randomCount,
+        includeSQL: options.includeSQL,
+        excludeSQL: options.excludeSQL,
+        selectedIds: options.testCaseIds
+      }
+    });
+
+    if (error) {
+      console.error('[SmartQAValidator] Error calling qa-execute-validation-v2:', error);
+      throw new Error(`Validation failed: ${error.message}`);
     }
 
-    console.log(`[SmartQAValidator] Found ${testCases.length} test cases to validate`);
-
-    // Create validation run
-    const { data: validationRun, error: createError } = await supabase
-      .from('qa_validation_runs')
-      .insert({
-        model,
-        status: 'running',
-        total_tests: testCases.length,
-        passed_tests: 0,
-        overall_accuracy: 0,
-        avg_response_time_ms: 0,
-        started_at: new Date().toISOString(),
-      })
-      .select()
-      .single();
-
-    if (createError || !validationRun) {
-      throw new Error('Failed to create validation run');
+    const results = data?.results || [];
+    if (results.length === 0) {
+      throw new Error('No validation results returned');
     }
 
-    console.log(`[SmartQAValidator] Created validation run: ${validationRun.id}`);
-
-    // Process tests with enhanced evaluation
-    await this.processTestsWithSmartEvaluation(testCases, validationRun.id, model);
-
-    return validationRun.id;
+    // Return the first run ID (for single model) or create a summary for multiple models
+    const firstResult = results[0];
+    console.log(`[SmartQAValidator] Validation started with run ID: ${firstResult.runId}`);
+    
+    return firstResult.runId;
   }
 
   private async getTestCases(options: QAValidationOptions): Promise<TestCase[]> {
