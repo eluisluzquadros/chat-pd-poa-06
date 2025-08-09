@@ -188,6 +188,14 @@ export class SmartQAValidator {
       } catch (error) {
         console.error(`[SmartQAValidator] Error testing case ${testCase.id}:`, error);
         
+        // Determine error type
+        let errorType = 'api_error';
+        if (error.message?.includes('RAG system')) {
+          errorType = 'rag_system_error';
+        } else if (error.message?.includes('timeout') || error.message?.includes('Timeout')) {
+          errorType = 'timeout_error';
+        }
+        
         // Save error result
         await supabase
           .from('qa_validation_results')
@@ -199,8 +207,8 @@ export class SmartQAValidator {
             is_correct: false,
             accuracy_score: 0,
             response_time_ms: Date.now() - startTime,
-            error_type: 'api_error',
-            error_details: error.message,
+            error_type: errorType,
+            error_details: error.message?.substring(0, 500) || 'Unknown error',
           });
       }
 
@@ -227,6 +235,7 @@ export class SmartQAValidator {
       .update({
         status: 'completed',
         completed_at: new Date().toISOString(),
+        last_heartbeat: new Date().toISOString(),
       })
       .eq('id', validationRunId);
   }
@@ -234,24 +243,39 @@ export class SmartQAValidator {
   private async callRAGSystem(message: string, model: string): Promise<any> {
     console.log(`[SmartQAValidator] Calling RAG system with model: ${model}`);
     
-    // Always use agentic-rag endpoint for consistency
-    const { data, error } = await supabase.functions.invoke('agentic-rag', {
-      body: {
-        message,
-        userRole: 'user',
-        sessionId: `smart-qa-test-${Date.now()}`,
-        userId: 'smart-qa-validator',
-        model: model, // Pass model parameter
-        bypassCache: true // Force fresh results
-      }
-    });
+    const startTime = Date.now();
+    
+    try {
+      // Always use agentic-rag endpoint for consistency
+      const { data, error } = await supabase.functions.invoke('agentic-rag', {
+        body: {
+          message,
+          userRole: 'user',
+          sessionId: `smart-qa-test-${Date.now()}`,
+          userId: 'smart-qa-validator',
+          model: model,
+          bypassCache: true
+        }
+      });
 
-    if (error) {
-      console.error(`[SmartQAValidator] RAG system error:`, error);
+      const responseTime = Date.now() - startTime;
+      console.log(`[SmartQAValidator] RAG response received in ${responseTime}ms`);
+
+      if (error) {
+        console.error(`[SmartQAValidator] RAG system error:`, error);
+        throw new Error(`RAG system error: ${error.message || 'Unknown error'}`);
+      }
+
+      if (!data) {
+        throw new Error('RAG system returned empty response');
+      }
+
+      return data;
+    } catch (error) {
+      const responseTime = Date.now() - startTime;
+      console.error(`[SmartQAValidator] RAG call failed after ${responseTime}ms:`, error);
       throw error;
     }
-
-    return data;
   }
 
   private evaluateAnswerIntelligently(

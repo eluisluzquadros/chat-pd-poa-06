@@ -1149,6 +1149,7 @@ export type Database = {
           completed_at: string | null
           error_message: string | null
           id: string
+          last_heartbeat: string | null
           model: string
           overall_accuracy: number | null
           passed_tests: number
@@ -1161,6 +1162,7 @@ export type Database = {
           completed_at?: string | null
           error_message?: string | null
           id?: string
+          last_heartbeat?: string | null
           model: string
           overall_accuracy?: number | null
           passed_tests?: number
@@ -1173,6 +1175,7 @@ export type Database = {
           completed_at?: string | null
           error_message?: string | null
           id?: string
+          last_heartbeat?: string | null
           model?: string
           overall_accuracy?: number | null
           passed_tests?: number
