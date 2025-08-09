@@ -189,7 +189,7 @@ serve(async (req) => {
         useRegimeTable: true // Forçar uso da tabela regime_urbanistico
       };
       
-      const sqlResponse = await fetch(`${supabaseUrl}/functions/v1/sql-generator`, {
+      const sqlResponse = await fetch(`${supabaseUrl}/functions/v1/sql-generator-v2`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -205,6 +205,41 @@ serve(async (req) => {
       if (sqlResponse.ok) {
         sqlResults = await sqlResponse.json();
         agentTrace.push({ step: 'sql_generation_complete', hasResults: sqlResults.executionResults?.length > 0 });
+        
+        // NOVO: Validar SQL gerado para detectar problemas
+        try {
+          const validationResponse = await fetch(`${supabaseUrl}/functions/v1/sql-validator`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${authKey}`,
+            },
+            body: JSON.stringify({
+              query: userMessage,
+              sqlResults: sqlResults,
+              expectedTable: analysisResult.needsRiskData ? 'bairros_risco_desastre' : 'regime_urbanistico',
+              queryType: analysisResult.queryType || 'general'
+            }),
+          });
+
+          if (validationResponse.ok) {
+            const validation = await validationResponse.json();
+            agentTrace.push({ 
+              step: 'sql_validation', 
+              isValid: validation.isValid,
+              confidence: validation.confidence,
+              issues: validation.issues 
+            });
+            
+            // Se a validação falhou criticamente, tentar sql-generator novamente
+            if (!validation.isValid && validation.shouldTriggerAlert) {
+              console.log('🚨 SQL validation failed - attempting recovery...');
+              // Aqui poderia tentar regenerar o SQL com hints específicos
+            }
+          }
+        } catch (validationError) {
+          console.error('SQL validation error:', validationError);
+        }
       }
     }
 

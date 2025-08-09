@@ -17,6 +17,7 @@ import { RefreshCw } from 'lucide-react';
 import { QAMaintenancePanel } from '@/components/admin/QAMaintenancePanel';
 import { TestQAFixes } from '@/components/admin/TestQAFixes';
 import { CrossValidationPanel } from '@/components/admin/CrossValidationPanel';
+import { TableCoverageMonitor } from '@/components/admin/TableCoverageMonitor';
 
 export default function Quality() {
   const [metrics, setMetrics] = useState({
@@ -160,8 +161,9 @@ export default function Quality() {
         </Card>
       </div>
 
-      <Tabs defaultValue="fixes" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-9 h-12">
+      <Tabs defaultValue="coverage" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-10 h-12">
+          <TabsTrigger value="coverage" className="text-sm">📊 Cobertura</TabsTrigger>
           <TabsTrigger value="fixes" className="text-sm">🔧 Correções</TabsTrigger>
           <TabsTrigger value="crossval" className="text-sm">⚡ Cross-Val</TabsTrigger>
           <TabsTrigger value="execution" className="text-sm">Execuções</TabsTrigger>
@@ -172,6 +174,10 @@ export default function Quality() {
           <TabsTrigger value="gaps" className="text-sm">Gaps</TabsTrigger>
           <TabsTrigger value="maintenance" className="text-sm">Manutenção</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="coverage" className="space-y-4">
+          <TableCoverageMonitor />
+        </TabsContent>
 
         <TabsContent value="fixes" className="space-y-4">
           <TestQAFixes />
