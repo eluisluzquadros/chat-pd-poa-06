@@ -77,8 +77,9 @@ serve(async (req) => {
               message: query,
               sessionId: `${sessionId}-chat`,
               model,
-              userRole: 'citizen',
-              bypassCache: true
+              userRole: 'citizen',  // Standardized user role
+              bypassCache: false,   // CRITICAL: Use same cache behavior as /chat
+              userId: undefined     // Match ChatService behavior
             }),
             signal: chatController.signal
           });
@@ -105,70 +106,43 @@ serve(async (req) => {
           chatTime = Date.now() - chatStartTime;
         }
 
-        // Test via /admin/quality interface (qa-execute-validation-v2)
+        // Test via DIRECT agentic-rag call (simulating /admin behavior with identical parameters)
         const adminStartTime = Date.now();
         let adminResult = null;
         let adminTime = 0;
         
         try {
-          // First, find a test case that matches this query
-          const { data: testCases, error: testCaseError } = await supabase
-            .from('qa_test_cases')
-            .select('*')
-            .or(`question.ilike.%${query.substring(0, 20)}%,query.ilike.%${query.substring(0, 20)}%`)
-            .limit(1);
-
-          if (testCaseError) {
-            throw new Error(`Failed to fetch test cases: ${testCaseError.message}`);
+          const adminController = new AbortController();
+          const adminTimeoutId = setTimeout(() => adminController.abort(), 30000); // 30s timeout
+          
+          // CRITICAL FIX: Call agentic-rag directly with IDENTICAL parameters as /chat
+          const adminResponse = await fetch(`${supabaseUrl}/functions/v1/agentic-rag`, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${supabaseKey}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              message: query,
+              sessionId: `${sessionId}-admin`,  // Different session but same pattern
+              model,
+              userRole: 'citizen',  // CRITICAL: Same user role as /chat
+              bypassCache: false,   // CRITICAL: Same cache behavior as /chat
+              userId: undefined     // CRITICAL: Same userId handling as /chat
+            }),
+            signal: adminController.signal
+          });
+          
+          clearTimeout(adminTimeoutId);
+          
+          if (!adminResponse.ok) {
+            throw new Error(`Admin interface failed: ${adminResponse.status} ${adminResponse.statusText}`);
           }
-
-          if (testCases?.[0]) {
-            const adminController = new AbortController();
-            const adminTimeoutId = setTimeout(() => adminController.abort(), 30000); // 30s timeout
-            
-            try {
-              const adminResponse = await fetch(`${supabaseUrl}/functions/v1/qa-execute-validation-v2`, {
-                method: 'POST',
-                headers: {
-                  'Authorization': `Bearer ${supabaseKey}`,
-                  'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                  mode: 'selected',
-                  selectedIds: [testCases[0].id],
-                  models: [model],
-                  includeSQL: false,
-                  excludeSQL: true
-                }),
-                signal: adminController.signal
-              });
-              
-              clearTimeout(adminTimeoutId);
-              
-              if (!adminResponse.ok) {
-                throw new Error(`Admin interface failed: ${adminResponse.status} ${adminResponse.statusText}`);
-              }
-              
-              adminResult = await adminResponse.json();
-              adminTime = Date.now() - adminStartTime;
-              
-              console.log(`[CROSS-VALIDATION-V2] Admin response for "${query}": ${adminResponse.status}`);
-              
-            } catch (adminError) {
-              clearTimeout(adminTimeoutId);
-              throw adminError;
-            }
-          } else {
-            // If no test case found, create a temporary one
-            console.log(`[CROSS-VALIDATION-V2] No test case found for query: "${query}"`);
-            adminResult = {
-              response: "No test case found for this query",
-              confidence: 0,
-              executionTime: 0,
-              testCaseFound: false
-            };
-            adminTime = Date.now() - adminStartTime;
-          }
+          
+          adminResult = await adminResponse.json();
+          adminTime = Date.now() - adminStartTime;
+          
+          console.log(`[CROSS-VALIDATION-V2] Admin response for "${query}": ${adminResponse.status}`);
           
         } catch (adminError) {
           console.error(`[CROSS-VALIDATION-V2] Admin interface error for "${query}":`, adminError);

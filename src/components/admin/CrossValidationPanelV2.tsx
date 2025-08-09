@@ -163,8 +163,11 @@ export function CrossValidationPanelV2() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <AlertTriangle className="h-5 w-5" />
-            Validação Cruzada: /chat vs /admin/quality
+            Validação Cruzada: Interface Consistência
           </CardTitle>
+          <p className="text-sm text-muted-foreground">
+            Verifica consistência entre chamadas agentic-rag com parâmetros idênticos
+          </p>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -253,10 +256,10 @@ export function CrossValidationPanelV2() {
             
             <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
               <div>
-                <strong>Tempo Médio /chat:</strong> {summary.avgChatTime?.toFixed(0)}ms
+                <strong>Tempo Médio 1ª chamada:</strong> {summary.avgChatTime?.toFixed(0)}ms
               </div>
               <div>
-                <strong>Tempo Médio /admin:</strong> {summary.avgAdminTime?.toFixed(0)}ms
+                <strong>Tempo Médio 2ª chamada:</strong> {summary.avgAdminTime?.toFixed(0)}ms
               </div>
             </div>
           </CardContent>
@@ -293,13 +296,13 @@ export function CrossValidationPanelV2() {
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
                     <div className="border rounded p-2">
-                      <div className="font-medium text-blue-600 mb-1">/chat Interface</div>
+                      <div className="font-medium text-blue-600 mb-1">Primeira Chamada</div>
                       <div>Resposta: {result.chatResponse?.response || 'N/A'}</div>
                       <div>Confiança: {(result.chatResponse?.confidence * 100)?.toFixed(1)}%</div>
                       <div>Tempo: {result.timing.chatTime}ms</div>
                     </div>
                     <div className="border rounded p-2">
-                      <div className="font-medium text-purple-600 mb-1">/admin Interface</div>
+                      <div className="font-medium text-purple-600 mb-1">Segunda Chamada</div>
                       <div>Resposta: {result.adminResponse?.response || 'N/A'}</div>
                       <div>Confiança: {(result.adminResponse?.confidence * 100)?.toFixed(1)}%</div>
                       <div>Tempo: {result.timing.adminTime}ms</div>
