@@ -347,7 +347,8 @@ serve(async (req) => {
                     query: testCase.query || testCase.question,
                     sessionId: `qa_validation_${model.replace('/', '_')}_${Date.now()}`,
                     model: model, // Pass the specific model to use
-                    userRole: 'user' // Remove bypassCache to use same logic as /chat
+                    bypassCache: true, // Force fresh results for validation
+                    userRole: 'user'
                   }),
                   signal: controller.signal
                 });
