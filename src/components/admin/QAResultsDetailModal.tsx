@@ -24,6 +24,7 @@ interface QAResultsDetailModalProps {
 
 interface DetailedResult extends QAValidationResult {
   qa_test_cases: QATestCase;
+  evaluation_reasoning?: string;
 }
 
 export function QAResultsDetailModal({ 
@@ -57,7 +58,7 @@ export function QAResultsDetailModal({
       // we need to manually join the data instead of using foreign key relationship
       const { data: resultsData, error: resultsError } = await supabase
         .from('qa_validation_results')
-        .select('*')
+        .select('*, evaluation_reasoning')
         .eq('validation_run_id', runId)
         .order('created_at', { ascending: false });
 
@@ -370,6 +371,16 @@ export function QAResultsDetailModal({
                   </div>
                 </div>
               </div>
+
+              {/* LLM Evaluation Reasoning */}
+              {selectedResult.evaluation_reasoning && (
+                <div>
+                  <h4 className="font-medium mb-2 text-purple-600">Avaliação LLM</h4>
+                  <div className="p-3 bg-purple-50 rounded-lg border border-purple-200">
+                    <p className="text-sm whitespace-pre-wrap">{selectedResult.evaluation_reasoning}</p>
+                  </div>
+                </div>
+              )}
 
               {/* Error Details */}
               {selectedResult.error_details && (

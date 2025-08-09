@@ -417,14 +417,15 @@ serve(async (req) => {
                 
                 const resultData = {
                   validation_run_id: runId,
-                test_case_id: testCaseId, // Ensure string type for TEXT column
-                model,
-                actual_answer: cleanAnswer.substring(0, 2000),
+                  test_case_id: testCaseId, // Ensure string type for TEXT column
+                  model,
+                  actual_answer: cleanAnswer.substring(0, 2000),
                   is_correct: isCorrect,
                   accuracy_score: accuracy,
                   response_time_ms: responseTime,
                   error_type: isCorrect ? null : 'accuracy_below_threshold',
                   error_details: isCorrect ? null : `Accuracy: ${(accuracy * 100).toFixed(1)}%`,
+                  evaluation_reasoning: reasoning.substring(0, 1000), // Store LLM reasoning
                   created_at: new Date().toISOString()
                 };
 

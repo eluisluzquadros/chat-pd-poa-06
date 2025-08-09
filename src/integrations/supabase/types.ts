@@ -1093,6 +1093,7 @@ export type Database = {
           created_at: string
           error_details: string | null
           error_type: string | null
+          evaluation_reasoning: string | null
           generated_sql: string | null
           id: string
           is_correct: boolean
@@ -1111,6 +1112,7 @@ export type Database = {
           created_at?: string
           error_details?: string | null
           error_type?: string | null
+          evaluation_reasoning?: string | null
           generated_sql?: string | null
           id?: string
           is_correct: boolean
@@ -1129,6 +1131,7 @@ export type Database = {
           created_at?: string
           error_details?: string | null
           error_type?: string | null
+          evaluation_reasoning?: string | null
           generated_sql?: string | null
           id?: string
           is_correct?: boolean
