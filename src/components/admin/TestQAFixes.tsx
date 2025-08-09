@@ -1,216 +1,163 @@
-import { useState } from 'react';
+import React from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Loader2, Play, CheckCircle, XCircle, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
+import { PlayCircle, TestTubes, CheckCircle, XCircle, Clock } from 'lucide-react';
+import { SmartQAValidator } from '@/lib/smartQAValidator';
 import { supabase } from '@/integrations/supabase/client';
 
-interface TestResults {
-  cleanup?: any;
-  testValidation?: any;
-  currentStats?: any;
-  totalIssues?: number;
-  savedResults?: number;
-}
-
 export function TestQAFixes() {
-  const [isLoading, setIsLoading] = useState(false);
-  const [results, setResults] = useState<TestResults | null>(null);
+  const [isRunning, setIsRunning] = React.useState(false);
+  const [results, setResults] = React.useState<any>(null);
 
-  const runTest = async () => {
-    setIsLoading(true);
+  const runQuickTest = async () => {
+    setIsRunning(true);
+    setResults(null);
+    
     try {
-      // Test with small validation run to verify fixes
-      console.log('🧪 Testing QA fixes with small validation run...');
-      
-      const { data: testResult, error: testError } = await supabase.functions.invoke('qa-execute-validation-v2', {
-        body: {
-          mode: 'random',
-          randomCount: 2,
-          models: ['openai/gpt-4o-mini'],
-          includeSQL: false,
-          excludeSQL: false
-        }
+      toast.success("Iniciando Teste Rápido - Executando 5 casos de teste com o sistema aprimorado...");
+
+      const validator = SmartQAValidator.getInstance();
+      const runId = await validator.runValidation({
+        mode: 'random',
+        randomCount: 5,
+        model: 'agentic-rag'
       });
 
-      if (testError) {
-        throw new Error(`Test validation failed: ${testError.message}`);
-      }
+      // Wait a bit and then fetch results
+      setTimeout(async () => {
+        try {
+          const { data } = await supabase
+            .from('qa_validation_runs')
+            .select(`
+              *,
+              qa_validation_results (
+                test_case_id,
+                actual_answer,
+                is_correct,
+                accuracy_score,
+                response_time_ms,
+                error_type
+              )
+            `)
+            .eq('id', runId)
+            .single();
 
-      console.log('✅ Test validation completed:', testResult);
-
-      // Verify results were saved
-      let savedResultsCount = 0;
-      if (testResult?.success && testResult.runs?.[0]?.runId) {
-        const runId = testResult.runs[0].runId;
-        
-        // Wait for results to be saved
-        await new Promise(resolve => setTimeout(resolve, 3000));
-        
-        const { data: savedResults } = await supabase
-          .from('qa_validation_results')
-          .select('*')
-          .eq('validation_run_id', runId);
-
-        savedResultsCount = savedResults?.length || 0;
-        console.log(`📊 Found ${savedResultsCount} saved results for run ${runId}`);
-      }
-
-      // Get current system stats
-      const { data: statsData } = await supabase
-        .from('qa_validation_runs')
-        .select('status');
-
-      const stats = statsData?.reduce((acc, run) => {
-        acc[run.status] = (acc[run.status] || 0) + 1;
-        return acc;
-      }, {} as Record<string, number>) || {};
-
-      const testResults = {
-        testValidation: testResult,
-        currentStats: stats,
-        totalIssues: 0,
-        savedResults: savedResultsCount
-      };
-
-      setResults(testResults);
-
-      if (testResult?.success && savedResultsCount > 0) {
-        toast.success(`✅ Testes aprovados! ${savedResultsCount} resultados salvos corretamente`);
-      } else if (testResult?.success && savedResultsCount === 0) {
-        toast.error('⚠️ Validação executada mas resultados não foram salvos - problema persiste');
-      } else {
-        toast.error('❌ Teste falhou - correções precisam de ajustes');
-      }
+          if (data) {
+            setResults(data);
+            toast.success(`Teste Concluído - Acurácia: ${(data.overall_accuracy * 100).toFixed(1)}% | Tempo médio: ${data.avg_response_time_ms}ms`);
+          }
+        } catch (error) {
+          console.error('Error fetching results:', error);
+          toast.error('Erro ao buscar resultados do teste');
+        } finally {
+          setIsRunning(false);
+        }
+      }, 30000); // Wait 30 seconds for completion
 
     } catch (error) {
       console.error('Test error:', error);
-      toast.error(`Erro no teste: ${error.message}`);
-    } finally {
-      setIsLoading(false);
+      toast.error(`Erro no Teste: ${error.message}`);
+      setIsRunning(false);
     }
   };
 
   return (
-    <Card className="w-full">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <AlertTriangle className="h-5 w-5" />
-          Teste das Correções QA
-        </CardTitle>
-        <CardDescription>
-          Testa as correções implementadas no sistema de validação QA
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="flex items-center gap-2">
-          <Button onClick={runTest} disabled={isLoading}>
-            {isLoading ? (
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <TestTubes className="h-5 w-5" />
+            Testes de Correções QA
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="text-sm text-muted-foreground">
+            <p>Sistema de validação aprimorado com:</p>
+            <ul className="list-disc list-inside mt-2 space-y-1">
+              <li>Filtragem automática de templates promocionais</li>
+              <li>Avaliação semântica por categoria</li>
+              <li>Thresholds adaptativos por dificuldade</li>
+              <li>Normalização de texto melhorada</li>
+              <li>Keywords extraídas automaticamente dos casos de teste</li>
+            </ul>
+          </div>
+
+          <Button 
+            onClick={runQuickTest} 
+            disabled={isRunning}
+            className="w-full"
+          >
+            {isRunning ? (
               <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Testando...
+                <Clock className="h-4 w-4 mr-2 animate-spin" />
+                Executando Teste...
               </>
             ) : (
               <>
-                <Play className="mr-2 h-4 w-4" />
-                Executar Teste
+                <PlayCircle className="h-4 w-4 mr-2" />
+                Executar Teste Rápido (5 casos)
               </>
             )}
           </Button>
-        </div>
 
-        {results && (
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="p-3 border rounded">
-                <div className="text-sm text-muted-foreground">Status Geral</div>
-                <div className="flex items-center gap-2">
-                  {results.testValidation?.success ? (
-                    <>
-                      <CheckCircle className="h-4 w-4 text-green-500" />
-                      <span className="text-green-600 font-medium">Aprovado</span>
-                    </>
-                  ) : (
-                    <>
-                      <XCircle className="h-4 w-4 text-red-500" />
-                      <span className="text-red-600 font-medium">Falhado</span>
-                    </>
-                  )}
-                </div>
+          {results && (
+            <div className="mt-6 space-y-4">
+              <div className="grid grid-cols-3 gap-4">
+                <Card className="p-4">
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-green-600">
+                      {results.passed_tests}/{results.total_tests}
+                    </div>
+                    <div className="text-sm text-muted-foreground">Casos Aprovados</div>
+                  </div>
+                </Card>
+                
+                <Card className="p-4">
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-blue-600">
+                      {(results.overall_accuracy * 100).toFixed(1)}%
+                    </div>
+                    <div className="text-sm text-muted-foreground">Acurácia</div>
+                  </div>
+                </Card>
+                
+                <Card className="p-4">
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-purple-600">
+                      {results.avg_response_time_ms}ms
+                    </div>
+                    <div className="text-sm text-muted-foreground">Tempo Médio</div>
+                  </div>
+                </Card>
               </div>
 
-              <div className="p-3 border rounded">
-                <div className="text-sm text-muted-foreground">Resultados Salvos</div>
-                <div className="flex items-center gap-2">
-                  {(results.savedResults || 0) > 0 ? (
-                    <>
-                      <CheckCircle className="h-4 w-4 text-green-500" />
-                      <span className="font-medium">{results.savedResults || 0}</span>
-                    </>
-                  ) : (
-                    <>
-                      <XCircle className="h-4 w-4 text-red-500" />
-                      <span className="text-red-600 font-medium">0</span>
-                    </>
-                  )}
-                </div>
-              </div>
-
-              <div className="p-3 border rounded">
-                <div className="text-sm text-muted-foreground">Runs Completos</div>
-                <div className="font-medium">
-                  {results.currentStats?.completed || 0}
-                </div>
-              </div>
-
-              <div className="p-3 border rounded">
-                <div className="text-sm text-muted-foreground">Runs Falhados</div>
-                <div className="font-medium text-red-600">
-                  {results.currentStats?.failed || 0}
-                </div>
-              </div>
+              {results.qa_validation_results && (
+                <Card className="p-4">
+                  <h4 className="font-medium mb-3">Resultados Detalhados</h4>
+                  <div className="space-y-2">
+                    {results.qa_validation_results.map((result: any, idx: number) => (
+                      <div key={idx} className="flex items-center justify-between p-2 rounded border">
+                        <div className="flex items-center gap-2">
+                          {result.is_correct ? (
+                            <CheckCircle className="h-4 w-4 text-green-500" />
+                          ) : (
+                            <XCircle className="h-4 w-4 text-red-500" />
+                          )}
+                          <span className="text-sm">Caso {result.test_case_id}</span>
+                        </div>
+                        <div className="text-sm text-muted-foreground">
+                          {(result.accuracy_score * 100).toFixed(1)}% | {result.response_time_ms}ms
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </Card>
+              )}
             </div>
-
-            {results.testValidation && (
-              <div className="p-4 border rounded">
-                <h4 className="font-medium mb-2">Detalhes do Teste</h4>
-                <div className="space-y-2 text-sm">
-                  <div>
-                    <span className="text-muted-foreground">Modelo:</span>{' '}
-                    {results.testValidation.runs?.[0]?.model || 'N/A'}
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground">Testes Executados:</span>{' '}
-                    {results.testValidation.runs?.[0]?.totalTests || 0}
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground">Testes Aprovados:</span>{' '}
-                    {results.testValidation.runs?.[0]?.passedTests || 0}
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground">Acurácia:</span>{' '}
-                    {((results.testValidation.runs?.[0]?.overallAccuracy || 0) * 100).toFixed(1)}%
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground">Tempo Médio:</span>{' '}
-                    {results.testValidation.runs?.[0]?.avgResponseTime || 0}ms
-                  </div>
-                </div>
-              </div>
-            )}
-
-            <div className="flex gap-2">
-              <Badge variant={results.testValidation?.success ? "default" : "destructive"}>
-                {results.testValidation?.success ? "✅ Execução OK" : "❌ Execução Falhou"}
-              </Badge>
-              <Badge variant={(results.savedResults || 0) > 0 ? "default" : "destructive"}>
-                {(results.savedResults || 0) > 0 ? "✅ Persistência OK" : "❌ Persistência Falhou"}
-              </Badge>
-            </div>
-          </div>
-        )}
-      </CardContent>
-    </Card>
+          )}
+        </CardContent>
+      </Card>
+    </div>
   );
 }

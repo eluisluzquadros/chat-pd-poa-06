@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { SmartQAValidator } from "@/lib/smartQAValidator";
 import { supabase } from "@/integrations/supabase/client";
+import { multiLLMService } from "@/services/multiLLMService";
 import { toast } from "sonner";
 
 interface ValidationProgress {
@@ -19,12 +20,12 @@ export function useQAValidator() {
     setProgress({ current: 0, total: 0, percentage: 0 });
 
     try {
-      console.log('[useQAValidator] Starting smart validation with enhanced methodology');
+      console.log('[useQAValidator] Starting validation with SmartQAValidator');
       
-      // Use SmartQAValidator for enhanced evaluation
+      // Use the enhanced SmartQAValidator for better accuracy
       const validator = SmartQAValidator.getInstance();
       const runId = await validator.runValidation({
-        model: options.model,
+        model: options.model || 'agentic-rag',
         mode: options.mode,
         categories: options.categories,
         difficulties: options.difficulties,
@@ -33,11 +34,10 @@ export function useQAValidator() {
         excludeSQL: options.excludeSQL
       });
       
+      console.log('[useQAValidator] Validation started with run ID:', runId);
       setCurrentRunId(runId);
       
-      console.log(`[useQAValidator] Smart validation run created: ${runId}`);
-      
-      // Monitor progress with enhanced tracking
+      // Monitor progress
       const interval = setInterval(async () => {
         const { data: run } = await supabase
           .from('qa_validation_runs')
@@ -71,16 +71,16 @@ export function useQAValidator() {
           setCurrentRunId(null);
           
           if (run.status === 'completed') {
-            toast.success('Validação QA inteligente concluída com sucesso!');
-          } else if (run.status === 'failed') {
-            toast.error('Validação QA falhou - verifique os logs');
+            toast.success('Validação QA concluída com sucesso!');
+          } else {
+            toast.error('Validação QA falhou');
           }
         }
       }, 1000);
 
     } catch (error) {
-      console.error('[useQAValidator] Smart validation error:', error);
-      toast.error('Erro ao executar validação inteligente');
+      console.error('[useQAValidator] Validation error:', error);
+      toast.error(`Erro ao executar validação: ${error.message}`);
       setIsRunning(false);
       setProgress(null);
       setCurrentRunId(null);
