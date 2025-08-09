@@ -1602,6 +1602,72 @@ export type Database = {
         }
         Relationships: []
       }
+      sql_validation_logs: {
+        Row: {
+          confidence: number | null
+          created_at: string | null
+          id: string
+          is_valid: boolean | null
+          issues: string[] | null
+          query_text: string
+          query_type: string | null
+          recommendations: string[] | null
+          record_count: number | null
+          should_alert: boolean | null
+          table_used: string | null
+        }
+        Insert: {
+          confidence?: number | null
+          created_at?: string | null
+          id?: string
+          is_valid?: boolean | null
+          issues?: string[] | null
+          query_text: string
+          query_type?: string | null
+          recommendations?: string[] | null
+          record_count?: number | null
+          should_alert?: boolean | null
+          table_used?: string | null
+        }
+        Update: {
+          confidence?: number | null
+          created_at?: string | null
+          id?: string
+          is_valid?: boolean | null
+          issues?: string[] | null
+          query_text?: string
+          query_type?: string | null
+          recommendations?: string[] | null
+          record_count?: number | null
+          should_alert?: boolean | null
+          table_used?: string | null
+        }
+        Relationships: []
+      }
+      table_coverage_reports: {
+        Row: {
+          alert_level: string | null
+          created_at: string | null
+          id: string
+          report_data: Json
+          total_queries: number | null
+        }
+        Insert: {
+          alert_level?: string | null
+          created_at?: string | null
+          id?: string
+          report_data: Json
+          total_queries?: number | null
+        }
+        Update: {
+          alert_level?: string | null
+          created_at?: string | null
+          id?: string
+          report_data?: Json
+          total_queries?: number | null
+        }
+        Relationships: []
+      }
       token_usage: {
         Row: {
           created_at: string
