@@ -94,7 +94,7 @@ serve(async (req) => {
             sources: { cached: true },
             executionTime: Date.now() - startTime,
             agentTrace: [{ step: 'cache_hit', timestamp: Date.now() }],
-            conversationId: convId
+            conversationId: conversationId || sessionId || 'default'
           }), {
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           });
@@ -218,7 +218,7 @@ serve(async (req) => {
         analysisResult,
         sqlResults,
         vectorResults: null,
-        model: selectedModel,
+        model: 'gpt-3.5-turbo', // Use a real LLM model instead of selectedModel
         conversationHistory: conversationHistory.slice(-5)
       }),
     });

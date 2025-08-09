@@ -199,8 +199,14 @@ serve(async (req) => {
     
     const { originalQuery, analysisResult, sqlResults, vectorResults, model, conversationHistory } = await req.json();
     
-    // Determine which model to use for synthesis
-    const selectedModel = model || 'openai/gpt-3.5-turbo';
+    // Determine which model to use for synthesis with fallback
+    let selectedModel = model || 'openai/gpt-3.5-turbo';
+    
+    // Fix for models that are actually function names (like 'agentic-rag')
+    if (selectedModel === 'agentic-rag' || !selectedModel.includes('/')) {
+      selectedModel = 'openai/gpt-3.5-turbo';
+    }
+    
     console.log(`Using model for synthesis: ${selectedModel}`);
     
     // Check if this is a legal/article query
@@ -488,6 +494,52 @@ FORMATO OBRIGATÓRIO DA RESPOSTA:
         errorMessage += 'Modelo não encontrado ou não disponível';
       } else {
         errorMessage += `Status ${response.status}`;
+      }
+      
+      // Try fallback to OpenAI if other provider fails
+      if (provider !== 'openai') {
+        debugLog.push({ step: 'attempting_fallback', fallback_to: 'openai/gpt-3.5-turbo' });
+        
+        try {
+          const fallbackResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              model: 'gpt-3.5-turbo',
+              messages: [{ role: 'system', content: AGENT_RULES }, { role: 'user', content: prompt }],
+              temperature: 0.7,
+              max_tokens: 4096
+            }),
+          });
+          
+          if (fallbackResponse.ok) {
+            const fallbackData = await fallbackResponse.json();
+            const fallbackText = fallbackData.choices?.[0]?.message?.content || '';
+            
+            debugLog.push({ step: 'fallback_success' });
+            
+            // Clean up response and add footer
+            let cleanResponse = fallbackText.replace(/📍\s*\*?\*?Explore mais:.*$/s, '').trim();
+            if (!cleanResponse.includes('📍 **Explore mais:**')) {
+              cleanResponse += FOOTER_TEMPLATE;
+            }
+            
+            return new Response(JSON.stringify({
+              response: cleanResponse,
+              confidence: 0.7,
+              sources: { tabular: sqlResults?.executionResults?.length || 0, conceptual: 0 },
+              debugLog,
+              fallbackUsed: true
+            }), {
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            });
+          }
+        } catch (fallbackError) {
+          debugLog.push({ step: 'fallback_failed', error: fallbackError.message });
+        }
       }
       
       throw new Error(errorMessage);
