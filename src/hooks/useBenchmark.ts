@@ -31,7 +31,15 @@ export interface BenchmarkData {
   error: string | null;
 }
 
-export function useBenchmark(): BenchmarkData & { refetch: () => Promise<void>; executeBenchmark: (options?: { models?: string[] }) => Promise<void>; isBenchmarkRunning: boolean } {
+export function useBenchmark(): BenchmarkData & { 
+  refetch: () => Promise<void>; 
+  executeBenchmark: (options?: { models?: string[]; mode?: string; includeSQL?: boolean; excludeSQL?: boolean }) => Promise<void>; 
+  runBenchmark: (options?: { models?: string[]; mode?: string; includeSQL?: boolean; excludeSQL?: boolean }) => Promise<void>;
+  isBenchmarkRunning: boolean;
+  isRunning: boolean;
+  results: ModelPerformance[];
+  summaries: ModelPerformance[];
+} {
   const [data, setData] = useState<BenchmarkData>({
     metrics: {
       totalBenchmarks: 0,
@@ -216,18 +224,18 @@ export function useBenchmark(): BenchmarkData & { refetch: () => Promise<void>; 
     fetchBenchmarkData();
   }, []);
 
-  const executeBenchmark = async (options?: { models?: string[] }) => {
+  const runBenchmark = async (options?: { models?: string[]; mode?: string; includeSQL?: boolean; excludeSQL?: boolean }) => {
     setIsBenchmarkRunning(true);
     
     try {
       const requestData = {
-        mode: 'all',
-        includeSQL: true,
-        excludeSQL: false,
+        mode: options?.mode || 'all',
+        includeSQL: options?.includeSQL ?? true,
+        excludeSQL: options?.excludeSQL ?? false,
         ...(options?.models && { models: options.models })
       };
 
-      console.log('Executing benchmark with data:', requestData);
+      console.log('🚀 BENCHMARK: Executing with data:', requestData);
       
       const { data, error } = await supabase.functions.invoke('run-benchmark', {
         body: requestData
@@ -281,7 +289,11 @@ export function useBenchmark(): BenchmarkData & { refetch: () => Promise<void>; 
   return {
     ...data,
     refetch: fetchBenchmarkData,
-    executeBenchmark,
-    isBenchmarkRunning
+    executeBenchmark: runBenchmark,
+    runBenchmark,
+    isBenchmarkRunning,
+    isRunning: isBenchmarkRunning,
+    results: data.modelPerformance,
+    summaries: data.modelPerformance
   };
 }

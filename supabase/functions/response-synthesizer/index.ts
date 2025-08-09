@@ -200,14 +200,21 @@ serve(async (req) => {
     const { originalQuery, analysisResult, sqlResults, vectorResults, model, conversationHistory } = await req.json();
     
     // Determine which model to use for synthesis with fallback
-    let selectedModel = model || 'openai/gpt-3.5-turbo';
+    let selectedModel = model || 'anthropic/claude-3-5-sonnet-20241022';
     
     // Fix for models that are actually function names (like 'agentic-rag')
     if (selectedModel === 'agentic-rag' || !selectedModel.includes('/')) {
-      selectedModel = 'openai/gpt-3.5-turbo';
+      selectedModel = 'anthropic/claude-3-5-sonnet-20241022';
     }
     
-    console.log(`Using model for synthesis: ${selectedModel}`);
+    console.log(`🔥 RESPONSE-SYNTHESIZER: Using model: ${selectedModel} (received: ${model})`);
+    
+    // Parse provider and model from the format "provider/model"
+    const [provider, modelName] = selectedModel.includes('/') 
+      ? selectedModel.split('/') 
+      : ['anthropic', selectedModel];
+    
+    console.log(`🔥 RESPONSE-SYNTHESIZER: Parsed - Provider: ${provider}, Model: ${modelName}`);
     
     // Check if this is a legal/article query
     const isLegalQuery = analysisResult?.metadata?.isLegalQuery || 
@@ -391,10 +398,7 @@ FORMATO OBRIGATÓRIO DA RESPOSTA:
     const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
     debugLog.push({ step: 'calling_llm', model: selectedModel });
     
-    // Extrair provider e modelo
-    const [provider, modelName] = selectedModel.includes('/') 
-      ? selectedModel.split('/') 
-      : ['openai', selectedModel];
+    // Use the already parsed provider and model from above
     
     let llmResponse;
     

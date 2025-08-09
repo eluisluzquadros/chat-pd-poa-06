@@ -39,7 +39,7 @@ export class ChatService {
           sessionId,
           userId: session.user.id || undefined,  // Make userId optional
           bypassCache: false,  // Use cache when available
-          model: model || 'openai/gpt-3.5-turbo'  // Use provided model or default
+          model: model || 'anthropic/claude-3-5-sonnet-20241022'  // Use provided model or default
         }
       });
 

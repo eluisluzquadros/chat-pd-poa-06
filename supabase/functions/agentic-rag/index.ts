@@ -19,9 +19,18 @@ serve(async (req) => {
   
   try {
     const requestBody = await req.json();
-    const { query, message, sessionId, userId, bypassCache, model, conversationId } = requestBody;
+    const { query, message, sessionId, userId, bypassCache, model, conversationId, userRole } = requestBody;
     const userMessage = message || query || '';
-    const selectedModel = model || 'openai/gpt-3.5-turbo';
+    const selectedModel = model || 'anthropic/claude-3-5-sonnet-20241022';
+    
+    console.log(`🔥 AGENTIC-RAG: Using model: ${selectedModel} (received: ${model})`);
+    
+    // Parse provider and model from the format "provider/model"
+    const [provider, modelName] = selectedModel.includes('/') 
+      ? selectedModel.split('/') 
+      : ['anthropic', selectedModel];
+    
+    console.log(`🔥 AGENTIC-RAG: Parsed - Provider: ${provider}, Model: ${modelName}`);
     
     if (!userMessage) {
       throw new Error('Query or message is required');
@@ -218,7 +227,7 @@ serve(async (req) => {
         analysisResult,
         sqlResults,
         vectorResults: null,
-        model: 'gpt-3.5-turbo', // Use a real LLM model instead of selectedModel
+        model: selectedModel, // Use the actual selected model
         conversationHistory: conversationHistory.slice(-5)
       }),
     });
