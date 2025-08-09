@@ -17,6 +17,7 @@ import { RefreshCw } from 'lucide-react';
 import { QAMaintenancePanel } from '@/components/admin/QAMaintenancePanel';
 import { TestQAFixes } from '@/components/admin/TestQAFixes';
 import { CrossValidationPanel } from '@/components/admin/CrossValidationPanel';
+import { CrossValidationPanelV2 } from '@/components/admin/CrossValidationPanelV2';
 import { TableCoverageMonitor } from '@/components/admin/TableCoverageMonitor';
 
 export default function Quality() {
@@ -184,7 +185,7 @@ export default function Quality() {
         </TabsContent>
 
         <TabsContent value="crossval" className="space-y-4">
-          <CrossValidationPanel />
+          <CrossValidationPanelV2 />
         </TabsContent>
 
         <TabsContent value="execution" className="space-y-4">

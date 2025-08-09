@@ -345,10 +345,11 @@ serve(async (req) => {
                   },
                   body: JSON.stringify({
                     query: testCase.query || testCase.question,
+                    message: testCase.query || testCase.question, // Ensure compatibility
                     sessionId: `qa_validation_${model.replace('/', '_')}_${Date.now()}`,
                     model: model, // Pass the specific model to use
                     bypassCache: true, // Force fresh results for validation
-                    userRole: 'user'
+                    userRole: 'citizen' // Standardize userRole parameter
                   }),
                   signal: controller.signal
                 });

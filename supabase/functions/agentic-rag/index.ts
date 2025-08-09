@@ -18,7 +18,21 @@ serve(async (req) => {
   const startTime = Date.now();
   
   try {
-    const requestBody = await req.json();
+    // Enhanced error handling for JSON parsing
+    let requestBody;
+    try {
+      requestBody = await req.json();
+    } catch (jsonError) {
+      console.error('❌ Invalid JSON in request body:', jsonError);
+      return new Response(JSON.stringify({
+        error: 'Invalid JSON in request body',
+        details: jsonError.message
+      }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     const { query, message, sessionId, userId, bypassCache, model, conversationId, userRole } = requestBody;
     const userMessage = message || query || '';
     const selectedModel = model || 'anthropic/claude-3-5-sonnet-20241022';
@@ -36,10 +50,16 @@ serve(async (req) => {
       throw new Error('Query or message is required');
     }
     
-    // Inicializar Supabase client
+    // Inicializar Supabase client with enhanced error handling
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || Deno.env.get('SUPABASE_ANON_KEY');
-    const supabase = createClient(supabaseUrl!, supabaseKey!);
+    
+    if (!supabaseUrl || !supabaseKey) {
+      console.error('❌ Missing Supabase configuration');
+      throw new Error('Missing Supabase configuration');
+    }
+    
+    const supabase = createClient(supabaseUrl, supabaseKey);
     
     const agentTrace = [];
     
@@ -138,11 +158,14 @@ serve(async (req) => {
       body: JSON.stringify({ 
         query: userMessage, 
         sessionId,
+        userRole: userRole || 'citizen', // Standardize userRole parameter
         conversationHistory: conversationHistory.slice(-5)
       }),
     });
 
     if (!analysisResponse.ok) {
+      const errorText = await analysisResponse.text();
+      console.error(`❌ Query analyzer failed: ${analysisResponse.status} - ${errorText}`);
       throw new Error(`Query analyzer failed: ${analysisResponse.status}`);
     }
 
