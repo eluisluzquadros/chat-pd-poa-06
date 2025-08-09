@@ -18,7 +18,6 @@ import { QAMaintenancePanel } from '@/components/admin/QAMaintenancePanel';
 import { TestQAFixes } from '@/components/admin/TestQAFixes';
 import { CrossValidationPanel } from '@/components/admin/CrossValidationPanel';
 import { TableCoverageMonitor } from '@/components/admin/TableCoverageMonitor';
-import { CacheManagement } from '@/components/admin/CacheManagement';
 
 export default function Quality() {
   const [metrics, setMetrics] = useState({
@@ -163,9 +162,8 @@ export default function Quality() {
       </div>
 
       <Tabs defaultValue="coverage" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-11 h-12">
+        <TabsList className="grid w-full grid-cols-10 h-12">
           <TabsTrigger value="coverage" className="text-sm">📊 Cobertura</TabsTrigger>
-          <TabsTrigger value="cache" className="text-sm">💾 Cache</TabsTrigger>
           <TabsTrigger value="fixes" className="text-sm">🔧 Correções</TabsTrigger>
           <TabsTrigger value="crossval" className="text-sm">⚡ Cross-Val</TabsTrigger>
           <TabsTrigger value="execution" className="text-sm">Execuções</TabsTrigger>
@@ -179,10 +177,6 @@ export default function Quality() {
 
         <TabsContent value="coverage" className="space-y-4">
           <TableCoverageMonitor />
-        </TabsContent>
-
-        <TabsContent value="cache" className="space-y-4">
-          <CacheManagement />
         </TabsContent>
 
         <TabsContent value="fixes" className="space-y-4">
