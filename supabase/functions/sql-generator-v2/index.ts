@@ -356,28 +356,7 @@ Responda com JSON válido seguindo esta estrutura:
           if (queryResult?.length > 0) {
             console.log('📋 PRIMEIROS RESULTADOS:', queryResult.slice(0, 3));
           } else {
-            console.log('⚠️ NENHUM RESULTADO ENCONTRADO - INVESTIGANDO...');
-            
-            // Additional debugging for empty results
-            if (query.toLowerCase().includes('três figueiras') || query.toLowerCase().includes('tres figueiras')) {
-              console.log('🔬 DIAGNÓSTICO APROFUNDADO TRÊS FIGUEIRAS:');
-              
-              // Check if table exists and has data
-              const { data: allBairros } = await supabaseClient
-                .rpc('execute_sql_query', { 
-                  query_text: `SELECT DISTINCT bairro FROM regime_urbanistico WHERE bairro IS NOT NULL ORDER BY bairro LIMIT 50` 
-                });
-              
-              console.log('🏘️ BAIRROS DISPONÍVEIS (amostra):', allBairros?.slice(0, 10));
-              
-              // Check specifically for similar names
-              const { data: similarBairros } = await supabaseClient
-                .rpc('execute_sql_query', { 
-                  query_text: `SELECT DISTINCT bairro FROM regime_urbanistico WHERE bairro ILIKE '%figueira%' OR bairro ILIKE '%tres%' ORDER BY bairro` 
-                });
-              
-              console.log('🔍 BAIRROS SIMILARES A "FIGUEIRAS":', similarBairros);
-            }
+            console.log('⚠️ NENHUM RESULTADO ENCONTRADO');
           }
           
           executionResults.push({
