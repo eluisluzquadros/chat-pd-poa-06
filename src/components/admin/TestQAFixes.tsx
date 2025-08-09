@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import { PlayCircle, TestTubes, CheckCircle, XCircle, Clock, StopCircle } from 'lucide-react';
 import { SmartQAValidator } from '@/lib/smartQAValidator';
 import { supabase } from '@/integrations/supabase/client';
+import { QAHistoryCleanup } from './QAHistoryCleanup';
 
 interface TestProgress {
   current: number;
@@ -341,6 +342,9 @@ export function TestQAFixes() {
           )}
         </CardContent>
       </Card>
+
+      {/* History Cleanup Section */}
+      <QAHistoryCleanup />
     </div>
   );
 }
