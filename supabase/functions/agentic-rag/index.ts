@@ -212,6 +212,14 @@ serve(async (req) => {
         useRegimeTable: true // Forçar uso da tabela regime_urbanistico
       };
       
+      // Log detailed SQL generation debug info
+      console.log('🔍 SQL GENERATION DEBUG:', {
+        originalQuery: userMessage,
+        analysisResult: analysisResult,
+        sqlHints: sqlHints,
+        timestamp: new Date().toISOString()
+      });
+      
       const sqlResponse = await fetch(`${supabaseUrl}/functions/v1/sql-generator-v2`, {
         method: 'POST',
         headers: {
@@ -221,12 +229,35 @@ serve(async (req) => {
         body: JSON.stringify({
           query: userMessage,
           analysisResult,
-          hints: sqlHints
+          hints: sqlHints,
+          debug: true // Add debug flag
         }),
       });
 
       if (sqlResponse.ok) {
         sqlResults = await sqlResponse.json();
+        
+        // Enhanced logging for SQL results
+        console.log('📊 SQL RESPONSE RECEIVED:', {
+          hasResults: sqlResults.executionResults?.length > 0,
+          queryCount: sqlResults.sqlQueries?.length || 0,
+          executionResultsCount: sqlResults.executionResults?.length || 0,
+          confidence: sqlResults.confidence
+        });
+        
+        // Log each execution result
+        if (sqlResults.executionResults) {
+          sqlResults.executionResults.forEach((result, index) => {
+            console.log(`📋 Result ${index + 1}:`, {
+              hasError: !!result.error,
+              dataCount: result.data?.length || 0,
+              table: result.table,
+              purpose: result.purpose,
+              firstResult: result.data?.[0] || null
+            });
+          });
+        }
+        
         agentTrace.push({ step: 'sql_generation_complete', hasResults: sqlResults.executionResults?.length > 0 });
         
         // NOVO: Validar SQL gerado para detectar problemas
