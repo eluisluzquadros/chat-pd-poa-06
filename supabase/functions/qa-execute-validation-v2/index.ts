@@ -35,16 +35,109 @@ function normalizeText(text: string): string {
     .trim();
 }
 
-function calculateAccuracyWithoutTemplate(
+async function evaluateResponseWithLLM(
   actualAnswer: string,
-  expectedKeywords: string[],
-  expectedAnswer?: string,
-  category?: string
-): number {
+  expectedAnswer: string,
+  question: string,
+  category: string,
+  expectedKeywords?: string[]
+): Promise<{ accuracy: number, reasoning: string }> {
+  const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
+  if (!openAIApiKey) {
+    console.warn('[QA-VALIDATION] OpenAI API key not found, falling back to basic evaluation');
+    return fallbackEvaluation(actualAnswer, expectedAnswer, expectedKeywords);
+  }
+
+  const cleanActual = removePromotionalTemplate(actualAnswer);
+  
+  // Create evaluation prompt based on category
+  const evaluationPrompt = `Você é um especialista em avaliação de respostas sobre Plano Diretor de Porto Alegre.
+
+PERGUNTA: ${question}
+
+RESPOSTA ESPERADA: ${expectedAnswer}
+
+RESPOSTA OBTIDA: ${cleanActual}
+
+CATEGORIA: ${category}
+
+PALAVRAS-CHAVE ESPERADAS: ${expectedKeywords?.join(', ') || 'Não especificadas'}
+
+Avalie a qualidade da resposta obtida comparando-a com a resposta esperada, considerando:
+
+1. CORREÇÃO FACTUAL (40%): As informações estão corretas?
+2. COMPLETUDE (30%): A resposta aborda todos os pontos principais?
+3. RELEVÂNCIA (20%): A resposta responde à pergunta feita?
+4. CLAREZA (10%): A resposta é clara e compreensível?
+
+INSTRUÇÕES ESPECÍFICAS POR CATEGORIA:
+- Para "altura_maxima": Verificar se menciona valores numéricos corretos
+- Para "zoneamento": Verificar se identifica ZOTs corretas
+- Para "conceptual": Verificar se explica conceitos adequadamente
+- Para "counting": Verificar se fornece números corretos
+- Para "construction": Verificar se menciona parâmetros urbanísticos
+- Para "street": Verificar se solicita informações de localização quando necessário
+
+IMPORTANTE:
+- Considere que respostas podem usar sinônimos ou explicações diferentes mas corretas
+- Uma resposta pode ser correta mesmo sem usar exatamente as mesmas palavras-chave
+- Avalie a essência da informação, não apenas correspondência textual
+
+Responda APENAS no formato JSON:
+{
+  "accuracy": [número de 0 a 100],
+  "reasoning": "Explicação detalhada da avaliação, incluindo aspectos positivos e negativos"
+}`;
+
+  try {
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${openAIApiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'gpt-4o-mini',
+        messages: [
+          { role: 'system', content: 'Você é um avaliador especialista em Plano Diretor. Sempre responda apenas com JSON válido.' },
+          { role: 'user', content: evaluationPrompt }
+        ],
+        temperature: 0.1,
+        max_tokens: 1000
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`OpenAI API error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    const evaluationText = data.choices[0].message.content.trim();
+    
+    // Parse JSON response
+    const evaluation = JSON.parse(evaluationText);
+    
+    return {
+      accuracy: Math.max(0, Math.min(100, evaluation.accuracy)) / 100, // Convert to 0-1 scale
+      reasoning: evaluation.reasoning || 'Avaliação realizada com sucesso'
+    };
+
+  } catch (error) {
+    console.error('[QA-VALIDATION] LLM evaluation failed:', error);
+    return fallbackEvaluation(actualAnswer, expectedAnswer, expectedKeywords);
+  }
+}
+
+function fallbackEvaluation(
+  actualAnswer: string,
+  expectedAnswer: string,
+  expectedKeywords?: string[]
+): { accuracy: number, reasoning: string } {
   const cleanActual = normalizeText(removePromotionalTemplate(actualAnswer));
   const cleanExpected = expectedAnswer ? normalizeText(removePromotionalTemplate(expectedAnswer)) : '';
   
   let accuracy = 0;
+  let reasoning = '';
   
   if (expectedKeywords?.length > 0) {
     const normalizedKeywords = expectedKeywords.map(k => normalizeText(k));
@@ -52,6 +145,7 @@ function calculateAccuracyWithoutTemplate(
       cleanActual.includes(keyword) || keyword.includes(cleanActual.substring(0, 20))
     );
     accuracy = matchedKeywords.length / normalizedKeywords.length;
+    reasoning = `Avaliação básica: ${matchedKeywords.length}/${normalizedKeywords.length} palavras-chave encontradas`;
   } else if (cleanExpected) {
     const actualWords = cleanActual.split(/\s+/).filter(w => w.length > 2);
     const expectedWords = cleanExpected.split(/\s+/).filter(w => w.length > 2);
@@ -59,10 +153,14 @@ function calculateAccuracyWithoutTemplate(
     if (expectedWords.length > 0) {
       const commonWords = actualWords.filter(word => expectedWords.includes(word));
       accuracy = commonWords.length / expectedWords.length;
+      reasoning = `Avaliação básica: ${commonWords.length}/${expectedWords.length} palavras em comum`;
     }
   }
   
-  return Math.min(accuracy, 1);
+  return {
+    accuracy: Math.min(accuracy, 1),
+    reasoning: reasoning || 'Avaliação básica por similaridade textual'
+  };
 }
 
 const corsHeaders = {
@@ -277,32 +375,36 @@ serve(async (req) => {
               const result = await response.json();
               const rawAnswer = result.response || result.text || '';
 
-              // Enhanced accuracy calculation with template filtering
+              // Use LLM-based semantic evaluation
               const cleanAnswer = removePromotionalTemplate(rawAnswer);
-              const accuracy = calculateAccuracyWithoutTemplate(
+              const evaluation = await evaluateResponseWithLLM(
                 cleanAnswer,
-                testCase.expected_keywords || [],
                 testCase.expected_answer,
-                testCase.category
+                testCase.question || testCase.query || '',
+                testCase.category,
+                testCase.expected_keywords || []
               );
 
-              // Realistic accuracy thresholds based on actual performance
+              const accuracy = evaluation.accuracy;
+              const reasoning = evaluation.reasoning;
+
+              // More realistic accuracy thresholds for LLM evaluation (70%+ is good)
               const categoryThresholds: Record<string, number> = {
-                'zoneamento': 0.4,
-                'altura_maxima': 0.3,
-                'uso-solo': 0.3,
-                'conceptual': 0.3,
-                'counting': 0.4,
-                'construction': 0.3,
-                'street': 0.3,
-                'specific-zot': 0.4,
-                'neighborhood-zots': 0.3,
-                'mobilidade': 0.3,
-                'ambiental': 0.3,
-                'geral': 0.3,
+                'zoneamento': 0.7,
+                'altura_maxima': 0.7,
+                'uso-solo': 0.7,
+                'conceptual': 0.6,
+                'counting': 0.8,
+                'construction': 0.7,
+                'street': 0.6,
+                'specific-zot': 0.7,
+                'neighborhood-zots': 0.7,
+                'mobilidade': 0.6,
+                'ambiental': 0.6,
+                'geral': 0.6,
               };
               
-              const threshold = categoryThresholds[testCase.category] || 0.6;
+              const threshold = categoryThresholds[testCase.category] || 0.7;
               const isCorrect = accuracy >= threshold;
               
               console.log(`[QA-VALIDATION-V2] Case ${testCase.id}: accuracy=${(accuracy * 100).toFixed(1)}%, threshold=${(threshold * 100).toFixed(1)}%, result=${isCorrect ? 'PASS' : 'FAIL'}`);
