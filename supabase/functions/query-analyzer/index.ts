@@ -304,11 +304,10 @@ ORDEM DE ANÁLISE OBRIGATÓRIA:
 5º - SE A QUERY É CURTA (1-3 palavras) E PARECE SER NOME DE BAIRRO → É CONSULTA DE BAIRRO (isConstructionQuery: true, queryType: 'regime')
 6º - Outras análises
 
-REGRA CRÍTICA PARA QUERIES CURTAS:
-- "três figueiras" → DEVE retornar dados do bairro (intent: tabular, isConstructionQuery: true)
-- "petrópolis." → DEVE retornar dados do bairro (intent: tabular, isConstructionQuery: true)
-- "cristal" → DEVE retornar dados do bairro (intent: tabular, isConstructionQuery: true)
-- Qualquer nome isolado que pode ser um bairro → SEMPRE assumir que quer dados tabulares
+REGRA CRÍTICA PARA QUERIES CURTAS (SISTEMA UNIVERSAL):
+- Qualquer nome isolado de 1-3 palavras → SEMPRE assumir que quer dados tabulares do bairro
+- "três figueiras", "petrópolis", "cristal", "boa vista" → intent: tabular, isConstructionQuery: true
+- TODOS os 94 bairros devem ter o mesmo tratamento, sem exceções hardcoded
 
 REGRA ABSOLUTA SOBRE PORTO ALEGRE:
 - "Porto Alegre" é o NOME DA CIDADE, NÃO é um bairro

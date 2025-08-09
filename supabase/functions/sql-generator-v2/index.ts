@@ -283,15 +283,6 @@ Responda com JSON válido seguindo esta estrutura:
             table: 'regime_urbanistico',
             purpose: `Buscar parâmetros urbanísticos do bairro ${bairroName}`
           });
-        }
-      } else if (queryLower.includes('três figueiras') || queryLower.includes('tres figueiras')) {
-        // Fallback específico para Três Figueiras com múltiplas tentativas
-        console.log('🎯 FALLBACK ESPECÍFICO TRÊS FIGUEIRAS');
-        fallbackQueries.push({
-          query: `SELECT bairro, zona, altura_maxima, coef_aproveitamento_basico, coef_aproveitamento_maximo FROM regime_urbanistico WHERE bairro ILIKE '%três figueiras%' OR bairro ILIKE '%tres figueiras%' OR UPPER(bairro) = 'TRÊS FIGUEIRAS' OR UPPER(bairro) = 'TRES FIGUEIRAS'`,
-          table: 'regime_urbanistico',
-          purpose: 'Buscar dados do bairro Três Figueiras com múltiplas variações'
-        });
       }
       
       // Se não conseguiu identificar, query genérica
@@ -329,40 +320,14 @@ Responda com JSON válido seguindo esta estrutura:
           timestamp: new Date().toISOString()
         });
         
-        // Test specific normalization for "Três Figueiras"
-        if (query.toLowerCase().includes('três figueiras') || query.toLowerCase().includes('tres figueiras')) {
-          console.log('🧪 TESTE TRÊS FIGUEIRAS - ANTES DA EXECUÇÃO:');
-          console.log('  - Query original:', query);
-          console.log('  - SQL gerado:', cleanQuery);
-          console.log('  - Busca por variações:');
-          console.log('    * UPPER("TRÊS FIGUEIRAS")');
-          console.log('    * UPPER("TRES FIGUEIRAS")');
-          console.log('    * "TRÊS FIGUEIRAS"');
-          console.log('    * "TRES FIGUEIRAS"');
-          
-          // Test direct database query for debugging
-          const testQueries = [
-            `SELECT bairro, zona, altura_maxima FROM regime_urbanistico WHERE UPPER(bairro) = 'TRÊS FIGUEIRAS' LIMIT 5`,
-            `SELECT bairro, zona, altura_maxima FROM regime_urbanistico WHERE UPPER(bairro) = 'TRES FIGUEIRAS' LIMIT 5`,
-            `SELECT bairro, zona, altura_maxima FROM regime_urbanistico WHERE bairro ILIKE '%três figueiras%' LIMIT 5`,
-            `SELECT bairro, zona, altura_maxima FROM regime_urbanistico WHERE bairro ILIKE '%tres figueiras%' LIMIT 5`,
-            `SELECT DISTINCT bairro FROM regime_urbanistico WHERE bairro ILIKE '%figueiras%' LIMIT 10`
-          ];
-          
-          for (const testQuery of testQueries) {
-            try {
-              const { data: testResult } = await supabaseClient
-                .rpc('execute_sql_query', { query_text: testQuery });
-              console.log(`  ✅ Teste: ${testQuery}`);
-              console.log(`     Resultado: ${testResult?.length || 0} linhas`);
-              if (testResult?.length > 0) {
-                console.log(`     Primeiro resultado:`, testResult[0]);
-              }
-            } catch (testError) {
-              console.log(`  ❌ Erro no teste: ${testQuery}`, testError);
-            }
-          }
-        }
+        // Universal neighborhood search debugging
+        console.log('🔍 UNIVERSAL SEARCH DEBUG:', {
+          originalQuery: query,
+          cleanQuery: cleanQuery,
+          table: sqlQuery.table,
+          purpose: sqlQuery.purpose,
+          timestamp: new Date().toISOString()
+        });
         
         // Executar query principal
         const { data: queryResult, error } = await supabaseClient
