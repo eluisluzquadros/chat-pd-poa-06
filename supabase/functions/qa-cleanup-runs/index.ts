@@ -22,10 +22,25 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!; // Need service role for deletions
     const supabase = createClient(supabaseUrl, supabaseKey);
 
+    // Safely parse JSON with defaults
+    let cleanupRequest: CleanupRequest = { confirmCleanup: false, preserveDays: 0 };
+    
+    try {
+      const contentType = req.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        const text = await req.text();
+        if (text.trim()) {
+          cleanupRequest = JSON.parse(text);
+        }
+      }
+    } catch (jsonError) {
+      console.log('[QA-CLEANUP] Invalid JSON, using defaults:', jsonError.message);
+    }
+
     const { 
       confirmCleanup = false,
       preserveDays = 0 
-    }: CleanupRequest = await req.json();
+    } = cleanupRequest;
 
     if (!confirmCleanup) {
       return new Response(JSON.stringify({

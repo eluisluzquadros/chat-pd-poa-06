@@ -19,14 +19,14 @@ serve(async (req) => {
 
     console.log('[QA-CLEANUP] Starting cleanup of failed and orphaned validation runs...');
 
-    // Step 1: Find runs that are stuck in 'running' status for more than 1 hour
-    const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+    // Step 1: Find runs that are stuck in 'running' status for more than 5 minutes (more aggressive)
+    const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
     
     const { data: stuckRuns, error: stuckError } = await supabase
       .from('qa_validation_runs')
       .select('id, model, started_at, total_tests')
       .eq('status', 'running')
-      .lt('started_at', oneHourAgo);
+      .lt('started_at', fiveMinutesAgo);
 
     if (stuckError) {
       throw new Error(`Failed to fetch stuck runs: ${stuckError.message}`);
@@ -66,7 +66,7 @@ serve(async (req) => {
         .update({
           status: 'failed',
           completed_at: new Date().toISOString(),
-          error_message: 'Run was stuck and automatically cleaned up after 1 hour'
+          error_message: 'Run was stuck and automatically cleaned up after 5 minutes'
         })
         .in('id', stuckRuns.map(run => run.id));
 
