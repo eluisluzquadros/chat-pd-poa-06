@@ -1,27 +1,13 @@
 import { useState, useCallback } from 'react';
 
-export type LLMProvider = 'openai' | 'anthropic' | 'google' | 'deepseek' | 'zhipuai';
-
-export interface ModelConfig {
-  name: string;
-  provider: LLMProvider;
-  displayName: string;
-  description: string;
-  contextWindow: number;
-  pricing: {
-    input: number;
-    output: number;
-  };
-}
-
 export function useModelSelection() {
-  const [selectedModel, setSelectedModel] = useState<LLMProvider>('openai');
+  const [selectedModel, setSelectedModel] = useState<string>('anthropic/claude-3-5-sonnet-20241022');
   const [isLoading, setIsLoading] = useState(false);
 
-  const switchModel = useCallback(async (provider: LLMProvider) => {
+  const switchModel = useCallback(async (modelString: string) => {
     setIsLoading(true);
     try {
-      setSelectedModel(provider);
+      setSelectedModel(modelString);
     } catch (error) {
       console.error('Error switching model:', error);
     } finally {

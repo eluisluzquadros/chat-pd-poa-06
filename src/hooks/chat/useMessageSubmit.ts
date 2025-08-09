@@ -17,7 +17,7 @@ interface UseMessageSubmitProps {
   addMessage: (message: Message) => void;
   createSession: (userId: string, title: string, model: string, message: string) => Promise<string>;
   updateSession: (sessionId: string, lastMessage: string) => Promise<void>;
-  selectedModel: LLMProvider;
+  selectedModel: string;
 }
 
 export function useMessageSubmit({

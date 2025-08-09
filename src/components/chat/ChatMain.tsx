@@ -2,7 +2,7 @@
 import { MessageList } from "@/components/chat/MessageList";
 import { ChatInput } from "@/components/chat/ChatInput";
 import { ModelSelector } from "@/components/chat/ModelSelector";
-import { Message, LLMProvider } from "@/types/chat";
+import { Message } from "@/types/chat";
 import { cn } from "@/lib/utils";
 import { useTheme } from "@/components/ui/theme-provider";
 import { SidebarTrigger } from "@/components/ui/sidebar";
@@ -15,8 +15,8 @@ interface ChatMainProps {
   onSubmit: (e: React.FormEvent) => void;
   isLoading: boolean;
   onNewChat: () => void;
-  selectedModel: LLMProvider;
-  onModelSelect: (model: LLMProvider) => void;
+  selectedModel: string;
+  onModelSelect: (model: string) => void;
   currentSessionId?: string | null;
 }
 

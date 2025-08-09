@@ -6,13 +6,11 @@ import { useEffect, useRef, memo } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { MessageContent } from "./MessageContent";
 import { cn } from "@/lib/utils";
-import { LLMProvider } from "@/types/chat";
-
 interface MessageListProps {
   messages: Message[];
   isLoading: boolean;
   currentSessionId?: string | null;
-  selectedModel?: LLMProvider;
+  selectedModel?: string;
 }
 
 export const MessageList = memo(function MessageList({

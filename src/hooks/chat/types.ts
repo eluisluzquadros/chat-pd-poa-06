@@ -14,8 +14,8 @@ export type UseChatHookReturn = {
   handleSelectSession: (sessionId: string) => void;
   handleDeleteSession: (sessionId: string) => void;
   isConnectionError?: boolean;
-  selectedModel: LLMProvider;
-  switchModel: (model: LLMProvider) => void;
+  selectedModel: string;
+  switchModel: (model: string) => void;
 };
 
 export type RefetchFunction = () => Promise<void>;
