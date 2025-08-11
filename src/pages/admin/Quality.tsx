@@ -19,6 +19,7 @@ import { TestQAFixes } from '@/components/admin/TestQAFixes';
 import { CrossValidationPanel } from '@/components/admin/CrossValidationPanel';
 import { CrossValidationPanelV2 } from '@/components/admin/CrossValidationPanelV2';
 import { TableCoverageMonitor } from '@/components/admin/TableCoverageMonitor';
+import { QANeighborhoodSweep } from '@/components/admin/QANeighborhoodSweep';
 
 export default function Quality() {
   const [metrics, setMetrics] = useState({
@@ -163,7 +164,7 @@ export default function Quality() {
       </div>
 
       <Tabs defaultValue="coverage" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-10 h-12">
+        <TabsList className="grid w-full grid-cols-11 h-12">
           <TabsTrigger value="coverage" className="text-sm">📊 Cobertura</TabsTrigger>
           <TabsTrigger value="fixes" className="text-sm">🔧 Correções</TabsTrigger>
           <TabsTrigger value="crossval" className="text-sm">⚡ Cross-Val</TabsTrigger>
@@ -174,6 +175,7 @@ export default function Quality() {
           <TabsTrigger value="comparison" className="text-sm">Comparação</TabsTrigger>
           <TabsTrigger value="gaps" className="text-sm">Gaps</TabsTrigger>
           <TabsTrigger value="maintenance" className="text-sm">Manutenção</TabsTrigger>
+          <TabsTrigger value="sweep" className="text-sm">🧭 Sweep</TabsTrigger>
         </TabsList>
 
         <TabsContent value="coverage" className="space-y-4">
@@ -214,6 +216,10 @@ export default function Quality() {
 
         <TabsContent value="maintenance" className="space-y-4">
           <QAMaintenancePanel />
+        </TabsContent>
+
+        <TabsContent value="sweep" className="space-y-4">
+          <QANeighborhoodSweep />
         </TabsContent>
       </Tabs>
     </div>
