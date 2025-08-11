@@ -44,10 +44,10 @@ function validateUXConsistency(response: string, queryType: string, originalQuer
   // Padrões tolerantes (funcionam através de quebras de linha e variações)
   const alturaPattern = /altura\s*(maxima|max)?[\s:\-–]*\d+([.,]\d+)?\s*m(etros)?/s;
   // CA com número presente próximo ao rótulo
-  const caBasicoPattern = /(?:\bca\b|c[\.\s]*a|coef(?:\.|iciente)?\s*(?:de\s*)?aproveitamento)[\s:\-–]*\b(?:basico|minimo|min)\b[\s\S]{0,40}\b\d+([.,]\d+)?/s;
-  const caMaximoPattern = /(?:\bca\b|c[\.\s]*a|coef(?:\.|iciente)?\s*(?:de\s*)?aproveitamento)[\s:\-–]*\b(?:maximo|max)\b[\s\S]{0,40}\b\d+([.,]\d+)?/s;
+  const caBasicoPattern = /(?:\bca\b|c[\.\s]*a|coef(?:\.|iciente)?(?:\s*(?:de\s*)?aproveitamento)?)[\s:\-–]*\b(?:basico|minimo|min)\b[\s\S]{0,40}\b\d+([.,]\d+)?/s;
+  const caMaximoPattern = /(?:\bca\b|c[\.\s]*a|coef(?:\.|iciente)?(?:\s*(?:de\s*)?aproveitamento)?)[\s:\-–]*\b(?:maximo|max)\b[\s\S]{0,40}\b\d+([.,]\d+)?/s;
   // Rótulos genéricos para cabeçalhos/sem número
-  const caLabelRegex = /\b(?:ca|c[\.\s]*a|coef(?:\.|iciente)?\s*(?:de\s*)?aproveitamento)\b/;
+  const caLabelRegex = /\b(?:ca|c[\.\s]*a|coef(?:\.|iciente)?(?:\s*(?:de\s*)?aproveitamento)?)\b/;
   const caBasicWord = /\b(?:basico|minimo|min)\b/;
   const caMaxWord = /\b(?:maximo|max)\b/;
 
@@ -91,8 +91,8 @@ function validateUXConsistency(response: string, queryType: string, originalQuer
   }
 
   // Fallback: detectar rótulos CA sem número em qualquer parte do texto
-  const caBasicoLabelOnly = /(?:\bca\b|c[\.\s]*a|coef(?:\.|iciente)?\s*(?:de\s*)?aproveitamento)[\s\S]{0,40}\b(?:basico|minimo|min)\b/.test(nr);
-  const caMaximoLabelOnly = /(?:\bca\b|c[\.\s]*a|coef(?:\.|iciente)?\s*(?:de\s*)?aproveitamento)[\s\S]{0,40}\b(?:maximo|max)\b/.test(nr);
+  const caBasicoLabelOnly = /(?:\bca\b|c[\.\s]*a|coef(?:\.|iciente)?(?:\s*(?:de\s*)?aproveitamento)?)[\s\S]{0,40}\b(?:basico|minimo|min)\b/.test(nr);
+  const caMaximoLabelOnly = /(?:\bca\b|c[\.\s]*a|coef(?:\.|iciente)?(?:\s*(?:de\s*)?aproveitamento)?)[\s\S]{0,40}\b(?:maximo|max)\b/.test(nr);
   hasCaBasico = hasCaBasico || caBasicoLabelOnly;
   hasCaMaximo = hasCaMaximo || caMaximoLabelOnly;
 
