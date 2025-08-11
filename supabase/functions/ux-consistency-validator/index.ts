@@ -18,35 +18,69 @@ function validateUXConsistency(response: string, queryType: string, originalQuer
     format: 'unknown' as 'tabular' | 'text' | 'mixed' | 'unknown'
   };
 
-  // 1. Verificar se tem formatação tabular
+  // Helpers
+  const normalize = (t: string) =>
+    t
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, ''); // remove acentos
+
+  const nr = normalize(response);
+
+  // 1. Verificar se tem formatação tabular / lista estruturada
   const hasMarkdownTable = /\|[^|]+\|[^|]+\|/.test(response);
-  const hasStructuredList = /•.*Altura máxima.*•.*CA básico.*•.*CA máximo/i.test(response);
-  
+  // Lista com marcadores (•, -, *, 1.) contendo indicadores relevantes
+  const hasBullets = /(^|\n)\s*(?:[\-\*•]|\d+\.)\s+/.test(response);
+  const mentionsIndicators = /(altura|ca|coeficiente\s+de\s+aproveitamento)/.test(nr);
+  const hasStructuredList = hasBullets && mentionsIndicators;
+
   validationResults.hasTable = hasMarkdownTable;
   validationResults.hasStructuredData = hasMarkdownTable || hasStructuredList;
 
   // 2. Verificar indicadores obrigatórios para queries de bairros
   const isNeighborhoodQuery = /bairro|zona|zot|distrito/i.test(originalQuery) || queryType === 'neighborhood';
-  
+
+  // Padrões tolerantes (funcionam através de quebras de linha e variações)
+  const alturaPattern = /altura\s*(maxima|max)?[\s:\-–]*\d+([.,]\d+)?\s*m(etros)?/s;
+  const caBasicoPattern = /(ca|coeficiente\s+de\s+aproveitamento)[\s:\-–]*\s*(basico|minimo|min)\b[\s\S]{0,20}\b\d+([.,]\d+)?/s;
+  const caMaximoPattern = /(ca|coeficiente\s+de\s+aproveitamento)[\s:\-–]*\s*(maximo|max)\b[\s\S]{0,20}\b\d+([.,]\d+)?/s;
+
+  // Detecção a partir do texto normalizado
+  let hasAlturaMaxima = alturaPattern.test(nr);
+  let hasCaBasico = caBasicoPattern.test(nr);
+  let hasCaMaximo = caMaximoPattern.test(nr);
+
+  // Complemento: se houver tabela, tentar inferir pelos cabeçalhos
+  if (hasMarkdownTable) {
+    const lines = response.split(/\r?\n/);
+    const headerLine = lines.find(l => /^\s*\|.*\|\s*$/.test(l));
+    if (headerLine) {
+      const header = normalize(headerLine);
+      const alturaHeader = /\baltura\b/.test(header);
+      const caBasicoHeader = /(ca|coeficiente\s+de\s+aproveitamento).*\b(basico|minimo|min)\b/.test(header);
+      const caMaximoHeader = /(ca|coeficiente\s+de\s+aproveitamento).*\b(maximo|max)\b/.test(header);
+
+      hasAlturaMaxima = hasAlturaMaxima || alturaHeader;
+      hasCaBasico = hasCaBasico || caBasicoHeader;
+      hasCaMaximo = hasCaMaximo || caMaximoHeader;
+    }
+  }
+
   if (isNeighborhoodQuery) {
-    const hasAlturaMaxima = /altura.*máxima.*\d+.*metro/i.test(response);
-    const hasCaBasico = /ca.*básico.*\d/i.test(response) || /coeficiente.*aproveitamento.*básico.*\d/i.test(response);
-    const hasCaMaximo = /ca.*máximo.*\d/i.test(response) || /coeficiente.*aproveitamento.*máximo.*\d/i.test(response);
-    
     validationResults.hasRequiredIndicators = hasAlturaMaxima && hasCaBasico && hasCaMaximo;
-    
+
     if (!hasAlturaMaxima) validationResults.issues.push('Missing altura máxima');
     if (!hasCaBasico) validationResults.issues.push('Missing CA básico');
     if (!hasCaMaximo) validationResults.issues.push('Missing CA máximo');
   }
 
-  // 3. Determinar formato
+  // 3. Determinar formato (corrigido: mixed quando ambos, tabular quando só tabela)
   if (hasMarkdownTable && hasStructuredList) {
+    validationResults.format = 'mixed';
+  } else if (hasMarkdownTable) {
     validationResults.format = 'tabular';
   } else if (hasStructuredList) {
     validationResults.format = 'text';
-  } else if (hasMarkdownTable) {
-    validationResults.format = 'mixed';
   } else {
     validationResults.format = 'unknown';
     validationResults.issues.push('No structured formatting detected');
@@ -58,9 +92,29 @@ function validateUXConsistency(response: string, queryType: string, originalQuer
   if (validationResults.hasStructuredData) score += 25;
   if (validationResults.hasRequiredIndicators) score += 35;
   if (validationResults.issues.length === 0) score += 10;
-  
+
   validationResults.score = score;
   validationResults.isConsistent = score >= 85; // 85% ou mais = consistente
+
+  // Debug detalhado
+  console.log('🧪 UX Indicators check:', {
+    query: originalQuery,
+    isNeighborhoodQuery,
+    hasMarkdownTable,
+    hasStructuredList,
+    matches: {
+      alturaFromText: alturaPattern.test(nr),
+      caBasicoFromText: caBasicoPattern.test(nr),
+      caMaximoFromText: caMaximoPattern.test(nr)
+    },
+    final: {
+      hasAlturaMaxima,
+      hasCaBasico,
+      hasCaMaximo
+    },
+    format: validationResults.format,
+    score: validationResults.score
+  });
 
   return validationResults;
 }
