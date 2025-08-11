@@ -113,8 +113,8 @@ export function QANeighborhoodSweep() {
   };
 
   const totals = report?.totals || {};
-  const neighborhoodsCount = totals.neighborhoodsTested ?? report?.neighborhoods?.length ?? "-";
-  const zonesCount = totals.zonesTested ?? report?.zones?.length ?? "-";
+  const neighborhoodsCount = totals.neighborhoods ?? report?.neighborhoods?.length ?? "-";
+  const zonesCount = totals.zones ?? report?.zones?.length ?? "-";
 
   const issuesCount = useMemo(() => {
     if (!report?.commonIssues) return 0;
@@ -215,16 +215,22 @@ export function QANeighborhoodSweep() {
             <div className="p-4 rounded-lg border">
               <div className="text-sm text-muted-foreground">Consistência</div>
               <div className="text-2xl font-semibold">
-                {formatPercent(report?.consistencyRateNeighborhoods)}
+                {formatPercent(totals?.consistencyRateNeighborhoods)}
               </div>
             </div>
             <div className="p-4 rounded-lg border">
               <div className="text-sm text-muted-foreground">Cobertura média</div>
               <div className="text-2xl font-semibold">
-                {formatPercent(report?.avgCoverageNeighborhoods)}
+                {formatPercent(totals?.avgCoverageNeighborhoods)}
               </div>
             </div>
           </div>
+
+          {mode === 'sample' && (
+            <div className="text-xs text-muted-foreground">
+              Nota: Modo Sample usa até 10 bairros e não inclui zonas — ideal para validar rapidamente.
+            </div>
+          )}
 
           {/* Issues badges */}
           <div className="flex items-center gap-2">
