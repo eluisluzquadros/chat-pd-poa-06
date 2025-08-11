@@ -25,6 +25,17 @@ export function QANeighborhoodSweep() {
   const [errorMeta, setErrorMeta] = useState<any>(null);
   const [mode, setMode] = useState<'sample' | 'full'>('sample');
 
+  // Advanced controls
+  const [strict, setStrict] = useState(false);
+  const [includeZones, setIncludeZones] = useState(true);
+  const [nbBatchSize, setNbBatchSize] = useState(25);
+  const [zoneBatchSize, setZoneBatchSize] = useState(50);
+  const [concurrency, setConcurrency] = useState(3);
+
+  // Orchestration state
+  const [isCancelled, setIsCancelled] = useState(false);
+  const [nbProcessed, setNbProcessed] = useState(0);
+  const [zoneProcessed, setZoneProcessed] = useState(0);
   useEffect(() => {
     // Minimal SEO for this admin section
     const prevTitle = document.title;
@@ -62,23 +73,148 @@ export function QANeighborhoodSweep() {
     return `${v.toFixed(1)}%`;
   };
 
+  // Helpers to aggregate batch results
+  const mergeIssues = (
+    map: Record<string, number>,
+    incoming?: Record<string, number> | string[]
+  ) => {
+    if (!incoming) return map;
+    if (Array.isArray(incoming)) {
+      incoming.forEach((k) => {
+        if (!k) return;
+        map[k] = (map[k] || 0) + 1;
+      });
+    } else {
+      Object.entries(incoming).forEach(([k, v]) => {
+        if (!k) return;
+        const num = typeof v === 'number' ? v : 1;
+        map[k] = (map[k] || 0) + num;
+      });
+    }
+    return map;
+  };
+
+  const buildFinalReport = (
+    neigh: any[],
+    zonesArr: any[],
+    issues: Record<string, number>
+  ): SweepReport => {
+    const n = neigh.length;
+    const z = zonesArr.length;
+    const consistencyRateNeighborhoods = n
+      ? (neigh.filter((x) => x?.isConsistent || x?.consistency === true).length / n) * 100
+      : 0;
+    const avgCoverageNeighborhoods = n
+      ? (neigh.reduce((acc, x) => acc + (typeof x?.coverageRate === 'number' ? x.coverageRate : (typeof x?.coverage === 'number' ? x.coverage : 0)), 0) / n) * 100
+      : 0;
+
+    return {
+      totals: {
+        neighborhoods: n,
+        zones: z,
+        consistencyRateNeighborhoods,
+        avgCoverageNeighborhoods,
+      },
+      neighborhoods: neigh,
+      zones: zonesArr,
+      commonIssues: issues,
+      samples: {
+        neighborhoods: neigh.slice(0, 5),
+        zones: zonesArr.slice(0, 5),
+      },
+    } as SweepReport;
+  };
+
   const handleRun = async () => {
     setError(null);
     setIsRunning(true);
     setStartedAt(new Date());
     setReport(null);
+    setIsCancelled(false);
+    setNbProcessed(0);
+    setZoneProcessed(0);
+
     try {
-      const payload =
-        mode === 'sample'
-          ? { mode: 'sample', limit: 10, includeZones: false, concurrency: 2, compareChat: false }
-          : { mode: 'full', includeZones: true, concurrency: 4, compareChat: false };
+      // Fast path: sample mode - single invocation
+      if (mode === 'sample') {
+        const payload = {
+          mode: 'sample',
+          limit: 10,
+          includeZones: false,
+          concurrency: Math.max(1, Math.min(3, concurrency)),
+          compareChat: false,
+          strict,
+        } as any;
 
-      const { data, error } = await supabase.functions.invoke("rag-neighborhood-sweep", {
-        body: payload,
-      });
+        const { data, error } = await supabase.functions.invoke("rag-neighborhood-sweep", {
+          body: payload,
+        });
+        if (error) throw error;
+        const d: any = data || {};
+        const neighborhoods = d?.neighborhoods ?? [];
+        const zones = d?.zones ?? [];
+        const final = buildFinalReport(neighborhoods, zones, mergeIssues({}, d?.commonIssues));
+        setReport({ ...d, ...final });
+        return;
+      }
 
-      if (error) throw error;
-      setReport(data as SweepReport);
+      // Full mode: orchestrate in batches
+      const allNeighborhoods: any[] = [];
+      const allZones: any[] = [];
+      const issuesMap: Record<string, number> = {};
+
+      // Neighborhood batches
+      let offset = 0;
+      while (!isCancelled) {
+        const { data, error } = await supabase.functions.invoke("rag-neighborhood-sweep", {
+          body: {
+            mode: 'full',
+            limit: nbBatchSize,
+            offset,
+            includeZones: false,
+            concurrency,
+            compareChat: false,
+            strict,
+          },
+        });
+        if (error) throw error;
+        const d: any = data || {};
+        const batchNeighborhoods: any[] = d?.neighborhoods ?? [];
+        allNeighborhoods.push(...batchNeighborhoods);
+        setNbProcessed((p) => p + batchNeighborhoods.length);
+        mergeIssues(issuesMap, d?.commonIssues);
+        setReport(buildFinalReport(allNeighborhoods, allZones, { ...issuesMap }));
+        if (batchNeighborhoods.length < nbBatchSize) break;
+        offset += nbBatchSize;
+      }
+
+      // Zone batches (optional)
+      if (includeZones && !isCancelled) {
+        let zoneOffset = 0;
+        while (!isCancelled) {
+          const { data, error } = await supabase.functions.invoke("rag-neighborhood-sweep", {
+            body: {
+              mode: 'full',
+              limit: 0,
+              includeZones: true,
+              zoneLimit: zoneBatchSize,
+              zoneOffset,
+              concurrency,
+              compareChat: false,
+              strict,
+            },
+          });
+          if (error) throw error;
+          const d: any = data || {};
+          const batchZones: any[] = d?.zones ?? [];
+          allZones.push(...batchZones);
+          setZoneProcessed((p) => p + batchZones.length);
+          mergeIssues(issuesMap, d?.commonIssues);
+          setReport(buildFinalReport(allNeighborhoods, allZones, { ...issuesMap }));
+          if (batchZones.length < zoneBatchSize) break;
+          zoneOffset += zoneBatchSize;
+        }
+      }
     } catch (e: any) {
       console.error(e);
       setError(e?.message || "Falha ao executar o sweep");
@@ -159,6 +295,11 @@ export function QANeighborhoodSweep() {
                   </>
                 )}
               </Button>
+              {isRunning && (
+                <Button variant="destructive" size="sm" onClick={() => setIsCancelled(true)}>
+                  Parar
+                </Button>
+              )}
               <Button variant="outline" size="sm" onClick={handleCopy} disabled={!report}>
                 <ClipboardCopy className="mr-2 h-4 w-4" /> Copiar JSON
               </Button>
@@ -199,6 +340,76 @@ export function QANeighborhoodSweep() {
           {startedAt && (
             <div className="text-xs text-muted-foreground">
               Iniciado: {startedAt.toLocaleString()}
+            </div>
+          )}
+
+          {/* Advanced controls */}
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
+            <label className="flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                className="h-4 w-4"
+                checked={strict}
+                onChange={(e) => setStrict(e.target.checked)}
+                disabled={isRunning}
+              />
+              Strict
+            </label>
+            <label className="flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                className="h-4 w-4"
+                checked={includeZones}
+                onChange={(e) => setIncludeZones(e.target.checked)}
+                disabled={isRunning || mode === 'sample'}
+              />
+              Incluir Zonas
+            </label>
+            <label className="flex items-center gap-2 text-sm">
+              <span>Lote bairros</span>
+              <input
+                type="number"
+                min={5}
+                max={200}
+                step={5}
+                value={nbBatchSize}
+                onChange={(e) => setNbBatchSize(Math.max(5, Math.min(200, Number(e.target.value) || 25)))}
+                className="w-24 rounded border px-2 py-1 bg-background"
+                disabled={isRunning || mode === 'sample'}
+              />
+            </label>
+            <label className="flex items-center gap-2 text-sm">
+              <span>Lote zonas</span>
+              <input
+                type="number"
+                min={10}
+                max={300}
+                step={10}
+                value={zoneBatchSize}
+                onChange={(e) => setZoneBatchSize(Math.max(10, Math.min(300, Number(e.target.value) || 50)))}
+                className="w-24 rounded border px-2 py-1 bg-background"
+                disabled={isRunning || mode === 'sample'}
+              />
+            </label>
+            <label className="flex items-center gap-2 text-sm">
+              <span>Concorrência</span>
+              <input
+                type="number"
+                min={1}
+                max={4}
+                step={1}
+                value={concurrency}
+                onChange={(e) => setConcurrency(Math.max(1, Math.min(4, Number(e.target.value) || 3)))}
+                className="w-24 rounded border px-2 py-1 bg-background"
+                disabled={isRunning}
+              />
+            </label>
+          </div>
+
+          {isRunning && (
+            <div className="text-xs text-muted-foreground">
+              <div>Bairros processados: {nbProcessed}</div>
+              {includeZones && <div>Zonas processadas: {zoneProcessed}</div>}
             </div>
           )}
 
