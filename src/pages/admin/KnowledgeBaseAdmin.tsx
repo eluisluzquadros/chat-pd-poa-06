@@ -123,13 +123,41 @@ export default function KnowledgeBaseAdmin() {
               <option value="qa">Somente QA</option>
             </select>
           </div>
-          <button
-            onClick={runReprocess}
-            disabled={processing}
-            className="inline-flex items-center rounded-md px-4 py-2 border disabled:opacity-50"
-          >
-            {processing ? "Processando..." : "Executar"}
-          </button>
+<div className="flex items-center gap-3">
+            <button
+              onClick={runReprocess}
+              disabled={processing}
+              className="inline-flex items-center rounded-md px-4 py-2 border disabled:opacity-50"
+            >
+              {processing ? "Processando..." : "Executar"}
+            </button>
+            <button
+              onClick={async () => {
+                if (processing) return;
+                try {
+                  setProcessing(true);
+                  setResult(null);
+                  const { data, error } = await supabase.functions.invoke("kb-reprocess-all", {
+                    body: { only: "qa" },
+                  });
+                  if (error) throw error;
+                  setResult(data);
+                  toast.success("Reprocessamento (Somente QA) concluído");
+                } catch (e: any) {
+                  console.error(e);
+                  const msg = e?.message || "Erro ao reprocessar QA";
+                  toast.error(msg);
+                  setResult({ ok: false, error: msg, context: e?.context ?? null });
+                } finally {
+                  setProcessing(false);
+                }
+              }}
+              disabled={processing}
+              className="inline-flex items-center rounded-md px-4 py-2 border disabled:opacity-50"
+            >
+              {processing ? "Processando..." : "Somente QA (atalho)"}
+            </button>
+          </div>
         </section>
 
         {result && (
