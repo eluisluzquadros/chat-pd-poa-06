@@ -298,18 +298,20 @@ Responda com JSON válido seguindo esta estrutura:
 
     // Helper: sanitize bairro comparisons to be accent-insensitive
     const sanitizeQuery = (q: string) => {
-      const trans = `translate(UPPER(bairro), 'ÁÀÃÂÄÉÈÊËÍÌÎÏÓÒÕÔÖÚÙÛÜÇÑ', 'AAAAAEEEEIIIIOOOOOUUUUCN')`;
+      const transGlobal = `translate(UPPER(bairro), 'ÁÀÃÂÄÉÈÊËÍÌÎÏÓÒÕÔÖÚÙÛÜÇÑ', 'AAAAAEEEEIIIIOOOOOUUUUCN')`;
       const transParam = (v: string) => `translate(UPPER(${v}), 'ÁÀÃÂÄÉÈÊËÍÌÎÏÓÒÕÔÖÚÙÛÜÇÑ', 'AAAAAEEEEIIIIOOOOOUUUUCN')`;
+
       // UPPER(bairro) = UPPER('...')
-      q = q.replace(/UPPER\(\s*bairro\s*\)\s*=\s*UPPER\(\s*'([^']+)'\s*\)/gi, (_m, g1) => {
-        return `${trans} ILIKE '%' || ${transParam(`'${g1}'`)} || '%')`;
+      q = q.replace(/UPPER\(\s*bairro\s*\)\s*=\s*UPPER\(\s*'([^']+)'\s*\)/gi, (_m, name) => {
+        return `${transGlobal} ILIKE '%' || ${transParam(`'${name}'`)} || '%'`;
       });
-      // UPPER(r.bairro) = UPPER('...')
-      q = q.replace(/UPPER\(\s*[a-z]\.bairro\s*\)\s*=\s*UPPER\(\s*'([^']+)'\s*\)/gi, (_m, g1) => {
-        const transAlias = (alias: string) => `translate(UPPER(${alias}.bairro), 'ÁÀÃÂÄÉÈÊËÍÌÎÏÓÒÕÔÖÚÙÛÜÇÑ', 'AAAAAEEEEIIIIOOOOOUUUUCN')`;
-        // Try to capture alias from previous match is hard; fallback to 'r'
-        return `${transAlias('r')} ILIKE '%' || ${transParam(`'${g1}'`)} || '%')`;
+
+      // UPPER(x.bairro) = UPPER('...') with alias capture
+      q = q.replace(/UPPER\(\s*([a-z])\.bairro\s*\)\s*=\s*UPPER\(\s*'([^']+)'\s*\)/gi, (_m, alias, name) => {
+        const transAlias = `translate(UPPER(${alias}.bairro), 'ÁÀÃÂÄÉÈÊËÍÌÎÏÓÒÕÔÖÚÙÛÜÇÑ', 'AAAAAEEEEIIIIOOOOOUUUUCN')`;
+        return `${transAlias} ILIKE '%' || ${transParam(`'${name}'`)} || '%'`;
       });
+
       return q;
     };
 
@@ -317,7 +319,7 @@ Responda com JSON válido seguindo esta estrutura:
     const executionResults = [];
     for (const sqlQuery of sqlResult.sqlQueries) {
       try {
-        const cleanQuery = sqlQuery.query.trim().replace(/\s+/g, ' ');
+        const cleanQuery = sanitizeQuery(sqlQuery.query.trim().replace(/\s+/g, ' '));
         
         // Validação básica de segurança
         if (!/^SELECT/i.test(cleanQuery)) {
