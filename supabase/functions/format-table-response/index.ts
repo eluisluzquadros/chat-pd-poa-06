@@ -8,6 +8,30 @@ const corsHeaders = {
 /**
  * Formata dados do regime urbanístico em tabela HTML/Markdown
  */
+// Normaliza chaves vindas com alias variados para nomes canônicos
+function normalizeRecords(data: any[]): any[] {
+  if (!Array.isArray(data)) return data as any;
+  const aliasPairs: Array<[string, string]> = [
+    ['Altura Máxima - Edificação Isolada', 'altura_maxima'],
+    ['Coeficiente de Aproveitamento - Básico', 'coef_aproveitamento_basico'],
+    ['Coeficiente de Aproveitamento - Máximo', 'coef_aproveitamento_maximo'],
+    ['Zona', 'zona'],
+    ['ZONA', 'zona'],
+    ['BAIRRO', 'bairro'],
+    ['Bairro', 'bairro'],
+  ];
+  return data.map((rec) => {
+    if (!rec || typeof rec !== 'object') return rec;
+    const r: Record<string, any> = { ...rec };
+    for (const [from, to] of aliasPairs) {
+      if (r[from] !== undefined && (r[to] === undefined || r[to] === null)) {
+        r[to] = r[from];
+      }
+    }
+    return r;
+  });
+}
+
 function formatRegimeTable(data: any[]): string {
   if (!data || data.length === 0) {
     return "Nenhum dado encontrado.";
@@ -35,7 +59,8 @@ function formatRegimeTable(data: any[]): string {
     { key: 'afastamento_fundos', label: 'Afastamento Fundos' }
   ];
 
-  const record = data[0];
+  const normalized = normalizeRecords(data);
+  const record = normalized[0];
   
   priorityFields.forEach(field => {
     const value = record[field.key];
@@ -73,12 +98,19 @@ function formatComparisonTable(data: any[]): string {
 |--------|------|------------|--------------|--------------|
 `;
 
-  data.forEach(record => {
+  const normalized = normalizeRecords(data);
+  normalized.forEach(record => {
     const bairro = record.bairro || '-';
     const zona = record.zona || '-';
-    const altura = record.altura_maxima ? `${record.altura_maxima}m` : '-';
-    const coefBasico = record.coef_aproveitamento_basico || '-';
-    const coefMaximo = record.coef_aproveitamento_maximo || '-';
+    const altura = (record.altura_maxima !== null && record.altura_maxima !== undefined)
+      ? `${record.altura_maxima}m`
+      : '-';
+    const coefBasico = (record.coef_aproveitamento_basico !== null && record.coef_aproveitamento_basico !== undefined)
+      ? `${record.coef_aproveitamento_basico}`
+      : '-';
+    const coefMaximo = (record.coef_aproveitamento_maximo !== null && record.coef_aproveitamento_maximo !== undefined)
+      ? `${record.coef_aproveitamento_maximo}`
+      : '-';
     
     table += `| ${bairro} | ${zona} | ${altura} | ${coefBasico} | ${coefMaximo} |\n`;
   });

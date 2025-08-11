@@ -199,8 +199,41 @@ serve(async (req) => {
     
     const { originalQuery, analysisResult, sqlResults, vectorResults, model, conversationHistory } = await req.json();
     
-    // Determine which model to use for synthesis with fallback
-    let selectedModel = model || 'anthropic/claude-3-5-sonnet-20241022';
+    // Determine which model to use with whitelist and fallback
+    const sanitizeModel = (input?: string): string => {
+      const fallback = 'anthropic/claude-3-5-sonnet-20241022';
+      if (!input) return fallback;
+      const raw = input.trim();
+      const lower = raw.toLowerCase();
+      if (lower === 'gpt-5' || lower.endsWith('/gpt-5')) {
+        console.log('⚠️ RESPONSE-SYNTHESIZER: Unsupported model "gpt-5". Falling back to', fallback);
+        return fallback;
+      }
+      const aliasMap: Record<string, string> = {
+        'openai/gpt-4o': 'openai/gpt-4o-2024-11-20',
+        'gpt-4o': 'openai/gpt-4o-2024-11-20',
+        'gpt-4.1': 'openai/gpt-4.1',
+        'claude-3-5-sonnet': 'anthropic/claude-3-5-sonnet-20241022',
+        'claude-opus-4.1': 'anthropic/claude-opus-4-1-20250805',
+      };
+      const normalizedWithProvider = raw.includes('/') ? raw : `anthropic/${raw}`;
+      const mapped = aliasMap[lower] || aliasMap[normalizedWithProvider.toLowerCase()] || normalizedWithProvider;
+      const allowed = new Set([
+        'anthropic/claude-opus-4-1-20250805',
+        'anthropic/claude-3-5-sonnet-20241022',
+        'openai/gpt-4o-2024-11-20',
+        'openai/gpt-4o-mini-2024-07-18',
+        'openai/gpt-3.5-turbo-0125',
+        'openai/gpt-4.1',
+      ]);
+      if (!allowed.has(mapped)) {
+        console.log('⚠️ RESPONSE-SYNTHESIZER: Model not allowed:', raw, '→ falling back to', fallback);
+        return fallback;
+      }
+      return mapped;
+    };
+
+    let selectedModel = sanitizeModel(model);
     
     // Fix for models that are actually function names (like 'agentic-rag')
     if (selectedModel === 'agentic-rag' || !selectedModel.includes('/')) {

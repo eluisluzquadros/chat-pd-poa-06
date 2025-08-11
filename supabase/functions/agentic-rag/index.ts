@@ -35,7 +35,43 @@ serve(async (req) => {
 
     const { query, message, sessionId, userId, bypassCache, model, conversationId, userRole } = requestBody;
     const userMessage = message || query || '';
-    const selectedModel = model || 'anthropic/claude-3-5-sonnet-20241022';
+
+    // Sanitize and whitelist model selection with safe fallbacks
+    const sanitizeModel = (input: string | undefined): string => {
+      const fallback = 'anthropic/claude-3-5-sonnet-20241022';
+      if (!input) return fallback;
+      const raw = input.trim();
+      const lower = raw.toLowerCase();
+      if (lower === 'gpt-5' || lower.endsWith('/gpt-5')) {
+        console.log('⚠️ Model "gpt-5" not supported. Falling back to', fallback);
+        return fallback;
+      }
+      // Normalize common aliases
+      const aliasMap: Record<string, string> = {
+        'openai/gpt-4o': 'openai/gpt-4o-2024-11-20',
+        'gpt-4o': 'openai/gpt-4o-2024-11-20',
+        'gpt-4.1': 'openai/gpt-4.1',
+        'claude-3-5-sonnet': 'anthropic/claude-3-5-sonnet-20241022',
+        'claude-opus-4.1': 'anthropic/claude-opus-4-1-20250805',
+      };
+      const normalizedWithProvider = raw.includes('/') ? raw : `anthropic/${raw}`;
+      const mapped = aliasMap[lower] || aliasMap[normalizedWithProvider.toLowerCase()] || normalizedWithProvider;
+      const allowed = new Set([
+        'anthropic/claude-opus-4-1-20250805',
+        'anthropic/claude-3-5-sonnet-20241022',
+        'openai/gpt-4o-2024-11-20',
+        'openai/gpt-4o-mini-2024-07-18',
+        'openai/gpt-3.5-turbo-0125',
+        'openai/gpt-4.1',
+      ]);
+      if (!allowed.has(mapped)) {
+        console.log('⚠️ Model not allowed:', raw, '→ falling back to', fallback);
+        return fallback;
+      }
+      return mapped;
+    };
+
+    const selectedModel = sanitizeModel(model);
     
     console.log(`🔥 AGENTIC-RAG: Using model: ${selectedModel} (received: ${model})`);
     
@@ -391,7 +427,7 @@ serve(async (req) => {
               confidence: synthesisResult.confidence,
               sources: synthesisResult.sources
             },
-            response_time_ms: executionTime,
+            response_time_ms: Date.now() - startTime,
             expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 dias
             created_at: new Date().toISOString(),
             hit_count: 0
