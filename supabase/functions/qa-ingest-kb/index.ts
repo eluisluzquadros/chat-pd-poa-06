@@ -163,18 +163,18 @@ serve(async (req) => {
   }
 
   try {
-    if (!OPENAI_API_KEY) {
-      return new Response(JSON.stringify({ error: 'Missing OPENAI_API_KEY secret' }), {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
     const body = (await req.json().catch(() => ({}))) as IngestParams;
     const limit = body.limit ?? 5000;
     const dryRun = body.dryRun ?? false;
     const categories = body.categories;
     const overwrite = body.overwrite ?? true;
+
+    if (!OPENAI_API_KEY && !dryRun) {
+      return new Response(JSON.stringify({ error: 'Missing OPENAI_API_KEY secret' }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
 
     // Fetch QA test cases
     let query = supabase
@@ -223,9 +223,10 @@ serve(async (req) => {
         try {
           const { title, content } = buildContent(tc);
           if (dryRun) {
+            const up = await upsertDocumentForTestCase(tc, overwrite);
             summary.processed++;
-            summary.skipped++;
-            summary.logs.push(`[DRYRUN] Would process TC ${tc.id}: ${title}`);
+            if (up.isNew) summary.created++; else summary.updated++;
+            summary.logs.push(`[DRYRUN] Upserted TC ${tc.id} -> doc ${up.id}; embeddings skipped`);
             continue;
           }
 

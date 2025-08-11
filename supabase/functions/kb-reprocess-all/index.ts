@@ -127,11 +127,25 @@ serve(async (req) => {
     if (callQa) {
       console.log("Calling qa-ingest-kb...");
       const { data, error } = await supabase.functions.invoke("qa-ingest-kb", {
-        body: { overwrite: true },
+        body: { overwrite: true, dryRun: !!(body?.dryRun) },
       });
       if (error) {
         console.error("qa-ingest-kb error:", error);
-        throw new Error(`Erro em qa-ingest-kb: ${error.message}`);
+        let errorBody: any = null;
+        try {
+          const ctx: any = (error as any).context;
+          if (ctx?.json) {
+            errorBody = await ctx.json();
+          } else if (ctx?.text) {
+            errorBody = await ctx.text();
+          }
+        } catch (ctxErr) {
+          console.error("Failed to parse error body from qa-ingest-kb:", ctxErr);
+        }
+        return new Response(
+          JSON.stringify({ ok: false, source: 'qa-ingest-kb', error: error.message || String(error), details: errorBody }),
+          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
       }
       console.log("qa-ingest-kb result:", data);
       results.qa = data;
