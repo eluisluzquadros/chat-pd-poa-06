@@ -41,9 +41,15 @@ function validateUXConsistency(response: string, queryType: string, originalQuer
   const isNeighborhoodQuery = /bairro|zona|zot|distrito/i.test(originalQuery) || queryType === 'neighborhood';
 
   // Padrões tolerantes (funcionam através de quebras de linha e variações)
+  // Padrões tolerantes (funcionam através de quebras de linha e variações)
   const alturaPattern = /altura\s*(maxima|max)?[\s:\-–]*\d+([.,]\d+)?\s*m(etros)?/s;
-  const caBasicoPattern = /(ca|coeficiente\s+de\s+aproveitamento)[\s:\-–]*\s*(basico|minimo|min)\b[\s\S]{0,20}\b\d+([.,]\d+)?/s;
-  const caMaximoPattern = /(ca|coeficiente\s+de\s+aproveitamento)[\s:\-–]*\s*(maximo|max)\b[\s\S]{0,20}\b\d+([.,]\d+)?/s;
+  // CA com número presente próximo ao rótulo
+  const caBasicoPattern = /(?:\bca\b|c[\.\s]*a|coef(?:\.|iciente)?\s*(?:de\s*)?aproveitamento)[\s:\-–]*\b(?:basico|minimo|min)\b[\s\S]{0,40}\b\d+([.,]\d+)?/s;
+  const caMaximoPattern = /(?:\bca\b|c[\.\s]*a|coef(?:\.|iciente)?\s*(?:de\s*)?aproveitamento)[\s:\-–]*\b(?:maximo|max)\b[\s\S]{0,40}\b\d+([.,]\d+)?/s;
+  // Rótulos genéricos para cabeçalhos/sem número
+  const caLabelRegex = /\b(?:ca|c[\.\s]*a|coef(?:\.|iciente)?\s*(?:de\s*)?aproveitamento)\b/;
+  const caBasicWord = /\b(?:basico|minimo|min)\b/;
+  const caMaxWord = /\b(?:maximo|max)\b/;
 
   // Detecção a partir do texto normalizado
   let hasAlturaMaxima = alturaPattern.test(nr);
@@ -51,20 +57,44 @@ function validateUXConsistency(response: string, queryType: string, originalQuer
   let hasCaMaximo = caMaximoPattern.test(nr);
 
   // Complemento: se houver tabela, tentar inferir pelos cabeçalhos
+  let headerDebug: any = null;
   if (hasMarkdownTable) {
     const lines = response.split(/\r?\n/);
-    const headerLine = lines.find(l => /^\s*\|.*\|\s*$/.test(l));
+    const rowRegex = /^\s*\|.*\|\s*$/;
+    const tableRows = lines.filter(l => rowRegex.test(l));
+    const isSeparator = (line: string) => {
+      const cells = line.trim().slice(1, -1).split('|').map(c => c.trim());
+      return cells.every(c => /^:?-{2,}:?$/.test(c));
+    };
+    const headerLine = tableRows.find(l => !isSeparator(l));
     if (headerLine) {
-      const header = normalize(headerLine);
-      const alturaHeader = /\baltura\b/.test(header);
-      const caBasicoHeader = /(ca|coeficiente\s+de\s+aproveitamento).*\b(basico|minimo|min)\b/.test(header);
-      const caMaximoHeader = /(ca|coeficiente\s+de\s+aproveitamento).*\b(maximo|max)\b/.test(header);
+      const headerNorm = normalize(headerLine);
+      const cellsRaw = headerLine.trim().slice(1, -1).split('|').map(c => c.trim());
+      const cellsNorm = cellsRaw.map(c => normalize(c));
+
+      const alturaHeader = cellsNorm.some(c => /\baltura\b/.test(c));
+      const caBasicHeader = cellsNorm.some(c => caLabelRegex.test(c) && caBasicWord.test(c));
+      const caMaxHeader = cellsNorm.some(c => caLabelRegex.test(c) && caMaxWord.test(c));
 
       hasAlturaMaxima = hasAlturaMaxima || alturaHeader;
-      hasCaBasico = hasCaBasico || caBasicoHeader;
-      hasCaMaximo = hasCaMaximo || caMaximoHeader;
+      hasCaBasico = hasCaBasico || caBasicHeader;
+      hasCaMaximo = hasCaMaximo || caMaxHeader;
+
+      headerDebug = {
+        headerLine: headerNorm,
+        cells: cellsNorm,
+        alturaHeader,
+        caBasicHeader,
+        caMaxHeader
+      };
     }
   }
+
+  // Fallback: detectar rótulos CA sem número em qualquer parte do texto
+  const caBasicoLabelOnly = /(?:\bca\b|c[\.\s]*a|coef(?:\.|iciente)?\s*(?:de\s*)?aproveitamento)[\s\S]{0,40}\b(?:basico|minimo|min)\b/.test(nr);
+  const caMaximoLabelOnly = /(?:\bca\b|c[\.\s]*a|coef(?:\.|iciente)?\s*(?:de\s*)?aproveitamento)[\s\S]{0,40}\b(?:maximo|max)\b/.test(nr);
+  hasCaBasico = hasCaBasico || caBasicoLabelOnly;
+  hasCaMaximo = hasCaMaximo || caMaximoLabelOnly;
 
   if (isNeighborhoodQuery) {
     validationResults.hasRequiredIndicators = hasAlturaMaxima && hasCaBasico && hasCaMaximo;
@@ -105,13 +135,16 @@ function validateUXConsistency(response: string, queryType: string, originalQuer
     matches: {
       alturaFromText: alturaPattern.test(nr),
       caBasicoFromText: caBasicoPattern.test(nr),
-      caMaximoFromText: caMaximoPattern.test(nr)
+      caMaximoFromText: caMaximoPattern.test(nr),
+      caBasicoLabelOnly,
+      caMaximoLabelOnly
     },
     final: {
       hasAlturaMaxima,
       hasCaBasico,
       hasCaMaximo
     },
+    header: headerDebug,
     format: validationResults.format,
     score: validationResults.score
   });
