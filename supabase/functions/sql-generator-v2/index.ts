@@ -252,7 +252,6 @@ Responda com JSON válido seguindo esta estrutura:
           table: 'regime_urbanistico',
           purpose: 'Buscar alturas máximas mais altas da cidade'
         });
-      }
       } else if (queryLower.includes('risco') || queryLower.includes('inundação') || queryLower.includes('cota')) {
         // Query de risco/inundação
         if (queryLower.includes('quantos') || queryLower.includes('total')) {
