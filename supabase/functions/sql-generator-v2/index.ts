@@ -284,6 +284,7 @@ Responda com JSON válido seguindo esta estrutura:
             purpose: `Buscar parâmetros urbanísticos do bairro ${bairroName}`
           });
         }
+      }
       
       // Se não conseguiu identificar, query genérica
       if (fallbackQueries.length === 0) {
