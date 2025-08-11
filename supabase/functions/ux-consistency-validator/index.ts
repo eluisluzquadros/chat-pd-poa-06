@@ -7,7 +7,7 @@ const corsHeaders = {
 };
 
 // Função para validar consistência de UX
-function validateUXConsistency(response: string, queryType: string, originalQuery: string) {
+function validateUXConsistency(response: string, queryType: string, originalQuery: string, strict: boolean = false) {
   const validationResults = {
     isConsistent: false,
     hasTable: false,
@@ -15,7 +15,8 @@ function validateUXConsistency(response: string, queryType: string, originalQuer
     hasRequiredIndicators: false,
     issues: [] as string[],
     score: 0,
-    format: 'unknown' as 'tabular' | 'text' | 'mixed' | 'unknown'
+    format: 'unknown' as 'tabular' | 'text' | 'mixed' | 'unknown',
+    strictUsed: !!strict,
   };
 
   // Helpers
@@ -96,12 +97,27 @@ function validateUXConsistency(response: string, queryType: string, originalQuer
   hasCaBasico = hasCaBasico || caBasicoLabelOnly;
   hasCaMaximo = hasCaMaximo || caMaximoLabelOnly;
 
-  if (isNeighborhoodQuery) {
-    validationResults.hasRequiredIndicators = hasAlturaMaxima && hasCaBasico && hasCaMaximo;
+if (isNeighborhoodQuery) {
+    // Avaliação em modo estrito (exige números próximos aos rótulos)
+    const strictAltura = alturaPattern.test(nr);
+    const strictCaBasico = caBasicoPattern.test(nr);
+    const strictCaMaximo = caMaximoPattern.test(nr);
 
-    if (!hasAlturaMaxima) validationResults.issues.push('Missing altura máxima');
-    if (!hasCaBasico) validationResults.issues.push('Missing CA básico');
-    if (!hasCaMaximo) validationResults.issues.push('Missing CA máximo');
+    const hasReqLoose = hasAlturaMaxima && hasCaBasico && hasCaMaximo;
+    const hasReqStrict = strictAltura && strictCaBasico && strictCaMaximo;
+
+    validationResults.hasRequiredIndicators = strict ? hasReqStrict : hasReqLoose;
+
+    // Issues conforme o modo selecionado
+    if (strict) {
+      if (!strictAltura) validationResults.issues.push('Missing altura máxima');
+      if (!strictCaBasico) validationResults.issues.push('Missing CA básico');
+      if (!strictCaMaximo) validationResults.issues.push('Missing CA máximo');
+    } else {
+      if (!hasAlturaMaxima) validationResults.issues.push('Missing altura máxima');
+      if (!hasCaBasico) validationResults.issues.push('Missing CA básico');
+      if (!hasCaMaximo) validationResults.issues.push('Missing CA máximo');
+    }
   }
 
   // 3. Determinar formato (corrigido: mixed quando ambos, tabular quando só tabela)
@@ -197,35 +213,37 @@ serve(async (req) => {
   }
 
   try {
-    const { response, queryType, originalQuery, batchValidation } = await req.json();
+const { response, queryType, originalQuery, batchValidation, strict } = await req.json();
 
     console.log('🎯 UX CONSISTENCY VALIDATOR - Starting validation');
 
     // Validação única
     if (!batchValidation) {
-      const validation = validateUXConsistency(response, queryType, originalQuery);
+      const validation = validateUXConsistency(response, queryType, originalQuery, !!strict);
       
       console.log('📊 UX Validation Result:', {
         query: originalQuery,
         isConsistent: validation.isConsistent,
         score: validation.score,
         format: validation.format,
-        issues: validation.issues
+        issues: validation.issues,
+        strictUsed: !!strict,
       });
 
       return new Response(JSON.stringify({
         validation,
+        strictUsed: !!strict,
         timestamp: new Date().toISOString()
       }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
-    // Validação em lote
+// Validação em lote
     const validations = batchValidation.map((item: any) => ({
       query: item.originalQuery,
       queryType: item.queryType,
-      ...validateUXConsistency(item.response, item.queryType, item.originalQuery)
+      ...validateUXConsistency(item.response, item.queryType, item.originalQuery, !!(item.strict ?? strict))
     }));
 
     const report = generateInconsistencyReport(validations);

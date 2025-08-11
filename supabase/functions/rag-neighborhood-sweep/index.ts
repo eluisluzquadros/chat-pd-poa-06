@@ -16,6 +16,9 @@ type SweepRequest = {
   compareChat?: boolean;
   includeZones?: boolean;
   neighborhoods?: string[]; // optional override
+  strict?: boolean;
+  zoneLimit?: number;
+  zoneOffset?: number;
 };
 
 type NeighborhoodResult = {
@@ -78,14 +81,14 @@ serve(async (req) => {
   }
 
   try {
-    const { mode = 'full', limit = 999, offset = 0, concurrency = 4, compareChat = false, includeZones = true, neighborhoods }: SweepRequest = await req.json().catch(() => ({}));
+    const { mode = 'full', limit = 999, offset = 0, concurrency = 4, compareChat = false, includeZones = true, neighborhoods, strict = false, zoneLimit = 999, zoneOffset = 0 }: SweepRequest = await req.json().catch(() => ({}));
 
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    console.log('🚀 Iniciando varredura de bairros/zones', { mode, limit, offset, concurrency, compareChat, includeZones });
+    console.log('🚀 Iniciando varredura de bairros/zones', { mode, limit, offset, concurrency, compareChat, includeZones, strict, zoneLimit, zoneOffset });
 
     // 1) Carregar lista de bairros
     let bairros: string[] = [];
@@ -125,7 +128,7 @@ serve(async (req) => {
 
         // ux-consistency-validator
         const uxInvoke = await supabase.functions.invoke('ux-consistency-validator', {
-          body: { response, queryType: 'neighborhood', originalQuery: query }
+          body: { response, queryType: 'neighborhood', originalQuery: query, strict }
         });
         if (uxInvoke.error) throw new Error(`ux-consistency-validator falhou: ${uxInvoke.error.message || uxInvoke.error}`);
         const validation = uxInvoke.data?.validation || uxInvoke.data || {};
@@ -179,7 +182,7 @@ serve(async (req) => {
       if (allZonesErr) throw new Error(`Erro buscando zonas: ${allZonesErr.message}`);
       const allZones = uniq((allZonesRows || []).map((r: any) => r.zona));
 
-      const zonesToTest = allZones.slice(0, 999); // segurança
+      const zonesToTest = allZones.slice(zoneOffset, zoneOffset + zoneLimit); // batching de zonas
       zoneResults = await withConcurrency(zonesToTest, concurrency, async (zona) => {
         try {
           const query = `Quais são os parâmetros do regime urbanístico na zona ${zona}?`;
@@ -189,7 +192,7 @@ serve(async (req) => {
           const response: string = ragData.response || '';
 
           const uxInvoke = await supabase.functions.invoke('ux-consistency-validator', {
-            body: { response, queryType: 'zone', originalQuery: query }
+            body: { response, queryType: 'zone', originalQuery: query, strict }
           });
           if (uxInvoke.error) throw new Error(`ux-consistency-validator falhou: ${uxInvoke.error.message || uxInvoke.error}`);
           const validation = uxInvoke.data?.validation || uxInvoke.data || {};
