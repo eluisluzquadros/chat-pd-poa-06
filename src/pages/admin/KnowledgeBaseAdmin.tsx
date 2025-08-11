@@ -155,7 +155,7 @@ export default function KnowledgeBaseAdmin() {
               disabled={processing}
               className="inline-flex items-center rounded-md px-4 py-2 border disabled:opacity-50"
             >
-              {processing ? "Processando..." : "Somente QA (atalho)"}
+              {processing ? "Processando..." : "Reprocessar QA (sem novo upload)"}
             </button>
           </div>
         </section>

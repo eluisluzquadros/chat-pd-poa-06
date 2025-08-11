@@ -9,6 +9,7 @@ import { Plus, Search, Edit, Trash2, Power, PowerOff } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { AddTestCaseDialog } from './AddTestCaseDialog';
 import { EditTestCaseDialog } from './EditTestCaseDialog';
+import { QATestCasesExportButton } from './QATestCasesExportButton';
 import { toast } from 'sonner';
 
 interface QATestCase {
@@ -168,7 +169,10 @@ export function QATestCasesList() {
           <h2 className="text-2xl font-bold">Casos de Teste QA</h2>
           <p className="text-muted-foreground">Gerencie os casos de teste para validação de qualidade</p>
         </div>
-        <AddTestCaseDialog onTestCaseAdded={fetchTestCases} />
+        <div className="flex gap-2">
+          <QATestCasesExportButton />
+          <AddTestCaseDialog onTestCaseAdded={fetchTestCases} />
+        </div>
       </div>
 
       {/* Filters */}
