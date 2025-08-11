@@ -22,6 +22,8 @@ export function QANeighborhoodSweep() {
   const [error, setError] = useState<string | null>(null);
   const [startedAt, setStartedAt] = useState<Date | null>(null);
 
+  const [errorMeta, setErrorMeta] = useState<any>(null);
+
   useEffect(() => {
     // Minimal SEO for this admin section
     const prevTitle = document.title;
@@ -79,6 +81,12 @@ export function QANeighborhoodSweep() {
     } catch (e: any) {
       console.error(e);
       setError(e?.message || "Falha ao executar o sweep");
+      setErrorMeta({
+        status: e?.status,
+        name: e?.name,
+        context: e?.context,
+        details: e?.details,
+      });
     } finally {
       setIsRunning(false);
     }
@@ -151,7 +159,16 @@ export function QANeighborhoodSweep() {
         </CardHeader>
         <CardContent className="space-y-4">
           {error && (
-            <div className="text-destructive text-sm">{error}</div>
+            <div className="rounded-md border border-destructive/40 bg-destructive/10 p-3 text-sm">
+              <div className="font-medium text-destructive-foreground">Erro ao executar o sweep</div>
+              <div className="mt-1 text-destructive-foreground/90">{error}</div>
+              {errorMeta && (
+                <details className="mt-2 text-xs">
+                  <summary className="cursor-pointer text-muted-foreground">Detalhes técnicos</summary>
+                  <pre className="mt-2 max-h-64 overflow-auto rounded bg-muted p-2">{JSON.stringify(errorMeta, null, 2)}</pre>
+                </details>
+              )}
+            </div>
           )}
 
           {startedAt && (

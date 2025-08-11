@@ -55,3 +55,6 @@ verify_jwt = true
 
 [functions.cross-validation-v2]
 verify_jwt = true
+
+[functions.rag-neighborhood-sweep]
+verify_jwt = false
