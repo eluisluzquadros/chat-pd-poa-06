@@ -23,6 +23,7 @@ export function QANeighborhoodSweep() {
   const [startedAt, setStartedAt] = useState<Date | null>(null);
 
   const [errorMeta, setErrorMeta] = useState<any>(null);
+  const [mode, setMode] = useState<'sample' | 'full'>('sample');
 
   useEffect(() => {
     // Minimal SEO for this admin section
@@ -67,13 +68,13 @@ export function QANeighborhoodSweep() {
     setStartedAt(new Date());
     setReport(null);
     try {
+      const payload =
+        mode === 'sample'
+          ? { mode: 'sample', limit: 10, includeZones: false, concurrency: 2, compareChat: false }
+          : { mode: 'full', includeZones: true, concurrency: 4, compareChat: false };
+
       const { data, error } = await supabase.functions.invoke("rag-neighborhood-sweep", {
-        body: {
-          mode: "full",
-          includeZones: true,
-          concurrency: 4,
-          compareChat: false,
-        },
+        body: payload,
       });
 
       if (error) throw error;
@@ -127,7 +128,26 @@ export function QANeighborhoodSweep() {
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
             <span>Varredura de Bairros e Zonas</span>
-            <div className="flex gap-2">
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-muted-foreground">Modo:</span>
+              <Button
+                variant={mode === 'sample' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setMode('sample')}
+                disabled={isRunning}
+                aria-pressed={mode === 'sample'}
+              >
+                Sample (rápido)
+              </Button>
+              <Button
+                variant={mode === 'full' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setMode('full')}
+                disabled={isRunning}
+                aria-pressed={mode === 'full'}
+              >
+                Completo (lento)
+              </Button>
               <Button onClick={handleRun} disabled={isRunning} size="sm">
                 {isRunning ? (
                   <>
@@ -162,6 +182,11 @@ export function QANeighborhoodSweep() {
             <div className="rounded-md border border-destructive/40 bg-destructive/10 p-3 text-sm">
               <div className="font-medium text-destructive-foreground">Erro ao executar o sweep</div>
               <div className="mt-1 text-destructive-foreground/90">{error}</div>
+              {errorMeta?.name === 'FunctionsFetchError' && (
+                <div className="mt-2 text-xs text-destructive-foreground/90">
+                  Dica: isso pode ser CORS/preflight ou tempo de execução. Tente o modo "Sample (rápido)" e execute novamente.
+                </div>
+              )}
               {errorMeta && (
                 <details className="mt-2 text-xs">
                   <summary className="cursor-pointer text-muted-foreground">Detalhes técnicos</summary>
