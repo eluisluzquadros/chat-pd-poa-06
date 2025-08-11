@@ -54,7 +54,7 @@ async function generateEmbedding(text: string): Promise<number[] | null> {
 }
 
 function buildContent(tc: any) {
-  const answer = tc.expected_answer || tc.expected_response || "";
+  const answer = tc.expected_answer || "";
   const title = `QA: ${tc.question || tc.test_id || `Caso ${tc.id}`}`;
   const parts = [
     `Pergunta: ${tc.question || tc.test_id || ''}`,
@@ -179,7 +179,7 @@ serve(async (req) => {
     // Fetch QA test cases
     let query = supabase
       .from('qa_test_cases')
-      .select('id, test_id, question, expected_answer, expected_response, category, tags, is_sql_related, version, expected_sql, complexity, is_active')
+      .select('id, test_id, question, expected_answer, category, tags, is_sql_related, version, expected_sql, is_active')
       .eq('is_active', true)
       .limit(limit);
 
@@ -190,13 +190,16 @@ serve(async (req) => {
     const { data: testCases, error: tcErr } = await query;
     if (tcErr) {
       console.error('Error fetching test cases:', tcErr);
-      return new Response(JSON.stringify({ error: 'Failed to fetch test cases' }), {
+      return new Response(JSON.stringify({ 
+        error: 'Failed to fetch test cases',
+        details: tcErr,
+      }), {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
-    const items = (testCases || []).filter(tc => (tc.expected_answer || tc.expected_response));
+    const items = (testCases || []).filter(tc => (tc.expected_answer));
 
     const summary = {
       totalFetched: testCases?.length || 0,
