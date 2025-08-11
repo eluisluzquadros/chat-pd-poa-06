@@ -67,11 +67,12 @@ serve(async (req) => {
       question: requestData.question.trim(),
       expected_keywords: expectedKeywords,
       expected_answer: requestData.expected_answer.trim(),
-      expected_response: requestData.expected_answer.trim(),
       category: requestData.category,
+      // Mapear difficulty para complexity e também persistir difficulty
+      difficulty: requestData.difficulty || 'medium',
       complexity: requestData.difficulty === 'easy' ? 'simple' : 
                  requestData.difficulty === 'hard' ? 'complex' : 
-                 'medium', // Mapear difficulty para complexity
+                 'medium',
       min_response_length: 50,
       is_active: requestData.is_active !== false,
       tags: requestData.tags && requestData.tags.length > 0 ? requestData.tags : ['geral'],

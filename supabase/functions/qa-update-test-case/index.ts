@@ -42,11 +42,17 @@ serve(async (req) => {
       throw new Error('Campos obrigatórios faltando: question, expected_answer, category');
     }
 
+    // Validar e normalizar ID numérico
+    const idNum = Number(requestData.id);
+    if (!Number.isFinite(idNum)) {
+      throw new Error('ID inválido: deve ser numérico');
+    }
+
     // Buscar o caso atual para obter a versão
     const { data: currentCase, error: fetchError } = await supabase
       .from('qa_test_cases')
       .select('version')
-      .eq('id', requestData.id)
+      .eq('id', idNum)
       .single();
 
     if (fetchError) {
@@ -69,8 +75,9 @@ serve(async (req) => {
       question: requestData.question.trim(),
       expected_keywords: expectedKeywords,
       expected_answer: requestData.expected_answer.trim(),
-      expected_response: requestData.expected_answer.trim(),
       category: requestData.category,
+      // Persistir difficulty e mapear para complexity
+      difficulty: requestData.difficulty || 'medium',
       complexity: requestData.difficulty === 'easy' ? 'simple' : 
                  requestData.difficulty === 'hard' ? 'complex' : 
                  'medium',
@@ -96,7 +103,7 @@ serve(async (req) => {
     const { data, error } = await supabase
       .from('qa_test_cases')
       .update(updateData)
-      .eq('id', requestData.id)
+      .eq('id', idNum)
       .select()
       .single();
 
