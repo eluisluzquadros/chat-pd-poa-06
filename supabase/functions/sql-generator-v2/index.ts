@@ -90,7 +90,7 @@ OBSERVAÇÕES IMPORTANTES:
 2. Em bairros_risco_desastre, use bairro_nome (pode estar em formato diferente)
 3. As zonas têm formato "ZOT XX" ou "ZOT XX.X - Y" (ex: "ZOT 07", "ZOT 08.3 - B")
 4. Um bairro pode ter múltiplas zonas
-5. Use UPPER() para normalizar nomes de bairros na busca
+5. Use busca acento-insensível com translate+UPPER e ILIKE, por exemplo: translate(UPPER(bairro), 'ÁÀÃÂÄÉÈÊËÍÌÎÏÓÒÕÔÖÚÙÛÜÇÑ', 'AAAAAEEEEIIIIOOOOOUUUUCN') ILIKE '%' || termo || '%'
 6. Para contagem de bairros com risco, use COUNT(DISTINCT bairro_nome)
 
 QUERIES EXEMPLO:
@@ -98,7 +98,8 @@ QUERIES EXEMPLO:
 1. Altura máxima de um bairro (considerando todas as zonas):
    SELECT bairro, zona, altura_maxima 
    FROM regime_urbanistico 
-   WHERE UPPER(bairro) = UPPER('Petrópolis')
+   WHERE translate(UPPER(bairro), 'ÁÀÃÂÄÉÈÊËÍÌÎÏÓÒÕÔÖÚÙÛÜÇÑ', 'AAAAAEEEEIIIIOOOOOUUUUCN') ILIKE '%' || translate(UPPER('Petrópolis'), 'ÁÀÃÂÄÉÈÊËÍÌÎÏÓÒÕÔÖÚÙÛÜÇÑ', 'AAAAAEEEEIIIIOOOOOUUUUCN') || '%'
+
    ORDER BY altura_maxima DESC
 
 2. Altura máxima mais alta de toda a cidade:
@@ -118,7 +119,7 @@ QUERIES EXEMPLO:
      taxa_permeabilidade_acima_1500,
      recuo_jardim
    FROM regime_urbanistico 
-   WHERE UPPER(bairro) = UPPER('Petrópolis')
+   WHERE translate(UPPER(bairro), 'ÁÀÃÂÄÉÈÊËÍÌÎÏÓÒÕÔÖÚÙÛÜÇÑ', 'AAAAAEEEEIIIIOOOOOUUUUCN') ILIKE '%' || translate(UPPER('Petrópolis'), 'ÁÀÃÂÄÉÈÊËÍÌÎÏÓÒÕÔÖÚÙÛÜÇÑ', 'AAAAAEEEEIIIIOOOOOUUUUCN') || '%'
 
 4. Bairros com altura máxima acima de X metros:
    SELECT DISTINCT bairro, zona, altura_maxima
@@ -246,19 +247,12 @@ Responda com JSON válido seguindo esta estrutura:
       const queryLower = query.toLowerCase();
       
       if (queryLower.includes('altura') && (queryLower.includes('máxima') || queryLower.includes('mais alta'))) {
-        if (queryLower.includes('petrópolis')) {
-          fallbackQueries.push({
-            query: `SELECT bairro, zona, altura_maxima FROM regime_urbanistico WHERE UPPER(bairro) = 'PETRÓPOLIS' ORDER BY altura_maxima DESC`,
-            table: 'regime_urbanistico',
-            purpose: 'Buscar altura máxima em Petrópolis'
-          });
-        } else {
-          fallbackQueries.push({
-            query: `SELECT bairro, zona, altura_maxima FROM regime_urbanistico WHERE altura_maxima IS NOT NULL ORDER BY altura_maxima DESC LIMIT 10`,
-            table: 'regime_urbanistico',
-            purpose: 'Buscar alturas máximas mais altas da cidade'
-          });
-        }
+        fallbackQueries.push({
+          query: `SELECT bairro, zona, altura_maxima FROM regime_urbanistico WHERE altura_maxima IS NOT NULL ORDER BY altura_maxima DESC LIMIT 10`,
+          table: 'regime_urbanistico',
+          purpose: 'Buscar alturas máximas mais altas da cidade'
+        });
+      }
       } else if (queryLower.includes('risco') || queryLower.includes('inundação') || queryLower.includes('cota')) {
         // Query de risco/inundação
         if (queryLower.includes('quantos') || queryLower.includes('total')) {
@@ -279,7 +273,7 @@ Responda com JSON válido seguindo esta estrutura:
         if (bairroMatch) {
           const bairroName = bairroMatch[1].trim();
           fallbackQueries.push({
-            query: `SELECT bairro, zona, altura_maxima, coef_aproveitamento_basico, coef_aproveitamento_maximo, taxa_permeabilidade_acima_1500, recuo_jardim FROM regime_urbanistico WHERE UPPER(bairro) = UPPER('${bairroName}')`,
+            query: `SELECT bairro, zona, altura_maxima AS "Altura Máxima - Edificação Isolada", coef_aproveitamento_basico AS "Coeficiente de Aproveitamento - Básico", coef_aproveitamento_maximo AS "Coeficiente de Aproveitamento - Máximo", taxa_permeabilidade_acima_1500, recuo_jardim FROM regime_urbanistico WHERE translate(UPPER(bairro), 'ÁÀÃÂÄÉÈÊËÍÌÎÏÓÒÕÔÖÚÙÛÜÇÑ', 'AAAAAEEEEIIIIOOOOOUUUUCN') ILIKE '%' || translate(UPPER('${bairroName}'), 'ÁÀÃÂÄÉÈÊËÍÌÎÏÓÒÕÔÖÚÙÛÜÇÑ', 'AAAAAEEEEIIIIOOOOOUUUUCN') || '%' ORDER BY zona`,
             table: 'regime_urbanistico',
             purpose: `Buscar parâmetros urbanísticos do bairro ${bairroName}`
           });
@@ -301,6 +295,23 @@ Responda com JSON válido seguindo esta estrutura:
         executionPlan: 'Usando estratégia de fallback baseada em análise de texto'
       };
     }
+
+    // Helper: sanitize bairro comparisons to be accent-insensitive
+    const sanitizeQuery = (q: string) => {
+      const trans = `translate(UPPER(bairro), 'ÁÀÃÂÄÉÈÊËÍÌÎÏÓÒÕÔÖÚÙÛÜÇÑ', 'AAAAAEEEEIIIIOOOOOUUUUCN')`;
+      const transParam = (v: string) => `translate(UPPER(${v}), 'ÁÀÃÂÄÉÈÊËÍÌÎÏÓÒÕÔÖÚÙÛÜÇÑ', 'AAAAAEEEEIIIIOOOOOUUUUCN')`;
+      // UPPER(bairro) = UPPER('...')
+      q = q.replace(/UPPER\(\s*bairro\s*\)\s*=\s*UPPER\(\s*'([^']+)'\s*\)/gi, (_m, g1) => {
+        return `${trans} ILIKE '%' || ${transParam(`'${g1}'`)} || '%')`;
+      });
+      // UPPER(r.bairro) = UPPER('...')
+      q = q.replace(/UPPER\(\s*[a-z]\.bairro\s*\)\s*=\s*UPPER\(\s*'([^']+)'\s*\)/gi, (_m, g1) => {
+        const transAlias = (alias: string) => `translate(UPPER(${alias}.bairro), 'ÁÀÃÂÄÉÈÊËÍÌÎÏÓÒÕÔÖÚÙÛÜÇÑ', 'AAAAAEEEEIIIIOOOOOUUUUCN')`;
+        // Try to capture alias from previous match is hard; fallback to 'r'
+        return `${transAlias('r')} ILIKE '%' || ${transParam(`'${g1}'`)} || '%')`;
+      });
+      return q;
+    };
 
     // Executar as queries
     const executionResults = [];
