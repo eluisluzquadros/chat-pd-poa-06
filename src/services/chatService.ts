@@ -31,15 +31,35 @@ export class ChatService {
 
       console.log('🚀 Starting Agentic RAG processing for message:', message);
 
-      // Call the main Agentic RAG orchestrator
-      const { data: ragResult, error } = await supabase.functions.invoke('agentic-rag', {
-        body: {
+      // Check if v2 is enabled (can be controlled via environment or user preference)
+      const useAgenticRAGv2 = localStorage.getItem('useAgenticRAGv2') !== 'false'; // Default to true
+      const endpoint = useAgenticRAGv2 ? 'agentic-rag-v2' : 'agentic-rag';
+      
+      console.log(`🎯 Using ${useAgenticRAGv2 ? 'Agentic-RAG v2.0 (orchestrator-master)' : 'Legacy Agentic-RAG'}`);
+      
+      const { data: ragResult, error } = await supabase.functions.invoke(endpoint, {
+        body: useAgenticRAGv2 ? {
+          // Agentic-RAG v2 format
+          query: message,
+          sessionId: sessionId || `session_${Date.now()}`,
+          conversationHistory: [], // TODO: Add conversation history
+          bypassCache: false,
+          model: model || 'gpt-3.5-turbo',
+          options: {
+            useAgenticRAG: true,
+            useKnowledgeGraph: true,
+            useHierarchicalChunks: true,
+            userRole: userRole || 'citizen',
+            userId: session.user.id
+          }
+        } : {
+          // Legacy format
           message,
           userRole: userRole || 'citizen',
           sessionId,
-          userId: session.user.id || undefined,  // Make userId optional
-          bypassCache: false,  // Use cache when available
-          model: model || 'anthropic/claude-3-5-sonnet-20241022'  // Use provided model or default
+          userId: session.user.id || undefined,
+          bypassCache: false,
+          model: model || 'anthropic/claude-3-5-sonnet-20241022'
         }
       });
 

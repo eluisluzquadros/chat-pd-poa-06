@@ -1,107 +1,105 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// Memória da conversa
-const conversationMemory = new Map<string, Array<{role: string, content: string}>>();
-
+/**
+ * Agentic-RAG v2 - Main Entry Point
+ * Redireciona queries para o Master Orchestrator
+ */
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
-  const startTime = Date.now();
-  
   try {
-    const requestBody = await req.json();
-    const { query, message, sessionId, userId, bypassCache, model, conversationId } = requestBody;
-    const userMessage = message || query || '';
-    const selectedModel = model || 'openai/gpt-3.5-turbo';
+    const body = await req.json();
     
-    if (!userMessage) {
-      throw new Error('Query or message is required');
-    }
+    // Forward to orchestrator-master
+    const orchestratorUrl = `${Deno.env.get('SUPABASE_URL')}/functions/v1/orchestrator-master`;
     
-    // Inicializar Supabase client
-    const supabaseUrl = Deno.env.get("SUPABASE_URL");
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || Deno.env.get('SUPABASE_ANON_KEY');
-    const supabase = createClient(supabaseUrl!, supabaseKey!);
-    
-    const agentTrace = [];
-    
-    // ========================================
-    // NOVO: Buscar primeiro em qa_test_cases
-    // ========================================
-    console.log('🔍 Checking QA test cases for direct match...');
-    agentTrace.push({ step: 'qa_test_cases_lookup', timestamp: Date.now() });
-    
-    // Normalizar query para comparação
-    const normalizedQuery = userMessage.toLowerCase()
-      .replace(/[.,!?;]/g, '')
-      .replace(/\s+/g, ' ')
-      .trim();
-    
-    // Buscar casos de teste similares
-    const { data: testCases, error: qaError } = await supabase
-      .from('qa_test_cases')
-      .select('*')
-      .eq('is_active', true);
-    
-    if (!qaError && testCases && testCases.length > 0) {
-      // Procurar match exato ou muito similar
-      for (const testCase of testCases) {
-        const normalizedTestQuestion = testCase.question.toLowerCase()
-          .replace(/[.,!?;]/g, '')
-          .replace(/\s+/g, ' ')
-          .trim();
-        
-        // Calcular similaridade simples
-        const queryWords = normalizedQuery.split(' ');
-        const testWords = normalizedTestQuestion.split(' ');
-        const commonWords = queryWords.filter(word => 
-          testWords.includes(word) && word.length > 2
-        );
-        
-        const similarity = commonWords.length / Math.max(queryWords.length, testWords.length);
-        
-        // Se muito similar (>70%), usar resposta do caso de teste
-        if (similarity > 0.7) {
-          console.log(`✅ Found matching QA test case (ID: ${testCase.id}, similarity: ${(similarity * 100).toFixed(1)}%)`);
-          agentTrace.push({ 
-            step: 'qa_test_case_match', 
-            caseId: testCase.id,
-            similarity 
-          });
-          
-          return new Response(JSON.stringify({
-            response: testCase.expected_answer,
-            confidence: 0.95,
-            sources: { 
-              tabular: testCase.is_sql_related ? 1 : 0, 
-              conceptual: testCase.is_sql_related ? 0 : 1,
-              qa_test_case: testCase.id
-            },
-            executionTime: Date.now() - startTime,
-            agentTrace,
-            model: selectedModel
-          }), {
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          });
+    const response = await fetch(orchestratorUrl, {
+      method: 'POST',
+      headers: {
+        'Authorization': req.headers.get('Authorization') || '',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        query: body.query || body.message,
+        sessionId: body.sessionId || `session_${Date.now()}`,
+        options: {
+          useAgenticRAG: true,
+          bypassCache: body.bypassCache,
+          model: body.model || 'gpt-3.5-turbo',
+          ...body.options
         }
-      }
+      })
+    });
+    
+    if (!response.ok) {
+      // Fallback to original agentic-rag if orchestrator fails
+      console.log('⚠️ Orchestrator failed, falling back to original pipeline');
+      
+      const fallbackUrl = `${Deno.env.get('SUPABASE_URL')}/functions/v1/agentic-rag`;
+      const fallbackResponse = await fetch(fallbackUrl, {
+        method: 'POST',
+        headers: {
+          'Authorization': req.headers.get('Authorization') || '',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(body)
+      });
+      
+      const fallbackData = await fallbackResponse.json();
+      
+      return new Response(JSON.stringify({
+        ...fallbackData,
+        metadata: {
+          ...fallbackData.metadata,
+          pipeline: 'legacy',
+          fallback: true
+        }
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
     
-    console.log('No direct QA test case match found, proceeding with RAG pipeline...');
-    agentTrace.push({ step: 'qa_test_case_no_match' });
+    const data = await response.json();
     
-    // ========================================
-    // Continuar com pipeline RAG normal
-    // ========================================
+    // Add pipeline metadata
+    const enrichedResponse = {
+      ...data,
+      metadata: {
+        ...data.metadata,
+        pipeline: 'agentic-v2',
+        timestamp: new Date().toISOString()
+      }
+    };
+    
+    return new Response(JSON.stringify(enrichedResponse), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+
+  } catch (error) {
+    console.error('Agentic-RAG v2 error:', error);
+    
+    return new Response(JSON.stringify({
+      response: 'Desculpe, ocorreu um erro ao processar sua solicitação.',
+      confidence: 0,
+      error: error.message,
+      metadata: {
+        pipeline: 'agentic-v2',
+        error: true
+      }
+    }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+});
     
     // Gerenciar memória da conversa
     const convId = conversationId || sessionId || 'default';
