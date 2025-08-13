@@ -252,9 +252,11 @@ serve(async (req) => {
     // Check if this is a legal/article query
     const isLegalQuery = analysisResult?.metadata?.isLegalQuery || 
                         analysisResult?.intent === 'legal_article' ||
-                        /\bartigo\s*\d+|\bart\.?\s*\d+|certificação.*sustentabilidade|4[º°]?\s*distrito|\bluos\b/i.test(originalQuery);
+                        analysisResult?.queryType === 'legal_article' ||
+                        /\bartigo\s*\d+|\bart\.?\s*\d+|certificação.*sustentabilidade|4[º°]?\s*distrito|\bluos\b|\bpdus\b/i.test(originalQuery);
     
     console.log('📚 Response Synthesizer - Legal query?', isLegalQuery);
+    console.log('📚 Response Synthesizer - Analysis metadata:', analysisResult?.metadata);
     
     debugLog.push({ 
       step: 'parsed_request',
@@ -294,40 +296,107 @@ Qual bairro ou zona você gostaria de consultar?${FOOTER_TEMPLATE}`,
       });
     }
     
+    // Process vector results if available (for hybrid queries)
+    let legalArticlesFound = [];
+    if (vectorResults && vectorResults.results) {
+      console.log('📚 Processing vector results for legal articles...');
+      
+      // Extract legal articles from vector search results
+      vectorResults.results.forEach(result => {
+        if (result.metadata) {
+          const { article, law, content } = result.metadata;
+          if (article && law) {
+            legalArticlesFound.push({
+              article,
+              law,
+              content: result.content || content,
+              similarity: result.similarity
+            });
+          }
+        }
+      });
+      
+      console.log(`Found ${legalArticlesFound.length} legal articles from vector search`);
+    }
+    
     // Preparar prompt com regras
     let prompt = '';
     
-    // Special handling for legal queries
+    // Special handling for legal queries with ENHANCED HYBRID APPROACH
     if (isLegalQuery) {
-      prompt = `Você é um especialista em legislação urbana que SEMPRE cita artigos específicos da LUOS.
+      // Get expected articles from metadata if available
+      const expectedArticles = analysisResult?.metadata?.expectedArticles || [];
+      const isHybridQuery = analysisResult?.strategy === 'hybrid';
+      
+      prompt = `Você é um especialista em legislação urbana de Porto Alegre.
+
+🔴 REGRA FUNDAMENTAL: SEMPRE cite artigos específicos das leis (LUOS ou PDUS).
 
 MAPEAMENTO OBRIGATÓRIO DE ARTIGOS:
-- Certificação em Sustentabilidade Ambiental → Art. 81 - III
-- 4º Distrito / Quarto Distrito → Art. 74
-- Outorga Onerosa → Art. 86
-- ZEIS (Zonas Especiais de Interesse Social) → Art. 92
-- Altura máxima de edificação → Art. 81
-- Coeficiente de aproveitamento → Art. 82
-- Recuos obrigatórios → Art. 83
-- Estudo de Impacto de Vizinhança (EIV) → Art. 89
-- Áreas de preservação permanente → Art. 95
-- Instrumentos de política urbana → Art. 78
+- Certificação em Sustentabilidade Ambiental → **LUOS - Art. 81, Inciso III**
+- 4º Distrito / Quarto Distrito → **LUOS - Art. 74**
+- Outorga Onerosa → **LUOS - Art. 86**
+- ZEIS (Zonas Especiais de Interesse Social) → **PDUS - Art. 92** ⚠️ SEMPRE CITE "PDUS"!
+- Altura máxima de edificação → **LUOS - Art. 81**
+- Coeficiente de aproveitamento → **LUOS - Art. 82**
+- Recuos obrigatórios → **LUOS - Art. 83**
+- Estudo de Impacto de Vizinhança (EIV) → **LUOS - Art. 89**
+- Áreas de preservação permanente → **PDUS - Art. 95** ⚠️ SEMPRE CITE "PDUS"!
+- Instrumentos de política urbana → **LUOS - Art. 78**
+
+🔴 REGRA CRÍTICA: SEMPRE coloque o nome da lei (LUOS ou PDUS) ANTES do número do artigo!
+
+${expectedArticles.length > 0 ? `\n🎯 ARTIGOS ESPERADOS PARA ESTA CONSULTA:\n${expectedArticles.map(a => `- ${a}`).join('\n')}\n` : ''}
 
 FORMATO OBRIGATÓRIO DA RESPOSTA:
-**Art. XX [- Inciso se aplicável]**: [Descrição completa do artigo]
+1. Responda a pergunta de forma clara e completa
+2. SEMPRE inclua a seção "Base Legal" no final com os artigos citados
+
+**Exemplo de formato correto:**
+[Sua resposta contextualizada aqui]
+
+**Base Legal:**
+• LUOS - Art. XX [- Inciso YY]: "Texto do artigo"
+• PDUS - Art. ZZ: "Texto do artigo"
 
 `;
       
-      // Check for specific legal keywords
+      // Check for specific legal keywords and add mandatory responses
       const queryLower = originalQuery.toLowerCase();
       if (queryLower.includes('certificação') || queryLower.includes('sustentabilidade')) {
-        prompt += `\n🔴 RESPOSTA OBRIGATÓRIA: **Art. 81 - III**: Os acréscimos definidos em regulamento para projetos que obtenham Certificação em Sustentabilidade Ambiental.\n`;
+        prompt += `\n🔴 CITAÇÃO OBRIGATÓRIA: Você DEVE citar: **LUOS - Art. 81, Inciso III**: "Os acréscimos definidos em regulamento para projetos que obtenham Certificação em Sustentabilidade Ambiental."\n`;
+        prompt += `⚠️ SEMPRE inclua "LUOS" antes do artigo!\n`;
       } else if ((queryLower.includes('4') && queryLower.includes('distrito')) || 
                  queryLower.includes('4º distrito') || 
                  queryLower.includes('quarto distrito')) {
-        prompt += `\n🔴 RESPOSTA OBRIGATÓRIA: **Art. 74**: Os empreendimentos localizados na ZOT 8.2 - 4º Distrito deverão observar as diretrizes específicas do Programa de Revitalização.\n`;
-      } else if (queryLower.includes('empreendiment') && (queryLower.includes('4') || queryLower.includes('distrito'))) {
-        prompt += `\n🔴 RESPOSTA OBRIGATÓRIA: **Art. 74**: Os empreendimentos localizados na ZOT 8.2 - 4º Distrito deverão observar as diretrizes específicas.\n`;
+        prompt += `\n🔴 CITAÇÃO OBRIGATÓRIA: Você DEVE citar: **LUOS - Art. 74**: "Os empreendimentos localizados na ZOT 8.2 - 4º Distrito deverão observar as diretrizes específicas do Programa de Revitalização."\n`;
+        prompt += `⚠️ SEMPRE inclua "LUOS" antes do artigo!\n`;
+      } else if (queryLower.includes('zeis')) {
+        prompt += `\n🔴 CITAÇÃO OBRIGATÓRIA: Você DEVE citar: **PDUS - Art. 92**: "As Zonas Especiais de Interesse Social (ZEIS) são porções do território destinadas prioritariamente à regularização fundiária e produção de Habitação de Interesse Social."\n`;
+        prompt += `⚠️ SEMPRE inclua "PDUS" antes do artigo!\n`;
+      } else if (queryLower.includes('eiv') || queryLower.includes('estudo') && queryLower.includes('impacto')) {
+        prompt += `\n🔴 CITAÇÃO OBRIGATÓRIA: Você DEVE citar: **LUOS - Art. 89**: "O Estudo de Impacto de Vizinhança (EIV) é o instrumento que avalia os efeitos positivos e negativos de empreendimentos."\n`;
+        prompt += `⚠️ SEMPRE inclua "LUOS" antes do artigo!\n`;
+      } else if (queryLower.includes('altura') && queryLower.includes('máxima') && queryLower.includes('artigo')) {
+        prompt += `\n🔴 CITAÇÃO OBRIGATÓRIA: Você DEVE citar: **LUOS - Art. 81**: "Define os parâmetros de altura máxima de edificação para as diferentes zonas."\n`;
+        prompt += `⚠️ SEMPRE inclua "LUOS" antes do artigo!\n`;
+      } else if (queryLower.includes('coeficiente') && queryLower.includes('aproveitamento') && queryLower.includes('artigo')) {
+        prompt += `\n🔴 CITAÇÃO OBRIGATÓRIA: Você DEVE citar: **LUOS - Art. 82**: "Estabelece os coeficientes de aproveitamento básico e máximo."\n`;
+        prompt += `⚠️ SEMPRE inclua "LUOS" antes do artigo!\n`;
+      }
+      
+      // If hybrid query with data, add context
+      if (isHybridQuery && hasStructuredData) {
+        prompt += `\n📊 CONTEXTO: Esta pergunta combina aspectos legais com dados específicos. Cite os artigos relevantes E apresente os dados solicitados.\n`;
+      }
+      
+      // Add legal articles found from vector search
+      if (legalArticlesFound.length > 0) {
+        prompt += `\n📚 ARTIGOS ENCONTRADOS NA BUSCA VETORIAL:\n`;
+        legalArticlesFound.forEach(article => {
+          prompt += `• **${article.law} - ${article.article}**: "${article.content.substring(0, 200)}..."\n`;
+        });
+        prompt += `\n🔴 VOCÊ DEVE CITAR ESTES ARTIGOS NA SUA RESPOSTA!\n`;
       }
       
       prompt += `\nPergunta: ${originalQuery}\n`;

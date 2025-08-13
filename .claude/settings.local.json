@@ -57,7 +57,9 @@
       "WebFetch(domain:docs.anthropic.com)",
       "Bash(timeout:*)",
       "Bash(echo \"Iniciando teste completo dos 121 casos...\" node scripts/test-qa-simple.mjs)",
-      "Bash(start chrome \"file:///%CD%/test-chat-browser.html\")"
+      "Bash(start chrome \"file:///%CD%/test-chat-browser.html\")",
+      "Bash(npm run deploy-functions:*)",
+      "Bash(bash scripts/deploy-single-function.sh:*)"
     ],
     "deny": []
   }
