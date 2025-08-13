@@ -18,6 +18,7 @@ import { unifiedRAGService } from '@/lib/unifiedRAGService';
 // Import only the working components
 import { QATestCasesList } from '@/components/admin/QATestCasesList';
 import { QAExecutionHistory } from '@/components/admin/QAExecutionHistory';
+import { CognitiveAnalysisPanel } from '@/components/admin/CognitiveAnalysisPanel';
 
 interface Metrics {
   totalValidationRuns: number;
@@ -452,11 +453,12 @@ export default function QualityV2() {
 
       {/* Main Content Tabs */}
       <Tabs value={selectedTab} onValueChange={setSelectedTab}>
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="overview">Visão Geral</TabsTrigger>
           <TabsTrigger value="executions">Execuções</TabsTrigger>
           <TabsTrigger value="cases">Casos de Teste</TabsTrigger>
           <TabsTrigger value="models">Modelos</TabsTrigger>
+          <TabsTrigger value="cognitive">Análise Cognitiva</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-4">
@@ -612,6 +614,10 @@ export default function QualityV2() {
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="cognitive">
+          <CognitiveAnalysisPanel />
         </TabsContent>
       </Tabs>
     </div>
