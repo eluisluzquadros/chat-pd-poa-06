@@ -2,191 +2,47 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Teste Chat PD POA</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 800px;
-            margin: 50px auto;
-            padding: 20px;
-            background: #f5f5f5;
-        }
-        .container {
-            background: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        h1 {
-            color: #333;
-            text-align: center;
-        }
-        .status {
-            padding: 15px;
-            margin: 20px 0;
-            border-radius: 5px;
-            font-weight: bold;
-        }
-        .success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-        .error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-        .info {
-            background: #d1ecf1;
-            color: #0c5460;
-            border: 1px solid #bee5eb;
-        }
-        button {
-            background: #007bff;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-            margin: 10px 5px;
-        }
-        button:hover {
-            background: #0056b3;
-        }
-        .test-results {
-            margin-top: 20px;
-            padding: 15px;
-            background: #f9f9f9;
-            border-radius: 5px;
-            white-space: pre-wrap;
-            font-family: 'Courier New', monospace;
-            font-size: 14px;
-        }
-        .loading {
-            text-align: center;
-            color: #666;
-        }
-    </style>
+    <title>Teste Chat RAG v2</title>
 </head>
 <body>
-    <div class="container">
-        <h1>🔍 Teste do Chat PD POA</h1>
-        
-        <div id="status" class="status info">
-            Pronto para testar. Clique em "Iniciar Teste" para começar.
-        </div>
-        
-        <div style="text-align: center;">
-            <button onclick="testChat()">🚀 Iniciar Teste</button>
-            <button onclick="clearCache()">🗑️ Limpar Cache</button>
-            <button onclick="window.location.href='http://localhost:8080/chat'">💬 Abrir Chat</button>
-        </div>
-        
-        <div id="results" class="test-results" style="display: none;"></div>
-    </div>
-
+    <h1>Teste do Sistema Chat RAG</h1>
+    <p>Abra o console do navegador para ver os resultados.</p>
+    <button onclick="testRAG()">Testar RAG</button>
+    <div id="results"></div>
     <script>
-        const SUPABASE_URL = 'https://ngrqwmvuhvjkeohesbxs.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5ncnF3bXZ1aHZqa2VvaGVzYnhzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM2MDkwMTcsImV4cCI6MjA2OTE4NTAxN30.K3uyyzjyAQ17ohQGCUFx_RiMufblLyQzvxEZHakqKrg';
+        const SUPABASE_URL = "https://ngrqwmvuhvjkeohesbxs.supabase.co";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5ncnF3bXZ1aHZqa2VvaGVzYnhzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzEwNjEwMzEsImV4cCI6MjA0NjYzNzAzMX0.5bxfZu1203cHOxlUaOiX0fy70gyStsoU-0jEglcfL9w";
         
-        function updateStatus(message, type = 'info') {
-            const statusEl = document.getElementById('status');
-            statusEl.textContent = message;
-            statusEl.className = `status ${type}`;
-        }
-        
-        function updateResults(message) {
-            const resultsEl = document.getElementById('results');
-            resultsEl.style.display = 'block';
-            resultsEl.textContent += message + '\n';
-        }
-        
-        async function testChat() {
-            updateStatus('🔄 Testando conexão com o servidor...', 'info');
-            updateResults('=== INICIANDO TESTE ===\n');
+        async function testRAG() {
+            const query = "Qual a altura máxima no centro histórico?";
+            console.log("Testing query:", query);
             
-            const testQueries = [
-                'Qual a altura máxima no Centro Histórico?',
-                'O que é ZOT?',
-                'Qual o coeficiente de aproveitamento básico?'
-            ];
-            
-            let passed = 0;
-            let failed = 0;
-            
-            for (const query of testQueries) {
-                updateResults(`\n📝 Testando: "${query}"`);
+            try {
+                const response = await fetch(`${SUPABASE_URL}/functions/v1/agentic-rag-v2`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
+                        "apikey": SUPABASE_ANON_KEY
+                    },
+                    body: JSON.stringify({
+                        message: query,
+                        query: query,
+                        userRole: "user",
+                        sessionId: `test-${Date.now()}`,
+                        userId: "test-user",
+                        model: "gpt-3.5-turbo",
+                        bypassCache: true
+                    })
+                });
                 
-                try {
-                    const response = await fetch(`${SUPABASE_URL}/functions/v1/agentic-rag`, {
-                        method: 'POST',
-                        headers: {
-                            'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-                            'Content-Type': 'application/json',
-                            'apikey': SUPABASE_ANON_KEY
-                        },
-                        body: JSON.stringify({
-                            query: query,
-                            sessionId: 'browser-test',
-                            bypassCache: false,
-                            model: 'openai/gpt-3.5-turbo'
-                        })
-                    });
-                    
-                    if (!response.ok) {
-                        const errorText = await response.text();
-                        updateResults(`❌ Erro ${response.status}: ${errorText.substring(0, 100)}`);
-                        failed++;
-                    } else {
-                        const result = await response.json();
-                        updateResults(`✅ Sucesso! Resposta: ${result.response.substring(0, 100)}...`);
-                        updateResults(`   Confiança: ${result.confidence}, Tempo: ${result.executionTime}ms`);
-                        passed++;
-                    }
-                    
-                } catch (error) {
-                    updateResults(`❌ Erro de rede: ${error.message}`);
-                    failed++;
-                }
+                const data = await response.json();
+                console.log("Response:", data);
+                document.getElementById("results").innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+            } catch (error) {
+                console.error("Error:", error);
+                document.getElementById("results").innerHTML = `<p style="color:red">Error: ${error.message}</p>`;
             }
-            
-            updateResults(`\n=== RESULTADO FINAL ===`);
-            updateResults(`✅ Passou: ${passed}/${testQueries.length}`);
-            updateResults(`❌ Falhou: ${failed}/${testQueries.length}`);
-            
-            if (failed === 0) {
-                updateStatus('✅ Todos os testes passaram! O chat está funcionando.', 'success');
-                updateResults('\n🎉 SUCESSO TOTAL! O sistema está operacional.');
-            } else if (passed > 0) {
-                updateStatus(`⚠️ Parcialmente funcional: ${passed}/${testQueries.length} testes passaram.`, 'error');
-            } else {
-                updateStatus('❌ Todos os testes falharam. Verifique a conexão.', 'error');
-            }
-        }
-        
-        function clearCache() {
-            updateStatus('🗑️ Limpando cache do navegador...', 'info');
-            
-            // Clear localStorage
-            localStorage.clear();
-            
-            // Clear sessionStorage
-            sessionStorage.clear();
-            
-            // Clear cookies for localhost
-            document.cookie.split(";").forEach(function(c) { 
-                document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); 
-            });
-            
-            updateStatus('✅ Cache limpo com sucesso!', 'success');
-            
-            setTimeout(() => {
-                updateStatus('Recarregando a página...', 'info');
-                location.reload(true);
-            }, 1500);
         }
     </script>
 </body>
