@@ -65,11 +65,14 @@ export class UnifiedRAGService {
     if (endpoint === 'agentic-rag-v2') {
       return {
         ...baseBody,
-        query: options.message, // v2 compatibility
+        query: options.message, // v2 uses 'query'
+        message: options.message, // Also include 'message' for compatibility
         options: {
           useAgenticRAG: true,
           useKnowledgeGraph: true,
-          useHierarchicalChunks: true
+          useHierarchicalChunks: true,
+          userRole: options.userRole || 'user',
+          userId: options.userId || 'anonymous'
         }
       };
     }

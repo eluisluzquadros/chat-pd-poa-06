@@ -679,10 +679,14 @@ serve(async (req) => {
   }
 
   try {
-    const { query, sessionId, options, model } = await req.json();
+    const body = await req.json();
+    const { query, message, sessionId, options, model } = body;
     
-    if (!query) {
-      throw new Error('Query is required');
+    // Accept both 'query' and 'message' for compatibility
+    const userQuery = query || message;
+    
+    if (!userQuery) {
+      throw new Error('Query or message is required');
     }
     
     // Validate and set model for multi-LLM support
@@ -696,7 +700,7 @@ serve(async (req) => {
     
     const orchestrator = new MasterOrchestrator();
     const result = await orchestrator.processQuery(
-      query,
+      userQuery,
       sessionId || `session_${Date.now()}`,
       processedOptions
     );
