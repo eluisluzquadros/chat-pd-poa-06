@@ -228,10 +228,6 @@ export function useBenchmark(): BenchmarkData & {
     setIsBenchmarkRunning(true);
     
     try {
-      // Use the same endpoint selection logic as chat
-      const useAgenticRAGv2 = localStorage.getItem('useAgenticRAGv2') !== 'false';
-      const endpoint = useAgenticRAGv2 ? 'qa-benchmark-unified' : 'run-benchmark';
-      
       const requestData = {
         mode: options?.mode || 'all',
         includeSQL: options?.includeSQL ?? true,
@@ -239,9 +235,9 @@ export function useBenchmark(): BenchmarkData & {
         ...(options?.models && { models: options.models })
       };
 
-      console.log(`🚀 BENCHMARK: Executing with ${endpoint} and data:`, requestData);
+      console.log('🚀 BENCHMARK: Executing with data:', requestData);
       
-      const { data, error } = await supabase.functions.invoke(endpoint, {
+      const { data, error } = await supabase.functions.invoke('run-benchmark', {
         body: requestData
       });
 

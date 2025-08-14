@@ -20,7 +20,7 @@ interface QueryAnalysisRequest {
 }
 
 interface QueryAnalysisResponse {
-  intent: 'conceptual' | 'tabular' | 'hybrid' | 'predefined_objectives' | 'legal_article';
+  intent: 'conceptual' | 'tabular' | 'hybrid' | 'predefined_objectives';
   entities: {
     zots?: string[];
     bairros?: string[];
@@ -33,13 +33,7 @@ interface QueryAnalysisResponse {
   needsClarification?: boolean;
   clarificationMessage?: string;
   needsRiskData?: boolean;
-  queryType?: 'regime' | 'risk' | 'counting' | 'general' | 'legal_article';
-  metadata?: {
-    isLegalQuery?: boolean;
-    requiresCitation?: boolean;
-    expectedArticles?: string[];
-    legalKeywords?: string[];
-  };
+  queryType?: 'regime' | 'risk' | 'counting' | 'general';
 }
 
 serve(async (req) => {
@@ -77,68 +71,47 @@ serve(async (req) => {
     }
 
     // Detect legal/article queries FIRST (highest priority)
-    const legalArticleMapping = [
-      { pattern: /certificação.*sustentabilidade|sustentabilidade.*ambiental/i, articles: ['Art. 81, Inciso III'], law: 'LUOS' },
-      { pattern: /4[º°]?\s*distrito|quarto\s+distrito/i, articles: ['Art. 74'], law: 'LUOS' },
-      { pattern: /altura\s+máxima.*artigo|artigo.*altura\s+máxima/i, articles: ['Art. 81'], law: 'LUOS' },
-      { pattern: /coeficiente.*aproveitamento.*artigo|artigo.*coeficiente/i, articles: ['Art. 82'], law: 'LUOS' },
-      { pattern: /\bzeis\b.*artigo|artigo.*\bzeis\b/i, articles: ['Art. 92'], law: 'PDUS' },
-      { pattern: /outorga\s+onerosa/i, articles: ['Art. 86'], law: 'LUOS' },
-      { pattern: /estudo.*impacto.*vizinhança|\beiv\b/i, articles: ['Art. 89'], law: 'LUOS' },
-      { pattern: /recuos?\s+obrigatórios?/i, articles: ['Art. 83'], law: 'LUOS' },
-      { pattern: /áreas?\s+de\s+preservação\s+permanente/i, articles: ['Art. 95'], law: 'PDUS' },
-      { pattern: /instrumentos.*política.*urbana/i, articles: ['Art. 78'], law: 'LUOS' }
-    ];
-    
-    const generalLegalPatterns = [
+    const legalQueryPatterns = [
       /\bartigo\s*\d+/i,
       /\bart\.?\s*\d+/i,
       /\binciso\s+[IVX]+/i,
       /\bparágrafo\s*\d+/i,
       /\b§\s*\d+/i,
       /\bluos\b/i,
-      /\bpdus\b/i,
       /\blei\s+(complementar\s+)?n[º°]?\s*\d+/i,
-      /qual\s+artigo/i,
-      /que\s+artigo/i,
-      /onde\s+está.*lei/i,
-      /lei\s+que\s+trata/i
+      /certificação.*sustentabilidade/i,
+      /sustentabilidade.*ambiental/i,
+      /estudo.*impacto.*vizinhança/i,
+      /\beiv\b/i,
+      /outorga\s+onerosa/i,
+      /\bzeis\b/i,
+      /instrumentos.*política.*urbana/i,
+      /4[º°]?\s*distrito/i,
+      /quarto\s+distrito/i,
+      /empreendimento.*4[º°]?\s*distrito/i,
+      /regra.*4[º°]?\s*distrito/i
     ];
     
     const queryLower = (query || '').toString().toLowerCase();
-    
-    // Check for specific legal mappings
-    const matchedMappings = legalArticleMapping.filter(mapping => 
-      mapping.pattern.test(query)
-    );
-    
-    // Check for general legal patterns
-    const isLegalQuery = generalLegalPatterns.some(pattern => pattern.test(query)) || 
-                        matchedMappings.length > 0;
+    const isLegalQuery = legalQueryPatterns.some(pattern => pattern.test(query));
     
     // If it's a legal query, return immediately with specific handling
     if (isLegalQuery) {
       console.log('🎯 Query legal detectada:', query);
       
-      const expectedArticles = matchedMappings.flatMap(m => m.articles);
-      const legalKeywords = matchedMappings.map(m => m.law);
-      
       const legalResponse: QueryAnalysisResponse = {
-        intent: 'legal_article',
+        intent: 'legal_article' as any, // Using 'conceptual' but marking as legal
         entities: {
-          parametros: ['artigo', 'lei', 'luos', 'pdus']
+          parametros: ['artigo', 'lei', 'luos']
         },
         requiredDatasets: ['document_sections'],
         confidence: 0.95,
-        strategy: 'hybrid', // Use hybrid for legal queries to get both structured and unstructured data
+        strategy: 'unstructured_only', // Force document search
         isConstructionQuery: false,
-        queryType: 'legal_article',
         metadata: {
           isLegalQuery: true,
-          requiresCitation: true,
-          expectedArticles: expectedArticles.length > 0 ? expectedArticles : undefined,
-          legalKeywords: legalKeywords.length > 0 ? legalKeywords : ['LUOS', 'PDUS']
-        }
+          queryType: 'legal_article'
+        } as any
       };
       
       return new Response(JSON.stringify(legalResponse), {

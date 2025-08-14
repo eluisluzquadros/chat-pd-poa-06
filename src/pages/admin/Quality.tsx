@@ -20,7 +20,6 @@ import { CrossValidationPanel } from '@/components/admin/CrossValidationPanel';
 import { CrossValidationPanelV2 } from '@/components/admin/CrossValidationPanelV2';
 import { TableCoverageMonitor } from '@/components/admin/TableCoverageMonitor';
 import { QANeighborhoodSweep } from '@/components/admin/QANeighborhoodSweep';
-import { SystemVersionIndicator } from '@/components/admin/SystemVersionIndicator';
 
 export default function Quality() {
   const [metrics, setMetrics] = useState({
@@ -91,7 +90,6 @@ export default function Quality() {
           <p className="text-muted-foreground">Monitore e execute validações de qualidade do sistema</p>
         </div>
         <div className="flex gap-3">
-          <SystemVersionIndicator />
           <Button variant="outline" onClick={fetchMetrics} size="sm">
             <RefreshCw className="h-4 w-4 mr-2" />
             Atualizar

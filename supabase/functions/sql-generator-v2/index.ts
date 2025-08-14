@@ -271,14 +271,8 @@ Responda com JSON válido seguindo esta estrutura:
         const bairroMatch = query.match(/(?:bairro|de|do|da)\s+([A-Za-zÀ-ÿ\s]+?)(?:\?|$)/i);
         if (bairroMatch) {
           const bairroName = bairroMatch[1].trim();
-          // Use exact match for ambiguous bairros
-          const useExact = shouldUseExactMatch(bairroName);
-          const whereClause = useExact 
-            ? `WHERE UPPER(TRIM(bairro)) = UPPER(TRIM('${bairroName}'))`
-            : `WHERE translate(UPPER(bairro), 'ÁÀÃÂÄÉÈÊËÍÌÎÏÓÒÕÔÖÚÙÛÜÇÑ', 'AAAAAEEEEIIIIOOOOOUUUUCN') ILIKE '%' || translate(UPPER('${bairroName}'), 'ÁÀÃÂÄÉÈÊËÍÌÎÏÓÒÕÔÖÚÙÛÜÇÑ', 'AAAAAEEEEIIIIOOOOOUUUUCN') || '%'`;
-          
           fallbackQueries.push({
-            query: `SELECT bairro, zona, altura_maxima AS "Altura Máxima - Edificação Isolada", coef_aproveitamento_basico AS "Coeficiente de Aproveitamento - Básico", coef_aproveitamento_maximo AS "Coeficiente de Aproveitamento - Máximo", taxa_permeabilidade_acima_1500, recuo_jardim FROM regime_urbanistico ${whereClause} ORDER BY zona`,
+            query: `SELECT bairro, zona, altura_maxima AS "Altura Máxima - Edificação Isolada", coef_aproveitamento_basico AS "Coeficiente de Aproveitamento - Básico", coef_aproveitamento_maximo AS "Coeficiente de Aproveitamento - Máximo", taxa_permeabilidade_acima_1500, recuo_jardim FROM regime_urbanistico WHERE translate(UPPER(bairro), 'ÁÀÃÂÄÉÈÊËÍÌÎÏÓÒÕÔÖÚÙÛÜÇÑ', 'AAAAAEEEEIIIIOOOOOUUUUCN') ILIKE '%' || translate(UPPER('${bairroName}'), 'ÁÀÃÂÄÉÈÊËÍÌÎÏÓÒÕÔÖÚÙÛÜÇÑ', 'AAAAAEEEEIIIIOOOOOUUUUCN') || '%' ORDER BY zona`,
             table: 'regime_urbanistico',
             purpose: `Buscar parâmetros urbanísticos do bairro ${bairroName}`
           });
@@ -301,65 +295,18 @@ Responda com JSON válido seguindo esta estrutura:
       };
     }
 
-    // Helper function to determine if we need exact or fuzzy matching
-    const shouldUseExactMatch = (bairroName: string): boolean => {
-      // Lista de bairros que podem causar confusão e precisam de matching exato
-      const ambiguousBairros = [
-        'BOA VISTA',  // Não confundir com BOA VISTA DO SUL
-        'VILA NOVA',  // Não confundir com VILA NOVA DO SUL
-        'CENTRO',     // Não confundir com CENTRO HISTÓRICO
-      ];
-      
-      const normalizedName = bairroName.toUpperCase().trim();
-      return ambiguousBairros.some(b => normalizedName.includes(b));
-    };
-
-    // Helper: sanitize bairro comparisons with EXACT matching for ambiguous names
+    // Helper: sanitize bairro comparisons to be accent-insensitive
     const sanitizeQuery = (q: string) => {
       const transGlobal = `translate(UPPER(bairro), 'ÁÀÃÂÄÉÈÊËÍÌÎÏÓÒÕÔÖÚÙÛÜÇÑ', 'AAAAAEEEEIIIIOOOOOUUUUCN')`;
       const transParam = (v: string) => `translate(UPPER(${v}), 'ÁÀÃÂÄÉÈÊËÍÌÎÏÓÒÕÔÖÚÙÛÜÇÑ', 'AAAAAEEEEIIIIOOOOOUUUUCN')`;
 
-      // Check if query contains bairro name that needs exact matching
-      const bairroMatch = q.match(/WHERE.*bairro.*'([^']+)'/i);
-      if (bairroMatch) {
-        const bairroName = bairroMatch[1];
-        
-        // For ambiguous bairros, use EXACT matching (=) instead of ILIKE
-        if (shouldUseExactMatch(bairroName)) {
-          console.log(`🎯 Using EXACT match for ambiguous bairro: ${bairroName}`);
-          
-          // Replace ILIKE patterns with exact match
-          q = q.replace(
-            /translate\(UPPER\(bairro\)[^)]*\)\s+ILIKE\s+'%'\s*\|\|\s*translate\(UPPER\('([^']+)'\)[^)]*\)\s*\|\|\s*'%'/gi,
-            (_m, name) => {
-              return `UPPER(TRIM(bairro)) = UPPER(TRIM('${name}'))`;
-            }
-          );
-          
-          // Also replace simpler patterns
-          q = q.replace(/bairro\s+ILIKE\s+'%([^%]+)%'/gi, (_m, name) => {
-            if (shouldUseExactMatch(name)) {
-              return `UPPER(TRIM(bairro)) = UPPER(TRIM('${name}'))`;
-            }
-            return _m; // Keep original if not ambiguous
-          });
-        }
-      }
-
-      // For non-ambiguous cases, keep the fuzzy matching but improve it
       // UPPER(bairro) = UPPER('...')
       q = q.replace(/UPPER\(\s*bairro\s*\)\s*=\s*UPPER\(\s*'([^']+)'\s*\)/gi, (_m, name) => {
-        if (shouldUseExactMatch(name)) {
-          return `UPPER(TRIM(bairro)) = UPPER(TRIM('${name}'))`;
-        }
         return `${transGlobal} ILIKE '%' || ${transParam(`'${name}'`)} || '%'`;
       });
 
       // UPPER(x.bairro) = UPPER('...') with alias capture
       q = q.replace(/UPPER\(\s*([a-z])\.bairro\s*\)\s*=\s*UPPER\(\s*'([^']+)'\s*\)/gi, (_m, alias, name) => {
-        if (shouldUseExactMatch(name)) {
-          return `UPPER(TRIM(${alias}.bairro)) = UPPER(TRIM('${name}'))`;
-        }
         const transAlias = `translate(UPPER(${alias}.bairro), 'ÁÀÃÂÄÉÈÊËÍÌÎÏÓÒÕÔÖÚÙÛÜÇÑ', 'AAAAAEEEEIIIIOOOOOUUUUCN')`;
         return `${transAlias} ILIKE '%' || ${transParam(`'${name}'`)} || '%'`;
       });

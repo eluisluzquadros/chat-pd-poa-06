@@ -13,7 +13,6 @@ import { BenchmarkResultsDialog } from './BenchmarkResultsDialog';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { SystemVersionIndicator } from './SystemVersionIndicator';
 
 export function BenchmarkDashboard() {
   const { 
@@ -114,7 +113,6 @@ export function BenchmarkDashboard() {
           <p className="text-muted-foreground">Monitore o desempenho comparativo dos modelos de IA</p>
         </div>
         <div className="flex gap-3">
-          <SystemVersionIndicator />
           <Button variant="outline" onClick={refetch} size="sm" disabled={isLoading || isBenchmarkRunning}>
             <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
             Atualizar

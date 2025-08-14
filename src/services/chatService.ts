@@ -2,7 +2,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import { getCurrentAuthenticatedSession } from "@/utils/authUtils";
 import { useTokenTracking } from "@/hooks/useTokenTracking";
-import { unifiedRAGService } from "@/lib/unifiedRAGService";
 
 export class ChatService {
   async processMessage(
@@ -32,15 +31,42 @@ export class ChatService {
 
       console.log('🚀 Starting Agentic RAG processing for message:', message);
 
-      // Use the unified RAG service for consistency
-      const ragResult = await unifiedRAGService.callRAG({
-        message,
-        model: model || 'gpt-3.5-turbo',
-        sessionId: sessionId || `session_${Date.now()}`,
-        userId: session.user.id,
-        userRole: userRole || 'citizen',
-        bypassCache: false
+      // Check if v2 is enabled (can be controlled via environment or user preference)
+      const useAgenticRAGv2 = localStorage.getItem('useAgenticRAGv2') !== 'false'; // Default to true
+      const endpoint = useAgenticRAGv2 ? 'agentic-rag-v2' : 'agentic-rag';
+      
+      console.log(`🎯 Using ${useAgenticRAGv2 ? 'Agentic-RAG v2.0 (orchestrator-master)' : 'Legacy Agentic-RAG'}`);
+      
+      const { data: ragResult, error } = await supabase.functions.invoke(endpoint, {
+        body: useAgenticRAGv2 ? {
+          // Agentic-RAG v2 format
+          query: message,
+          sessionId: sessionId || `session_${Date.now()}`,
+          conversationHistory: [], // TODO: Add conversation history
+          bypassCache: false,
+          model: model || 'gpt-3.5-turbo',
+          options: {
+            useAgenticRAG: true,
+            useKnowledgeGraph: true,
+            useHierarchicalChunks: true,
+            userRole: userRole || 'citizen',
+            userId: session.user.id
+          }
+        } : {
+          // Legacy format
+          message,
+          userRole: userRole || 'citizen',
+          sessionId,
+          userId: session.user.id || undefined,
+          bypassCache: false,
+          model: model || 'anthropic/claude-3-5-sonnet-20241022'
+        }
       });
+
+      if (error) {
+        console.error('Agentic RAG error:', error);
+        throw new Error(`Agentic RAG processing failed: ${error.message}`);
+      }
 
       console.log('✅ Agentic RAG completed successfully');
       
