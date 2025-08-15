@@ -190,7 +190,7 @@ function formatSpecificFieldsResponse(regimeData: any[], parsedIntent: any, orig
       const testadaMinima = record.testada_minima_lote || 'Não definida';
       
       response += `📍 **${record.zona || 'Zona'}:** `;
-      response += `${areaMinima !== 'Não definida' ? areaMinima + ' m²' : areaMinima'}`;
+      response += `${areaMinima !== 'Não definida' ? areaMinima + ' m²' : areaMinima}`;
       
       if (testadaMinima !== 'Não definida') {
         response += ` (testada mínima: ${testadaMinima} m)`;
