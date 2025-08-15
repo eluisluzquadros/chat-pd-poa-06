@@ -248,12 +248,11 @@ function formatSpecificFieldsResponse(regimeData: any[], parsedIntent: any, orig
 
 // 📋 COMPREHENSIVE RESPONSE - Resposta completa padrão
 function formatComprehensiveResponse(regimeData: any[], originalQuery: string): string {
-  let response = `Para este bairro, os dados oficiais completos são:\n\n`;
+  let response = `Para este bairro, os dados oficiais são:\n\n`;
 
-  // Tabela resumida principal
-  response += `**Resumo por Zona:**\n`;
-  response += `| Zona | Altura Máx | CA Básico | CA Máximo | Área Mín. Lote |\n`;
-  response += `|------|------------|-----------|-----------|----------------|\n`;
+  // Tabela principal otimizada
+  response += `| Zona | Altura Máx | CA Básico | CA Máximo | Área Mín. Lote | Testada Mín. |\n`;
+  response += `|------|------------|-----------|-----------|----------------|---------------|\n`;
   
   for (const record of regimeData) {
     const zona = record.zona || 'N/A';
@@ -261,21 +260,31 @@ function formatComprehensiveResponse(regimeData: any[], originalQuery: string): 
     const caBasico = record.coef_aproveitamento_basico !== null ? String(record.coef_aproveitamento_basico) : 'N/A';
     const caMaximo = record.coef_aproveitamento_maximo !== null ? String(record.coef_aproveitamento_maximo) : 'N/A';
     const areaMinima = record.area_minima_lote ? `${record.area_minima_lote}m²` : 'N/A';
+    const testadaMinima = record.testada_minima_lote ? `${record.testada_minima_lote}m` : 'N/A';
     
-    response += `| ${zona} | ${altura} | ${caBasico} | ${caMaximo} | ${areaMinima} |\n`;
+    response += `| ${zona} | ${altura} | ${caBasico} | ${caMaximo} | ${areaMinima} | ${testadaMinima} |\n`;
     
-    console.log(`📝 ROW: ${zona} | ${altura} | ${caBasico} | ${caMaximo} | ${areaMinima}`);
+    console.log(`📝 ROW: ${zona} | ${altura} | ${caBasico} | ${caMaximo} | ${areaMinima} | ${testadaMinima}`);
   }
 
-  // Detalhamento completo
-  response += `\n**Detalhamento Completo:**\n`;
-  for (const record of regimeData) {
-    response += `\n🏗️ **${record.zona || 'Zona'}:**\n`;
-    response += `• Altura máxima: ${record.altura_maxima ? record.altura_maxima + ' metros' : 'Não definida'}\n`;
-    response += `• CA básico: ${record.coef_aproveitamento_basico !== null ? record.coef_aproveitamento_basico : 'Não definido'}\n`;
-    response += `• CA máximo: ${record.coef_aproveitamento_maximo !== null ? record.coef_aproveitamento_maximo : 'Não definido'}\n`;
-    response += `• Área mínima do lote: ${record.area_minima_lote ? record.area_minima_lote + ' m²' : 'Não definida'}\n`;
-    response += `• Testada mínima: ${record.testada_minima_lote ? record.testada_minima_lote + ' m' : 'Não definida'}\n`;
+  // Glossário de siglas
+  response += `\n📖 **Significado das Siglas:**\n`;
+  response += `• **CA** = Coeficiente de Aproveitamento (indica quantas vezes a área do terreno pode ser construída)\n`;
+  response += `• **ZOT** = Zona de Ocupação Transitória (áreas em processo de adensamento urbano)\n`;
+  
+  // Detectar outras siglas nas zonas
+  const hasZOU = regimeData.some(record => record.zona?.includes('ZOU'));
+  const hasZCP = regimeData.some(record => record.zona?.includes('ZCP'));
+  const hasZEIS = regimeData.some(record => record.zona?.includes('ZEIS'));
+  
+  if (hasZOU) {
+    response += `• **ZOU** = Zona de Ocupação Urbana (área consolidada da cidade)\n`;
+  }
+  if (hasZCP) {
+    response += `• **ZCP** = Zona do Centro Principal (área central histórica)\n`;
+  }
+  if (hasZEIS) {
+    response += `• **ZEIS** = Zona Especial de Interesse Social (habitação popular)\n`;
   }
 
   response += `\n${FOOTER_TEMPLATE}`;
