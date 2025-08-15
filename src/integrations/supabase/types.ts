@@ -7,7 +7,7 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instanciate createClient with right options
+  // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "12.2.12 (cd3cf9e)"
@@ -249,6 +249,51 @@ export type Database = {
         }
         Relationships: []
       }
+      chunk_cross_references: {
+        Row: {
+          confidence: number | null
+          created_at: string | null
+          id: string
+          reference_text: string | null
+          reference_type: string
+          source_chunk_id: string
+          target_chunk_id: string
+        }
+        Insert: {
+          confidence?: number | null
+          created_at?: string | null
+          id?: string
+          reference_text?: string | null
+          reference_type: string
+          source_chunk_id: string
+          target_chunk_id: string
+        }
+        Update: {
+          confidence?: number | null
+          created_at?: string | null
+          id?: string
+          reference_text?: string | null
+          reference_type?: string
+          source_chunk_id?: string
+          target_chunk_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chunk_cross_references_source_chunk_id_fkey"
+            columns: ["source_chunk_id"]
+            isOneToOne: false
+            referencedRelation: "legal_document_chunks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chunk_cross_references_target_chunk_id_fkey"
+            columns: ["target_chunk_id"]
+            isOneToOne: false
+            referencedRelation: "legal_document_chunks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       document_chunks: {
         Row: {
           chunk_index: number
@@ -376,6 +421,24 @@ export type Database = {
         }
         Relationships: []
       }
+      document_sections_backup: {
+        Row: {
+          content: string | null
+          id: string | null
+          metadata: Json | null
+        }
+        Insert: {
+          content?: string | null
+          id?: string | null
+          metadata?: Json | null
+        }
+        Update: {
+          content?: string | null
+          id?: string | null
+          metadata?: Json | null
+        }
+        Relationships: []
+      }
       documents: {
         Row: {
           content: string | null
@@ -448,6 +511,129 @@ export type Database = {
           newsletter_opt_in?: boolean
           status?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      knowledge_graph_edges: {
+        Row: {
+          created_at: string | null
+          id: string
+          properties: Json | null
+          relationship_type: string
+          source_id: string
+          target_id: string
+          weight: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          properties?: Json | null
+          relationship_type: string
+          source_id: string
+          target_id: string
+          weight?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          properties?: Json | null
+          relationship_type?: string
+          source_id?: string
+          target_id?: string
+          weight?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "knowledge_graph_edges_source_id_fkey"
+            columns: ["source_id"]
+            isOneToOne: false
+            referencedRelation: "knowledge_graph_nodes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "knowledge_graph_edges_target_id_fkey"
+            columns: ["target_id"]
+            isOneToOne: false
+            referencedRelation: "knowledge_graph_nodes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      knowledge_graph_nodes: {
+        Row: {
+          created_at: string | null
+          embedding: string | null
+          id: string
+          importance_score: number | null
+          label: string
+          node_type: string
+          properties: Json | null
+        }
+        Insert: {
+          created_at?: string | null
+          embedding?: string | null
+          id?: string
+          importance_score?: number | null
+          label: string
+          node_type: string
+          properties?: Json | null
+        }
+        Update: {
+          created_at?: string | null
+          embedding?: string | null
+          id?: string
+          importance_score?: number | null
+          label?: string
+          node_type?: string
+          properties?: Json | null
+        }
+        Relationships: []
+      }
+      legal_document_chunks: {
+        Row: {
+          content: string
+          created_at: string | null
+          document_id: string
+          embedding: string | null
+          full_path: string | null
+          id: string
+          level: number
+          level_type: string
+          metadata: Json | null
+          numero_artigo: number | null
+          parent_chunk_id: string | null
+          sequence_number: number
+          title: string
+        }
+        Insert: {
+          content: string
+          created_at?: string | null
+          document_id: string
+          embedding?: string | null
+          full_path?: string | null
+          id?: string
+          level: number
+          level_type: string
+          metadata?: Json | null
+          numero_artigo?: number | null
+          parent_chunk_id?: string | null
+          sequence_number: number
+          title: string
+        }
+        Update: {
+          content?: string
+          created_at?: string | null
+          document_id?: string
+          embedding?: string | null
+          full_path?: string | null
+          id?: string
+          level?: number
+          level_type?: string
+          metadata?: Json | null
+          numero_artigo?: number | null
+          parent_chunk_id?: string | null
+          sequence_number?: number
+          title?: string
         }
         Relationships: []
       }
@@ -827,7 +1013,6 @@ export type Database = {
           difficulty: string | null
           expected_answer: string | null
           expected_keywords: string[]
-          expected_response: string | null
           expected_sql: string | null
           id: number
           is_active: boolean | null
@@ -848,7 +1033,6 @@ export type Database = {
           difficulty?: string | null
           expected_answer?: string | null
           expected_keywords: string[]
-          expected_response?: string | null
           expected_sql?: string | null
           id?: number
           is_active?: boolean | null
@@ -869,7 +1053,6 @@ export type Database = {
           difficulty?: string | null
           expected_answer?: string | null
           expected_keywords?: string[]
-          expected_response?: string | null
           expected_sql?: string | null
           id?: number
           is_active?: boolean | null
@@ -1578,6 +1761,39 @@ export type Database = {
         }
         Relationships: []
       }
+      session_memory: {
+        Row: {
+          confidence: number | null
+          id: string
+          metadata: Json | null
+          query: string
+          response: string | null
+          session_id: string
+          timestamp: string | null
+          turn_number: number
+        }
+        Insert: {
+          confidence?: number | null
+          id?: string
+          metadata?: Json | null
+          query: string
+          response?: string | null
+          session_id: string
+          timestamp?: string | null
+          turn_number: number
+        }
+        Update: {
+          confidence?: number | null
+          id?: string
+          metadata?: Json | null
+          query?: string
+          response?: string | null
+          session_id?: string
+          timestamp?: string | null
+          turn_number?: number
+        }
+        Relationships: []
+      }
       sessions: {
         Row: {
           created_at: string | null
@@ -1861,6 +2077,33 @@ export type Database = {
         }
         Relationships: []
       }
+      validation_cache: {
+        Row: {
+          confidence: number | null
+          created_at: string | null
+          expires_at: string | null
+          id: string
+          query_hash: string
+          validation_result: Json
+        }
+        Insert: {
+          confidence?: number | null
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          query_hash: string
+          validation_result: Json
+        }
+        Update: {
+          confidence?: number | null
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          query_hash?: string
+          validation_result?: Json
+        }
+        Relationships: []
+      }
       zots_bairros: {
         Row: {
           bairro: string
@@ -2067,8 +2310,8 @@ export type Database = {
       }
       check_auth_rate_limit: {
         Args: {
-          user_ip: unknown
           max_attempts?: number
+          user_ip: unknown
           window_minutes?: number
         }
         Returns: boolean
@@ -2076,15 +2319,19 @@ export type Database = {
       check_quality_thresholds: {
         Args: Record<PropertyKey, never>
         Returns: {
-          metric_name: string
           current_value: number
-          threshold_value: number
+          metric_name: string
           status: string
+          threshold_value: number
         }[]
       }
       clean_expired_cache: {
         Args: Record<PropertyKey, never>
         Returns: number
+      }
+      convert_string_to_vector: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
       }
       execute_sql_query: {
         Args: { query_text: string }
@@ -2175,10 +2422,10 @@ export type Database = {
         }[]
       }
       get_best_model_for_query: {
-        Args: { query_type: string; priority?: string }
+        Args: { priority?: string; query_type: string }
         Returns: {
-          provider: string
           model: string
+          provider: string
           score: number
         }[]
       }
@@ -2194,19 +2441,19 @@ export type Database = {
         Args: { nome_bairro: string }
         Returns: {
           bairro: string
-          riscos_ativos: string[]
-          nivel_risco: number
           descricao_riscos: string
+          nivel_risco: number
+          riscos_ativos: string[]
         }[]
       }
       get_session_feedback_summary: {
         Args: { p_session_id: string }
         Returns: {
-          total_messages: number
           messages_with_feedback: number
-          positive_feedback: number
           negative_feedback: number
+          positive_feedback: number
           satisfaction_rate: number
+          total_messages: number
         }[]
       }
       gtrgm_compress: {
@@ -2263,17 +2510,17 @@ export type Database = {
       }
       hybrid_search: {
         Args: {
-          query_text: string
-          query_embedding: string
-          match_threshold?: number
           match_count?: number
+          match_threshold?: number
+          query_embedding: string
+          query_text: string
         }
         Returns: {
-          id: string
           content: string
+          id: string
           metadata: Json
-          similarity: number
           rank: number
+          similarity: number
         }[]
       }
       is_admin: {
@@ -2307,84 +2554,97 @@ export type Database = {
       log_user_action: {
         Args: {
           action_name: string
-          table_name?: string
-          record_id?: string
-          old_values?: Json
           new_values?: Json
+          old_values?: Json
+          record_id?: string
+          table_name?: string
         }
         Returns: undefined
       }
+      match_document_sections: {
+        Args: {
+          match_count?: number
+          match_threshold?: number
+          query_embedding: string
+        }
+        Returns: {
+          content: string
+          id: string
+          metadata: Json
+          similarity: number
+        }[]
+      }
       match_documents: {
         Args:
-          | { query_embedding: string; match_count: number }
-          | { query_embedding: string; match_count?: number; filter?: Json }
+          | { filter?: Json; match_count?: number; query_embedding: string }
+          | { match_count: number; query_embedding: string }
           | {
-              query_embedding: string
-              match_threshold?: number
               match_count?: number
+              match_threshold?: number
+              query_embedding: string
             }
         Returns: {
-          content_chunk: string
-          similarity: number
-          document_id: number
           chunk_metadata: Json
+          content_chunk: string
+          document_id: number
+          similarity: number
         }[]
       }
       match_embeddings: {
         Args: {
-          query_embedding: string
-          match_threshold?: number
           match_count?: number
+          match_threshold?: number
+          query_embedding: string
         }
         Returns: {
-          id: number
-          document_id: number
           content: string
+          document_id: number
+          id: number
           similarity: number
         }[]
       }
       match_hierarchical_documents: {
         Args: {
-          query_embedding: string
           match_count: number
+          query_embedding: string
           query_text?: string
         }
         Returns: {
-          content_chunk: string
-          similarity: number
-          chunk_metadata: Json
           boosted_score: number
+          chunk_metadata: Json
+          content_chunk: string
           document_id: number
+          similarity: number
         }[]
       }
       search_content_by_similarity: {
-        Args: { search_query: string; match_count?: number }
+        Args: { match_count?: number; search_query: string }
         Returns: {
           content: string
-          similarity: number
           document_id: number
+          similarity: number
         }[]
       }
       search_regime_urbanistico: {
         Args: { search_bairro?: string; search_zona?: string }
         Returns: {
-          id: number
-          bairro: string
-          zona: string
           altura_maxima: number
+          area_minima_lote: number
+          bairro: string
           coef_aproveitamento_basico: number
           coef_aproveitamento_maximo: number
-          area_minima_lote: number
+          id: number
           testada_minima_lote: number
+          zona: string
         }[]
       }
       search_zots_by_bairro: {
         Args: { search_bairro: string }
         Returns: {
           bairro: string
-          zona: string
-          total_zonas_no_bairro: number
           tem_zona_especial: string
+          total_zonas_no_bairro: number
+          zona: string
         }[]
       }
       set_limit: {
@@ -2413,6 +2673,10 @@ export type Database = {
       }
       update_chunk_metadata: {
         Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
+      update_document_embedding: {
+        Args: { doc_id: string; new_embedding: number[] }
         Returns: undefined
       }
       vector_avg: {
