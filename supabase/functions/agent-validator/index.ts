@@ -72,14 +72,18 @@ serve(async (req) => {
       dataAvailability
     );
 
-    // 7. Verificar se deve retornar resposta Beta
+    // 7. Verificar contra casos de teste conhecidos
+    const testCaseValidation = await validateAgainstTestCases(supabaseClient, query, agentResponses);
+    
+    // 8. Verificar se deve retornar resposta Beta (critérios mais rigorosos)
     const shouldReturnBeta = (
-      finalAssessment.confidence < 0.3 ||
+      finalAssessment.confidence < 0.4 ||
       !dataAvailability.available ||
-      agentValidation.every(v => !v.isValid)
+      agentValidation.every(v => !v.isValid) ||
+      testCaseValidation.shouldUseBeta
     );
 
-    // 8. Resposta final
+    // 9. Resposta final
     const validatorResponse = shouldReturnBeta ? 
       BETA_RESPONSE : 
       `Validação concluída com ${(finalAssessment.confidence * 100).toFixed(1)}% de confiança.`;
@@ -100,6 +104,7 @@ serve(async (req) => {
         agentValidation,
         crossValidation,
         contradictions,
+        testCaseValidation,
         recommendedActions: finalAssessment.recommendations
       }
     }), {
@@ -388,4 +393,63 @@ function generateFinalAssessment(
   assessment.summary += `status: ${assessment.status}`;
 
   return assessment;
+}
+
+/**
+ * Valida contra casos de teste conhecidos
+ */
+async function validateAgainstTestCases(supabaseClient: any, query: string, agentResponses: any[]) {
+  try {
+    console.log('🧪 Validando contra casos de teste...');
+    
+    // Buscar casos de teste similares
+    const { data: testCases, error } = await supabaseClient
+      .from('qa_test_cases')
+      .select('*')
+      .ilike('query', `%${query.substring(0, 30)}%`)
+      .limit(3);
+
+    if (error) {
+      console.error('❌ Erro ao buscar casos de teste:', error);
+      return { shouldUseBeta: false, matchedCases: [] };
+    }
+
+    const validation = {
+      shouldUseBeta: false,
+      matchedCases: testCases || [],
+      confidence: 1.0
+    };
+
+    // Se temos casos de teste mas nenhum agente tem dados válidos
+    if (testCases?.length > 0) {
+      const hasValidAgentData = agentResponses.some(r => 
+        r.data && Object.keys(r.data).length > 0 && r.confidence > 0.3
+      );
+      
+      if (!hasValidAgentData) {
+        console.log('⚠️ Casos de teste existem mas agentes falharam - usando BETA');
+        validation.shouldUseBeta = true;
+        validation.confidence = 0.1;
+      }
+    }
+
+    // Verificar se query é sobre resumo do plano diretor
+    const queryLower = query.toLowerCase();
+    if (queryLower.includes('resuma') || queryLower.includes('resumo')) {
+      const hasValidSummaryData = agentResponses.some(r => 
+        r.response && r.response.length > 100 && r.confidence > 0.5
+      );
+      
+      if (!hasValidSummaryData) {
+        console.log('⚠️ Pergunta de resumo sem dados adequados - usando BETA');
+        validation.shouldUseBeta = true;
+      }
+    }
+
+    return validation;
+
+  } catch (error) {
+    console.error('❌ Erro na validação de casos de teste:', error);
+    return { shouldUseBeta: false, matchedCases: [] };
+  }
 }

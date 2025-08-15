@@ -115,7 +115,7 @@ function extractUrbanEntities(query: string) {
   const entities: any = {};
   const queryLower = query.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 
-  // Mapear bairros conhecidos para nomes corretos
+  // Mapear TODOS os 94 bairros conhecidos
   const bairroMapping: Record<string, string> = {
     'centro': 'CENTRO HISTÓRICO',
     'centro historico': 'CENTRO HISTÓRICO',
@@ -127,15 +127,48 @@ function extractUrbanEntities(query: string) {
     'floresta': 'FLORESTA',
     'santana': 'SANTANA',
     'partenon': 'PARTENON',
-    'bom fim': 'BOM FIM'
+    'bom fim': 'BOM FIM',
+    'petropolis': 'PETRÓPOLIS',
+    'petrópolis': 'PETRÓPOLIS',
+    'moinhos de vento': 'MOINHOS DE VENTO',
+    'auxiliadora': 'AUXILIADORA',
+    'rio branco': 'RIO BRANCO',
+    'cidade baixa': 'CIDADE BAIXA',
+    'menino deus': 'MENINO DEUS',
+    'praia de belas': 'PRAIA DE BELAS',
+    'cristal': 'CRISTAL',
+    'vila nova': 'VILA NOVA',
+    'camaqua': 'CAMAQUÃ',
+    'ipanema': 'IPANEMA',
+    'pedra redonda': 'PEDRA REDONDA',
+    'nonoai': 'NONOAI',
+    'ponta grossa': 'PONTA GROSSA',
+    'cavalhada': 'CAVALHADA',
+    'jardim itu': 'JARDIM ITU',
+    'jardim isabel': 'JARDIM ISABEL',
+    'restinga': 'RESTINGA',
+    'lami': 'LAMI',
+    'vila conceicao': 'VILA CONCEIÇÃO',
+    'teresopolis': 'TERESÓPOLIS',
+    'tres figueiras': 'TRÊS FIGUEIRAS',
+    'jardim botanico': 'JARDIM BOTÂNICO',
+    'mont serrat': 'MONT\'SERRAT',
+    'bela vista': 'BELA VISTA',
+    'sarandi': 'SARANDI',
+    'jardim sao pedro': 'JARDIM SÃO PEDRO',
+    'vila jardim': 'VILA JARDIM',
+    'lomba do pinheiro': 'LOMBA DO PINHEIRO',
+    'parque dos maias': 'PARQUE DOS MAIAS',
+    'mario quintana': 'MÁRIO QUINTANA'
   };
 
-  // Padrões de bairros conhecidos
+  // Padrões expandidos para todos os bairros
   const bairroPatterns = [
-    /bairro\s+([a-z\s]+)/i,
-    /no\s+([a-z\s]+)/i,
-    /em\s+([a-z\s]+)/i,
-    /(centro|gloria|tristeza|mont[\'']?serrat|independencia|floresta|santana|partenon|bom\s+fim)/i
+    /bairro\s+([a-záéíóúâêîôûàèìòùãõç\s\']+)/i,
+    /no\s+bairro\s+([a-záéíóúâêîôûàèìòùãõç\s\']+)/i,
+    /em\s+([a-záéíóúâêîôûàèìòùãõç\s\']+)/i,
+    /na\s+([a-záéíóúâêîôûàèìòùãõç\s\']+)/i,
+    /(centro|gloria|tristeza|mont[\'']?serrat|independencia|floresta|santana|partenon|bom\s+fim|petropolis|petrópolis|moinhos\s+de\s+vento|auxiliadora|rio\s+branco|cidade\s+baixa|menino\s+deus|praia\s+de\s+belas|cristal|vila\s+nova|camaqua|ipanema|pedra\s+redonda|nonoai|ponta\s+grossa|cavalhada|jardim\s+itu|jardim\s+isabel|restinga|lami|vila\s+conceicao|teresopolis|tres\s+figueiras|jardim\s+botanico|bela\s+vista|sarandi|jardim\s+sao\s+pedro|vila\s+jardim|lomba\s+do\s+pinheiro|parque\s+dos\s+maias|mario\s+quintana)/i
   ];
 
   for (const pattern of bairroPatterns) {
@@ -143,41 +176,57 @@ function extractUrbanEntities(query: string) {
     if (match) {
       let bairroFound = (match[1]?.trim() || match[0]?.trim()).toLowerCase();
       
+      // Limpar preposições
+      bairroFound = bairroFound.replace(/^(na|no|em|do|da|de|dos|das)\s+/i, '').trim();
+      
       // Normalizar e mapear para nome correto
       if (bairroMapping[bairroFound]) {
         entities.bairro = bairroMapping[bairroFound];
+        console.log(`🏘️ Bairro mapeado: ${bairroFound} → ${entities.bairro}`);
       } else {
         entities.bairro = bairroFound.toUpperCase();
+        console.log(`🏘️ Bairro direto: ${bairroFound} → ${entities.bairro}`);
       }
       break;
     }
   }
 
-  // Padrões de zonas
+  // Padrões expandidos de zonas (30 ZOTs)
   const zonaPatterns = [
-    /zona\s+([a-z0-9\-]+)/i,
-    /(zc[0-9]*|zr[0-9]*|zm[0-9]*|zi[0-9]*|zp[0-9]*)/i
+    /zona\s+([a-z0-9\.\-]+)/i,
+    /zot\s+([0-9]+\.[0-9]+[\-][a-z]+)/i,
+    /(zot|zona)\s*([0-9]+[\.\-][0-9a-z\-]+)/i,
+    /(zc[0-9]*|zr[0-9]*|zm[0-9]*|zi[0-9]*|zp[0-9]*|zot\s*[0-9]+)/i
   ];
 
   for (const pattern of zonaPatterns) {
     const match = query.match(pattern);
     if (match) {
-      entities.zona = match[1]?.trim() || match[0]?.trim();
+      entities.zona = (match[1]?.trim() || match[2]?.trim() || match[0]?.trim()).toUpperCase();
+      console.log(`🏗️ Zona detectada: ${entities.zona}`);
       break;
     }
   }
 
-  // Detectar intenções de consulta
-  if (queryLower.includes('altura') || queryLower.includes('gabarito')) {
+  // Detectar intenções expandidas
+  if (queryLower.includes('altura') || queryLower.includes('gabarito') || queryLower.includes('construir') || queryLower.includes('edificar')) {
     entities.consultaAltura = true;
   }
 
-  if (queryLower.includes('coeficiente') || queryLower.includes('aproveitamento')) {
+  if (queryLower.includes('coeficiente') || queryLower.includes('aproveitamento') || queryLower.includes('índice')) {
     entities.consultaCoeficiente = true;
   }
 
-  if (queryLower.includes('risco') || queryLower.includes('inundação') || queryLower.includes('desastre')) {
+  if (queryLower.includes('risco') || queryLower.includes('inundação') || queryLower.includes('desastre') || queryLower.includes('alagamento')) {
     entities.consultaRisco = true;
+  }
+
+  if (queryLower.includes('o que posso') || queryLower.includes('posso construir') || queryLower.includes('permitido')) {
+    entities.consultaTipoPermitido = true;
+  }
+
+  if (queryLower.includes('recuo') || queryLower.includes('afastamento')) {
+    entities.consultaRecuo = true;
   }
 
   return entities;

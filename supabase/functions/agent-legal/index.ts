@@ -57,15 +57,25 @@ serve(async (req) => {
       confidence += 0.2;
     }
 
-    // 3. Busca textual como fallback
+  // 3. Busca em knowledge base se não achou dados específicos
+  if (!results.articles?.length && !results.semantic?.length) {
+    const knowledgeData = await searchKnowledgeBase(supabaseClient, query, entities);
+    results.knowledge = knowledgeData;
+    confidence += (knowledgeData.length > 0 ? 0.3 : 0);
+  }
+
+  // 4. Busca textual como fallback final
+  if (!results.articles?.length && !results.semantic?.length && !results.knowledge?.length) {
     const textualData = await searchTextualDocuments(supabaseClient, query, entities);
     results.textual = textualData;
     confidence += (textualData.length > 0 ? 0.1 : 0);
+  }
 
-    // 4. Verificar se encontrou dados válidos
-    const hasValidData = (results.articles?.length > 0) || 
-                        (results.semantic?.length > 0) || 
-                        (results.textual?.length > 0);
+  // 5. Verificar se encontrou dados válidos
+  const hasValidData = (results.articles?.length > 0) || 
+                      (results.semantic?.length > 0) || 
+                      (results.knowledge?.length > 0) ||
+                      (results.textual?.length > 0);
     
     // 5. Gerar resposta ou retornar Beta
     const response = hasValidData ? 
@@ -148,8 +158,13 @@ function extractLegalEntities(query: string) {
     entities.documentType = 'decreto';
   }
 
-  // Temas específicos
-  if (queryLower.includes('zoneamento') || queryLower.includes('zona')) {
+  // Documentos específicos
+  if (queryLower.includes('luos') || queryLower.includes('uso do solo')) {
+    entities.documentType = 'luos';
+  }
+
+  // Temas específicos expandidos
+  if (queryLower.includes('zoneamento') || queryLower.includes('zona') || queryLower.includes('zot')) {
     entities.tema = 'zoneamento';
   }
 
@@ -157,8 +172,24 @@ function extractLegalEntities(query: string) {
     entities.tema = 'patrimonio';
   }
 
-  if (queryLower.includes('ambiental') || queryLower.includes('sustentabilidade')) {
+  if (queryLower.includes('ambiental') || queryLower.includes('sustentabilidade') || queryLower.includes('certificação')) {
     entities.tema = 'ambiental';
+  }
+
+  if (queryLower.includes('4º distrito') || queryLower.includes('quarto distrito')) {
+    entities.tema = '4distrito';
+  }
+
+  if (queryLower.includes('eiv') || queryLower.includes('impacto de vizinhança')) {
+    entities.tema = 'eiv';
+  }
+
+  if (queryLower.includes('outorga onerosa') || queryLower.includes('outorga')) {
+    entities.tema = 'outorga';
+  }
+
+  if (queryLower.includes('resuma') || queryLower.includes('resumo') || queryLower.includes('resumir')) {
+    entities.intentType = 'summary';
   }
 
   return entities;
@@ -220,21 +251,103 @@ async function searchSemanticDocuments(supabaseClient: any, embedding: number[],
 }
 
 /**
- * Busca textual como fallback
+ * Busca na knowledge base completa
  */
-async function searchTextualDocuments(supabaseClient: any, query: string, entities: any) {
+async function searchKnowledgeBase(supabaseClient: any, query: string, entities: any) {
   try {
+    console.log('🧠 Buscando na knowledge base...');
+    
+    // Primeira tentativa: document_embeddings com ILIKE
     let dbQuery = supabaseClient
       .from('document_embeddings')
       .select('*');
 
-    // Busca por conteúdo
-    dbQuery = dbQuery.textSearch('content_chunk', query, { type: 'websearch' });
+    // Buscar por temas específicos primeiro
+    if (entities.tema === 'ambiental') {
+      dbQuery = dbQuery.or('content_chunk.ilike.%sustentabilidade%,content_chunk.ilike.%certificação%,content_chunk.ilike.%ambiental%');
+    } else if (entities.tema === '4distrito') {
+      dbQuery = dbQuery.ilike('content_chunk', '%4º distrito%');
+    } else if (entities.tema === 'eiv') {
+      dbQuery = dbQuery.ilike('content_chunk', '%impacto de vizinhança%');
+    } else if (entities.intentType === 'summary') {
+      dbQuery = dbQuery.or('content_chunk.ilike.%plano diretor%,content_chunk.ilike.%pddua%');
+    } else {
+      // Busca geral sanitizada
+      const sanitizedQuery = query.replace(/[^a-zA-Z0-9\sçãõáéíóúâêîôûàèìòù]/g, '');
+      dbQuery = dbQuery.ilike('content_chunk', `%${sanitizedQuery}%`);
+    }
 
-    const { data, error } = await dbQuery.limit(6);
+    const { data, error } = await dbQuery.limit(8);
 
     if (error) {
-      console.error('Erro na busca textual:', error);
+      console.error('❌ Erro na busca knowledge base:', error);
+      // Fallback para legal_document_chunks
+      return await searchLegalChunks(supabaseClient, entities);
+    }
+
+    console.log(`🧠 Knowledge base encontrou: ${data?.length || 0} chunks`);
+    return data || [];
+
+  } catch (error) {
+    console.error('❌ Erro na busca knowledge base:', error);
+    return await searchLegalChunks(supabaseClient, entities);
+  }
+}
+
+/**
+ * Fallback para legal_document_chunks
+ */
+async function searchLegalChunks(supabaseClient: any, entities: any) {
+  try {
+    let dbQuery = supabaseClient
+      .from('legal_document_chunks')
+      .select('*');
+
+    if (entities.artigo) {
+      dbQuery = dbQuery.eq('numero_artigo', entities.artigo);
+    } else if (entities.tema === 'ambiental') {
+      dbQuery = dbQuery.ilike('content', '%sustentabilidade%');
+    } else {
+      dbQuery = dbQuery.limit(5);
+    }
+
+    const { data, error } = await dbQuery;
+
+    if (error) {
+      console.error('❌ Erro nos legal chunks:', error);
+      return [];
+    }
+
+    console.log(`📋 Legal chunks encontrados: ${data?.length || 0}`);
+    return data || [];
+
+  } catch (error) {
+    console.error('❌ Erro nos legal chunks:', error);
+    return [];
+  }
+}
+
+/**
+ * Busca textual como fallback final
+ */
+async function searchTextualDocuments(supabaseClient: any, query: string, entities: any) {
+  try {
+    // Sanitizar query para evitar erros de tsquery
+    const sanitizedQuery = query
+      .replace(/[^\w\sáéíóúâêîôûàèìòùãõç]/gi, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+    if (!sanitizedQuery) return [];
+
+    const { data, error } = await supabaseClient
+      .from('document_sections')
+      .select('*')
+      .ilike('content', `%${sanitizedQuery}%`)
+      .limit(4);
+
+    if (error) {
+      console.error('❌ Erro na busca textual fallback:', error);
       return [];
     }
 
@@ -242,7 +355,7 @@ async function searchTextualDocuments(supabaseClient: any, query: string, entiti
     return data || [];
 
   } catch (error) {
-    console.error('Erro na busca textual:', error);
+    console.error('❌ Erro na busca textual:', error);
     return [];
   }
 }
@@ -267,12 +380,36 @@ function generateLegalResponse(query: string, results: any, entities: any): stri
     });
   }
 
+  // Resposta da knowledge base
+  if (results.knowledge?.length > 0) {
+    if (response) response += '\n---\n\n';
+    response += `**Informações da Base de Conhecimento:**\n\n`;
+    
+    results.knowledge.slice(0, 4).forEach((doc: any, index: number) => {
+      // Para document_embeddings
+      if (doc.content_chunk) {
+        response += `**${index + 1}.** ${doc.content_chunk.substring(0, 250)}...\n`;
+        if (doc.chunk_metadata?.articleNumber) {
+          response += `*Artigo ${doc.chunk_metadata.articleNumber}*\n`;
+        }
+      } 
+      // Para legal_document_chunks
+      else if (doc.content) {
+        response += `**${index + 1}.** ${doc.content.substring(0, 250)}...\n`;
+        if (doc.numero_artigo) {
+          response += `*Artigo ${doc.numero_artigo}*\n`;
+        }
+      }
+      response += '\n';
+    });
+  }
+
   // Resposta semântica
   if (results.semantic?.length > 0) {
     if (response) response += '\n---\n\n';
     response += `**Documentos Relacionados:**\n\n`;
     
-    results.semantic.slice(0, 4).forEach((doc: any, index: number) => {
+    results.semantic.slice(0, 3).forEach((doc: any, index: number) => {
       response += `**${index + 1}.** ${doc.content_chunk.substring(0, 200)}...\n`;
       
       if (doc.chunk_metadata?.articleNumber) {
