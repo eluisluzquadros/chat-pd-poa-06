@@ -1148,11 +1148,39 @@ class MasterOrchestrator {
       entities.articles = articleMatches.map(m => m.match(/\d+/)?.[0]).filter(Boolean);
     }
     
-    // Extract neighborhoods
-    const neighborhoods = ['Centro Histórico', 'Boa Vista', 'Três Figueiras', 'Mário Quintana'];
+    // Extract neighborhoods - All 94 neighborhoods of Porto Alegre
+    const neighborhoods = [
+      'aberta dos morros', 'agronomia', 'anchieta', 'arquipélago', 'auxiliadora', 'azenha',
+      'bela vista', 'belém novo', 'belém velho', 'boa vista', 'boa vista do sul', 'bom fim',
+      'bom jesus', 'camaquã', 'campo novo', 'cascata', 'cavalhada', 'cel. aparicio borges',
+      'centro histórico', 'centro', 'chapéu do sol', 'chácara das pedras', 'cidade baixa', 'costa e silva',
+      'cristal', 'cristo redentor', 'espírito santo', 'extrema', 'farrapos', 'farroupilha',
+      'floresta', 'glória', 'guarujá', 'higienópolis', 'humaitá', 'hípica', 'independência',
+      'ipanema', 'jardim botânico', 'jardim carvalho', 'jardim do salso', 'jardim europa',
+      'jardim floresta', 'jardim isabel', 'jardim itu', 'jardim leopoldina', 'jardim lindóia',
+      'jardim sabará', 'jardim são pedro', 'lageado', 'lami', 'lomba do pinheiro', 'medianeira',
+      'menino deus', 'moinhos de vento', 'montserrat', 'mont serrat', 'morro santana',
+      'mário quintana', 'navegantes', 'nonoai', 'parque santa fé', 'partenon', 'passo da areia',
+      'passo das pedras', 'pedra redonda', 'petrópolis', 'petropolis', 'pitinga', 'ponta grossa',
+      'praia de belas', 'restinga', 'rio branco', 'rubem berta', 'santa cecília',
+      'santa maria goretti', 'santa rosa de lima', 'santa tereza', 'santana', 'santo antônio',
+      'sarandi', 'serraria', 'são caetano', 'são geraldo', 'são joão', 'são sebastião',
+      'sétimo céu', 'teresópolis', 'tristeza', 'três figueiras', 'vila assunção', 'vila conceição',
+      'vila ipiranga', 'vila jardim', 'vila joão pessoa', 'vila nova', 'vila são josé'
+    ];
+    
+    // Improved neighborhood detection with "bairro" prefix and variations
+    const queryLower = query.toLowerCase();
     neighborhoods.forEach(n => {
-      if (query.toLowerCase().includes(n.toLowerCase())) {
+      const nLower = n.toLowerCase();
+      // Check for direct mention or "bairro [name]" pattern
+      if (queryLower.includes(nLower) || 
+          queryLower.includes(`bairro ${nLower}`) ||
+          queryLower.includes(`no ${nLower}`) ||
+          queryLower.includes(`do ${nLower}`) ||
+          queryLower.includes(`da ${nLower}`)) {
         entities.neighborhood = n;
+        console.log(`🔍 Extracted neighborhood: ${n} from query: ${query}`);
       }
     });
     
