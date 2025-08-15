@@ -138,8 +138,12 @@ ${bairrosList}
 ${FOOTER_TEMPLATE}`;
   }
 
-  // 🏘️ Risk Data Queries
-  if (riskData.length > 0) {
+  // 🏘️ Risk Data Queries - ONLY if no urban data and query is explicitly about risks
+  const isRiskQuery = queryLower.includes('risco') || queryLower.includes('inundação') || 
+                      queryLower.includes('deslizamento') || queryLower.includes('desastre') ||
+                      queryLower.includes('alagamento') || queryLower.includes('vendaval');
+  
+  if (riskData.length > 0 && regimeData.length === 0 && isRiskQuery) {
     console.log('⚠️ BUILDING RISK RESPONSE FROM REAL DATA');
     
     const risk = riskData[0];
@@ -270,7 +274,7 @@ function formatComprehensiveResponse(regimeData: any[], originalQuery: string): 
   // Glossário de siglas
   response += `\n📖 **Significado das Siglas:**\n`;
   response += `• **CA** = Coeficiente de Aproveitamento (indica quantas vezes a área do terreno pode ser construída)\n`;
-  response += `• **ZOT** = Zona de Ocupação Transitória (áreas em processo de adensamento urbano)\n`;
+  response += `• **ZOT** = Zona de Ordenamento Territorial (áreas com regras específicas de ocupação)\n`;
   
   // Detectar outras siglas nas zonas
   const hasZOU = regimeData.some(record => record.zona?.includes('ZOU'));
