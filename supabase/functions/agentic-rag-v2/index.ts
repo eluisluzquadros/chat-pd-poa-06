@@ -46,46 +46,11 @@ serve(async (req) => {
     
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('⚠️ Orchestrator failed:', response.status, errorText);
+      console.error('❌ Orchestrator failed:', response.status, errorText);
       
-      // Fallback to original agentic-rag if orchestrator fails
-      console.log('🔄 Falling back to original pipeline');
-      
-      const fallbackUrl = `${Deno.env.get('SUPABASE_URL')}/functions/v1/agentic-rag`;
-      const fallbackResponse = await fetch(fallbackUrl, {
-        method: 'POST',
-        headers: {
-          'Authorization': req.headers.get('Authorization') || '',
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          message: body.query || body.message,
-          userRole: body.userRole || 'citizen',
-          sessionId: body.sessionId,
-          userId: body.userId,
-          bypassCache: body.bypassCache,
-          model: body.model || 'gpt-3.5-turbo'
-        })
-      });
-      
-      if (!fallbackResponse.ok) {
-        const fallbackError = await fallbackResponse.text();
-        console.error('❌ Fallback also failed:', fallbackError);
-        throw new Error('Both orchestrator and fallback failed');
-      }
-      
-      const fallbackData = await fallbackResponse.json();
-      
-      return new Response(JSON.stringify({
-        ...fallbackData,
-        metadata: {
-          ...fallbackData.metadata,
-          pipeline: 'legacy',
-          fallback: true
-        }
-      }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+      // TEMPORARILY DISABLED FALLBACK for debugging
+      // Throw error to force debugging of orchestrator issues
+      throw new Error(`Orchestrator failed: ${response.status} - ${errorText}`);
     }
     
     const data = await response.json();

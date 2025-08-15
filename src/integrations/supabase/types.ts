@@ -1763,34 +1763,43 @@ export type Database = {
       }
       session_memory: {
         Row: {
+          agent_results: Json | null
           confidence: number | null
+          context: Json | null
+          created_at: string | null
           id: string
           metadata: Json | null
           query: string
           response: string | null
           session_id: string
-          timestamp: string | null
           turn_number: number
+          updated_at: string | null
         }
         Insert: {
+          agent_results?: Json | null
           confidence?: number | null
+          context?: Json | null
+          created_at?: string | null
           id?: string
           metadata?: Json | null
           query: string
           response?: string | null
           session_id: string
-          timestamp?: string | null
           turn_number: number
+          updated_at?: string | null
         }
         Update: {
+          agent_results?: Json | null
           confidence?: number | null
+          context?: Json | null
+          created_at?: string | null
           id?: string
           metadata?: Json | null
           query?: string
           response?: string | null
           session_id?: string
-          timestamp?: string | null
           turn_number?: number
+          updated_at?: string | null
         }
         Relationships: []
       }

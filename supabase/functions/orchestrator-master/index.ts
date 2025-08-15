@@ -629,7 +629,7 @@ class MasterOrchestrator {
   }
   
   /**
-   * Store interaction in session memory
+   * Store interaction in session memory with improved error handling
    */
   private async storeInMemory(
     sessionId: string, 
@@ -638,36 +638,50 @@ class MasterOrchestrator {
     agentResults: AgentResult[], 
     response: any
   ) {
-    // Get next turn number
-    const { data: lastTurn } = await supabase
-      .from('session_memory')
-      .select('turn_number')
-      .eq('session_id', sessionId)
-      .order('turn_number', { ascending: false })
-      .limit(1)
-      .single();
-    
-    const turnNumber = (lastTurn?.turn_number || 0) + 1;
-    
-    // Store in database
-    const { error } = await supabase
-      .from('session_memory')
-      .insert({
-        session_id: sessionId,
-        turn_number: turnNumber,
-        query,
-        context,
-        agent_results: agentResults,
-        response: response.text,
-        confidence: response.confidence,
-        metadata: {
-          agents_used: agentResults.map(r => r.type),
-          timestamp: new Date().toISOString()
-        }
-      });
-    
-    if (error) {
-      console.error('Error storing session memory:', error);
+    try {
+      console.log('📝 Storing session memory for:', sessionId);
+      
+      // Get next turn number with proper error handling
+      const { data: lastTurn, error: turnError } = await supabase
+        .from('session_memory')
+        .select('turn_number')
+        .eq('session_id', sessionId)
+        .order('turn_number', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      
+      if (turnError && turnError.code !== 'PGRST116') {
+        console.warn('⚠️ Error getting turn number:', turnError);
+      }
+      
+      const turnNumber = (lastTurn?.turn_number || 0) + 1;
+      console.log(`🔢 Turn number: ${turnNumber}`);
+      
+      // Store in database
+      const { error } = await supabase
+        .from('session_memory')
+        .insert({
+          session_id: sessionId,
+          turn_number: turnNumber,
+          query: query || '',
+          context: context || {},
+          agent_results: agentResults || [],
+          response: response?.text || '',
+          confidence: response?.confidence || 0,
+          metadata: {
+            agents_used: agentResults?.map(r => r.type) || [],
+            timestamp: new Date().toISOString(),
+            total_agents: agentResults?.length || 0
+          }
+        });
+      
+      if (error) {
+        console.error('❌ Error storing session memory:', error);
+      } else {
+        console.log('✅ Session memory stored successfully');
+      }
+    } catch (error) {
+      console.error('❌ Critical error storing session memory:', error);
     }
   }
 }

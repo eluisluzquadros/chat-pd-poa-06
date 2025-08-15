@@ -24,6 +24,7 @@ interface AgentResult {
   type: string;
   confidence: number;
   data: any;
+  metadata?: any;
 }
 
 /**
@@ -33,12 +34,23 @@ interface AgentResult {
 class ValidationAgent {
   
   /**
-   * Validate agent results
+   * Validate agent results with improved error handling
    */
   async process(agentResults: AgentResult[], query: string, context: any) {
-    console.log('✅ Validation Agent - Processing', agentResults.length, 'results');
+    console.log('✅ Validation Agent - Processing', agentResults?.length || 0, 'results');
     
     try {
+      // Input validation - CRITICAL FIX
+      if (!agentResults || !Array.isArray(agentResults)) {
+        console.warn('⚠️ No agent results provided, creating empty validation');
+        return this.createEmptyValidation('No agent results provided');
+      }
+
+      if (agentResults.length === 0) {
+        console.warn('⚠️ Empty agent results array');
+        return this.createEmptyValidation('Empty agent results array');
+      }
+
       const checks: ValidationCheck[] = [];
       
       // 1. Validate legal citations
@@ -94,7 +106,9 @@ class ValidationAgent {
         metadata: {
           totalChecks: checks.length,
           passedChecks: checks.filter(c => c.passed).length,
-          criticalIssues: overallValidation.issues.filter(i => i.includes('CRÍTICO')).length
+          criticalIssues: overallValidation.issues.filter(i => i.includes('CRÍTICO')).length,
+          totalAgents: agentResults.length,
+          agentTypes: agentResults.map(r => r.type)
         }
       };
       
@@ -105,14 +119,45 @@ class ValidationAgent {
         confidence: 0,
         data: {
           valid: false,
-          error: error.message
+          error: error.message,
+          summary: `Erro na validação: ${error.message}`
+        },
+        metadata: {
+          errorType: 'validation_error',
+          totalAgents: agentResults?.length || 0
         }
       };
     }
   }
+
+  /**
+   * Create empty validation when no agents results provided
+   */
+  private createEmptyValidation(reason: string) {
+    return {
+      type: 'validator',
+      confidence: 0.1,
+      data: {
+        valid: false,
+        confidence: 0.1,
+        checks: [],
+        issues: [reason],
+        requiresRefinement: true,
+        corrections: [],
+        summary: `⚠️ Validação incompleta: ${reason}`
+      },
+      metadata: {
+        totalChecks: 0,
+        passedChecks: 0,
+        criticalIssues: 1,
+        totalAgents: 0,
+        agentTypes: []
+      }
+    };
+  }
   
   /**
-   * Validate legal citations
+   * Validate legal citations with enhanced checks
    */
   private async validateLegalCitations(agentResults: AgentResult[]): Promise<ValidationCheck> {
     const issues: string[] = [];
@@ -123,7 +168,7 @@ class ValidationAgent {
     const legalResults = agentResults.filter(r => r.type === 'legal');
     
     for (const result of legalResults) {
-      if (result.data.articles && result.data.articles.length > 0) {
+      if (result.data?.articles && Array.isArray(result.data.articles)) {
         for (const article of result.data.articles) {
           // Validate format
           if (!this.isValidArticleFormat(article)) {
@@ -158,7 +203,7 @@ class ValidationAgent {
     
     // Check for common errors
     const hasEIVError = legalResults.some(r => 
-      r.data.articles?.some((a: string) => a.includes('Art. 90') && !a.includes('Art. 89'))
+      r.data?.articles?.some((a: string) => a.includes('Art. 90') && !a.includes('Art. 89'))
     );
     if (hasEIVError) {
       issues.push('CRÍTICO: EIV está no Art. 89, não Art. 90');
@@ -176,7 +221,7 @@ class ValidationAgent {
   }
   
   /**
-   * Validate numeric data
+   * Validate numeric data with improved checks
    */
   private async validateNumericData(agentResults: AgentResult[]): Promise<ValidationCheck> {
     const issues: string[] = [];
@@ -187,7 +232,7 @@ class ValidationAgent {
     const urbanResults = agentResults.filter(r => r.type === 'urban');
     
     for (const result of urbanResults) {
-      if (result.data.parameters) {
+      if (result.data?.parameters && Array.isArray(result.data.parameters)) {
         for (const param of result.data.parameters) {
           // Check altura máxima
           if (param.parameter === 'Altura Máxima') {
@@ -197,7 +242,7 @@ class ValidationAgent {
               confidence -= 0.2;
             }
             
-            // Known maximum heights
+            // Known maximum heights - Enhanced validation
             if (param.zone === 'ZOT 08.1' && param.value !== 130) {
               issues.push(`Centro Histórico deveria ter 130m, não ${param.value}m`);
               confidence -= 0.3;
@@ -205,7 +250,7 @@ class ValidationAgent {
           }
           
           // Check coefficients
-          if (param.parameter.includes('Coeficiente')) {
+          if (param.parameter?.includes('Coeficiente')) {
             if (param.value < 0 || param.value > 10) {
               issues.push(`Coeficiente fora do range: ${param.value}`);
               confidence -= 0.2;
@@ -285,15 +330,17 @@ class ValidationAgent {
       }
     }
     
-    // Check confidence levels
-    const confidences = agentResults.map(r => r.confidence);
-    const avgConfidence = confidences.reduce((a, b) => a + b, 0) / confidences.length;
-    const variance = confidences.reduce((sum, c) => sum + Math.pow(c - avgConfidence, 2), 0) / confidences.length;
-    
-    if (variance > 0.2) {
-      issues.push('Alta variância na confiança entre agentes');
-      suggestions.push('Revisar agentes com baixa confiança');
-      confidence -= 0.1;
+    // Check confidence levels variance
+    const confidences = agentResults.map(r => r.confidence || 0);
+    if (confidences.length > 1) {
+      const avgConfidence = confidences.reduce((a, b) => a + b, 0) / confidences.length;
+      const variance = confidences.reduce((sum, c) => sum + Math.pow(c - avgConfidence, 2), 0) / confidences.length;
+      
+      if (variance > 0.2) {
+        issues.push('Alta variância na confiança entre agentes');
+        suggestions.push('Revisar agentes com baixa confiança');
+        confidence -= 0.1;
+      }
     }
     
     return {
@@ -306,7 +353,7 @@ class ValidationAgent {
   }
   
   /**
-   * Detect contradictions
+   * Detect contradictions with improved logic
    */
   private async detectContradictions(agentResults: AgentResult[]): Promise<ValidationCheck> {
     const issues: string[] = [];
@@ -317,7 +364,7 @@ class ValidationAgent {
     const heights = new Map<string, number[]>();
     
     for (const result of agentResults) {
-      if (result.data.parameters) {
+      if (result.data?.parameters && Array.isArray(result.data.parameters)) {
         for (const param of result.data.parameters) {
           if (param.parameter === 'Altura Máxima' && param.zone) {
             if (!heights.has(param.zone)) {
@@ -339,10 +386,10 @@ class ValidationAgent {
       }
     }
     
-    // Check for Boa Vista vs Boa Vista do Sul confusion
+    // Enhanced Boa Vista detection
     const locations = agentResults
       .filter(r => r.type === 'urban')
-      .flatMap(r => r.data.locations || []);
+      .flatMap(r => r.data?.locations || []);
     
     const hasBoaVista = locations.some((l: any) => l.name === 'Boa Vista');
     const hasBoaVistaSul = locations.some((l: any) => l.name === 'Boa Vista do Sul');
@@ -363,16 +410,20 @@ class ValidationAgent {
   }
   
   /**
-   * Check completeness
+   * Check completeness with enhanced logic
    */
   private checkCompleteness(agentResults: AgentResult[], query: string): ValidationCheck {
     const issues: string[] = [];
     const suggestions: string[] = [];
     let confidence = 1.0;
     
+    if (!query) query = '';
+    
     // Check if query asks for article but no legal agent responded
     if (/artigo|art\.|lei/i.test(query)) {
-      const hasLegalResponse = agentResults.some(r => r.type === 'legal' && r.data.articles?.length > 0);
+      const hasLegalResponse = agentResults.some(r => 
+        r.type === 'legal' && r.data?.articles?.length > 0
+      );
       if (!hasLegalResponse) {
         issues.push('Query sobre artigos mas sem resposta legal');
         suggestions.push('Ativar agente legal para buscar artigos');
@@ -382,7 +433,9 @@ class ValidationAgent {
     
     // Check if query asks for height/parameters but no urban agent responded
     if (/altura|coeficiente|taxa|parâmetro/i.test(query)) {
-      const hasUrbanResponse = agentResults.some(r => r.type === 'urban' && r.data.parameters?.length > 0);
+      const hasUrbanResponse = agentResults.some(r => 
+        r.type === 'urban' && r.data?.parameters?.length > 0
+      );
       if (!hasUrbanResponse) {
         issues.push('Query sobre parâmetros mas sem dados urbanísticos');
         suggestions.push('Ativar agente urbanístico para buscar parâmetros');
@@ -419,40 +472,50 @@ class ValidationAgent {
     const suggestions: string[] = [];
     let confidence = 1.0;
     
-    // Validate concepts mentioned
-    const concepts = new Set<string>();
-    
-    for (const result of agentResults) {
-      if (result.data.concepts) {
-        result.data.concepts.forEach((c: string) => concepts.add(c));
-      }
-    }
-    
-    for (const concept of concepts) {
-      const { data: node } = await supabase
-        .from('knowledge_graph_nodes')
-        .select('*')
-        .eq('label', concept)
-        .eq('node_type', 'concept')
-        .single();
+    try {
+      // Validate concepts mentioned
+      const concepts = new Set<string>();
       
-      if (!node) {
-        issues.push(`Conceito não encontrado no KG: ${concept}`);
-        confidence -= 0.1;
+      for (const result of agentResults) {
+        if (result.data?.concepts && Array.isArray(result.data.concepts)) {
+          result.data.concepts.forEach((c: string) => concepts.add(c));
+        }
       }
-    }
-    
-    // Validate relationships
-    const relationships = agentResults
-      .filter(r => r.data.relationships)
-      .flatMap(r => r.data.relationships);
-    
-    for (const rel of relationships) {
-      if (!this.isValidRelationshipType(rel.type)) {
-        issues.push(`Tipo de relação inválido: ${rel.type}`);
-        suggestions.push(`Use tipos válidos: DEFINES, REFERENCES, HAS_PARAMETER`);
-        confidence -= 0.05;
+      
+      for (const concept of concepts) {
+        try {
+          const { data: node } = await supabase
+            .from('knowledge_graph_nodes')
+            .select('*')
+            .eq('label', concept)
+            .eq('node_type', 'concept')
+            .maybeSingle();
+          
+          if (!node) {
+            issues.push(`Conceito não encontrado no KG: ${concept}`);
+            confidence -= 0.1;
+          }
+        } catch (error) {
+          console.warn('Error checking concept in KG:', concept, error);
+        }
       }
+      
+      // Validate relationships
+      const relationships = agentResults
+        .filter(r => r.data?.relationships)
+        .flatMap(r => r.data.relationships);
+      
+      for (const rel of relationships) {
+        if (!this.isValidRelationshipType(rel.type)) {
+          issues.push(`Tipo de relação inválido: ${rel.type}`);
+          suggestions.push(`Use tipos válidos: DEFINES, REFERENCES, HAS_PARAMETER`);
+          confidence -= 0.05;
+        }
+      }
+    } catch (error) {
+      console.warn('Error validating against Knowledge Graph:', error);
+      issues.push('Erro ao validar contra Knowledge Graph');
+      confidence -= 0.2;
     }
     
     return {
@@ -465,7 +528,7 @@ class ValidationAgent {
   }
   
   /**
-   * Check for ambiguity
+   * Check for ambiguity with enhanced detection
    */
   private checkAmbiguity(agentResults: AgentResult[], context: any): ValidationCheck {
     const issues: string[] = [];
@@ -475,7 +538,7 @@ class ValidationAgent {
     // Check for ambiguous locations
     const locations = agentResults
       .filter(r => r.type === 'urban')
-      .flatMap(r => r.data.locations || []);
+      .flatMap(r => r.data?.locations || []);
     
     const ambiguousNames = [
       ['Boa Vista', 'Boa Vista do Sul'],
@@ -498,7 +561,7 @@ class ValidationAgent {
     // Check for temporal ambiguity
     if (context?.temporal?.comparison) {
       const hasVersionInfo = agentResults.some(r => 
-        r.data.version || r.metadata?.version
+        r.data?.version || r.metadata?.version
       );
       
       if (!hasVersionInfo) {
@@ -521,6 +584,15 @@ class ValidationAgent {
    * Calculate overall validation
    */
   private calculateOverallValidation(checks: ValidationCheck[]) {
+    if (checks.length === 0) {
+      return {
+        isValid: false,
+        confidence: 0.1,
+        issues: ['Nenhuma validação executada'],
+        requiresRefinement: true
+      };
+    }
+
     const allIssues = checks.flatMap(c => c.issues);
     const criticalIssues = allIssues.filter(i => i.includes('CRÍTICO'));
     
@@ -567,6 +639,10 @@ class ValidationAgent {
    * Generate validation summary
    */
   private generateValidationSummary(checks: ValidationCheck[]): string {
+    if (checks.length === 0) {
+      return '⚠️ Nenhuma validação executada';
+    }
+
     const passed = checks.filter(c => c.passed).length;
     const total = checks.length;
     const avgConfidence = checks.reduce((sum, c) => sum + c.confidence, 0) / total;
@@ -586,7 +662,7 @@ class ValidationAgent {
   }
   
   private hasNumericData(results: AgentResult[]): boolean {
-    return results.some(r => r.data.parameters || r.data.metrics);
+    return results.some(r => r.data?.parameters || r.data?.metrics);
   }
   
   private isValidArticleFormat(article: string): boolean {
@@ -594,14 +670,19 @@ class ValidationAgent {
   }
   
   private async articleExistsInKG(article: string): Promise<boolean> {
-    const { data } = await supabase
-      .from('knowledge_graph_nodes')
-      .select('id')
-      .eq('label', article)
-      .eq('node_type', 'article')
-      .single();
-    
-    return !!data;
+    try {
+      const { data } = await supabase
+        .from('knowledge_graph_nodes')
+        .select('id')
+        .eq('label', article)
+        .eq('node_type', 'article')
+        .maybeSingle();
+      
+      return !!data;
+    } catch (error) {
+      console.warn('Error checking article in KG:', article, error);
+      return false;
+    }
   }
   
   private extractArticleNumber(article: string): number | null {
@@ -619,35 +700,61 @@ class ValidationAgent {
   }
 }
 
-// Main handler
+// Main handler with improved error handling
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { agentResults, query, context } = await req.json();
+    const body = await req.json();
+    console.log('📋 Validation Agent received request:', {
+      hasAgentResults: !!body.agentResults,
+      agentResultsLength: body.agentResults?.length || 0,
+      hasQuery: !!body.query,
+      hasContext: !!body.context
+    });
+
+    // Extract data with fallbacks
+    const agentResults = body.agentResults || [];
+    const query = body.query || '';
+    const context = body.context || {};
     
-    if (!agentResults || !Array.isArray(agentResults)) {
-      throw new Error('Agent results array is required');
+    // Additional validation
+    if (!Array.isArray(agentResults)) {
+      console.error('❌ agentResults is not an array:', typeof agentResults);
+      throw new Error('Agent results must be an array');
     }
     
     const validator = new ValidationAgent();
-    const result = await validator.process(agentResults, query || '', context || {});
+    const result = await validator.process(agentResults, query, context);
+    
+    console.log('✅ Validation completed:', {
+      type: result.type,
+      confidence: result.confidence,
+      valid: result.data?.valid,
+      checksCount: result.data?.checks?.length || 0,
+      issuesCount: result.data?.issues?.length || 0
+    });
     
     return new Response(JSON.stringify(result), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
 
   } catch (error) {
-    console.error('Validation Agent error:', error);
+    console.error('❌ Validation Agent error:', error);
     
     return new Response(JSON.stringify({
       type: 'validator',
       confidence: 0,
       data: {
         valid: false,
-        error: error.message
+        error: error.message,
+        summary: `Erro na validação: ${error.message}`
+      },
+      metadata: {
+        errorType: 'request_error',
+        errorMessage: error.message
       }
     }), {
       status: 500,
