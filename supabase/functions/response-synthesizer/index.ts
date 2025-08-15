@@ -202,7 +202,7 @@ serve(async (req) => {
   try {
     debugLog.push({ step: 'start', time: new Date().toISOString() });
     
-    const { originalQuery, analysisResult, sqlResults, vectorResults, model, conversationHistory } = await req.json();
+    const { originalQuery, analysisResult, sqlResults, vectorResults, model, conversationHistory, agentResults } = await req.json();
     
     // Determine which model to use with whitelist and fallback
     const sanitizeModel = (input?: string): string => {

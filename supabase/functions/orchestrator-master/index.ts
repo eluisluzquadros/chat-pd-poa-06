@@ -607,14 +607,14 @@ class MasterOrchestrator {
   /**
    * Enhanced agent implementations with robust logic from corrected agents
    */
-  private enhancedAgent(agentType: string, query: string, context: any): AgentResult {
+  private async enhancedAgent(agentType: string, query: string, context: any): Promise<AgentResult> {
     console.log(`⚠️ Using enhanced agent for: ${agentType}`);
     
     switch (agentType) {
       case 'legal':
         return this.enhancedLegalAgent(query, context);
       case 'urban':
-        return this.enhancedUrbanAgent(query, context);
+        return await this.enhancedUrbanAgent(query, context);
       case 'conceptual':
         return this.enhancedConceptualAgent(query, context);
       case 'geographic':
@@ -725,7 +725,7 @@ class MasterOrchestrator {
   /**
    * Enhanced Urban Agent with ALL 94 neighborhoods and REAL SQL queries
    */
-  private enhancedUrbanAgent(query: string, context: any): AgentResult {
+  private async enhancedUrbanAgent(query: string, context: any): Promise<AgentResult> {
     const queryLower = query.toLowerCase();
     
     // All 94 neighborhoods of Porto Alegre (matching extractEntities)
@@ -764,83 +764,89 @@ class MasterOrchestrator {
     let response = "BETA_RESPONSE: Informação urbanística não encontrada na base de dados.";
     let confidence = 0.3;
     let urbanData = {};
-    
-    // Real data-driven responses based on neighborhood
-    if (foundNeighborhood) {
-      if (foundNeighborhood === 'petrópolis' || foundNeighborhood === 'petropolis') {
-        // Simulate call to regime_urbanistico table for Petrópolis
-        response = `**Bairro Petrópolis** - Parâmetros Urbanísticos:
+
+    try {
+      // Phase 2 & 4: Connect to real SQL tables and implement specific responses
+      if (foundNeighborhood) {
+        console.log(`🔍 Searching real data for neighborhood: ${foundNeighborhood}`);
         
-• **ZOT 02** (principal): Altura máxima de **12 metros**, coeficiente de aproveitamento básico **1,0** e máximo **2,4**
-• **Usos permitidos**: Residencial unifamiliar e multifamiliar, comércio local e serviços
-• **Área mínima do lote**: 360m²
-• **Testada mínima**: 12 metros
-• **Recuos**: Frontal 4m, laterais e fundos conforme LUOS
+        // Query real zots_bairros table
+        const { data: zotData, error: zotError } = await supabase
+          .from('zots_bairros')
+          .select('bairro, zona, total_zonas_no_bairro')
+          .ilike('bairro', `%${foundNeighborhood}%`)
+          .limit(5);
 
-Para projetos específicos, consulte a SMU para verificação de parâmetros exatos da sua localização.`;
-        confidence = 0.9;
-        urbanData = {
-          neighborhood: 'Petrópolis',
-          zones: ['ZOT 02'],
-          height_max: '12 metros',
-          basic_coefficient: 1.0,
-          max_coefficient: 2.4,
-          min_lot_area: '360m²'
-        };
-      } else if (foundNeighborhood === 'centro' || foundNeighborhood === 'centro histórico') {
-        response = `**Centro de Porto Alegre** - Parâmetros Urbanísticos:
-        
-• **ZOT 01** (área central): Altura máxima **SEM LIMITE** em vias estruturais, coeficiente básico **3,0** e máximo **6,0**
-• **Proteção patrimonial**: Consultar EPAHC para edificações históricas
-• **Usos**: Comercial, serviços, residencial multifamiliar, uso misto incentivado
-• **Adensamento**: Área prioritária para verticalização conforme PDUS
+        if (!zotError && zotData?.length > 0) {
+          console.log(`✅ Found ZOT data:`, zotData);
+          
+          // Query regime_urbanistico for parameters
+          const { data: regimeData, error: regimeError } = await supabase
+            .from('regime_urbanistico')
+            .select('bairro, zona, altura_maxima, coef_aproveitamento_basico, coef_aproveitamento_maximo')
+            .ilike('bairro', `%${foundNeighborhood}%`)
+            .limit(5);
 
-⚠️ **Importante**: Verificar restrições específicas do patrimônio histórico antes de qualquer intervenção.`;
-        confidence = 0.9;
-        urbanData = {
-          neighborhood: 'Centro',
-          zones: ['ZOT 01'],
-          height_max: 'Sem limite em vias estruturais',
-          basic_coefficient: 3.0,
-          max_coefficient: 6.0,
-          special_notes: 'Consultar EPAHC para patrimônio'
-        };
-      } else if (foundNeighborhood === 'boa vista') {
-        response = `**Bairro Boa Vista** - Parâmetros Urbanísticos:
-        
-• **ZOT 02**: Altura máxima de **12 metros**, coeficiente básico **1,0** e máximo **2,4**
-• **Área consolidada** com boa infraestrutura urbana
-• **Usos permitidos**: Residencial, comércio local, serviços de vizinhança
-• **Proximidade** ao centro e boa acessibilidade ao transporte público
-
-Consulte os parâmetros específicos do seu terreno na SMU.`;
-        confidence = 0.9;
-        urbanData = {
-          neighborhood: 'Boa Vista',
-          zones: ['ZOT 02'],
-          height_max: '12 metros',
-          basic_coefficient: 1.0,
-          max_coefficient: 2.4
-        };
-      } else {
-        // General response for other neighborhoods with better data
-        response = `**Bairro ${foundNeighborhood.charAt(0).toUpperCase() + foundNeighborhood.slice(1)}**:
-
-Para construir neste bairro, você deve consultar:
-• **Zona de Ocupação do Território (ZOT)** aplicável
-• **Altura máxima** permitida pela zona
-• **Coeficientes de aproveitamento** básico e máximo
-• **Usos permitidos** conforme zoneamento
-• **Parâmetros do lote** (área mínima, testada, recuos)
-
-📍 **Recomendação**: Consulte a Secretaria Municipal de Urbanismo (SMU) com o endereço específico para obter os parâmetros exatos.`;
-        confidence = 0.75;
-        urbanData = {
-          neighborhood: foundNeighborhood,
-          requires_consultation: true,
-          smu_contact: true
-        };
+          if (!regimeError && regimeData?.length > 0) {
+            console.log(`✅ Found regime data:`, regimeData);
+            
+            const zones = zotData.map(z => z.zona).filter(Boolean);
+            const regimeInfo = regimeData[0];
+            
+            if (queryLower.includes('construir') || queryLower.includes('edificar')) {
+              response = `**${foundNeighborhood.toUpperCase()}**: Pertence às zonas ${zones.join(', ')}. ` +
+                `Coeficiente básico: ${regimeInfo.coef_aproveitamento_basico || 'consultar LUOS'}. ` +
+                `Altura máxima: ${regimeInfo.altura_maxima || 'sem limite específico'}.`;
+              confidence = 0.85;
+              urbanData = { neighborhood: foundNeighborhood, zones, parameters: regimeInfo };
+            } else if (queryLower.includes('coeficiente')) {
+              response = `O coeficiente de aproveitamento para **${foundNeighborhood}** é básico: ${regimeInfo.coef_aproveitamento_basico}, máximo: ${regimeInfo.coef_aproveitamento_maximo}.`;
+              confidence = 0.85;
+              urbanData = { neighborhood: foundNeighborhood, coefficient: regimeInfo };
+            } else if (queryLower.includes('altura')) {
+              response = `A altura máxima para **${foundNeighborhood}** é ${regimeInfo.altura_maxima || 'conforme LUOS'}.`;
+              confidence = 0.85;
+              urbanData = { neighborhood: foundNeighborhood, height: regimeInfo.altura_maxima };
+            }
+          } else {
+            // Fallback for neighborhoods without regime data
+            const zones = zotData.map(z => z.zona).filter(Boolean);
+            response = `**${foundNeighborhood.toUpperCase()}**: Pertence às zonas ${zones.join(', ')}. Para parâmetros específicos, consulte a SMU.`;
+            confidence = 0.7;
+            urbanData = { neighborhood: foundNeighborhood, zones };
+          }
+        } else {
+          // Fallback response for neighborhoods not found in database
+          response = `**Bairro ${foundNeighborhood.charAt(0).toUpperCase() + foundNeighborhood.slice(1)}**: Para parâmetros urbanísticos específicos, consulte a Secretaria Municipal de Urbanismo (SMU).`;
+          confidence = 0.6;
+          urbanData = { neighborhood: foundNeighborhood, requires_consultation: true };
+        }
       }
+      
+      // Special case for "ZOT 12" queries (Phase 4)
+      else if (queryLower.includes('zot 12') || queryLower.includes('zot12')) {
+        console.log(`🎯 Searching for ZOT 12 neighborhoods`);
+        
+        const { data: zot12Data, error: zot12Error } = await supabase
+          .from('zots_bairros')
+          .select('bairro, zona')
+          .eq('zona', 'ZOT 12')
+          .limit(20);
+
+        if (!zot12Error && zot12Data?.length > 0) {
+          const neighborhoods = zot12Data.map(z => z.bairro).filter(Boolean);
+          response = `**Bairros na ZOT 12**: ${neighborhoods.join(', ')}.`;
+          confidence = 0.9;
+          urbanData = { zone: 'ZOT 12', neighborhoods };
+        } else {
+          response = `Não foram encontrados bairros na ZOT 12 na base de dados atual.`;
+          confidence = 0.5;
+        }
+      }
+    } catch (error) {
+      console.error('❌ Error in enhancedUrbanAgent SQL queries:', error);
+      response = `Para informações urbanísticas, consulte a Secretaria Municipal de Urbanismo (SMU).`;
+      confidence = 0.4;
     }
     
     // Enhanced detection for construction/height queries
@@ -1077,9 +1083,9 @@ Para construir neste bairro, você deve consultar:
   /**
    * Mock agent for backward compatibility
    */
-  private mockAgent(agentType: string, query: string, context: any): AgentResult {
+  private async mockAgent(agentType: string, query: string, context: any): Promise<AgentResult> {
     console.log(`⚠️ Using mock agent for: ${agentType}`);
-    return this.enhancedAgent(agentType, query, context);
+    return await this.enhancedAgent(agentType, query, context);
   }
   
   /**
@@ -1308,18 +1314,25 @@ Para construir neste bairro, você deve consultar:
     
     // Improved neighborhood detection with "bairro" prefix and variations
     const queryLower = query.toLowerCase();
-    neighborhoods.forEach(n => {
-      const nLower = n.toLowerCase();
-      // Check for direct mention or "bairro [name]" pattern
-      if (queryLower.includes(nLower) || 
-          queryLower.includes(`bairro ${nLower}`) ||
-          queryLower.includes(`no ${nLower}`) ||
-          queryLower.includes(`do ${nLower}`) ||
-          queryLower.includes(`da ${nLower}`)) {
-        entities.neighborhood = n;
-        console.log(`🔍 Extracted neighborhood: ${n} from query: ${query}`);
-      }
-    });
+    
+    // Phase 3: Critical fix for Boa Vista vs Boa Vista do Sul confusion
+    if (queryLower.includes('boa vista') && !queryLower.includes('do sul')) {
+      entities.neighborhood = 'boa vista';
+      console.log(`🔍 Extracted neighborhood: boa vista (specifically, not boa vista do sul) from query: ${query}`);
+    } else {
+      neighborhoods.forEach(n => {
+        const nLower = n.toLowerCase();
+        // Check for direct mention or "bairro [name]" pattern
+        if (queryLower.includes(nLower) || 
+            queryLower.includes(`bairro ${nLower}`) ||
+            queryLower.includes(`no ${nLower}`) ||
+            queryLower.includes(`do ${nLower}`) ||
+            queryLower.includes(`da ${nLower}`)) {
+          entities.neighborhood = n;
+          console.log(`🔍 Extracted neighborhood: ${n} from query: ${query}`);
+        }
+      });
+    }
     
     // Extract zones (ZOT references) with better patterns
     const zotMatches = query.match(/zot\s*(\d+(?:\.\d+)?)/gi);
@@ -1328,14 +1341,16 @@ Para construir neste bairro, você deve consultar:
       entities.zone = entities.zones[0]; // backward compatibility
     }
     
-    // Extract urban concepts for better routing
+    // Phase 3: Enhanced urban concept extraction for better routing
     const conceptPatterns = {
-      evu: /(evu|estudo.*viabilidade.*urbana)/i,
-      coeficiente: /(coeficiente.*aproveitamento)/i,
-      altura: /(altura.*máxima)/i,
+      evu: /(evu|estudo.*viabilidade.*urbana|viabilidade.*urbana)/i,
+      coeficiente: /(coeficiente.*aproveitamento|aproveitamento)/i,
+      altura: /(altura.*máxima|altura)/i,
       regime: /(regime.*urbanístico)/i,
       zoneamento: /(zoneamento)/i,
-      construir: /(construir|edificação|obra)/i
+      construir: /(construir|edificação|obra|o que.*posso.*construir)/i,
+      zot: /(zot\s*\d+|zona.*ocupação)/i,
+      bairros: /(quais.*bairros|bairros.*estão|bairros.*na)/i
     };
     
     Object.entries(conceptPatterns).forEach(([concept, pattern]) => {
