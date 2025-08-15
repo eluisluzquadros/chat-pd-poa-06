@@ -898,11 +898,85 @@ class MasterOrchestrator {
   /**
    * Enhanced Conceptual Agent with expanded urban concepts including EVU
    */
-  private enhancedConceptualAgent(query: string, context: any): AgentResult {
+  private async enhancedConceptualAgent(query: string, context: any): Promise<AgentResult> {
     const queryLower = query.toLowerCase();
-    let response = "BETA_RESPONSE: Explicação conceitual não disponível.";
-    let confidence = 0.4;
-    let foundConcepts: string[] = [];
+    
+    try {
+      // Usar vector search para buscar conceitos nos documentos
+      const vectorUrl = `${Deno.env.get('SUPABASE_URL')}/functions/v1/generate-text-embedding`;
+      const vectorResponse = await fetch(vectorUrl, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ text: query })
+      });
+
+      if (vectorResponse.ok) {
+        const vectorData = await vectorResponse.json();
+        const embedding = vectorData.embedding;
+
+        const searchUrl = `${Deno.env.get('SUPABASE_URL')}/rest/v1/rpc/match_document_sections`;
+        const searchResponse = await fetch(searchUrl, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')}`,
+            'Content-Type': 'application/json',
+            'apikey': Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
+          },
+          body: JSON.stringify({
+            query_embedding: embedding,
+            match_threshold: 0.6,
+            match_count: 3
+          })
+        });
+
+        if (searchResponse.ok) {
+          const conceptualResults = await searchResponse.json();
+          
+          if (conceptualResults && conceptualResults.length > 0) {
+            const relevantConcepts = conceptualResults
+              .filter((result: any) => result.similarity > 0.6)
+              .slice(0, 2)
+              .map((result: any) => result.content)
+              .join('\n\n');
+
+            if (relevantConcepts) {
+              return {
+                type: 'conceptual',
+                confidence: Math.min(conceptualResults[0].similarity, 0.9),
+                data: {
+                  response: relevantConcepts,
+                  concepts_found: conceptualResults,
+                  query_type: 'conceptual_explanation'
+                },
+                metadata: {
+                  tool_used: 'vector_search_concepts',
+                  matches_found: conceptualResults.length,
+                  top_similarity: conceptualResults[0]?.similarity || 0
+                }
+              };
+            }
+          }
+        }
+      }
+    } catch (error) {
+      console.error('❌ Enhanced Conceptual Agent error:', error);
+    }
+
+    return {
+      type: 'conceptual',
+      confidence: 0.2,
+      data: {
+        response: "Explicação conceitual não encontrada nos documentos disponíveis.",
+        no_data_found: true
+      },
+      metadata: {
+        tool_used: 'conceptual_search_failed',
+        error: 'No conceptual data found'
+      }
+    };
 
     console.log(`📚 Enhanced Conceptual Agent analyzing: ${query}`);
 

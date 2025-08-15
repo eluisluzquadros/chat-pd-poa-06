@@ -415,12 +415,19 @@ FORMATO OBRIGATÓRIO DA RESPOSTA:
                        !agentResults?.length;
       
       if (hasNoData) {
-        console.log('⚠️ No data available - returning BETA_RESPONSE');
+        console.log('⚠️ No data available - using generic response');
         return new Response(JSON.stringify({
-          response: BETA_RESPONSE,
-          confidence: 0,
+          response: `Não foram encontradas informações específicas para "${originalQuery}" na base de dados do Plano Diretor.
+
+Você pode tentar:
+• Especificar um bairro ou zona específica
+• Perguntar sobre altura máxima, coeficientes de aproveitamento
+• Consultar sobre legislação específica (LUOS, PDUS)
+
+${FOOTER_TEMPLATE}`,
+          confidence: 0.1,
           sources: { tabular: 0, conceptual: 0 },
-          debugLog: [{ step: 'no_data_available', action: 'returned_beta_response' }]
+          debugLog: [{ step: 'no_data_available', action: 'returned_generic_response' }]
         }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });

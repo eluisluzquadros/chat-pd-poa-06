@@ -18,6 +18,18 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // DESATIVADO: Esta função foi substituída pelo sistema dinâmico
+  console.log('⚠️ response-synthesizer-simple DESATIVADO - redirecionando para sistema dinâmico');
+  
+  return new Response(JSON.stringify({
+    error: 'response-synthesizer-simple foi desativado',
+    message: 'Use o sistema dinâmico via orchestrator-master-fixed',
+    redirect_to: 'response-synthesizer'
+  }), {
+    status: 410, // Gone
+    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+  });
+
   try {
     const { originalQuery, analysisResult, sqlResults, vectorResults, model } = await req.json();
     

@@ -23,8 +23,8 @@ serve(async (req) => {
       sessionId: body.sessionId 
     });
     
-    // Forward to orchestrator-master
-    const orchestratorUrl = `${Deno.env.get('SUPABASE_URL')}/functions/v1/orchestrator-master`;
+    // Forward to dynamic orchestrator-master-fixed
+    const orchestratorUrl = `${Deno.env.get('SUPABASE_URL')}/functions/v1/orchestrator-master-fixed`;
     
     const response = await fetch(orchestratorUrl, {
       method: 'POST',
