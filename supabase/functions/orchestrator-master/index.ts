@@ -850,7 +850,7 @@ class MasterOrchestrator {
     }
     
     // Enhanced detection for construction/height queries
-    else if (/altura.*máxima|construir|edificação|obra/i.test(queryLower)) {
+    if (/altura.*máxima|construir|edificação|obra/i.test(queryLower)) {
       if (queryLower.includes('altura') && queryLower.includes('centro')) {
         response = `**Altura Máxima no Centro**: No Centro de Porto Alegre (ZOT 01), **NÃO HÁ LIMITE** de altura para vias estruturais. Em vias coletoras, a altura máxima é de 42 metros.`;
         confidence = 0.85;
