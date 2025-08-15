@@ -231,37 +231,358 @@ class MasterOrchestrator {
   }
   
   /**
-   * Call specific agent
+   * Call specific agent using tools
    */
   private async callAgent(agentType: string, query: string, context: any): Promise<AgentResult> {
-    const agentUrl = `${supabaseUrl}/functions/v1/agent-${agentType}`;
+    console.log(`🤖 Calling agent: ${agentType}`);
     
-    const response = await fetch(agentUrl, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${supabaseServiceKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ query, context })
-    });
-    
-    if (!response.ok) {
-      // Fallback for agents not yet implemented
+    try {
+      switch (agentType) {
+        case 'urban':
+          return await this.callUrbanAgent(query, context);
+        case 'legal':
+          return await this.callLegalAgent(query, context);
+        case 'validator':
+          return await this.callValidatorAgent(query, context);
+        case 'knowledge_graph':
+          return await this.callKnowledgeGraphAgent(query, context);
+        default:
+          // Try to call real agent first
+          const agentUrl = `${supabaseUrl}/functions/v1/agent-${agentType}`;
+          
+          const response = await fetch(agentUrl, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${supabaseServiceKey}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ query, context })
+          });
+          
+          if (!response.ok) {
+            // Fallback for agents not yet implemented
+            return this.mockAgent(agentType, query, context);
+          }
+          
+          return await response.json();
+      }
+    } catch (error) {
+      console.error(`❌ Error calling agent ${agentType}:`, error);
       return this.mockAgent(agentType, query, context);
     }
-    
-    return await response.json();
   }
   
+  /**
+   * Call urban agent using get_documents tool
+   */
+  private async callUrbanAgent(query: string, context: any): Promise<AgentResult> {
+    try {
+      // Use get_documents for regime_urbanistico data
+      const documentsUrl = `${supabaseUrl}/functions/v1/get_documents`;
+      
+      // Extract search parameters from context
+      const searchParams: any = {};
+      
+      if (context.entities?.neighborhood) {
+        searchParams.bairro = context.entities.neighborhood;
+      }
+      
+      if (context.entities?.zone) {
+        searchParams.zona = context.entities.zone;
+      }
+      
+      // Extract from query if not in entities
+      const bairroMatch = query.match(/(?:bairro|região)\s+([A-Za-zÀ-ÿ\s]+)/i);
+      if (bairroMatch && !searchParams.bairro) {
+        searchParams.bairro = bairroMatch[1].trim();
+      }
+      
+      const zoneMatch = query.match(/(?:ZOT|zona)\s*([\d.]+)/i);
+      if (zoneMatch && !searchParams.zona) {
+        searchParams.zona = zoneMatch[1];
+      }
+      
+      const response = await fetch(documentsUrl, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${supabaseServiceKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          table: 'regime_urbanistico',
+          query_type: 'urban_search',
+          search_params: searchParams,
+          limit: 10,
+          include_related: true
+        })
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Urban agent tool failed: ${response.status}`);
+      }
+      
+      const toolResult = await response.json();
+      
+      return {
+        type: 'urban',
+        confidence: toolResult.results?.length > 0 ? 0.9 : 0.3,
+        data: {
+          regime_data: toolResult.results || [],
+          related_risks: toolResult.metadata?.related?.risks || [],
+          search_params: searchParams,
+          total_results: toolResult.metadata?.total_results || 0
+        },
+        metadata: {
+          tool_used: 'get_documents',
+          table: 'regime_urbanistico',
+          response_time: new Date().toISOString()
+        }
+      };
+    } catch (error) {
+      console.error('❌ Urban agent error:', error);
+      return this.mockAgent('urban', query, context);
+    }
+  }
+
+  /**
+   * Call legal agent using get_documents tool
+   */
+  private async callLegalAgent(query: string, context: any): Promise<AgentResult> {
+    try {
+      const documentsUrl = `${supabaseUrl}/functions/v1/get_documents`;
+      
+      // Prepare search for legal documents
+      const searchParams: any = {};
+      
+      if (context.entities?.articles) {
+        searchParams.artigo = context.entities.articles[0];
+      }
+      
+      // Extract article from query if not in entities
+      const articleMatch = query.match(/(?:artigo|art\.?)\s*(\d+)/i);
+      if (articleMatch && !searchParams.artigo) {
+        searchParams.artigo = parseInt(articleMatch[1]);
+      }
+      
+      // Add search text for content-based search
+      searchParams.search_text = query;
+      
+      const response = await fetch(documentsUrl, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${supabaseServiceKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          table: 'legal_document_chunks',
+          query_type: 'legal_search',
+          search_params: searchParams,
+          limit: 5
+        })
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Legal agent tool failed: ${response.status}`);
+      }
+      
+      const toolResult = await response.json();
+      
+      return {
+        type: 'legal',
+        confidence: toolResult.results?.length > 0 ? 0.85 : 0.4,
+        data: {
+          legal_chunks: toolResult.results || [],
+          articles_found: toolResult.results?.map((r: any) => r.numero_artigo).filter(Boolean) || [],
+          search_params: searchParams,
+          total_results: toolResult.metadata?.total_results || 0
+        },
+        metadata: {
+          tool_used: 'get_documents',
+          table: 'legal_document_chunks',
+          response_time: new Date().toISOString()
+        }
+      };
+    } catch (error) {
+      console.error('❌ Legal agent error:', error);
+      return this.mockAgent('legal', query, context);
+    }
+  }
+
+  /**
+   * Call validator agent using get_list tool
+   */
+  private async callValidatorAgent(query: string, context: any): Promise<AgentResult> {
+    try {
+      const listUrl = `${supabaseUrl}/functions/v1/get_list`;
+      
+      const response = await fetch(listUrl, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${supabaseServiceKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          detailed: true
+        })
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Validator agent tool failed: ${response.status}`);
+      }
+      
+      const toolResult = await response.json();
+      
+      // Validate query against available data domains
+      const issues: string[] = [];
+      let confidence = 0.9;
+      
+      // Check if query matches available domains
+      const availableDomains = toolResult.all_domains || [];
+      const queryRequiresData = context.hasLocationReferences || context.hasLegalReferences;
+      
+      if (queryRequiresData && availableDomains.length === 0) {
+        issues.push('No data domains available for query');
+        confidence = 0.3;
+      }
+      
+      // Check if required functions are available
+      if (context.hasLocationReferences && !toolResult.available_functions?.regime_queries) {
+        issues.push('Urban regime functions not available');
+        confidence *= 0.8;
+      }
+      
+      if (context.hasLegalReferences && !toolResult.available_functions?.vector_search) {
+        issues.push('Legal search functions not available');
+        confidence *= 0.8;
+      }
+      
+      return {
+        type: 'validator',
+        confidence: confidence,
+        data: {
+          valid: issues.length === 0,
+          issues: issues,
+          available_domains: availableDomains,
+          available_functions: toolResult.available_functions || {},
+          recommendations: toolResult.recommendations || {}
+        },
+        metadata: {
+          tool_used: 'get_list',
+          response_time: new Date().toISOString()
+        }
+      };
+    } catch (error) {
+      console.error('❌ Validator agent error:', error);
+      return this.mockAgent('validator', query, context);
+    }
+  }
+
+  /**
+   * Call knowledge graph agent using get_documents tool
+   */
+  private async callKnowledgeGraphAgent(query: string, context: any): Promise<AgentResult> {
+    try {
+      // Use get_documents to fetch related data from multiple tables
+      const documentsUrl = `${supabaseUrl}/functions/v1/get_documents`;
+      
+      // First, try to get urban data if location-related
+      let nodes: any[] = [];
+      let relationships: any[] = [];
+      
+      if (context.hasLocationReferences && context.entities?.neighborhood) {
+        const urbanResponse = await fetch(documentsUrl, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${supabaseServiceKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            table: 'regime_urbanistico',
+            search_params: { bairro: context.entities.neighborhood },
+            limit: 5,
+            include_related: true
+          })
+        });
+        
+        if (urbanResponse.ok) {
+          const urbanData = await urbanResponse.json();
+          
+          // Create nodes from urban data
+          urbanData.results?.forEach((regime: any) => {
+            nodes.push({
+              id: `bairro_${regime.bairro}`,
+              type: 'bairro',
+              label: regime.bairro,
+              properties: regime
+            });
+            
+            nodes.push({
+              id: `zona_${regime.zona}`,
+              type: 'zona',
+              label: regime.zona,
+              properties: { zona: regime.zona }
+            });
+            
+            // Create relationship
+            relationships.push({
+              source: `bairro_${regime.bairro}`,
+              target: `zona_${regime.zona}`,
+              type: 'PERTENCE_A',
+              properties: { coef_aproveitamento: regime.coef_aproveitamento_basico }
+            });
+          });
+          
+          // Add risk relationships if available
+          urbanData.metadata?.related?.risks?.forEach((risk: any) => {
+            const riskNodeId = `risco_${risk.bairro_nome}`;
+            nodes.push({
+              id: riskNodeId,
+              type: 'risco',
+              label: `Riscos - ${risk.bairro_nome}`,
+              properties: risk
+            });
+            
+            relationships.push({
+              source: `bairro_${risk.bairro_nome}`,
+              target: riskNodeId,
+              type: 'TEM_RISCO',
+              properties: { nivel_risco: risk.nivel_risco_geral }
+            });
+          });
+        }
+      }
+      
+      return {
+        type: 'knowledge_graph',
+        confidence: nodes.length > 0 ? 0.8 : 0.4,
+        data: {
+          nodes: nodes,
+          relationships: relationships,
+          total_nodes: nodes.length,
+          total_relationships: relationships.length
+        },
+        metadata: {
+          tool_used: 'get_documents',
+          response_time: new Date().toISOString()
+        }
+      };
+    } catch (error) {
+      console.error('❌ Knowledge graph agent error:', error);
+      return this.mockAgent('knowledge_graph', query, context);
+    }
+  }
+
   /**
    * Mock agent for testing (remove when real agents are deployed)
    */
   private mockAgent(agentType: string, query: string, context: any): AgentResult {
+    console.log(`⚠️ Using mock agent for: ${agentType}`);
+    
     switch (agentType) {
       case 'legal':
         return {
           type: 'legal',
-          confidence: 0.8,
+          confidence: 0.4,
           data: {
             articles: context.hasLegalReferences ? ['LUOS - Art. 89', 'PDUS - Art. 92'] : [],
             laws: ['LUOS', 'PDUS'],
@@ -272,7 +593,7 @@ class MasterOrchestrator {
       case 'urban':
         return {
           type: 'urban',
-          confidence: 0.75,
+          confidence: 0.4,
           data: {
             zones: ['ZOT 08.1'],
             parameters: {
@@ -285,17 +606,17 @@ class MasterOrchestrator {
       case 'validator':
         return {
           type: 'validator',
-          confidence: 0.9,
+          confidence: 0.6,
           data: {
             valid: true,
-            issues: []
+            issues: ['Using fallback validation']
           }
         };
       
       case 'knowledge_graph':
         return {
           type: 'knowledge_graph',
-          confidence: 0.85,
+          confidence: 0.4,
           data: {
             nodes: ['EIV', 'LUOS - Art. 89'],
             relationships: [{ source: 'LUOS - Art. 89', target: 'EIV', type: 'DEFINES' }]
@@ -305,7 +626,7 @@ class MasterOrchestrator {
       default:
         return {
           type: agentType,
-          confidence: 0.5,
+          confidence: 0.3,
           data: {}
         };
     }
