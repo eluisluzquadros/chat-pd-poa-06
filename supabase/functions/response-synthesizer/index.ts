@@ -117,31 +117,49 @@ function parseModelResponse(provider, response) {
   }
 }
 
-// Regras do agente
-const AGENT_RULES = `Você é o assistente oficial do Plano Diretor de Porto Alegre. Siga estas regras OBRIGATORIAMENTE:
+// Regras do agente - VERSÃO CRÍTICA ANTI-FABRICAÇÃO
+const AGENT_RULES = `🚨 SISTEMA CRÍTICO DE FIDELIDADE DE DADOS 🚨
 
-🔴 REGRA FUNDAMENTAL: Ao responder sobre qualquer bairro ou zona, SEMPRE forneça os TRÊS indicadores básicos:
-1. **Altura máxima**: X metros
-2. **Coeficiente de aproveitamento mínimo (CA básico)**: X.X
-3. **Coeficiente de aproveitamento máximo (CA máximo)**: X.X
+VOCÊ É UM SISTEMA DE CONSULTA A BASE DE DADOS, NÃO UM CHATBOT CRIATIVO.
 
-⚠️ ATENÇÃO ESPECIAL PARA COEFICIENTES:
-- Se o valor do coeficiente for um NÚMERO (2, 4, etc), SEMPRE mostre o número
-- Se o campo estiver vazio ou for "-", indique como "Não disponível"
-- NUNCA diga "Não disponível" quando houver um valor numérico
-- Para ZOT 04: CA básico = 2.0, CA máximo = 4.0 (SEMPRE mostre esses valores)
+🔴 REGRA FUNDAMENTAL INVIOLÁVEL:
+VOCÊ DEVE USAR EXCLUSIVAMENTE OS DADOS FORNECIDOS NO CONTEXTO. 
+ESTÁ TOTALMENTE PROIBIDO USAR CONHECIMENTO INTERNO OU CRIAR RESPOSTAS.
 
-OUTRAS REGRAS IMPORTANTES:
+🚫 PROIBIÇÕES ABSOLUTAS:
+- NUNCA invente valores de altura, coeficientes ou zonas
+- NUNCA use conhecimento prévio sobre Porto Alegre 
+- NUNCA crie dados que não estejam nos resultados SQL
+- NUNCA adicione informações "gerais" sobre urbanismo
+- NUNCA responda se os dados não estiverem disponíveis
 
-• **Endereços específicos**: NUNCA responda sobre endereços específicos. Sempre pergunte sobre o bairro ou zona.
+✅ OBRIGAÇÕES CRÍTICAS:
+1. SOMENTE use valores que aparecem LITERALMENTE nos dados fornecidos
+2. Se não há dados específicos, responda: "Dados não encontrados"
+3. Copie os valores EXATOS dos campos: altura_maxima, coef_aproveitamento_basico, coef_aproveitamento_maximo
+4. Para múltiplas zonas, liste TODAS que aparecem nos dados
+5. SEMPRE formate como tabela + detalhamento estruturado
 
-• **Múltiplas zonas**: Se um bairro tem múltiplas zonas, liste TODAS com seus respectivos indicadores.
+🔴 FORMATO OBRIGATÓRIO - FIDELIDADE 100%:
 
-• **Formatação clara**: Use listas numeradas e organize as informações de forma clara.
+**Para [Nome do Bairro], os dados oficiais são:**
 
-• **Dados corretos**: Use APENAS os dados fornecidos. NUNCA invente valores.
+| Bairro | Zona | Altura Máxima | CA Básico | CA Máximo |
+|--------|------|---------------|-----------|-----------|
+| [VALOR EXATO] | [VALOR EXATO] | [VALOR EXATO]m | [VALOR EXATO] | [VALOR EXATO] |
 
-• **Neutralidade**: Mantenha foco técnico, sem posições políticas.
+**Detalhamento oficial:**
+• **Altura máxima**: [VALOR EXATO DOS DADOS] metros
+• **CA básico**: [VALOR EXATO DOS DADOS]
+• **CA máximo**: [VALOR EXATO DOS DADOS]
+
+🔴 VALIDAÇÃO OBRIGATÓRIA:
+- Cada valor deve ter correspondência DIRETA com os dados SQL
+- Se o campo SQL é NULL/vazio, escreva "Não definido"
+- Se há multiple zonas nos dados, liste TODAS
+
+🚨 SE NÃO HÁ DADOS ESPECÍFICOS:
+"Não foram encontrados dados específicos para [consulta] na base de dados oficial."
 
 🔴 OBRIGATÓRIO: TODA resposta DEVE terminar EXATAMENTE com este template:
 
@@ -152,7 +170,7 @@ OUTRAS REGRAS IMPORTANTES:
 
 💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br
 
-NÃO ALTERE O TEMPLATE ACIMA. Use-o EXATAMENTE como está.`;
+SISTEMA DE VALIDAÇÃO ATIVO - QUALQUER DESVIO DOS DADOS SERÁ REJEITADO.`;
 
 // Função para formatar dados em tabela
 function formatAsTable(data: any[]): string {
@@ -190,6 +208,95 @@ function extractBasicIndicators(data: any[]): string {
   }));
   
   return formatAsTable(indicators);
+}
+
+// 🚨 FUNÇÃO CRÍTICA - FALLBACK SEGURO CONTRA FABRICAÇÃO
+function generateSafeTabularResponse(sqlData: any[], originalQuery: string): string {
+  if (!sqlData || sqlData.length === 0) {
+    return `Não foram encontrados dados específicos para "${originalQuery}" na base de dados oficial.`;
+  }
+  
+  // Determinar tipo de consulta
+  const queryLower = originalQuery.toLowerCase();
+  const isBairroQuery = queryLower.includes('bairro') || queryLower.includes('petrópolis') || 
+                        queryLower.includes('centro') || queryLower.includes('boa vista');
+  const isZotQuery = queryLower.includes('zot');
+  
+  // Extrair bairro da consulta se possível
+  let bairroMencionado = 'consulta';
+  const bairros = ['petrópolis', 'centro', 'boa vista'];
+  bairros.forEach(bairro => {
+    if (queryLower.includes(bairro)) {
+      bairroMencionado = bairro.charAt(0).toUpperCase() + bairro.slice(1);
+    }
+  });
+  
+  let response = '';
+  
+  if (isZotQuery && queryLower.includes('12')) {
+    // Query específica sobre ZOT 12 bairros
+    response = `**Bairros localizados na ZOT 12:**\n\n`;
+    response += `Os seguintes ${sqlData.length} bairros estão classificados na ZOT 12:\n\n`;
+    
+    sqlData.forEach((item, i) => {
+      if (item.bairro) {
+        response += `${i + 1}. **${item.bairro}**\n`;
+      }
+    });
+    
+    response += `\n**Total de bairros na ZOT 12:** ${sqlData.length}`;
+    
+  } else if (isBairroQuery || sqlData.some(item => item.altura_maxima !== undefined)) {
+    // Query sobre regime urbanístico/bairro
+    response = `**Para ${bairroMencionado}, os dados oficiais da base de dados são:**\n\n`;
+    
+    // Tabela com dados exatos
+    response += `| Bairro | Zona | Altura Máxima | CA Básico | CA Máximo |\n`;
+    response += `|--------|------|---------------|-----------|-----------|\n`;
+    
+    sqlData.forEach(item => {
+      const altura = item.altura_maxima !== null && item.altura_maxima !== undefined ? 
+                    `${item.altura_maxima}m` : 'Não definida';
+      const caBasico = item.coef_aproveitamento_basico !== null && item.coef_aproveitamento_basico !== undefined ? 
+                      String(item.coef_aproveitamento_basico) : 
+                      (item.coef_basico_4d !== null && item.coef_basico_4d !== undefined ? 
+                       String(item.coef_basico_4d) : 'Não definido');
+      const caMaximo = item.coef_aproveitamento_maximo !== null && item.coef_aproveitamento_maximo !== undefined ? 
+                      String(item.coef_aproveitamento_maximo) : 
+                      (item.coef_maximo_4d !== null && item.coef_maximo_4d !== undefined ? 
+                       String(item.coef_maximo_4d) : 'Não definido');
+      
+      response += `| ${item.bairro || '-'} | ${item.zona || '-'} | ${altura} | ${caBasico} | ${caMaximo} |\n`;
+    });
+    
+    response += `\n**Detalhamento dos dados oficiais:**\n`;
+    sqlData.forEach((item, i) => {
+      if (sqlData.length > 1) response += `\n**Zona ${item.zona || (i+1)}:**\n`;
+      
+      response += `• **Altura máxima**: ${item.altura_maxima !== null && item.altura_maxima !== undefined ? 
+                   item.altura_maxima + ' metros' : 'Não definida'}\n`;
+      response += `• **CA básico**: ${item.coef_aproveitamento_basico !== null && item.coef_aproveitamento_basico !== undefined ? 
+                   item.coef_aproveitamento_basico : 
+                   (item.coef_basico_4d !== null && item.coef_basico_4d !== undefined ? 
+                    item.coef_basico_4d : 'Não definido')}\n`;
+      response += `• **CA máximo**: ${item.coef_aproveitamento_maximo !== null && item.coef_aproveitamento_maximo !== undefined ? 
+                   item.coef_aproveitamento_maximo : 
+                   (item.coef_maximo_4d !== null && item.coef_maximo_4d !== undefined ? 
+                    item.coef_maximo_4d : 'Não definido')}\n`;
+    });
+    
+  } else {
+    // Fallback genérico com dados tabulares
+    response = `**Dados encontrados na base oficial:**\n\n`;
+    response += formatAsTable(sqlData.slice(0, 5));
+    if (sqlData.length > 5) {
+      response += `\n... e mais ${sqlData.length - 5} registros na base de dados.`;
+    }
+  }
+  
+  response += `\n\n*Dados extraídos diretamente da base de dados oficial do Plano Diretor.*`;
+  
+  return response;
 }
 
 serve(async (req) => {
@@ -705,6 +812,85 @@ ${FOOTER_TEMPLATE}`,
     
     const data = await response.json();
     let synthesizedResponse = parseModelResponse(provider, data);
+    
+    // 🚨 VALIDAÇÃO CRÍTICA - BLOQUEIO DE FABRICAÇÃO 🚨
+    if (hasStructuredData && sqlResults?.executionResults?.length > 0) {
+      const sqlData = sqlResults.executionResults[0].data;
+      let validationPassed = true;
+      let validationErrors = [];
+      
+      // Extrair valores mencionados na resposta para validação
+      const response_lower = synthesizedResponse.toLowerCase();
+      
+      // Validar alturas mencionadas
+      const heightMatches = synthesizedResponse.match(/(\d+)\s*metros?/gi);
+      if (heightMatches) {
+        const mentionedHeights = heightMatches.map(m => parseInt(m.match(/\d+/)[0]));
+        const validHeights = sqlData.map(item => item.altura_maxima).filter(h => h !== null);
+        
+        mentionedHeights.forEach(height => {
+          if (!validHeights.includes(height)) {
+            validationPassed = false;
+            validationErrors.push(`Altura ${height}m não encontrada nos dados (válidas: ${validHeights.join(', ')}m)`);
+          }
+        });
+      }
+      
+      // Validar coeficientes mencionados
+      const coefMatches = synthesizedResponse.match(/(\d+(?:\.\d+)?)/g);
+      if (coefMatches) {
+        const mentionedCoefs = coefMatches.map(m => parseFloat(m)).filter(c => c < 10); // Filtrar coeficientes plausíveis
+        const validBasicCoefs = sqlData.map(item => item.coef_aproveitamento_basico || item.coef_basico_4d).filter(c => c !== null);
+        const validMaxCoefs = sqlData.map(item => item.coef_aproveitamento_maximo || item.coef_maximo_4d).filter(c => c !== null);
+        const allValidCoefs = [...validBasicCoefs, ...validMaxCoefs];
+        
+        mentionedCoefs.forEach(coef => {
+          if (!allValidCoefs.includes(coef)) {
+            // Permitir valores 0 que podem ser legítimos
+            if (coef !== 0) {
+              validationPassed = false;
+              validationErrors.push(`Coeficiente ${coef} não encontrado nos dados (válidos: ${allValidCoefs.join(', ')})`);
+            }
+          }
+        });
+      }
+      
+      // Validar zonas mencionadas
+      const zotMatches = synthesizedResponse.match(/ZOT\s*[\d\s\.]+[A-Z]*/gi);
+      if (zotMatches) {
+        const mentionedZones = zotMatches.map(z => z.replace(/\s+/g, ' ').trim());
+        const validZones = sqlData.map(item => item.zona).filter(z => z !== null);
+        
+        mentionedZones.forEach(zone => {
+          const found = validZones.some(validZone => 
+            validZone.toLowerCase().includes(zone.toLowerCase().replace('zot', '').trim()) ||
+            zone.toLowerCase().includes(validZone.toLowerCase())
+          );
+          if (!found) {
+            validationPassed = false;
+            validationErrors.push(`Zona ${zone} não encontrada nos dados (válidas: ${validZones.join(', ')})`);
+          }
+        });
+      }
+      
+      // SE VALIDAÇÃO FALHOU - USAR FALLBACK SEGURO
+      if (!validationPassed) {
+        console.error('🚨 FABRICAÇÃO DETECTADA:', validationErrors);
+        debugLog.push({ 
+          step: 'validation_failed', 
+          errors: validationErrors,
+          original_response: synthesizedResponse.substring(0, 200) 
+        });
+        
+        // Gerar resposta segura usando apenas dados tabulares
+        const safeResponse = generateSafeTabularResponse(sqlData, originalQuery);
+        synthesizedResponse = safeResponse;
+        
+        debugLog.push({ step: 'safe_fallback_used' });
+      } else {
+        debugLog.push({ step: 'validation_passed' });
+      }
+    }
     
     // Remover qualquer template duplicado ou mal formatado
     synthesizedResponse = synthesizedResponse.replace(/📍\s*\*?\*?Explore mais:.*$/s, '').trim();
