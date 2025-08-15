@@ -7,6 +7,11 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+const BETA_RESPONSE = `A plataforma ainda está em versão Beta e para esta pergunta o usuário consulte 📍 Explore mais:
+Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗ ↗
+Contribua com sugestões: https://bit.ly/4o7AWqb ↗ ↗
+Participe da Audiência Pública: https://bit.ly/4oefZKm ↗ ↗`;
+
 /**
  * Agent Urban - Especialista em Regime Urbanístico
  * Processa consultas relacionadas a:
@@ -36,27 +41,36 @@ serve(async (req) => {
     console.log('🔍 Entidades extraídas:', entities);
 
     let results = {};
-    let confidence = 0.5;
+    let confidence = 0.3;
 
-    // 1. Buscar dados de regime urbanístico
+    // 1. Buscar dados de regime urbanístico usando get_documents
     if (entities.bairro || entities.zona) {
-      const regimeData = await getRegimeData(supabaseClient, entities);
+      const regimeData = await getRegimeDataViaGetDocuments(supabaseClient, entities);
       results.regime = regimeData;
-      confidence += 0.2;
+      if (regimeData && regimeData.length > 0) {
+        confidence += 0.4;
+      }
     }
 
     // 2. Buscar dados de riscos
     if (entities.bairro) {
       const riskData = await getRiskData(supabaseClient, entities.bairro);
       results.risks = riskData;
-      confidence += 0.2;
+      if (riskData && riskData.length > 0) {
+        confidence += 0.2;
+      }
     }
 
-    // 3. Gerar resposta contextualizada
-    const response = generateUrbanResponse(query, results, entities);
+    // 3. Verificar se encontrou dados válidos
+    const hasValidData = (results.regime?.length > 0) || (results.risks?.length > 0);
     
-    // 4. Calcular confidence final
-    const finalConfidence = Math.min(confidence + (results.regime?.length > 0 ? 0.1 : 0), 1.0);
+    // 4. Gerar resposta ou retornar Beta
+    const response = hasValidData ? 
+      generateUrbanResponse(query, results, entities) : 
+      BETA_RESPONSE;
+    
+    // 5. Calcular confidence final
+    const finalConfidence = hasValidData ? confidence : 0;
 
     console.log('✅ Agent Urban concluído:', { 
       confidence: finalConfidence, 
@@ -99,20 +113,42 @@ serve(async (req) => {
  */
 function extractUrbanEntities(query: string) {
   const entities: any = {};
-  const queryLower = query.toLowerCase();
+  const queryLower = query.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
+  // Mapear bairros conhecidos para nomes corretos
+  const bairroMapping: Record<string, string> = {
+    'centro': 'CENTRO HISTÓRICO',
+    'centro historico': 'CENTRO HISTÓRICO',
+    'gloria': 'GLÓRIA',
+    'tristeza': 'TRISTEZA',
+    'montserrat': 'MONT\'SERRAT',
+    'mont serrat': 'MONT\'SERRAT',
+    'independencia': 'INDEPENDÊNCIA',
+    'floresta': 'FLORESTA',
+    'santana': 'SANTANA',
+    'partenon': 'PARTENON',
+    'bom fim': 'BOM FIM'
+  };
 
   // Padrões de bairros conhecidos
   const bairroPatterns = [
-    /bairro\s+([a-záéíóúãõç\s]+)/i,
-    /no\s+([a-záéíóúãõç\s]+)/i,
-    /em\s+([a-záéíóúãõç\s]+)/i,
+    /bairro\s+([a-z\s]+)/i,
+    /no\s+([a-z\s]+)/i,
+    /em\s+([a-z\s]+)/i,
     /(centro|gloria|tristeza|mont[\'']?serrat|independencia|floresta|santana|partenon|bom\s+fim)/i
   ];
 
   for (const pattern of bairroPatterns) {
-    const match = query.match(pattern);
+    const match = queryLower.match(pattern);
     if (match) {
-      entities.bairro = match[1]?.trim() || match[0]?.trim();
+      let bairroFound = (match[1]?.trim() || match[0]?.trim()).toLowerCase();
+      
+      // Normalizar e mapear para nome correto
+      if (bairroMapping[bairroFound]) {
+        entities.bairro = bairroMapping[bairroFound];
+      } else {
+        entities.bairro = bairroFound.toUpperCase();
+      }
       break;
     }
   }
@@ -148,9 +184,50 @@ function extractUrbanEntities(query: string) {
 }
 
 /**
- * Busca dados do regime urbanístico
+ * Busca dados do regime urbanístico via get_documents
  */
-async function getRegimeData(supabaseClient: any, entities: any) {
+async function getRegimeDataViaGetDocuments(supabaseClient: any, entities: any) {
+  try {
+    console.log('🔍 Chamando get_documents para regime_urbanistico:', entities);
+    
+    const searchParams: any = {};
+    if (entities.bairro) {
+      searchParams.bairro = entities.bairro;
+    }
+    if (entities.zona) {
+      searchParams.zona = entities.zona;
+    }
+
+    const { data, error } = await supabaseClient.functions.invoke('get_documents', {
+      body: {
+        table: 'regime_urbanistico',
+        query_type: 'urban_search',
+        search_params: searchParams,
+        limit: 10,
+        include_related: true
+      }
+    });
+
+    if (error) {
+      console.error('❌ Erro ao chamar get_documents:', error);
+      // Fallback para consulta direta
+      return await getRegimeDataDirect(supabaseClient, entities);
+    }
+
+    console.log(`📊 Regime via get_documents: ${data?.results?.length || 0} registros`);
+    return data?.results || [];
+
+  } catch (error) {
+    console.error('❌ Erro na busca via get_documents:', error);
+    // Fallback para consulta direta
+    return await getRegimeDataDirect(supabaseClient, entities);
+  }
+}
+
+/**
+ * Busca dados do regime urbanístico diretamente (fallback)
+ */
+async function getRegimeDataDirect(supabaseClient: any, entities: any) {
   try {
     let query = supabaseClient.from('regime_urbanistico').select('*');
 
@@ -165,15 +242,15 @@ async function getRegimeData(supabaseClient: any, entities: any) {
     const { data, error } = await query.limit(10);
 
     if (error) {
-      console.error('Erro ao buscar regime:', error);
+      console.error('❌ Erro ao buscar regime direto:', error);
       return [];
     }
 
-    console.log(`📊 Regime encontrado: ${data?.length || 0} registros`);
+    console.log(`📊 Regime direto encontrado: ${data?.length || 0} registros`);
     return data || [];
 
   } catch (error) {
-    console.error('Erro na busca de regime:', error);
+    console.error('❌ Erro na busca direta de regime:', error);
     return [];
   }
 }
@@ -207,14 +284,44 @@ async function getRiskData(supabaseClient: any, bairro: string) {
  * Gera resposta contextualizada sobre dados urbanísticos
  */
 function generateUrbanResponse(query: string, results: any, entities: any): string {
+  const queryLower = query.toLowerCase();
   let response = '';
   
   // Resposta sobre regime urbanístico
   if (results.regime?.length > 0) {
-    response += `**Regime Urbanístico Encontrado:**\n\n`;
+    
+    // Para consultas sobre altura máxima, encontrar o maior valor
+    if (queryLower.includes('altura') || queryLower.includes('gabarito')) {
+      const alturaMaxima = Math.max(...results.regime
+        .filter((r: any) => r.altura_maxima)
+        .map((r: any) => parseInt(r.altura_maxima))
+      );
+      
+      const zonaComAlturaMaxima = results.regime.find((r: any) => 
+        parseInt(r.altura_maxima) === alturaMaxima
+      );
+      
+      if (zonaComAlturaMaxima) {
+        response += `**Altura Máxima no ${entities.bairro}:**\n\n`;
+        response += `A altura máxima é de **${alturaMaxima}m** na ${zonaComAlturaMaxima.zona}.\n\n`;
+        
+        if (results.regime.length > 1) {
+          response += `**Outras zonas no bairro:**\n`;
+          results.regime.forEach((regime: any) => {
+            if (regime.zona !== zonaComAlturaMaxima.zona) {
+              response += `• ${regime.zona}: ${regime.altura_maxima}m\n`;
+            }
+          });
+        }
+        return response;
+      }
+    }
+    
+    // Resposta geral sobre regime urbanístico
+    response += `**Regime Urbanístico - ${entities.bairro}:**\n\n`;
     
     results.regime.forEach((regime: any, index: number) => {
-      response += `**${index + 1}. Bairro: ${regime.bairro} - Zona: ${regime.zona}**\n`;
+      response += `**${index + 1}. Zona: ${regime.zona}**\n`;
       
       if (regime.altura_maxima) {
         response += `• Altura máxima: ${regime.altura_maxima}m\n`;
@@ -259,16 +366,6 @@ function generateUrbanResponse(query: string, results: any, entities: any): stri
     });
   }
 
-  // Se não encontrou dados específicos
-  if (!results.regime?.length && !results.risks?.length) {
-    if (entities.bairro || entities.zona) {
-      response = `Não foram encontrados dados específicos para "${entities.bairro || entities.zona}". `;
-      response += `Verifique a grafia do bairro/zona ou consulte a lista completa de regiões disponíveis.`;
-    } else {
-      response = `Para consultar o regime urbanístico, especifique o bairro ou zona de interesse. `;
-      response += `Por exemplo: "Qual o regime urbanístico do bairro Centro?" ou "Altura máxima na zona ZC".`;
-    }
-  }
-
+  // Nota: Se chegou aqui sem dados, o BETA_RESPONSE já foi retornado antes
   return response;
 }
