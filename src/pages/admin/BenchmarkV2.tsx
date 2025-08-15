@@ -351,7 +351,7 @@ export default function BenchmarkV2() {
             await supabase
               .from('qa_validation_results')
               .insert({
-                test_case_id: testCase.id,
+                test_case_id: testCase.id.toString(),
                 validation_run_id: run.id,
                 model,
                 actual_answer: result.response?.substring(0, 2000),
@@ -390,7 +390,7 @@ export default function BenchmarkV2() {
       await supabase
         .from('qa_benchmarks')
         .insert({
-          timestamp: new Date().toISOString(),
+          results: {},
           summaries: results.map(r => ({
             model: r.model,
             provider: getProviderFromModel(r.model),

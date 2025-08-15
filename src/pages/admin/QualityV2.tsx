@@ -189,7 +189,7 @@ export default function QualityV2() {
         .eq('is_active', true);
 
       if (options.mode === 'specific' && options.testCaseIds) {
-        query = query.in('id', options.testCaseIds);
+        query = query.in('id', options.testCaseIds.map(id => parseInt(id)));
       } else if (options.mode === 'sample' && options.sampleSize) {
         query = query.limit(options.sampleSize);
       }
@@ -250,7 +250,7 @@ export default function QualityV2() {
           await supabase
             .from('qa_validation_results')
             .insert({
-              test_case_id: testCase.id,
+              test_case_id: testCase.id.toString(),
               validation_run_id: run.id,
               model: options.model || 'gpt-3.5-turbo',
               actual_answer: result.response?.substring(0, 2000),

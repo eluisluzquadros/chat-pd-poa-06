@@ -131,11 +131,12 @@ class ChatServiceV2 {
    */
   async getSessionHistory(limit: number = 10): Promise<ChatMessageV2[]> {
     try {
+      // Use chat_history table instead of session_memory
       const { data, error } = await supabase
-        .from('session_memory')
-        .select('query, response, confidence, metadata')
+        .from('chat_history')
+        .select('message')
         .eq('session_id', this.sessionId)
-        .order('turn_number', { ascending: false })
+        .order('created_at', { ascending: false })
         .limit(limit);
       
       if (error) throw error;
@@ -143,18 +144,18 @@ class ChatServiceV2 {
       const messages: ChatMessageV2[] = [];
       
       (data || []).reverse().forEach(turn => {
-        messages.push({
-          role: 'user',
-          content: turn.query
-        });
-        messages.push({
-          role: 'assistant',
-          content: turn.response,
-          metadata: {
-            confidence: turn.confidence,
-            ...turn.metadata
-          }
-        });
+        const message = turn.message as any;
+        if (message && typeof message === 'object') {
+          messages.push({
+            role: 'user',
+            content: message.user_message || message.content || ''
+          });
+          messages.push({
+            role: 'assistant',
+            content: message.assistant_message || message.response || '',
+            metadata: message.metadata || {}
+          });
+        }
       });
       
       return messages;
