@@ -408,7 +408,7 @@ FORMATO OBRIGATÓRIO DA RESPOSTA:
     } else {
       // Verificar se há falta de dados estruturados para retornar Beta
       const hasNoData = !sqlResults?.executionResults?.length && 
-                       !conceptualResults?.results?.length &&
+                       !vectorResults?.results?.length &&
                        !agentResults?.data;
       
       if (hasNoData) {
