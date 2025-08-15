@@ -13,14 +13,14 @@ import Chat from "./pages/Chat";
 import NotFound from "./pages/NotFound";
 import UserManagement from "./pages/admin/UserManagement";
 import AdminDashboard from "./pages/admin/AdminDashboard";
-import Quality from "./pages/admin/Quality";
+import QualityV2 from "./pages/admin/QualityV2";
 import QualityTest from "./pages/admin/QualityTest";
 import TestQA from "./pages/admin/TestQA";
 import TestQACases from "./pages/admin/TestQACases";
 import FeedbackManagement from "./pages/admin/FeedbackManagement";
 import UserSettings from "./pages/UserSettings";
 import Reports from "./pages/Reports";
-import BenchmarkDashboard from "./pages/admin/BenchmarkDashboard";
+import BenchmarkV2 from "./pages/admin/BenchmarkV2";
 const KnowledgeBaseAdminLazy = React.lazy(() => import("./pages/admin/KnowledgeBaseAdmin"));
 
 // Components
@@ -83,7 +83,7 @@ function App() {
               <Route path="/admin/quality" element={
                 <SimpleAuthGuard>
                   <SimpleRoleGuard adminOnly={true}>
-                    <Quality />
+                    <QualityV2 />
                   </SimpleRoleGuard>
                 </SimpleAuthGuard>
               } />
@@ -118,7 +118,7 @@ function App() {
               <Route path="/admin/benchmark" element={
                 <SimpleAuthGuard>
                   <SimpleRoleGuard adminOnly={true}>
-                    <BenchmarkDashboard />
+                    <BenchmarkV2 />
                   </SimpleRoleGuard>
                 </SimpleAuthGuard>
               } />

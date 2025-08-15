@@ -6,6 +6,7 @@ import { HeaderActions } from "./sidebar/HeaderActions";
 import { SearchBar } from "./sidebar/SearchBar";
 import { SessionList } from "./sidebar/SessionList";
 import { DeleteSessionDialog } from "./sidebar/DeleteSessionDialog";
+import { SystemToggle } from "./SystemToggle";
 import {
   Sidebar,
   SidebarContent,
@@ -97,6 +98,7 @@ export function AppSidebar({
         <SidebarContent>
           <SidebarGroup>
             <SidebarGroupContent>
+              <SystemToggle />
               <SessionList
                 sessions={sortedSessions}
                 currentSessionId={currentSessionId}

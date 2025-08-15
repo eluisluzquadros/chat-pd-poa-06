@@ -2,6 +2,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import { getCurrentAuthenticatedSession } from "@/utils/authUtils";
 import { useTokenTracking } from "@/hooks/useTokenTracking";
+import { unifiedRAGService } from "@/lib/unifiedRAGService";
 
 export class ChatService {
   async processMessage(
@@ -31,22 +32,15 @@ export class ChatService {
 
       console.log('🚀 Starting Agentic RAG processing for message:', message);
 
-      // Call the main Agentic RAG orchestrator
-      const { data: ragResult, error } = await supabase.functions.invoke('agentic-rag', {
-        body: {
-          message,
-          userRole: userRole || 'citizen',
-          sessionId,
-          userId: session.user.id || undefined,  // Make userId optional
-          bypassCache: false,  // Use cache when available
-          model: model || 'anthropic/claude-3-5-sonnet-20241022'  // Use provided model or default
-        }
+      // Use the unified RAG service for consistency
+      const ragResult = await unifiedRAGService.callRAG({
+        message,
+        model: model || 'gpt-3.5-turbo',
+        sessionId: sessionId || `session_${Date.now()}`,
+        userId: session.user.id,
+        userRole: userRole || 'citizen',
+        bypassCache: false
       });
-
-      if (error) {
-        console.error('Agentic RAG error:', error);
-        throw new Error(`Agentic RAG processing failed: ${error.message}`);
-      }
 
       console.log('✅ Agentic RAG completed successfully');
       

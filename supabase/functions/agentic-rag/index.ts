@@ -185,6 +185,10 @@ serve(async (req) => {
     console.log('🔍 Analyzing query:', userMessage);
     agentTrace.push({ step: 'query_analysis', timestamp: Date.now() });
     
+    // Add timeout for query analyzer
+    const analysisController = new AbortController();
+    const analysisTimeout = setTimeout(() => analysisController.abort(), 10000); // 10 second timeout
+    
     const analysisResponse = await fetch(`${supabaseUrl}/functions/v1/query-analyzer`, {
       method: 'POST',
       headers: {
@@ -197,7 +201,10 @@ serve(async (req) => {
         userRole: userRole || 'citizen', // Standardize userRole parameter
         conversationHistory: conversationHistory.slice(-5)
       }),
+      signal: analysisController.signal
     });
+    
+    clearTimeout(analysisTimeout);
 
     if (!analysisResponse.ok) {
       const errorText = await analysisResponse.text();
@@ -229,6 +236,8 @@ serve(async (req) => {
     
     // Step 2: SQL Generation (if needed)
     let sqlResults = null;
+    let vectorResults = null; // Initialize vectorResults
+    
     if (analysisResult.strategy === 'structured_only' || analysisResult.strategy === 'hybrid') {
       console.log('🔧 Generating SQL...');
       agentTrace.push({ step: 'sql_generation', timestamp: Date.now() });
@@ -256,6 +265,10 @@ serve(async (req) => {
         timestamp: new Date().toISOString()
       });
       
+      // Add timeout for SQL generation
+      const sqlController = new AbortController();
+      const sqlTimeout = setTimeout(() => sqlController.abort(), 12000); // 12 second timeout
+      
       const sqlResponse = await fetch(`${supabaseUrl}/functions/v1/sql-generator-v2`, {
         method: 'POST',
         headers: {
@@ -268,7 +281,10 @@ serve(async (req) => {
           hints: sqlHints,
           debug: true // Add debug flag
         }),
+        signal: sqlController.signal
       });
+      
+      clearTimeout(sqlTimeout);
 
       if (sqlResponse.ok) {
         sqlResults = await sqlResponse.json();
@@ -333,13 +349,63 @@ serve(async (req) => {
       }
     }
 
-    // Step 3: Response Synthesis
+    // Step 2.5: Vector Search - DISABLED TEMPORARILY FOR PERFORMANCE
+    // Only enable for legal queries that specifically need article citations
+    if (analysisResult.metadata?.isLegalQuery && analysisResult.metadata?.expectedArticles?.length > 0) {
+      console.log('🔍 Performing vector search for legal articles...');
+      agentTrace.push({ step: 'vector_search', timestamp: Date.now() });
+      
+      try {
+        // Add timeout to prevent hanging
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 second timeout
+        
+        const vectorResponse = await fetch(`${supabaseUrl}/functions/v1/enhanced-vector-search`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${authKey}`,
+          },
+          body: JSON.stringify({
+            query: userMessage,
+            searchType: 'legal_articles',
+            expectedArticles: analysisResult.metadata.expectedArticles,
+            limit: 3 // Reduced limit for performance
+          }),
+          signal: controller.signal
+        });
+        
+        clearTimeout(timeoutId);
+        
+        if (vectorResponse.ok) {
+          vectorResults = await vectorResponse.json();
+          console.log('✅ Vector search complete:', vectorResults.results?.length || 0, 'results');
+          agentTrace.push({ step: 'vector_search_complete', resultsCount: vectorResults.results?.length || 0 });
+        }
+      } catch (error) {
+        console.error('Vector search error (non-critical):', error);
+        agentTrace.push({ step: 'vector_search_skipped', reason: error.message });
+        // Continue without vector results
+      }
+    }
+    
+    // Step 3: Response Synthesis with both SQL and Vector results
     console.log('📝 Synthesizing response...');
     agentTrace.push({ step: 'response_synthesis', timestamp: Date.now() });
     
-    const synthesizerEndpoint = 'response-synthesizer';
+    // Use v2 response synthesizer for stability
+    const synthesizerEndpoint = 'response-synthesizer-v2';
     
     console.log(`Using synthesizer: ${synthesizerEndpoint}`);
+    console.log('Synthesis inputs:', {
+      hasSqlResults: !!sqlResults,
+      hasVectorResults: !!vectorResults,
+      isHybrid: analysisResult.strategy === 'hybrid'
+    });
+    
+    // Add timeout for response synthesis
+    const synthesisController = new AbortController();
+    const synthesisTimeout = setTimeout(() => synthesisController.abort(), 15000); // 15 second timeout
     
     const synthesisResponse = await fetch(`${supabaseUrl}/functions/v1/${synthesizerEndpoint}`, {
       method: 'POST',
@@ -351,11 +417,14 @@ serve(async (req) => {
         originalQuery: userMessage,
         analysisResult,
         sqlResults,
-        vectorResults: null,
-        model: selectedModel, // Use the actual selected model
+        vectorResults, // Now includes vector results when available
+        model: selectedModel,
         conversationHistory: conversationHistory.slice(-5)
       }),
+      signal: synthesisController.signal
     });
+    
+    clearTimeout(synthesisTimeout);
 
     if (!synthesisResponse.ok) {
       throw new Error(`Response synthesis failed: ${synthesisResponse.status}`);

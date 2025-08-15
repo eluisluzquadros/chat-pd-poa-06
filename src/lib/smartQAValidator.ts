@@ -1,5 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import { removePromotionalTemplate, calculateAccuracyWithoutTemplate, normalizeText } from "@/utils/templateFilter";
+import { unifiedRAGService } from "./unifiedRAGService";
 
 interface QAValidationOptions {
   model?: string;
@@ -244,31 +245,17 @@ export class SmartQAValidator {
     const startTime = Date.now();
     
     try {
-      // Always use agentic-rag endpoint for consistency
-      const { data, error } = await supabase.functions.invoke('agentic-rag', {
-        body: {
-          message,
-          userRole: 'user',
-          sessionId: `smart-qa-test-${Date.now()}`,
-          userId: 'smart-qa-validator',
-          model: model,
-          bypassCache: true
-        }
-      });
-
+      // Use the unified RAG service for consistency with chat
+      const result = await unifiedRAGService.testQuery(message, model);
+      
       const responseTime = Date.now() - startTime;
       console.log(`[SmartQAValidator] RAG response received in ${responseTime}ms`);
 
-      if (error) {
-        console.error(`[SmartQAValidator] RAG system error:`, error);
-        throw new Error(`RAG system error: ${error.message || 'Unknown error'}`);
-      }
-
-      if (!data) {
+      if (!result) {
         throw new Error('RAG system returned empty response');
       }
 
-      return data;
+      return result;
     } catch (error) {
       const responseTime = Date.now() - startTime;
       console.error(`[SmartQAValidator] RAG call failed after ${responseTime}ms:`, error);
