@@ -52,11 +52,30 @@
 
                     const result = await response.json();
                     
-                    // Check if we got a valid response (not BETA or error)
-                    const isSuccess = result.response && 
-                                    !result.response.includes('BETA_RESPONSE') && 
-                                    !result.response.includes('Não foi possível processar') &&
-                                    !result.response.includes('funcionalidade em desenvolvimento');
+                    // Enhanced validation with expected keywords for each test
+                    const expectedKeywords = {
+                        0: ['petrópolis', 'zot', 'altura', 'metros', 'coeficiente'], // petrópolis
+                        1: ['centro', 'altura', 'metros', 'máxima'], // altura máxima no centro
+                        2: ['boa vista', 'coeficiente', 'aproveitamento'], // coeficiente boa vista
+                        3: ['evu', 'estudo', 'viabilidade', 'urbanística'], // EVU
+                        4: ['zot 12', 'bairros', 'zona'] // ZOT 12 bairros
+                    };
+                    
+                    const keywords = expectedKeywords[i] || [];
+                    const responseLower = (result.response || '').toLowerCase();
+                    
+                    // Check for basic response validity and keyword matching
+                    const hasValidResponse = result.response && 
+                                           !result.response.includes('BETA_RESPONSE') && 
+                                           !result.response.includes('Não foi possível processar') &&
+                                           !result.response.includes('funcionalidade em desenvolvimento');
+                    
+                    const keywordMatches = keywords.filter(keyword => 
+                        responseLower.includes(keyword.toLowerCase())
+                    ).length;
+                    
+                    const keywordScore = keywords.length > 0 ? keywordMatches / keywords.length : 0.5;
+                    const isSuccess = hasValidResponse && keywordScore >= 0.6;
                     
                     const testDiv = document.createElement('div');
                     testDiv.className = `test-item ${isSuccess ? 'success' : 'error'}`;
