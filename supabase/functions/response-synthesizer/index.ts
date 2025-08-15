@@ -407,9 +407,12 @@ FORMATO OBRIGATÓRIO DA RESPOSTA:
       prompt += `\nPergunta: ${originalQuery}\n`;
     } else {
       // Verificar se há falta de dados estruturados para retornar Beta
+      console.log('🔍 Data verification - agentResults:', agentResults);
+      console.log('🔍 agentResults type:', typeof agentResults, 'length:', agentResults?.length);
+      
       const hasNoData = !sqlResults?.executionResults?.length && 
                        !vectorResults?.results?.length &&
-                       !agentResults?.data;
+                       !agentResults?.length;
       
       if (hasNoData) {
         console.log('⚠️ No data available - returning BETA_RESPONSE');
