@@ -7,6 +7,11 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+const BETA_RESPONSE = `A plataforma ainda está em versão Beta e para esta pergunta o usuário consulte 📍 Explore mais:
+Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗ ↗
+Contribua com sugestões: https://bit.ly/4o7AWqb ↗ ↗
+Participe da Audiência Pública: https://bit.ly/4oefZKm ↗ ↗`;
+
 /**
  * Agent Legal - Especialista em Documentos Legais
  * Processa consultas relacionadas a:
@@ -57,11 +62,18 @@ serve(async (req) => {
     results.textual = textualData;
     confidence += (textualData.length > 0 ? 0.1 : 0);
 
-    // 4. Gerar resposta legal contextualizada
-    const response = generateLegalResponse(query, results, entities);
+    // 4. Verificar se encontrou dados válidos
+    const hasValidData = (results.articles?.length > 0) || 
+                        (results.semantic?.length > 0) || 
+                        (results.textual?.length > 0);
     
-    // 5. Calcular confidence final
-    const finalConfidence = Math.min(confidence, 1.0);
+    // 5. Gerar resposta ou retornar Beta
+    const response = hasValidData ? 
+      generateLegalResponse(query, results, entities) : 
+      BETA_RESPONSE;
+    
+    // 6. Calcular confidence final
+    const finalConfidence = hasValidData ? Math.min(confidence, 1.0) : 0;
 
     console.log('✅ Agent Legal concluído:', { 
       confidence: finalConfidence,
@@ -285,17 +297,7 @@ function generateLegalResponse(query: string, results: any, entities: any): stri
     });
   }
 
-  // Se não encontrou resultados específicos
-  if (!results.articles?.length && !results.semantic?.length && !results.textual?.length) {
-    if (entities.artigo) {
-      response = `Artigo ${entities.artigo} não foi encontrado nos documentos disponíveis. `;
-      response += `Verifique se o número está correto ou tente buscar por palavras-chave relacionadas.`;
-    } else {
-      response = `Não foram encontrados documentos legais específicos para sua consulta. `;
-      response += `Tente reformular a pergunta ou especificar artigos, leis ou temas mais específicos.`;
-    }
-  }
-
+  // Nota: Se chegou aqui sem dados, o BETA_RESPONSE já foi retornado antes
   return response;
 }
 

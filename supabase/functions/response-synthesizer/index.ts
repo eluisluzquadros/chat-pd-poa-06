@@ -6,6 +6,11 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+const BETA_RESPONSE = `A plataforma ainda está em versão Beta e para esta pergunta o usuário consulte 📍 Explore mais:
+Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗ ↗
+Contribua com sugestões: https://bit.ly/4o7AWqb ↗ ↗
+Participe da Audiência Pública: https://bit.ly/4oefZKm ↗ ↗`;
+
 // Template padrão para finalizar respostas
 const FOOTER_TEMPLATE = `
 
@@ -401,6 +406,23 @@ FORMATO OBRIGATÓRIO DA RESPOSTA:
       
       prompt += `\nPergunta: ${originalQuery}\n`;
     } else {
+      // Verificar se há falta de dados estruturados para retornar Beta
+      const hasNoData = !sqlResults?.executionResults?.length && 
+                       !conceptualResults?.results?.length &&
+                       !agentResults?.data;
+      
+      if (hasNoData) {
+        console.log('⚠️ No data available - returning BETA_RESPONSE');
+        return new Response(JSON.stringify({
+          response: BETA_RESPONSE,
+          confidence: 0,
+          sources: { tabular: 0, conceptual: 0 },
+          debugLog: [{ step: 'no_data_available', action: 'returned_beta_response' }]
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+      
       prompt = AGENT_RULES + '\n\n';
       prompt += conversationContext;
       prompt += `\nPergunta atual: ${originalQuery}\n\n`;

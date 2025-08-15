@@ -7,6 +7,11 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+const BETA_RESPONSE = `A plataforma ainda está em versão Beta e para esta pergunta o usuário consulte 📍 Explore mais:
+Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗ ↗
+Contribua com sugestões: https://bit.ly/4o7AWqb ↗ ↗
+Participe da Audiência Pública: https://bit.ly/4oefZKm ↗ ↗`;
+
 /**
  * Agent Validator - Validador de Respostas
  * Responsabilidades:
@@ -67,6 +72,18 @@ serve(async (req) => {
       dataAvailability
     );
 
+    // 7. Verificar se deve retornar resposta Beta
+    const shouldReturnBeta = (
+      finalAssessment.confidence < 0.3 ||
+      !dataAvailability.available ||
+      agentValidation.every(v => !v.isValid)
+    );
+
+    // 8. Resposta final
+    const validatorResponse = shouldReturnBeta ? 
+      BETA_RESPONSE : 
+      `Validação concluída com ${(finalAssessment.confidence * 100).toFixed(1)}% de confiança.`;
+
     console.log('✅ Agent Validator concluído:', { 
       overallConfidence: finalAssessment.confidence,
       agentsValidated: agentValidation.length,
@@ -75,8 +92,9 @@ serve(async (req) => {
 
     return new Response(JSON.stringify({
       agent: 'validator',
+      response: validatorResponse,
       validation: finalAssessment,
-      confidence: finalAssessment.confidence,
+      confidence: shouldReturnBeta ? 0 : finalAssessment.confidence,
       metadata: {
         dataAvailability,
         agentValidation,
