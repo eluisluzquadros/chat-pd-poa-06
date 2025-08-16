@@ -238,7 +238,12 @@ serve(async (req) => {
     let sqlResults = null;
     let vectorResults = null; // Initialize vectorResults
     
-    if (analysisResult.strategy === 'structured_only' || analysisResult.strategy === 'hybrid') {
+    if (analysisResult.strategy === 'structured_only' || 
+        analysisResult.strategy === 'hybrid' ||
+        analysisResult.needsRiskData === true ||
+        analysisResult.queryType === 'risk' ||
+        analysisResult.queryType === 'counting' ||
+        (analysisResult.entities?.zots && analysisResult.entities.zots.length > 0)) {
       console.log('🔧 Generating SQL...');
       agentTrace.push({ step: 'sql_generation', timestamp: Date.now() });
       
@@ -254,7 +259,13 @@ serve(async (req) => {
                   userMessage.toLowerCase().includes('médio'),
         needsAll: userMessage.toLowerCase().includes('todas as zonas') || 
                   userMessage.toLowerCase().includes('todos os bairros'),
-        useRegimeTable: true // Forçar uso da tabela regime_urbanistico
+        
+        // NOVOS hints para outras tabelas
+        needsRiskData: analysisResult.needsRiskData || analysisResult.queryType === 'risk',
+        needsZotData: analysisResult.entities?.zots?.length > 0,
+        targetTable: analysisResult.needsRiskData ? 'bairros_risco_desastre' : 
+                    analysisResult.entities?.zots?.length > 0 ? 'zots_bairros' : 
+                    'regime_urbanistico'
       };
       
       // Log detailed SQL generation debug info
