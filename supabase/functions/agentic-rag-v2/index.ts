@@ -63,44 +63,39 @@ serve(async (req) => {
       }
     }
     
-    // 2. BAIRROS "EM ÁREA DE ESTUDO" PARA PROTEÇÃO CONTRA ENCHENTES
-    if (queryLower.includes('área de estudo') || 
+    // 2. BAIRROS "EM ÁREA DE ESTUDO" PARA PROTEÇÃO CONTRA ENCHENTES - CORRIGIDO
+    if (queryLower.includes('área de estudo') || queryLower.includes('enchentes') ||
        (queryLower.includes('proteção') && queryLower.includes('enchente')) ||
        (queryLower.includes('quantos') && queryLower.includes('bairro') && queryLower.includes('estudo'))) {
       console.log('📋 Executando busca por bairros em área de estudo...');
       
-      if (queryLower.includes('quantos')) {
-        // CORREÇÃO: Usar a query correta para enchentes de 2024 (13 bairros)
-        const { data: countResults, error } = await supabaseClient
-          .from('bairros_risco_desastre')
-          .select('bairro_nome')
-          .ilike('areas_criticas', '%enchentes de 2024%');
+      // Buscar SEMPRE os bairros afetados pelas enchentes de 2024
+      const { data: areaResults, error } = await supabaseClient
+        .from('bairros_risco_desastre')
+        .select('bairro_nome, areas_criticas, observacoes')
+        .ilike('areas_criticas', '%enchentes de 2024%')
+        .order('bairro_nome');
 
-        if (!error) {
+      if (!error && areaResults && areaResults.length > 0) {
+        if (queryLower.includes('quantos')) {
           executionResults.push({
             query: 'Contar bairros afetados por enchentes 2024',
             table: 'bairros_risco_desastre',
             purpose: 'Contar quantos bairros foram afetados pelas enchentes de 2024',
-            data: [{ total_bairros_enchentes_2024: countResults?.length || 0 }]
+            data: [{ 
+              total_bairros_enchentes_2024: areaResults.length,
+              bairros_lista: areaResults.map(b => b.bairro_nome)
+            }]
           });
-          hasResults = true;
-        }
-      } else {
-        const { data: areaResults, error } = await supabaseClient
-          .from('bairros_risco_desastre')
-          .select('bairro_nome, areas_criticas, observacoes')
-          .ilike('areas_criticas', '%enchentes de 2024%')
-          .order('bairro_nome');
-
-        if (!error && areaResults && areaResults.length > 0) {
+        } else {
           executionResults.push({
             query: 'Busca bairros área de estudo',
             table: 'bairros_risco_desastre',
             purpose: 'Buscar bairros em área de estudo para proteção contra enchentes',
             data: areaResults
           });
-          hasResults = true;
         }
+        hasResults = true;
       }
     }
     
@@ -180,16 +175,23 @@ serve(async (req) => {
             }
           }
           
-          // Bairros em Área de Estudo
-          else if (result.purpose.includes('área de estudo')) {
-            if (result.data[0]?.total_bairros_em_area_de_estudo !== undefined) {
-              const total = result.data[0].total_bairros_em_area_de_estudo;
-              finalResponse = `Segundo os dados oficiais do Plano Diretor de Porto Alegre, **${total} bairros** estão classificados como "Em Área de Estudo" para proteção contra enchentes.\n\n`;
-              finalResponse += `Esta classificação indica bairros que necessitam de estudos mais detalhados para implementação de medidas de proteção contra inundações, considerando aspectos como topografia, drenagem urbana e histórico de ocorrências.`;
-            } else {
-              const bairros = result.data.map(b => b.bairro_nome).join(', ');
-              finalResponse = `Os seguintes bairros estão em "Área de Estudo" para proteção contra enchentes:\n\n${bairros}\n\n`;
+          // Bairros em Área de Estudo - CORRIGIDO
+          else if (result.purpose.includes('área de estudo') || result.purpose.includes('enchentes de 2024')) {
+            if (result.data[0]?.total_bairros_enchentes_2024 !== undefined) {
+              const total = result.data[0].total_bairros_enchentes_2024;
+              const bairrosList = result.data[0].bairros_lista;
+              finalResponse = `Segundo os dados oficiais, **${total} bairros** foram afetados pelas enchentes de 2024:\n\n`;
+              if (bairrosList && bairrosList.length > 0) {
+                finalResponse += bairrosList.map((b, i) => `${i + 1}. ${b}`).join('\n') + '\n\n';
+              }
               finalResponse += `Estes bairros necessitam de estudos específicos para implementação de medidas de proteção contra inundações.`;
+              confidence = 0.95;
+            } else {
+              const bairros = result.data.map(b => b.bairro_nome);
+              finalResponse = `Os seguintes **${result.data.length} bairros** foram afetados pelas enchentes de 2024:\n\n`;
+              finalResponse += bairros.map((b, i) => `${i + 1}. ${b}`).join('\n') + '\n\n';
+              finalResponse += `Estes bairros necessitam de estudos específicos para implementação de medidas de proteção contra inundações.`;
+              confidence = 0.9;
             }
             sources.tabular = result.data.length;
           }

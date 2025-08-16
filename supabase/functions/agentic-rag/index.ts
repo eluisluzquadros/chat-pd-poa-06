@@ -163,7 +163,7 @@ serve(async (req) => {
     }
 
     console.log('✅ Execução completa:', {
-      totalResults: executionResults.length,
+      totalResults: (executionResults && executionResults.length) || 0,
       hasValidData: hasResults
     });
 
@@ -172,9 +172,9 @@ serve(async (req) => {
     let confidence = hasResults ? 0.9 : 0.3;
     let sources = { tabular: 0, conceptual: 0 };
 
-    if (executionResults.length > 0) {
+    if (executionResults && executionResults.length > 0) {
       for (const result of executionResults) {
-        if (result.data && result.data.length > 0) {
+        if (result && result.data && result.data.length > 0) {
           // Certificação em Sustentabilidade Ambiental
           if (result.purpose.includes('Certificação')) {
             const relevantDocs = result.data.filter(doc => 
@@ -255,7 +255,7 @@ serve(async (req) => {
         timestamp: new Date().toISOString(),
         sessionId: sessionId,
         model: model,
-        totalQueries: executionResults.length,
+        totalQueries: (executionResults && executionResults.length) || 0,
         hasValidResults: hasResults
       }
     };
