@@ -421,24 +421,6 @@ export type Database = {
         }
         Relationships: []
       }
-      document_sections_backup: {
-        Row: {
-          content: string | null
-          id: string | null
-          metadata: Json | null
-        }
-        Insert: {
-          content?: string | null
-          id?: string | null
-          metadata?: Json | null
-        }
-        Update: {
-          content?: string | null
-          id?: string | null
-          metadata?: Json | null
-        }
-        Relationships: []
-      }
       documents: {
         Row: {
           content: string | null
@@ -1063,123 +1045,6 @@ export type Database = {
           sql_complexity?: string | null
           tags?: string[] | null
           test_id?: string
-          updated_at?: string | null
-          version?: number | null
-        }
-        Relationships: []
-      }
-      qa_test_cases_backup: {
-        Row: {
-          category: string | null
-          created_at: string | null
-          difficulty: string | null
-          expected_answer: string | null
-          expected_sql: string | null
-          id: string | null
-          is_active: boolean | null
-          is_sql_related: boolean | null
-          question: string | null
-          sql_complexity: string | null
-          tags: string[] | null
-          test_id: string | null
-          updated_at: string | null
-          version: number | null
-        }
-        Insert: {
-          category?: string | null
-          created_at?: string | null
-          difficulty?: string | null
-          expected_answer?: string | null
-          expected_sql?: string | null
-          id?: string | null
-          is_active?: boolean | null
-          is_sql_related?: boolean | null
-          question?: string | null
-          sql_complexity?: string | null
-          tags?: string[] | null
-          test_id?: string | null
-          updated_at?: string | null
-          version?: number | null
-        }
-        Update: {
-          category?: string | null
-          created_at?: string | null
-          difficulty?: string | null
-          expected_answer?: string | null
-          expected_sql?: string | null
-          id?: string | null
-          is_active?: boolean | null
-          is_sql_related?: boolean | null
-          question?: string | null
-          sql_complexity?: string | null
-          tags?: string[] | null
-          test_id?: string | null
-          updated_at?: string | null
-          version?: number | null
-        }
-        Relationships: []
-      }
-      qa_test_cases_backup_clean: {
-        Row: {
-          category: string | null
-          complexity: string | null
-          created_at: string | null
-          difficulty: string | null
-          expected_answer: string | null
-          expected_keywords: string[] | null
-          expected_response: string | null
-          expected_sql: string | null
-          id: number | null
-          is_active: boolean | null
-          is_sql_related: boolean | null
-          min_response_length: number | null
-          query: string | null
-          question: string | null
-          sql_complexity: string | null
-          tags: string[] | null
-          test_id: string | null
-          updated_at: string | null
-          version: number | null
-        }
-        Insert: {
-          category?: string | null
-          complexity?: string | null
-          created_at?: string | null
-          difficulty?: string | null
-          expected_answer?: string | null
-          expected_keywords?: string[] | null
-          expected_response?: string | null
-          expected_sql?: string | null
-          id?: number | null
-          is_active?: boolean | null
-          is_sql_related?: boolean | null
-          min_response_length?: number | null
-          query?: string | null
-          question?: string | null
-          sql_complexity?: string | null
-          tags?: string[] | null
-          test_id?: string | null
-          updated_at?: string | null
-          version?: number | null
-        }
-        Update: {
-          category?: string | null
-          complexity?: string | null
-          created_at?: string | null
-          difficulty?: string | null
-          expected_answer?: string | null
-          expected_keywords?: string[] | null
-          expected_response?: string | null
-          expected_sql?: string | null
-          id?: number | null
-          is_active?: boolean | null
-          is_sql_related?: boolean | null
-          min_response_length?: number | null
-          query?: string | null
-          question?: string | null
-          sql_complexity?: string | null
-          tags?: string[] | null
-          test_id?: string | null
           updated_at?: string | null
           version?: number | null
         }
@@ -2143,36 +2008,6 @@ export type Database = {
         }
         Relationships: []
       }
-      zots_bairros_backup: {
-        Row: {
-          bairro: string | null
-          created_at: string | null
-          id: number | null
-          tem_zona_especial: boolean | null
-          total_zonas_no_bairro: number | null
-          updated_at: string | null
-          zona: string | null
-        }
-        Insert: {
-          bairro?: string | null
-          created_at?: string | null
-          id?: number | null
-          tem_zona_especial?: boolean | null
-          total_zonas_no_bairro?: number | null
-          updated_at?: string | null
-          zona?: string | null
-        }
-        Update: {
-          bairro?: string | null
-          created_at?: string | null
-          id?: number | null
-          tem_zona_especial?: boolean | null
-          total_zonas_no_bairro?: number | null
-          updated_at?: string | null
-          zona?: string | null
-        }
-        Relationships: []
-      }
     }
     Views: {
       benchmark_analysis: {
@@ -2625,6 +2460,10 @@ export type Database = {
           document_id: number
           similarity: number
         }[]
+      }
+      run_comprehensive_qa_test: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
       }
       search_content_by_similarity: {
         Args: { match_count?: number; search_query: string }
