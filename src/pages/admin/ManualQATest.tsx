@@ -89,10 +89,12 @@ export default function ManualQATest() {
     const currentCase = testCases[currentTestIndex];
 
     try {
-      const { data, error } = await supabase.functions.invoke('response-synthesizer-rag', {
+      const { data, error } = await supabase.functions.invoke('agentic-rag', {
         body: { 
-          query: currentCase.question || currentCase.query,
-          sessionId: 'manual-qa-test'
+          message: currentCase.question || currentCase.query,
+          sessionId: 'manual-qa-test',
+          userRole: 'admin',
+          model: 'gpt-4o-mini'
         }
       });
 
