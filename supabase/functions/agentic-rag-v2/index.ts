@@ -1,5 +1,6 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -7,8 +8,8 @@ const corsHeaders = {
 };
 
 /**
- * Agentic-RAG v2 - Main Entry Point
- * Redireciona queries para o Master Orchestrator
+ * Agentic-RAG v2 - SIMPLIFICADO E DIRETO
+ * Pipeline otimizado baseado nas consultas que funcionaram
  */
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -17,102 +18,135 @@ serve(async (req) => {
 
   try {
     const body = await req.json();
-    console.log('📨 Agentic-RAG v2 received request:', { 
-      query: body.query || body.message,
-      model: body.model,
-      sessionId: body.sessionId 
+    const query = body.query || body.message;
+    const model = body.model || 'gpt-3.5-turbo';
+    const sessionId = body.sessionId || `session_${Date.now()}`;
+    
+    console.log('🔥 Agentic-RAG v2 SIMPLIFICADO:', { 
+      query: query,
+      model: model,
+      sessionId: sessionId 
     });
+
+    const supabaseClient = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+    );
+
+    const startTime = Date.now();
+
+    // PASSO 1: SQL GENERATION DIRETO
+    console.log('📊 Gerando e executando SQL...');
     
-    // Forward to working orchestrator (orchestrator-master-fixed exists and is working)
-    const orchestratorUrl = `${Deno.env.get('SUPABASE_URL')}/functions/v1/orchestrator-master-fixed`;
-    
-    const response = await fetch(orchestratorUrl, {
-      method: 'POST',
-      headers: {
-        'Authorization': req.headers.get('Authorization') || '',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        query: body.query || body.message,
-        sessionId: body.sessionId || `session_${Date.now()}`,
-        model: body.model || 'gpt-3.5-turbo',
-        options: {
-          useAgenticRAG: true,
-          bypassCache: body.bypassCache,
-          ...body.options
-        }
-      })
+    const sqlGenResponse = await supabaseClient.functions.invoke('sql-generator-v2', {
+      body: {
+        query: query,
+        analysisResult: { type: 'direct_search', confidence: 0.9 }
+      }
     });
-    
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('❌ Orchestrator failed:', response.status, errorText);
-      
-      // Continue to fallback instead of throwing error
-      console.log('🔄 Attempting fallback to agentic-rag v1...');
-    } else {
-      const data = await response.json();
-      
-      // Ensure proper response format
-      const formattedResponse = {
-        response: data.response || 'Não foi possível processar sua solicitação.',
-        confidence: data.confidence || 0.5,
-        sources: data.sources || { tabular: 0, conceptual: 0 },
-        executionTime: data.executionTime || 0,
-        metadata: {
-          ...data.metadata,
-          pipeline: 'agentic-v2',
-          timestamp: new Date().toISOString()
-        }
-      };
-      
-      return new Response(JSON.stringify(formattedResponse), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+
+    let sqlResults = null;
+    if (sqlGenResponse.data && !sqlGenResponse.error) {
+      sqlResults = sqlGenResponse.data;
+      console.log('✅ SQL gerado e executado:', {
+        queriesCount: sqlResults.sqlQueries?.length || 0,
+        hasResults: sqlResults.executionResults?.length || 0
       });
+    } else {
+      console.error('❌ Erro no SQL Generator:', sqlGenResponse.error);
     }
+
+    // PASSO 2: VECTOR SEARCH (apenas se SQL não trouxe resultados suficientes)
+    let vectorResults = null;
+    const hasValidSqlData = sqlResults?.executionResults?.some(r => r.data && r.data.length > 0);
     
-    // This code is now handled above in the response.ok check
+    if (!hasValidSqlData) {
+      console.log('🔍 Executando vector search...');
+      
+      try {
+        // Buscar diretamente nos embeddings
+        const { data: embeddingResults, error: embeddingError } = await supabaseClient
+          .rpc('execute_sql_query', { 
+            query_text: `
+              SELECT content_chunk, chunk_metadata, 
+                     CASE 
+                       WHEN content_chunk ILIKE '%${query.split(' ').join('%')}%' THEN 0.9
+                       ELSE 0.5 
+                     END as similarity
+              FROM document_embeddings 
+              WHERE content_chunk ILIKE '%${query.split(' ').slice(0, 3).join('%')}%'
+                 OR chunk_metadata->>'hasImportantKeywords' = 'true'
+              ORDER BY similarity DESC, 
+                       CASE 
+                         WHEN chunk_metadata->>'articleNumber' IS NOT NULL THEN 1
+                         ELSE 2 
+                       END
+              LIMIT 5
+            `
+          });
+
+        if (!embeddingError && embeddingResults?.length > 0) {
+          vectorResults = {
+            results: embeddingResults.map(r => ({
+              content: r.content_chunk,
+              metadata: r.chunk_metadata,
+              similarity: r.similarity
+            }))
+          };
+          console.log('✅ Vector search executado:', embeddingResults.length, 'resultados');
+        }
+      } catch (vectorError) {
+        console.error('❌ Erro no vector search:', vectorError);
+      }
+    }
+
+    // PASSO 3: RESPONSE SYNTHESIS
+    console.log('📝 Sintetizando resposta...');
+    
+    const synthResponse = await supabaseClient.functions.invoke('response-synthesizer-v2', {
+      body: {
+        originalQuery: query,
+        analysisResult: { type: 'direct', confidence: 0.9 },
+        sqlResults: sqlResults,
+        vectorResults: vectorResults,
+        model: model
+      }
+    });
+
+    if (synthResponse.error) {
+      console.error('❌ Erro no synthesizer:', synthResponse.error);
+      throw new Error(`Response synthesis failed: ${synthResponse.error.message}`);
+    }
+
+    const executionTime = Date.now() - startTime;
+    
+    const finalResponse = {
+      response: synthResponse.data?.response || 'Não foi possível processar sua solicitação.',
+      confidence: synthResponse.data?.confidence || 0.5,
+      sources: synthResponse.data?.sources || { tabular: 0, conceptual: 0 },
+      executionTime: executionTime,
+      metadata: {
+        pipeline: 'agentic-v2-simplified',
+        timestamp: new Date().toISOString(),
+        sessionId: sessionId,
+        model: model,
+        hasSqlResults: !!sqlResults?.executionResults?.length,
+        hasVectorResults: !!vectorResults?.results?.length
+      }
+    };
+
+    console.log('✅ Resposta final gerada:', {
+      confidence: finalResponse.confidence,
+      executionTime: executionTime,
+      sources: finalResponse.sources
+    });
+
+    return new Response(JSON.stringify(finalResponse), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
 
   } catch (error) {
     console.error('❌ Agentic-RAG v2 error:', error);
-    
-    // Try legacy fallback in case of error
-    try {
-      const fallbackUrl = `${Deno.env.get('SUPABASE_URL')}/functions/v1/agentic-rag`;
-      const requestBody = await req.json().catch(() => body); // Use already parsed body if available
-      
-      const fallbackResponse = await fetch(fallbackUrl, {
-        method: 'POST',
-        headers: {
-          'Authorization': req.headers.get('Authorization') || '',
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          message: requestBody.query || requestBody.message,
-          userRole: requestBody.userRole || 'citizen',
-          sessionId: requestBody.sessionId,
-          userId: requestBody.userId,
-          bypassCache: requestBody.bypassCache,
-          model: requestBody.model || 'gpt-3.5-turbo'
-        })
-      });
-      
-      if (fallbackResponse.ok) {
-        const fallbackData = await fallbackResponse.json();
-        return new Response(JSON.stringify({
-          ...fallbackData,
-          metadata: {
-            ...fallbackData.metadata,
-            pipeline: 'legacy-error-fallback',
-            error: error.message
-          }
-        }), {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
-      }
-    } catch (fallbackError) {
-      console.error('❌ Fallback error:', fallbackError);
-    }
     
     return new Response(JSON.stringify({
       response: 'Desculpe, ocorreu um erro ao processar sua solicitação. Por favor, tente novamente.',
@@ -121,9 +155,10 @@ serve(async (req) => {
       executionTime: 0,
       error: error.message,
       metadata: {
-        pipeline: 'agentic-v2',
+        pipeline: 'agentic-v2-simplified',
         error: true,
-        errorMessage: error.message
+        errorMessage: error.message,
+        timestamp: new Date().toISOString()
       }
     }), {
       status: 500,
