@@ -87,8 +87,9 @@ export class UnifiedRAGService {
     const endpoint = this.getEndpoint();
     const requestBody = this.formatRequestBody(options, endpoint);
     
-    console.log(`[UnifiedRAGService] Calling ${endpoint} with model: ${options.model}`);
-    console.log('[UnifiedRAGService] Request body:', requestBody);
+    console.log(`🎯 [UnifiedRAGService] Using endpoint: ${endpoint}`);
+    console.log(`📝 [UnifiedRAGService] Query: "${options.message}"`);
+    console.log(`🔧 [UnifiedRAGService] Request body:`, requestBody);
     
     const startTime = Date.now();
     
@@ -98,15 +99,27 @@ export class UnifiedRAGService {
       });
 
       const responseTime = Date.now() - startTime;
-      console.log(`[UnifiedRAGService] Response received in ${responseTime}ms`);
+      console.log(`⏱️ [UnifiedRAGService] Response received in ${responseTime}ms`);
 
       if (error) {
-        console.error(`[UnifiedRAGService] Error:`, error);
+        console.error(`❌ [UnifiedRAGService] Error:`, error);
         throw new Error(`RAG system error: ${error.message || 'Unknown error'}`);
       }
 
       if (!data) {
+        console.error(`❌ [UnifiedRAGService] Empty response from ${endpoint}`);
         throw new Error('RAG system returned empty response');
+      }
+
+      console.log(`✅ [UnifiedRAGService] Response received`);
+      console.log(`📊 [UnifiedRAGService] Confidence: ${data.confidence}`);
+      console.log(`📝 [UnifiedRAGService] Response preview:`, data.response?.substring(0, 200));
+      
+      if (data.agentTrace) {
+        console.log(`🤖 [UnifiedRAGService] Agent trace: ${data.agentTrace.length} agents`);
+        data.agentTrace.forEach((agent: any, i: number) => {
+          console.log(`   Agent ${i}: ${agent.type} (confidence: ${agent.confidence}, hasData: ${agent.hasRegimeData || agent.hasRiskData || agent.hasZotData || 'none'})`);
+        });
       }
 
       // Ensure consistent response format
@@ -115,6 +128,7 @@ export class UnifiedRAGService {
         confidence: data.confidence || 0,
         sources: data.sources || { tabular: 0, conceptual: 0 },
         executionTime: data.executionTime || responseTime,
+        agentTrace: data.agentTrace || [],
         metadata: {
           ...data.metadata,
           endpoint,
@@ -124,7 +138,7 @@ export class UnifiedRAGService {
       };
       
     } catch (error) {
-      console.error(`[UnifiedRAGService] Failed after ${Date.now() - startTime}ms:`, error);
+      console.error(`❌ [UnifiedRAGService] Failed after ${Date.now() - startTime}ms:`, error);
       throw error;
     }
   }
