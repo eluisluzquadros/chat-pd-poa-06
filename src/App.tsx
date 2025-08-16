@@ -17,6 +17,7 @@ import QualityV2 from "./pages/admin/QualityV2";
 import QualityTest from "./pages/admin/QualityTest";
 import TestQA from "./pages/admin/TestQA";
 import TestQACases from "./pages/admin/TestQACases";
+import ManualQATest from "./pages/admin/ManualQATest";
 import FeedbackManagement from "./pages/admin/FeedbackManagement";
 import UserSettings from "./pages/UserSettings";
 import Reports from "./pages/Reports";
@@ -105,6 +106,13 @@ function App() {
                 <SimpleAuthGuard>
                   <SimpleRoleGuard adminOnly={true}>
                     <TestQACases />
+                  </SimpleRoleGuard>
+                </SimpleAuthGuard>
+              } />
+              <Route path="/admin/manual-qa-test" element={
+                <SimpleAuthGuard>
+                  <SimpleRoleGuard adminOnly={true}>
+                    <ManualQATest />
                   </SimpleRoleGuard>
                 </SimpleAuthGuard>
               } />

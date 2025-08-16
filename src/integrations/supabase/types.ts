@@ -715,6 +715,51 @@ export type Database = {
         }
         Relationships: []
       }
+      manual_qa_results: {
+        Row: {
+          actual_answer: string
+          category: string
+          expected_answer: string
+          id: string
+          is_correct: boolean
+          notes: string | null
+          question: string
+          response_time_ms: number | null
+          session_info: Json | null
+          test_case_id: number
+          tested_at: string
+          tested_by: string | null
+        }
+        Insert: {
+          actual_answer: string
+          category: string
+          expected_answer: string
+          id?: string
+          is_correct: boolean
+          notes?: string | null
+          question: string
+          response_time_ms?: number | null
+          session_info?: Json | null
+          test_case_id: number
+          tested_at?: string
+          tested_by?: string | null
+        }
+        Update: {
+          actual_answer?: string
+          category?: string
+          expected_answer?: string
+          id?: string
+          is_correct?: boolean
+          notes?: string | null
+          question?: string
+          response_time_ms?: number | null
+          session_info?: Json | null
+          test_case_id?: number
+          tested_at?: string
+          tested_by?: string | null
+        }
+        Relationships: []
+      }
       message_feedback: {
         Row: {
           comment: string | null
