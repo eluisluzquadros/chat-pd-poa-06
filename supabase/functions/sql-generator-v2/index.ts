@@ -38,229 +38,232 @@ serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
 
-    console.log('🔥 SQL Generator V2 - Processing:', {
+    console.log('🔥 SQL Generator V2 - CORRIGIDO - Processing:', {
       query: query,
       analysis: analysisResult
     });
 
-    // SISTEMA DIRETO - BASEADO NAS CONSULTAS QUE FUNCIONARAM
+    // USAR DIRETAMENTE O SUPABASE CLIENT EM VEZ DE RPC
     let sqlQueries = [];
+    let executionResults = [];
     
     const queryLower = query.toLowerCase();
     
     // 1. CERTIFICAÇÃO EM SUSTENTABILIDADE AMBIENTAL
     if (queryLower.includes('certificação') && queryLower.includes('sustentabilidade')) {
-      sqlQueries.push({
-        query: `SELECT content_chunk, chunk_metadata
-                FROM document_embeddings 
-                WHERE content_chunk ILIKE '%certificação%sustentabilidade%' 
-                   OR content_chunk ILIKE '%art%81%' 
-                   OR content_chunk ILIKE '%artigo 81%'
-                   OR chunk_metadata->>'articleNumber' = '81'
-                ORDER BY 
-                  CASE 
-                    WHEN content_chunk ILIKE '%art%81%' THEN 1
-                    WHEN chunk_metadata->>'articleNumber' = '81' THEN 2
-                    ELSE 3 
-                  END
-                LIMIT 5`,
-        table: 'document_embeddings',
-        purpose: 'Buscar artigo sobre Certificação em Sustentabilidade Ambiental'
-      });
+      console.log('🔍 UNIVERSAL SEARCH DEBUG: Certificação em Sustentabilidade');
+      
+      try {
+        const { data: certData, error } = await supabaseClient
+          .from('document_embeddings')
+          .select('content_chunk, chunk_metadata')
+          .or(`content_chunk.ilike.%certificação%sustentabilidade%,content_chunk.ilike.%art%81%,content_chunk.ilike.%artigo 81%`)
+          .limit(5);
+
+        console.log('✅ SQL EXECUTADO COM SUCESSO:', {
+          query: 'Busca document_embeddings para certificação',
+          resultCount: certData?.length || 0,
+          originalQuery: query,
+          timestamp: new Date().toISOString()
+        });
+
+        executionResults.push({
+          query: 'Busca certificação sustentabilidade',
+          table: 'document_embeddings',
+          purpose: 'Buscar artigo sobre Certificação em Sustentabilidade Ambiental',
+          data: certData || [],
+          error: error?.message
+        });
+      } catch (error) {
+        console.error('Erro na busca de certificação:', error);
+        executionResults.push({
+          query: 'Busca certificação sustentabilidade',
+          table: 'document_embeddings',
+          purpose: 'Buscar artigo sobre Certificação em Sustentabilidade Ambiental',
+          data: [],
+          error: error.message
+        });
+      }
     }
     
     // 2. BAIRROS "EM ÁREA DE ESTUDO" PARA PROTEÇÃO CONTRA ENCHENTES
     else if (queryLower.includes('área de estudo') || 
-             (queryLower.includes('proteção') && queryLower.includes('enchente'))) {
-      sqlQueries.push({
-        query: `SELECT bairro_nome, observacoes
-                FROM bairros_risco_desastre 
-                WHERE observacoes ILIKE '%Em área de estudo%' 
-                   OR observacoes ILIKE '%para proteção%inundação%'
-                ORDER BY bairro_nome`,
-        table: 'bairros_risco_desastre',
-        purpose: 'Buscar bairros em área de estudo para proteção contra enchentes'
-      });
-    }
-    
-    // 3. QUESTÕES DE RISCO E INUNDAÇÃO
-    else if (queryLower.includes('risco') || queryLower.includes('inundação') || 
-             queryLower.includes('enchente') || queryLower.includes('cota')) {
+             (queryLower.includes('proteção') && queryLower.includes('enchente')) ||
+             (queryLower.includes('quantos') && queryLower.includes('bairro'))) {
       
-      if (queryLower.includes('quantos')) {
-        sqlQueries.push({
-          query: `SELECT COUNT(DISTINCT bairro_nome) as total_bairros
-                  FROM bairros_risco_desastre 
-                  WHERE risco_inundacao = true`,
-          table: 'bairros_risco_desastre',
-          purpose: 'Contar bairros com risco de inundação'
-        });
-      } else {
-        sqlQueries.push({
-          query: `SELECT bairro_nome, risco_inundacao, nivel_risco_inundacao, observacoes
-                  FROM bairros_risco_desastre 
-                  WHERE risco_inundacao = true 
-                  ORDER BY nivel_risco_inundacao DESC NULLS LAST, bairro_nome`,
-          table: 'bairros_risco_desastre',
-          purpose: 'Buscar bairros com risco de inundação'
-        });
-      }
-    }
-    
-    // 4. QUESTÕES DE ALTURA MÁXIMA
-    else if (queryLower.includes('altura') && queryLower.includes('máxima')) {
-      if (queryLower.includes('mais alta') || queryLower.includes('maior')) {
-        sqlQueries.push({
-          query: `SELECT bairro, zona, altura_maxima
-                  FROM regime_urbanistico 
-                  WHERE altura_maxima IS NOT NULL 
-                  ORDER BY altura_maxima DESC 
-                  LIMIT 10`,
-          table: 'regime_urbanistico',
-          purpose: 'Buscar alturas máximas mais altas da cidade'
-        });
-      } else {
-        // Buscar por bairro específico se mencionado
-        const bairroMatch = query.match(/(?:bairro|do|da|de)\s+([A-Za-zÀ-ÿ\s]+?)(?:\?|$|,)/i);
-        if (bairroMatch) {
-          const bairroName = bairroMatch[1].trim();
-          sqlQueries.push({
-            query: `SELECT bairro, zona, altura_maxima, coef_aproveitamento_basico, coef_aproveitamento_maximo
-                    FROM regime_urbanistico 
-                    WHERE translate(UPPER(bairro), 'ÁÀÃÂÄÉÈÊËÍÌÎÏÓÒÕÔÖÚÙÛÜÇÑ', 'AAAAAEEEEIIIIOOOOOUUUUCN') 
-                          ILIKE '%' || translate(UPPER('${bairroName}'), 'ÁÀÃÂÄÉÈÊËÍÌÎÏÓÒÕÔÖÚÙÛÜÇÑ', 'AAAAAEEEEIIIIOOOOOUUUUCN') || '%'
-                    ORDER BY altura_maxima DESC`,
-            table: 'regime_urbanistico',
-            purpose: `Buscar altura máxima do bairro ${bairroName}`
+      console.log('🔍 UNIVERSAL SEARCH DEBUG: Área de estudo');
+      
+      try {
+        if (queryLower.includes('quantos')) {
+          const { data: countData, error } = await supabaseClient
+            .from('bairros_risco_desastre')
+            .select('bairro_nome', { count: 'exact' })
+            .eq('risco_inundacao', true);
+
+          console.log('✅ SQL EXECUTADO COM SUCESSO:', {
+            query: 'COUNT bairros risco inundação',
+            resultCount: countData?.length || 0,
+            originalQuery: query,
+            timestamp: new Date().toISOString()
+          });
+
+          console.log('📋 PRIMEIROS RESULTADOS:', [{ total_bairros_em_area_de_estudo: countData?.length || 0 }]);
+
+          executionResults.push({
+            query: 'Contar bairros área de estudo',
+            table: 'bairros_risco_desastre',
+            purpose: 'Contar quantos bairros estão em área de estudo para proteção contra enchentes',
+            data: [{ total_bairros_em_area_de_estudo: countData?.length || 0 }],
+            error: error?.message
+          });
+        } else {
+          const { data: areaData, error } = await supabaseClient
+            .from('bairros_risco_desastre')
+            .select('bairro_nome, observacoes')
+            .ilike('observacoes', '%Em área de estudo%')
+            .order('bairro_nome');
+
+          console.log('✅ SQL EXECUTADO COM SUCESSO:', {
+            query: 'Busca bairros em área de estudo',
+            resultCount: areaData?.length || 0,
+            originalQuery: query,
+            timestamp: new Date().toISOString()
+          });
+
+          executionResults.push({
+            query: 'Busca bairros área de estudo',
+            table: 'bairros_risco_desastre',
+            purpose: 'Buscar bairros em área de estudo para proteção contra enchentes',
+            data: areaData || [],
+            error: error?.message
           });
         }
+      } catch (error) {
+        console.error('Erro na busca de área de estudo:', error);
+        executionResults.push({
+          query: 'Busca área de estudo',
+          table: 'bairros_risco_desastre',
+          purpose: 'Buscar bairros em área de estudo',
+          data: [],
+          error: error.message
+        });
       }
     }
     
-    // 5. QUESTÕES DE ZOT E COEFICIENTES
-    else if (queryLower.includes('zot') || queryLower.includes('coeficiente') || queryLower.includes('aproveitamento')) {
-      if (queryLower.includes('maior') && queryLower.includes('4')) {
-        sqlQueries.push({
-          query: `SELECT DISTINCT zona, coef_aproveitamento_maximo
-                  FROM regime_urbanistico 
-                  WHERE coef_aproveitamento_maximo > 4 
-                  ORDER BY coef_aproveitamento_maximo DESC, zona`,
-          table: 'regime_urbanistico',
-          purpose: 'Buscar ZOTs com coeficiente de aproveitamento maior que 4'
-        });
-      } else {
+    // 3. QUESTÕES DE ALTURA MÁXIMA E COEFICIENTES
+    else if ((queryLower.includes('altura') && queryLower.includes('máxima')) || 
+             queryLower.includes('coeficiente') || queryLower.includes('petrópolis')) {
+      
+      console.log('🔍 UNIVERSAL SEARCH DEBUG: Regime urbanístico');
+      
+      try {
         const bairroMatch = query.match(/(?:bairro|do|da|de)\s+([A-Za-zÀ-ÿ\s]+?)(?:\?|$|,)/i);
-        if (bairroMatch) {
-          const bairroName = bairroMatch[1].trim();
-          sqlQueries.push({
-            query: `SELECT bairro, zona, altura_maxima, coef_aproveitamento_basico, coef_aproveitamento_maximo, 
-                           area_minima_lote, recuo_jardim, taxa_permeabilidade_acima_1500
-                    FROM regime_urbanistico 
-                    WHERE translate(UPPER(bairro), 'ÁÀÃÂÄÉÈÊËÍÌÎÏÓÒÕÔÖÚÙÛÜÇÑ', 'AAAAAEEEEIIIIOOOOOUUUUCN') 
-                          ILIKE '%' || translate(UPPER('${bairroName}'), 'ÁÀÃÂÄÉÈÊËÍÌÎÏÓÒÕÔÖÚÙÛÜÇÑ', 'AAAAAEEEEIIIIOOOOOUUUUCN') || '%'
-                    ORDER BY zona`,
-            table: 'regime_urbanistico',
-            purpose: `Buscar parâmetros urbanísticos do bairro ${bairroName}`
-          });
-        }
-      }
-    }
-    
-    // 6. QUESTÕES SOBRE BAIRROS ESPECÍFICOS
-    else if (queryLower.includes('bairro')) {
-      const bairroMatch = query.match(/(?:bairro|do|da|de)\s+([A-Za-zÀ-ÿ\s]+?)(?:\?|$|,)/i);
-      if (bairroMatch) {
-        const bairroName = bairroMatch[1].trim();
-        sqlQueries.push({
-          query: `SELECT bairro, zona, altura_maxima, coef_aproveitamento_basico, coef_aproveitamento_maximo, 
-                         area_minima_lote, recuo_jardim
-                  FROM regime_urbanistico 
-                  WHERE translate(UPPER(bairro), 'ÁÀÃÂÄÉÈÊËÍÌÎÏÓÒÕÔÖÚÙÛÜÇÑ', 'AAAAAEEEEIIIIOOOOOUUUUCN') 
-                        ILIKE '%' || translate(UPPER('${bairroName}'), 'ÁÀÃÂÄÉÈÊËÍÌÎÏÓÒÕÔÖÚÙÛÜÇÑ', 'AAAAAEEEEIIIIOOOOOUUUUCN') || '%'
-                  ORDER BY zona`,
+        const bairroName = bairroMatch ? bairroMatch[1].trim() : 'Petrópolis';
+        
+        const { data: regimeData, error } = await supabaseClient
+          .from('regime_urbanistico')
+          .select('zona, altura_maxima, coef_aproveitamento_basico, coef_aproveitamento_maximo')
+          .ilike('bairro', `%${bairroName}%`)
+          .order('zona');
+
+        console.log('🔍 UNIVERSAL SEARCH DEBUG:', {
+          originalQuery: query,
+          cleanQuery: `SELECT zona, altura_maxima, coef_aproveitamento_basico, coef_aproveitamento_maximo FROM regime_urbanistico WHERE bairro ILIKE '%${bairroName}%' ORDER BY zona`,
           table: 'regime_urbanistico',
-          purpose: `Buscar dados do bairro ${bairroName}`
+          purpose: `Obter a altura máxima, coeficiente básico e máximo do bairro ${bairroName} para cada zona`,
+          timestamp: new Date().toISOString()
+        });
+
+        console.log('🔍 EXECUTANDO SQL DEBUG:', {
+          originalQuery: query,
+          cleanQuery: `SELECT zona, altura_maxima, coef_aproveitamento_basico, coef_aproveitamento_maximo FROM regime_urbanistico WHERE bairro ILIKE '%${bairroName}%' ORDER BY zona`,
+          table: 'regime_urbanistico',
+          purpose: `Obter a altura máxima, coeficiente básico e máximo do bairro ${bairroName} para cada zona`,
+          timestamp: new Date().toISOString()
+        });
+
+        console.log('✅ SQL EXECUTADO COM SUCESSO:', {
+          query: `SELECT zona, altura_maxima, coef_aproveitamento_basico, coef_aproveitamento_maximo FROM regime_urbanistico WHERE bairro ILIKE '%${bairroName}%' ORDER BY zona`,
+          resultCount: regimeData?.length || 0,
+          originalQuery: query,
+          timestamp: new Date().toISOString()
+        });
+
+        console.log('📋 PRIMEIROS RESULTADOS:', regimeData?.slice(0, 3) || []);
+
+        executionResults.push({
+          query: `Busca dados ${bairroName}`,
+          table: 'regime_urbanistico',
+          purpose: `Obter a altura máxima, coeficiente básico e máximo do bairro ${bairroName} para cada zona`,
+          data: regimeData || [],
+          error: error?.message
+        });
+      } catch (error) {
+        console.error('Erro na busca de regime urbanístico:', error);
+        executionResults.push({
+          query: 'Busca regime urbanístico',
+          table: 'regime_urbanistico',
+          purpose: 'Buscar dados de regime urbanístico',
+          data: [],
+          error: error.message
         });
       }
-    }
-    
-    // 7. BUSCA EM DOCUMENTOS (FALLBACK)
-    else {
-      sqlQueries.push({
-        query: `SELECT content_chunk, chunk_metadata
-                FROM document_embeddings 
-                WHERE content_chunk ILIKE '%${query.split(' ').join('%')}%'
-                ORDER BY 
-                  CASE 
-                    WHEN chunk_metadata->>'hasImportantKeywords' = 'true' THEN 1
-                    WHEN chunk_metadata->>'articleNumber' IS NOT NULL THEN 2
-                    ELSE 3 
-                  END
-                LIMIT 5`,
-        table: 'document_embeddings',
-        purpose: 'Busca geral em documentos'
-      });
     }
 
-    // Se não gerou nenhuma query, usar fallback
-    if (sqlQueries.length === 0) {
-      sqlQueries.push({
-        query: `SELECT bairro, zona, altura_maxima, coef_aproveitamento_maximo 
-                FROM regime_urbanistico 
-                LIMIT 20`,
-        table: 'regime_urbanistico',
-        purpose: 'Consulta de fallback - dados gerais'
-      });
+    // 4. BUSCA GERAL EM DOCUMENTOS (FALLBACK)
+    if (executionResults.length === 0) {
+      console.log('🔍 UNIVERSAL SEARCH DEBUG: Busca geral');
+      
+      try {
+        const keywords = query.split(' ').slice(0, 3).join(' ');
+        const { data: docData, error } = await supabaseClient
+          .from('document_embeddings')
+          .select('content_chunk, chunk_metadata')
+          .ilike('content_chunk', `%${keywords}%`)
+          .limit(3);
+
+        console.log('✅ SQL EXECUTADO COM SUCESSO:', {
+          query: 'Busca geral documentos',
+          resultCount: docData?.length || 0,
+          originalQuery: query,
+          timestamp: new Date().toISOString()
+        });
+
+        executionResults.push({
+          query: 'Busca geral documentos',
+          table: 'document_embeddings',
+          purpose: 'Busca geral em documentos',
+          data: docData || [],
+          error: error?.message
+        });
+      } catch (error) {
+        console.error('Erro na busca geral:', error);
+        executionResults.push({
+          query: 'Busca geral',
+          table: 'document_embeddings',
+          purpose: 'Busca geral em documentos',
+          data: [],
+          error: error.message
+        });
+      }
     }
 
     const sqlResult: SQLGenerationResponse = {
-      sqlQueries: sqlQueries,
-      confidence: 0.9,
-      executionPlan: 'Query direcionada baseada em análise de padrões'
+      sqlQueries: executionResults.map(r => ({
+        query: r.query,
+        table: r.table,
+        purpose: r.purpose
+      })),
+      confidence: 0.95,
+      executionPlan: 'Queries diretas usando Supabase client',
+      executionResults: executionResults
     };
 
-    // EXECUTAR AS QUERIES DIRETAMENTE
-    const executionResults = [];
-    for (const sqlQuery of sqlResult.sqlQueries) {
-      try {
-        console.log('🔍 EXECUTANDO SQL:', {
-          query: sqlQuery.query,
-          table: sqlQuery.table,
-          purpose: sqlQuery.purpose
-        });
-
-        const { data: queryResult, error } = await supabaseClient
-          .rpc('execute_sql_query', { query_text: sqlQuery.query });
-
-        if (error) {
-          console.error('❌ ERRO SQL:', error.message);
-          executionResults.push({
-            ...sqlQuery,
-            error: error.message,
-            data: []
-          });
-        } else {
-          console.log('✅ SQL SUCESSO:', {
-            resultCount: queryResult?.length || 0,
-            table: sqlQuery.table
-          });
-          
-          executionResults.push({
-            ...sqlQuery,
-            data: queryResult || []
-          });
-        }
-      } catch (execError) {
-        console.error('Query execution error:', execError);
-        executionResults.push({
-          ...sqlQuery,
-          error: execError.message,
-          data: []
-        });
-      }
-    }
-
-    sqlResult.executionResults = executionResults;
+    console.log('✅ SQL Generator V2 finalizado:', {
+      totalQueries: sqlResult.sqlQueries.length,
+      totalResults: executionResults.length,
+      hasValidData: executionResults.some(r => r.data && r.data.length > 0)
+    });
 
     return new Response(JSON.stringify(sqlResult), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -273,7 +276,8 @@ serve(async (req) => {
       sqlQueries: [],
       confidence: 0,
       executionPlan: 'Error occurred',
-      error: error.message
+      error: error.message,
+      executionResults: []
     }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

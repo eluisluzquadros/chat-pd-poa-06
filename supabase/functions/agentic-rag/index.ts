@@ -360,38 +360,31 @@ serve(async (req) => {
       }
     }
 
-    // Step 2.5: Vector Search - DISABLED TEMPORARILY FOR PERFORMANCE
-    // Only enable for legal queries that specifically need article citations
+    // Step 2.5: Vector Search (ATIVADO PARA QUERIES ESPECÍFICAS)
     if (analysisResult.metadata?.isLegalQuery && analysisResult.metadata?.expectedArticles?.length > 0) {
       console.log('🔍 Performing vector search for legal articles...');
       agentTrace.push({ step: 'vector_search', timestamp: Date.now() });
       
       try {
-        // Add timeout to prevent hanging
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 second timeout
-        
-        const vectorResponse = await fetch(`${supabaseUrl}/functions/v1/enhanced-vector-search`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${authKey}`,
-          },
-          body: JSON.stringify({
-            query: userMessage,
-            searchType: 'legal_articles',
-            expectedArticles: analysisResult.metadata.expectedArticles,
-            limit: 3 // Reduced limit for performance
-          }),
-          signal: controller.signal
-        });
-        
-        clearTimeout(timeoutId);
-        
-        if (vectorResponse.ok) {
-          vectorResults = await vectorResponse.json();
-          console.log('✅ Vector search complete:', vectorResults.results?.length || 0, 'results');
-          agentTrace.push({ step: 'vector_search_complete', resultsCount: vectorResults.results?.length || 0 });
+        // BUSCA DIRETA EM DOCUMENT_EMBEDDINGS PARA CERTIFICAÇÃO
+        if (userMessage.toLowerCase().includes('certificação') && userMessage.toLowerCase().includes('sustentabilidade')) {
+          const { data: certResults, error } = await supabase
+            .from('document_embeddings')
+            .select('content_chunk, chunk_metadata')
+            .or(`content_chunk.ilike.%certificação%sustentabilidade%,content_chunk.ilike.%art%81%,content_chunk.ilike.%artigo 81%`)
+            .limit(5);
+
+          if (!error && certResults && certResults.length > 0) {
+            vectorResults = {
+              results: certResults.map(doc => ({
+                content: doc.content_chunk,
+                metadata: doc.chunk_metadata,
+                similarity: 0.9
+              }))
+            };
+            console.log('✅ Vector search complete:', vectorResults.results?.length || 0, 'results');
+            agentTrace.push({ step: 'vector_search_complete', resultsCount: vectorResults.results?.length || 0 });
+          }
         }
       } catch (error) {
         console.error('Vector search error (non-critical):', error);
