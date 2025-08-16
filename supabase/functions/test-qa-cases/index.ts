@@ -42,9 +42,9 @@ export default async function handler(req: Request) {
     
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    console.log('🧪 Starting Comprehensive QA Test - Plan Implementation');
+    console.log('🧪 Starting Asynchronous QA Test');
     
-    // FASE 1: Fetch ALL active test cases (not just 10)
+    // Fetch ALL active test cases
     const { data: testCases, error: fetchError } = await supabase
       .from('qa_test_cases')
       .select('*')
@@ -87,112 +87,132 @@ export default async function handler(req: Request) {
 
     console.log(`🚀 Created validation run: ${validationRun.id}`);
 
-    // FASE 1: Execute tests with improved evaluation
-    const results: ValidationResult[] = [];
-    let passedTests = 0;
-    let totalAccuracy = 0;
-    let totalResponseTime = 0;
+    // Start background task using EdgeRuntime.waitUntil
+    const backgroundTask = async () => {
+      const results: ValidationResult[] = [];
+      let passedTests = 0;
+      let totalAccuracy = 0;
+      let totalResponseTime = 0;
 
-    // Process in smaller batches to avoid timeouts
-    const batchSize = 5;
-    for (let i = 0; i < testCases.length; i += batchSize) {
-      const batch = testCases.slice(i, i + batchSize);
+      // Process in smaller batches with delays to avoid timeouts
+      const batchSize = 2; // Reduced from 5 to 2
       
-      for (const testCase of batch) {
-        const startTime = Date.now();
+      for (let i = 0; i < testCases.length; i += batchSize) {
+        const batch = testCases.slice(i, i + batchSize);
         
-        try {
-          // Call the agentic-rag-v2 function
-          const { data: response, error: callError } = await supabase.functions.invoke('agentic-rag-v2', {
-            body: {
-              query: testCase.question || testCase.query,
-              model: 'openai/gpt-3.5-turbo-0125',
-              sessionId: `qa-test-${Date.now()}-${testCase.id}`
+        // Process batch tests in parallel but with timeout
+        const batchPromises = batch.map(async (testCase, batchIndex) => {
+          const testNumber = i + batchIndex + 1;
+          const startTime = Date.now();
+          
+          try {
+            console.log(`🔬 Testing ${testNumber}/${testCases.length}: ${testCase.category} - ${testCase.id}`);
+            
+            // Add individual test timeout of 30 seconds
+            const timeoutPromise = new Promise((_, reject) => 
+              setTimeout(() => reject(new Error('Test timeout after 30s')), 30000)
+            );
+            
+            const testPromise = supabase.functions.invoke('agentic-rag', {
+              body: {
+                query: testCase.question || testCase.query,
+                model: 'openai/gpt-3.5-turbo-0125',
+                sessionId: `qa-test-${Date.now()}-${testCase.id}`
+              }
+            });
+
+            const { data: response, error: callError } = await Promise.race([
+              testPromise,
+              timeoutPromise
+            ]) as any;
+
+            const responseTime = Date.now() - startTime;
+            
+            if (callError) {
+              throw new Error(`API call failed: ${callError.message}`);
             }
-          });
 
-          const responseTime = Date.now() - startTime;
-          
-          if (callError) {
-            throw new Error(`API call failed: ${callError.message}`);
-          }
-
-          const actualAnswer = response?.content || response?.message || '';
-          
-          // IMPROVED EVALUATION: Check keywords AND content
-          const evaluation = evaluateAnswer(actualAnswer, testCase.expected_answer, testCase.expected_keywords);
-          
-          const result: ValidationResult = {
-            test_case_id: testCase.id.toString(),
-            actual_answer: actualAnswer,
-            is_correct: evaluation.is_correct,
-            accuracy_score: evaluation.accuracy_score,
-            response_time_ms: responseTime,
-            keywords_found: evaluation.keywords_found,
-            keyword_accuracy: evaluation.keyword_accuracy
-          };
-
-          // Save result to database
-          await supabase
-            .from('qa_validation_results')
-            .insert({
+            const actualAnswer = response?.content || response?.message || '';
+            
+            // Evaluate answer
+            const evaluation = evaluateAnswer(actualAnswer, testCase.expected_answer, testCase.expected_keywords);
+            
+            const result: ValidationResult = {
               test_case_id: testCase.id.toString(),
-              validation_run_id: validationRun.id,
-              model: 'agentic-rag-v2',
               actual_answer: actualAnswer,
               is_correct: evaluation.is_correct,
               accuracy_score: evaluation.accuracy_score,
               response_time_ms: responseTime,
-              error_type: null,
-              error_details: null,
-              evaluation_reasoning: `Keywords found: ${evaluation.keywords_found.join(', ')} (${evaluation.keyword_accuracy}% accuracy)`
-            });
+              keywords_found: evaluation.keywords_found,
+              keyword_accuracy: evaluation.keyword_accuracy
+            };
 
-          results.push(result);
-          
-          if (evaluation.is_correct) passedTests++;
-          totalAccuracy += evaluation.accuracy_score;
-          totalResponseTime += responseTime;
+            // Save result to database
+            await supabase
+              .from('qa_validation_results')
+              .insert({
+                test_case_id: testCase.id.toString(),
+                validation_run_id: validationRun.id,
+                model: 'agentic-rag-v2',
+                actual_answer: actualAnswer,
+                is_correct: evaluation.is_correct,
+                accuracy_score: evaluation.accuracy_score,
+                response_time_ms: responseTime,
+                error_type: null,
+                error_details: null,
+                evaluation_reasoning: `Keywords found: ${evaluation.keywords_found.join(', ')} (${evaluation.keyword_accuracy}% accuracy)`
+              });
 
-          console.log(`✅ Test ${testCase.id} (${testCase.category}): ${evaluation.is_correct ? 'PASS' : 'FAIL'} - ${evaluation.accuracy_score}% accuracy`);
+            if (evaluation.is_correct) passedTests++;
+            totalAccuracy += evaluation.accuracy_score;
+            totalResponseTime += responseTime;
 
-        } catch (error) {
-          const responseTime = Date.now() - startTime;
-          
-          const result: ValidationResult = {
-            test_case_id: testCase.id.toString(),
-            actual_answer: '',
-            is_correct: false,
-            accuracy_score: 0,
-            response_time_ms: responseTime,
-            keywords_found: [],
-            keyword_accuracy: 0,
-            error_details: error.message
-          };
+            console.log(`✅ Test ${testCase.id}: ${evaluation.is_correct ? 'PASS' : 'FAIL'} - ${evaluation.accuracy_score}%`);
 
-          // Save error result
-          await supabase
-            .from('qa_validation_results')
-            .insert({
+            return result;
+
+          } catch (error) {
+            const responseTime = Date.now() - startTime;
+            
+            const result: ValidationResult = {
               test_case_id: testCase.id.toString(),
-              validation_run_id: validationRun.id,
-              model: 'agentic-rag-v2',
               actual_answer: '',
               is_correct: false,
               accuracy_score: 0,
               response_time_ms: responseTime,
-              error_type: 'api_error',
-              error_details: error.message,
-            });
+              keywords_found: [],
+              keyword_accuracy: 0,
+              error_details: error.message
+            };
 
-          results.push(result);
-          totalResponseTime += responseTime;
-          
-          console.log(`❌ Test ${testCase.id} ERROR: ${error.message}`);
-        }
+            // Save error result
+            await supabase
+              .from('qa_validation_results')
+              .insert({
+                test_case_id: testCase.id.toString(),
+                validation_run_id: validationRun.id,
+                model: 'agentic-rag-v2',
+                actual_answer: '',
+                is_correct: false,
+                accuracy_score: 0,
+                response_time_ms: responseTime,
+                error_type: 'api_error',
+                error_details: error.message,
+              });
 
-        // Update progress every test
-        const progress = i + batch.indexOf(testCase) + 1;
+            totalResponseTime += responseTime;
+            console.log(`❌ Test ${testCase.id} ERROR: ${error.message}`);
+
+            return result;
+          }
+        });
+
+        // Wait for batch to complete
+        const batchResults = await Promise.all(batchPromises);
+        results.push(...batchResults);
+
+        // Update progress after each batch
+        const progress = i + batch.length;
         await supabase
           .from('qa_validation_runs')
           .update({
@@ -202,35 +222,42 @@ export default async function handler(req: Request) {
             last_heartbeat: new Date().toISOString()
           })
           .eq('id', validationRun.id);
+
+        // Add delay between batches to prevent overload
+        if (i + batchSize < testCases.length) {
+          await new Promise(resolve => setTimeout(resolve, 2000)); // 2 second delay
+        }
       }
+
+      // Mark as completed
+      const finalAccuracy = testCases.length > 0 ? totalAccuracy / testCases.length : 0;
+      await supabase
+        .from('qa_validation_runs')
+        .update({
+          status: 'completed',
+          overall_accuracy: finalAccuracy,
+          completed_at: new Date().toISOString(),
+        })
+        .eq('id', validationRun.id);
+
+      console.log(`🎯 FINAL RESULTS: ${passedTests}/${testCases.length} passed (${finalAccuracy.toFixed(1)}% accuracy)`);
+    };
+
+    // Start background execution
+    if (typeof EdgeRuntime !== 'undefined' && EdgeRuntime.waitUntil) {
+      EdgeRuntime.waitUntil(backgroundTask());
+    } else {
+      // Fallback for local development
+      backgroundTask().catch(console.error);
     }
 
-    // Mark as completed
-    const finalAccuracy = testCases.length > 0 ? totalAccuracy / testCases.length : 0;
-    await supabase
-      .from('qa_validation_runs')
-      .update({
-        status: 'completed',
-        overall_accuracy: finalAccuracy,
-        completed_at: new Date().toISOString(),
-      })
-      .eq('id', validationRun.id);
-
-    // Generate category breakdown
-    const categoryStats = analyzeCategoryPerformance(results, testCases);
-
-    console.log(`🎯 FINAL RESULTS: ${passedTests}/${testCases.length} passed (${finalAccuracy.toFixed(1)}% accuracy)`);
-
+    // Return immediately with run_id for polling
     return Response.json({
-      status: 'completed',
+      status: 'started',
       validation_run_id: validationRun.id,
       total_cases: testCases.length,
-      passed_tests: passedTests,
-      overall_accuracy: finalAccuracy,
-      avg_response_time_ms: Math.round(totalResponseTime / testCases.length),
-      category_breakdown: categoryStats,
-      recommendations: generateRecommendations(finalAccuracy, categoryStats),
-      execution_time_minutes: Math.round((Date.now() - new Date(validationRun.started_at).getTime()) / 60000)
+      message: 'QA test started in background. Use the run_id to poll for progress.',
+      estimated_completion_minutes: Math.ceil(testCases.length / 6) // ~6 tests per minute
     }, { headers: corsHeaders });
 
   } catch (error) {
@@ -260,7 +287,7 @@ function evaluateAnswer(actual: string, expected: string, keywords: string[]): {
                            actualLower.includes('dados não encontrados') ||
                            actualLower.includes('sem dados') ||
                            actualLower.includes('nenhum dado') ||
-                           actualLower.length < 50; // Very short responses likely indicate no data
+                           actualLower.length < 50;
 
   if (isNoDataResponse) {
     return {
@@ -294,7 +321,7 @@ function evaluateAnswer(actual: string, expected: string, keywords: string[]): {
   const accuracyScore = (keywordAccuracy * 0.7) + (contentMatch ? 30 : 0);
   
   return {
-    is_correct: accuracyScore >= 70, // 70% threshold for "correct"
+    is_correct: accuracyScore >= 70,
     accuracy_score: Math.round(accuracyScore),
     keywords_found: keywordsFound,
     keyword_accuracy: Math.round(keywordAccuracy)
@@ -312,66 +339,4 @@ function calculateWordOverlap(text1: string, text2: string): number {
   ).length;
   
   return commonWords / Math.max(words1.length, words2.length);
-}
-
-function analyzeCategoryPerformance(results: ValidationResult[], testCases: QATestCase[]) {
-  const categoryMap: { [key: string]: { total: number; passed: number; accuracy: number } } = {};
-  
-  for (const result of results) {
-    const testCase = testCases.find(tc => tc.id.toString() === result.test_case_id);
-    if (!testCase) continue;
-    
-    const category = testCase.category;
-    if (!categoryMap[category]) {
-      categoryMap[category] = { total: 0, passed: 0, accuracy: 0 };
-    }
-    
-    categoryMap[category].total++;
-    if (result.is_correct) categoryMap[category].passed++;
-    categoryMap[category].accuracy += result.accuracy_score;
-  }
-  
-  // Calculate averages
-  for (const category in categoryMap) {
-    const stats = categoryMap[category];
-    stats.accuracy = stats.total > 0 ? stats.accuracy / stats.total : 0;
-  }
-  
-  return categoryMap;
-}
-
-function generateRecommendations(overallAccuracy: number, categoryStats: any): string[] {
-  const recommendations: string[] = [];
-  
-  if (overallAccuracy < 90) {
-    recommendations.push('🎯 PRIORIDADE: Implementar melhorias para atingir 90%+ accuracy');
-    
-    // Find worst performing categories
-    const sortedCategories = Object.entries(categoryStats)
-      .sort(([,a], [,b]) => (a as any).accuracy - (b as any).accuracy)
-      .slice(0, 3);
-    
-    for (const [category, stats] of sortedCategories) {
-      const s = stats as any;
-      if (s.accuracy < 70) {
-        recommendations.push(`🔧 Melhorar categoria "${category}" (${s.accuracy.toFixed(1)}% accuracy)`);
-      }
-    }
-  }
-  
-  if (overallAccuracy < 50) {
-    recommendations.push('🚨 CRÍTICO: Revisar completamente o sistema de response-synthesizer');
-    recommendations.push('🔍 Investigar queries que retornam "dados não encontrados"');
-  } else if (overallAccuracy < 70) {
-    recommendations.push('⚡ Otimizar roteamento de queries entre agentes especializados');
-    recommendations.push('📝 Refinar expected_keywords dos casos de teste');
-  } else if (overallAccuracy < 90) {
-    recommendations.push('🎨 Ajustar prompts dos agentes para melhor precisão');
-    recommendations.push('📊 Adicionar casos de teste para cenários edge cases');
-  } else {
-    recommendations.push('✅ Excelente! Manter monitoramento contínuo');
-    recommendations.push('🔄 Executar validações automáticas 2x/dia');
-  }
-  
-  return recommendations;
 }

@@ -38,20 +38,103 @@ export default function TestQACases() {
     try {
       console.log('🚀 Iniciando teste completo dos casos QA...');
       
-      // Start progress simulation
-      const progressInterval = setInterval(() => {
-        setProgress(prev => Math.min(prev + 1, 95));
-      }, 1000);
-
-      const { data, error } = await supabase.functions.invoke('test-qa-cases');
+      // Start the test and get run_id for polling
+      const { data: startData, error: startError } = await supabase.functions.invoke('test-qa-cases');
       
-      clearInterval(progressInterval);
-      setProgress(100);
+      if (startError) throw startError;
       
-      if (error) throw error;
-      setResult(data);
+      const runId = startData.validation_run_id;
+      const totalCases = startData.total_cases;
+      console.log(`📊 Teste iniciado. Run ID: ${runId}, Total casos: ${totalCases}`);
       
-      console.log('✅ Teste QA concluído:', data);
+      // Start polling for progress
+      const pollInterval = setInterval(async () => {
+        try {
+          const { data: runData, error: pollError } = await supabase
+            .from('qa_validation_runs')
+            .select('*')
+            .eq('id', runId)
+            .single();
+          
+          if (pollError) {
+            console.error('Erro ao buscar progresso:', pollError);
+            return;
+          }
+          
+          const currentProgress = (runData.passed_tests + 
+            (totalCases - runData.passed_tests - (totalCases - runData.passed_tests))) / totalCases * 100;
+          setProgress(Math.min(currentProgress, 95));
+          
+          // Check if completed
+          if (runData.status === 'completed') {
+            clearInterval(pollInterval);
+            setProgress(100);
+            
+            // Get final results with category breakdown
+            const { data: finalResults, error: resultsError } = await supabase
+              .from('qa_validation_results')
+              .select('*')
+              .eq('validation_run_id', runId);
+            
+            if (!resultsError && finalResults) {
+              // Get test cases for category analysis
+              const { data: testCases, error: tcError } = await supabase
+                .from('qa_test_cases')
+                .select('*')
+                .eq('is_active', true);
+              
+              if (!tcError && testCases) {
+                const categoryStats = analyzeCategoryPerformance(finalResults, testCases);
+                const recommendations = generateRecommendations(runData.overall_accuracy, categoryStats);
+                
+                setResult({
+                  status: 'completed',
+                  validation_run_id: runId,
+                  total_cases: runData.total_tests,
+                  passed_tests: runData.passed_tests,
+                  overall_accuracy: runData.overall_accuracy,
+                  avg_response_time_ms: runData.avg_response_time_ms,
+                  category_breakdown: categoryStats,
+                  recommendations: recommendations,
+                  execution_time_minutes: Math.round((new Date().getTime() - new Date(runData.started_at).getTime()) / 60000)
+                });
+              }
+            }
+            
+            setLoading(false);
+          } else if (runData.status === 'error') {
+            clearInterval(pollInterval);
+            setResult({
+              status: 'error',
+              error: 'Teste falhou durante execução',
+              total_cases: 0,
+              passed_tests: 0,
+              overall_accuracy: 0,
+              avg_response_time_ms: 0
+            });
+            setLoading(false);
+          }
+        } catch (pollError) {
+          console.error('Erro no polling:', pollError);
+        }
+      }, 2000); // Poll every 2 seconds
+      
+      // Timeout after 20 minutes
+      setTimeout(() => {
+        clearInterval(pollInterval);
+        if (loading) {
+          setResult({
+            status: 'error',
+            error: 'Timeout: Teste demorou mais de 20 minutos',
+            total_cases: 0,
+            passed_tests: 0,
+            overall_accuracy: 0,
+            avg_response_time_ms: 0
+          });
+          setLoading(false);
+        }
+      }, 20 * 60 * 1000);
+      
     } catch (error) {
       console.error('❌ Erro no teste QA:', error);
       setResult({ 
@@ -62,10 +145,67 @@ export default function TestQACases() {
         overall_accuracy: 0,
         avg_response_time_ms: 0
       });
-    } finally {
       setLoading(false);
       setProgress(0);
     }
+  };
+
+  // Helper functions for analysis
+  const analyzeCategoryPerformance = (results: any[], testCases: any[]) => {
+    const categoryMap: { [key: string]: { total: number; passed: number; accuracy: number } } = {};
+    
+    for (const result of results) {
+      const testCase = testCases.find(tc => tc.id.toString() === result.test_case_id);
+      if (!testCase) continue;
+      
+      const category = testCase.category;
+      if (!categoryMap[category]) {
+        categoryMap[category] = { total: 0, passed: 0, accuracy: 0 };
+      }
+      
+      categoryMap[category].total++;
+      if (result.is_correct) categoryMap[category].passed++;
+      categoryMap[category].accuracy += result.accuracy_score;
+    }
+    
+    // Calculate averages
+    for (const category in categoryMap) {
+      const stats = categoryMap[category];
+      stats.accuracy = stats.total > 0 ? stats.accuracy / stats.total : 0;
+    }
+    
+    return categoryMap;
+  };
+
+  const generateRecommendations = (overallAccuracy: number, categoryStats: any): string[] => {
+    const recommendations: string[] = [];
+    
+    if (overallAccuracy < 90) {
+      recommendations.push('🎯 PRIORIDADE: Implementar melhorias para atingir 90%+ accuracy');
+      
+      const sortedCategories = Object.entries(categoryStats)
+        .sort(([,a], [,b]) => (a as any).accuracy - (b as any).accuracy)
+        .slice(0, 3);
+      
+      for (const [category, stats] of sortedCategories) {
+        const s = stats as any;
+        if (s.accuracy < 70) {
+          recommendations.push(`🔧 Melhorar categoria "${category}" (${s.accuracy.toFixed(1)}% accuracy)`);
+        }
+      }
+    }
+    
+    if (overallAccuracy < 50) {
+      recommendations.push('🚨 CRÍTICO: Revisar completamente o sistema de response-synthesizer');
+    } else if (overallAccuracy < 70) {
+      recommendations.push('⚡ Otimizar roteamento de queries entre agentes especializados');
+    } else if (overallAccuracy < 90) {
+      recommendations.push('🎨 Ajustar prompts dos agentes para melhor precisão');
+    } else {
+      recommendations.push('✅ Excelente! Manter monitoramento contínuo');
+    }
+    
+    return recommendations;
   };
 
   return (
