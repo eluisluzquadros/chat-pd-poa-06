@@ -60,12 +60,36 @@ serve(async (req) => {
       sqlResults.executionResults.forEach((result: any) => {
         if (result.data && result.data.length > 0) {
           hasData = true;
-          // Se tem dados de regime urbanístico
-          if (result.data[0].altura_maxima !== undefined || 
-              result.data[0].coef_aproveitamento_basico !== undefined) {
+          
+          // Detectar tipo de dados baseado nas colunas
+          const firstRow = result.data[0];
+          
+          // Dados de contagem/estatísticas
+          if (firstRow.total_bairros_acima_cota !== undefined || 
+              firstRow.total_zonas !== undefined ||
+              firstRow.contagem !== undefined) {
+            context += '\n**Resultado da consulta:**\n';
+            const value = firstRow.total_bairros_acima_cota || firstRow.total_zonas || firstRow.contagem;
+            context += `${value} ${originalQuery.includes('bairros') ? 'bairros' : 'registros'} encontrados.\n`;
+          }
+          // Dados de risco de desastre
+          else if (firstRow.bairro_nome !== undefined && firstRow.nivel_risco_inundacao !== undefined) {
+            context += '\n**Dados de Risco por Bairro:**\n';
+            context += formatAsTable(result.data.slice(0, 10));
+          }
+          // Dados de ZOTs por bairro
+          else if (firstRow.zona !== undefined && firstRow.total_zonas_no_bairro !== undefined) {
+            context += '\n**Zonas por Bairro:**\n';
+            context += formatAsTable(result.data.slice(0, 10));
+          }
+          // Dados de regime urbanístico
+          else if (firstRow.altura_maxima !== undefined || 
+              firstRow.coef_aproveitamento_basico !== undefined) {
             context += '\n**Regime Urbanístico:**\n';
             context += formatAsTable(result.data.slice(0, 10));
           } else {
+            // Dados genéricos
+            context += '\n**Dados encontrados:**\n';
             context += formatAsTable(result.data.slice(0, 5));
           }
         }

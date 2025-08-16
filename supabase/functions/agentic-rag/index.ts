@@ -400,6 +400,42 @@ serve(async (req) => {
       }
     }
     
+    // Step 2.5: Vector Search for Conceptual Queries
+    if ((!sqlResults || !sqlResults.executionResults?.length) && 
+        (analysisResult.strategy === 'unstructured_only' || 
+         analysisResult.intent === 'conceptual' ||
+         userMessage.toLowerCase().includes('plano') ||
+         userMessage.toLowerCase().includes('política') ||
+         userMessage.toLowerCase().includes('prevê') ||
+         userMessage.toLowerCase().includes('como') ||
+         userMessage.toLowerCase().includes('o que'))) {
+      console.log('🔍 Conceptual query detected, using vector search...');
+      agentTrace.push({ step: 'vector_search_conceptual', timestamp: Date.now() });
+      
+      try {
+        const vectorResponse = await fetch(`${supabaseUrl}/functions/v1/enhanced-vector-search`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${authKey}`,
+          },
+          body: JSON.stringify({
+            query: userMessage,
+            includeMetadata: true,
+            hybridSearch: true,
+            limit: 5
+          })
+        });
+        
+        if (vectorResponse.ok) {
+          vectorResults = await vectorResponse.json();
+          console.log('✅ Vector search for conceptual query successful');
+        }
+      } catch (vectorError) {
+        console.warn('Vector search failed:', vectorError);
+      }
+    }
+    
     // Step 3: Response Synthesis with both SQL and Vector results
     console.log('📝 Synthesizing response...');
     agentTrace.push({ step: 'response_synthesis', timestamp: Date.now() });
