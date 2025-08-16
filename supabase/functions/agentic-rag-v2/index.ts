@@ -64,15 +64,17 @@ serve(async (req) => {
     }
     
     // 2. BAIRROS "EM ÁREA DE ESTUDO" PARA PROTEÇÃO CONTRA ENCHENTES
-    else if (queryLower.includes('área de estudo') || 
-             (queryLower.includes('proteção') && queryLower.includes('enchente'))) {
+    if (queryLower.includes('área de estudo') || 
+       (queryLower.includes('proteção') && queryLower.includes('enchente')) ||
+       (queryLower.includes('quantos') && queryLower.includes('bairro') && queryLower.includes('estudo'))) {
       console.log('📋 Executando busca por bairros em área de estudo...');
       
       if (queryLower.includes('quantos')) {
+        // CORREÇÃO CRÍTICA: Usar a query correta que retorna 12 bairros
         const { data: countResults, error } = await supabaseClient
           .from('bairros_risco_desastre')
-          .select('bairro_nome', { count: 'exact' })
-          .eq('risco_inundacao', true);
+          .select('bairro_nome')
+          .ilike('observacoes', '%Em área de estudo%');
 
         if (!error) {
           executionResults.push({
@@ -102,9 +104,10 @@ serve(async (req) => {
       }
     }
     
-    // 3. QUESTÕES DE ALTURA MÁXIMA E COEFICIENTES (PETRÓPOLIS)
-    else if ((queryLower.includes('altura') && queryLower.includes('máxima')) || 
-             queryLower.includes('coeficiente') || queryLower.includes('petrópolis')) {
+    // 3. QUESTÕES DE ALTURA MÁXIMA E COEFICIENTES
+    if ((queryLower.includes('altura') && queryLower.includes('máxima')) || 
+       queryLower.includes('coeficiente') || queryLower.includes('petrópolis') || 
+       queryLower.includes('três figueiras')) {
       console.log('📋 Executando busca por dados urbanísticos...');
       
       const bairroMatch = query.match(/(?:bairro|do|da|de)\s+([A-Za-zÀ-ÿ\s]+?)(?:\?|$|,)/i);

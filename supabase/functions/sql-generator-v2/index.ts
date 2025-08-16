@@ -87,18 +87,19 @@ serve(async (req) => {
     }
     
     // 2. BAIRROS "EM ÁREA DE ESTUDO" PARA PROTEÇÃO CONTRA ENCHENTES
-    else if (queryLower.includes('área de estudo') || 
-             (queryLower.includes('proteção') && queryLower.includes('enchente')) ||
-             (queryLower.includes('quantos') && queryLower.includes('bairro'))) {
+    if (queryLower.includes('área de estudo') || 
+       (queryLower.includes('proteção') && queryLower.includes('enchente')) ||
+       (queryLower.includes('quantos') && queryLower.includes('bairro') && queryLower.includes('estudo'))) {
       
       console.log('🔍 UNIVERSAL SEARCH DEBUG: Área de estudo');
       
       try {
         if (queryLower.includes('quantos')) {
+          // CORREÇÃO CRÍTICA: Usar a query correta que retorna 12 bairros
           const { data: countData, error } = await supabaseClient
             .from('bairros_risco_desastre')
-            .select('bairro_nome', { count: 'exact' })
-            .eq('risco_inundacao', true);
+            .select('bairro_nome')
+            .ilike('observacoes', '%Em área de estudo%');
 
           console.log('✅ SQL EXECUTADO COM SUCESSO:', {
             query: 'COUNT bairros risco inundação',
@@ -151,8 +152,9 @@ serve(async (req) => {
     }
     
     // 3. QUESTÕES DE ALTURA MÁXIMA E COEFICIENTES
-    else if ((queryLower.includes('altura') && queryLower.includes('máxima')) || 
-             queryLower.includes('coeficiente') || queryLower.includes('petrópolis')) {
+    if ((queryLower.includes('altura') && queryLower.includes('máxima')) || 
+       queryLower.includes('coeficiente') || queryLower.includes('petrópolis') || 
+       queryLower.includes('três figueiras')) {
       
       console.log('🔍 UNIVERSAL SEARCH DEBUG: Regime urbanístico');
       
