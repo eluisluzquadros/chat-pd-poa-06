@@ -31,10 +31,10 @@ export class UnifiedRAGService {
     // Check localStorage for user preference
     const useV2 = localStorage.getItem('useAgenticRAGv2');
     
-    // Default to v2 if not set
+    // Default to v1 (stable) if not set
     if (useV2 === null) {
-      localStorage.setItem('useAgenticRAGv2', 'true');
-      return 'v2';
+      localStorage.setItem('useAgenticRAGv2', 'false');
+      return 'v1';
     }
     
     return useV2 === 'false' ? 'v1' : 'v2';
