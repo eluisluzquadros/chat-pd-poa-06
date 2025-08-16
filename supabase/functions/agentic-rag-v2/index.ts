@@ -70,26 +70,26 @@ serve(async (req) => {
       console.log('📋 Executando busca por bairros em área de estudo...');
       
       if (queryLower.includes('quantos')) {
-        // CORREÇÃO CRÍTICA: Usar a query correta que retorna 12 bairros
+        // CORREÇÃO: Usar a query correta para enchentes de 2024 (13 bairros)
         const { data: countResults, error } = await supabaseClient
           .from('bairros_risco_desastre')
           .select('bairro_nome')
-          .ilike('observacoes', '%Em área de estudo%');
+          .ilike('areas_criticas', '%enchentes de 2024%');
 
         if (!error) {
           executionResults.push({
-            query: 'Contar bairros área de estudo',
+            query: 'Contar bairros afetados por enchentes 2024',
             table: 'bairros_risco_desastre',
-            purpose: 'Contar quantos bairros estão em área de estudo para proteção contra enchentes',
-            data: [{ total_bairros_em_area_de_estudo: countResults?.length || 0 }]
+            purpose: 'Contar quantos bairros foram afetados pelas enchentes de 2024',
+            data: [{ total_bairros_enchentes_2024: countResults?.length || 0 }]
           });
           hasResults = true;
         }
       } else {
         const { data: areaResults, error } = await supabaseClient
           .from('bairros_risco_desastre')
-          .select('bairro_nome, observacoes')
-          .ilike('observacoes', '%Em área de estudo%')
+          .select('bairro_nome, areas_criticas, observacoes')
+          .ilike('areas_criticas', '%enchentes de 2024%')
           .order('bairro_nome');
 
         if (!error && areaResults && areaResults.length > 0) {
