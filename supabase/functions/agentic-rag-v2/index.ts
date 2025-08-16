@@ -23,7 +23,7 @@ serve(async (req) => {
       sessionId: body.sessionId 
     });
     
-    // Forward to dynamic orchestrator-master-fixed
+    // Forward to working orchestrator (orchestrator-master-fixed exists and is working)
     const orchestratorUrl = `${Deno.env.get('SUPABASE_URL')}/functions/v1/orchestrator-master-fixed`;
     
     const response = await fetch(orchestratorUrl, {
@@ -48,29 +48,30 @@ serve(async (req) => {
       const errorText = await response.text();
       console.error('❌ Orchestrator failed:', response.status, errorText);
       
-      // TEMPORARILY DISABLED FALLBACK for debugging
-      // Throw error to force debugging of orchestrator issues
-      throw new Error(`Orchestrator failed: ${response.status} - ${errorText}`);
+      // Continue to fallback instead of throwing error
+      console.log('🔄 Attempting fallback to agentic-rag v1...');
+    } else {
+      const data = await response.json();
+      
+      // Ensure proper response format
+      const formattedResponse = {
+        response: data.response || 'Não foi possível processar sua solicitação.',
+        confidence: data.confidence || 0.5,
+        sources: data.sources || { tabular: 0, conceptual: 0 },
+        executionTime: data.executionTime || 0,
+        metadata: {
+          ...data.metadata,
+          pipeline: 'agentic-v2',
+          timestamp: new Date().toISOString()
+        }
+      };
+      
+      return new Response(JSON.stringify(formattedResponse), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
     
-    const data = await response.json();
-    
-    // Ensure proper response format
-    const formattedResponse = {
-      response: data.response || 'Não foi possível processar sua solicitação.',
-      confidence: data.confidence || 0.5,
-      sources: data.sources || { tabular: 0, conceptual: 0 },
-      executionTime: data.executionTime || 0,
-      metadata: {
-        ...data.metadata,
-        pipeline: 'agentic-v2',
-        timestamp: new Date().toISOString()
-      }
-    };
-    
-    return new Response(JSON.stringify(formattedResponse), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    // This code is now handled above in the response.ok check
 
   } catch (error) {
     console.error('❌ Agentic-RAG v2 error:', error);
@@ -78,7 +79,7 @@ serve(async (req) => {
     // Try legacy fallback in case of error
     try {
       const fallbackUrl = `${Deno.env.get('SUPABASE_URL')}/functions/v1/agentic-rag`;
-      const body = await req.json();
+      const requestBody = await req.json().catch(() => body); // Use already parsed body if available
       
       const fallbackResponse = await fetch(fallbackUrl, {
         method: 'POST',
@@ -87,12 +88,12 @@ serve(async (req) => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          message: body.query || body.message,
-          userRole: body.userRole || 'citizen',
-          sessionId: body.sessionId,
-          userId: body.userId,
-          bypassCache: body.bypassCache,
-          model: body.model || 'gpt-3.5-turbo'
+          message: requestBody.query || requestBody.message,
+          userRole: requestBody.userRole || 'citizen',
+          sessionId: requestBody.sessionId,
+          userId: requestBody.userId,
+          bypassCache: requestBody.bypassCache,
+          model: requestBody.model || 'gpt-3.5-turbo'
         })
       });
       
