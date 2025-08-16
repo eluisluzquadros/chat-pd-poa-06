@@ -67,10 +67,28 @@ serve(async (req) => {
           // Dados de contagem/estatísticas
           if (firstRow.total_bairros_acima_cota !== undefined || 
               firstRow.total_zonas !== undefined ||
-              firstRow.contagem !== undefined) {
+              firstRow.contagem !== undefined ||
+              firstRow.count !== undefined ||
+              (result.data.length === 1 && Object.keys(firstRow).some(key => 
+                key.toLowerCase().includes('total') || 
+                key.toLowerCase().includes('count') || 
+                key.toLowerCase().includes('contagem')))) {
             context += '\n**Resultado da consulta:**\n';
-            const value = firstRow.total_bairros_acima_cota || firstRow.total_zonas || firstRow.contagem;
-            context += `${value} ${originalQuery.includes('bairros') ? 'bairros' : 'registros'} encontrados.\n`;
+            const value = firstRow.total_bairros_acima_cota || 
+                         firstRow.total_zonas || 
+                         firstRow.contagem || 
+                         firstRow.count ||
+                         Object.values(firstRow).find(v => typeof v === 'number' && v > 0);
+            
+            if (originalQuery.toLowerCase().includes('quantos')) {
+              if (originalQuery.toLowerCase().includes('bairros')) {
+                context += `**${value} bairros** estão classificados como solicitado.\n`;
+              } else {
+                context += `**Total: ${value}** registros encontrados.\n`;
+              }
+            } else {
+              context += `${value} ${originalQuery.includes('bairros') ? 'bairros' : 'registros'} encontrados.\n`;
+            }
           }
           // Dados de risco de desastre
           else if (firstRow.bairro_nome !== undefined && firstRow.nivel_risco_inundacao !== undefined) {
