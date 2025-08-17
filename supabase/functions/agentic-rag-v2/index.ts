@@ -531,43 +531,64 @@ serve(async (req) => {
     }
     
     async function executeEnchentesSearch() {
-      console.log('🌊 ESTRATÉGIA: Busca por enchentes/risco - FASE 2 CORRIGIDA...');
+      console.log('🌊 ESTRATÉGIA: Busca dados sobre enchentes/risco (ESTRUTURA CORRIGIDA)...');
       
-      // FASE 2: CORREÇÃO DOS DADOS DE ENCHENTES
-      // Busca específica por "Protegidos pelo Sistema Atual"
-      if (queryLower.includes('sistema atual') || queryLower.includes('protegidos')) {
-        const { data: protegidosResults, error } = await supabaseClient
+      // VERIFICAR SE É PERGUNTA SOBRE CONTAGEM DE BAIRROS PROTEGIDOS
+      if (queryLower.includes('quantos') && (queryLower.includes('protegidos') || queryLower.includes('sistema atual'))) {
+        console.log('📊 Executando contagem de bairros protegidos...');
+        
+        const { data: protectedResults, error } = await supabaseClient
           .from('bairros_risco_desastre')
-          .select('bairro_nome, areas_criticas, observacoes, risco_inundacao')
-          .ilike('areas_criticas', '%Protegidos pelo Sistema Atual%')
-          .order('bairro_nome');
+          .select('*')
+          .not('Bairros Protegidos pelo Sistema Atual', 'is', null);
 
-        if (!error && protegidosResults && protegidosResults.length > 0) {
-          if (queryLower.includes('quantos')) {
-            executionResults.push({
-              query: 'Contar bairros protegidos pelo sistema atual',
-              table: 'bairros_risco_desastre',
-              purpose: 'Contar bairros protegidos contra enchentes',
-              data: [{ 
-                total_bairros_enchentes: protegidosResults.length,
-                bairros_lista: protegidosResults.map(b => b.bairro_nome),
-                criterio_busca: 'Protegidos pelo Sistema Atual',
-                detalhes: 'Bairros com proteção implementada contra enchentes'
-              }],
-              strategy: 'protegidos_sistema_atual'
-            });
-          } else {
-            executionResults.push({
-              query: 'Bairros protegidos pelo sistema atual',
-              table: 'bairros_risco_desastre',
-              purpose: 'Listar bairros protegidos contra enchentes',
-              data: protegidosResults,
-              strategy: 'protegidos_sistema_atual'
-            });
-          }
+        if (!error && protectedResults && protectedResults.length > 0) {
+          const bairrosProtegidos = protectedResults.map(b => b['Bairros Protegidos pelo Sistema Atual']).filter(Boolean);
+          
+          executionResults.push({
+            query: 'Contagem de bairros protegidos pelo sistema atual',
+            table: 'bairros_risco_desastre',
+            purpose: 'Contar bairros protegidos contra enchentes',
+            data: [{
+              total_protegidos: bairrosProtegidos.length,
+              bairros_protegidos: bairrosProtegidos,
+              detalhes: `Existem ${bairrosProtegidos.length} bairros protegidos pelo sistema atual de contenção contra enchentes.`
+            }],
+            strategy: 'contagem_protegidos'
+          });
           hasResults = true;
           return;
         }
+      }
+      
+      // BUSCA GERAL POR DADOS DE ENCHENTE/RISCO
+      const { data: allRiskData, error } = await supabaseClient
+        .from('bairros_risco_desastre')
+        .select('*')
+        .limit(50);
+
+      if (!error && allRiskData && allRiskData.length > 0) {
+        // Extrair dados estruturados da nova tabela
+        const protegidos = allRiskData.map(b => b['Bairros Protegidos pelo Sistema Atual']).filter(Boolean);
+        const areaEstudo = allRiskData.map(b => b['Bairros em Área de Estudo']).filter(Boolean);
+        const ocupacaoUrbana = allRiskData.map(b => b['Bairros com Ocupação Urbana Acima da Cota de Inundação 2024']).filter(Boolean);
+        
+        executionResults.push({
+          query: 'Dados gerais sobre proteção contra enchentes',
+          table: 'bairros_risco_desastre',
+          purpose: 'Buscar dados sobre enchentes e proteção',
+          data: [{
+            total_protegidos: protegidos.length,
+            total_area_estudo: areaEstudo.length,
+            total_ocupacao_urbana: ocupacaoUrbana.length,
+            bairros_protegidos: protegidos,
+            bairros_area_estudo: areaEstudo,
+            bairros_ocupacao_urbana: ocupacaoUrbana
+          }],
+          strategy: 'enchentes_dados_gerais'
+        });
+        hasResults = true;
+        return;
       }
       
       // Busca geral por enchentes
