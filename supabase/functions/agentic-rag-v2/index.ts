@@ -8,9 +8,18 @@ const corsHeaders = {
 };
 
 /**
- * FUNÇÃO PARA NORMALIZAR NOMES DE BAIRROS
+ * SISTEMA DINÂMICO - CARREGAMENTO DE BAIRROS E ZONAS DA BASE
  */
-function normalizeBairroName(name: string): string {
+
+// Cache em memória para evitar consultas repetidas
+let CACHE_BAIRROS: string[] = [];
+let CACHE_ZONAS: string[] = [];
+let CACHE_LOADED = false;
+
+/**
+ * FUNÇÃO PARA NORMALIZAR NOMES (MELHORADA)
+ */
+function normalizeName(name: string): string {
   return name.toLowerCase()
     .replace(/[áàãâä]/g, 'a')
     .replace(/[éèêë]/g, 'e')
@@ -19,43 +28,143 @@ function normalizeBairroName(name: string): string {
     .replace(/[úùûü]/g, 'u')
     .replace(/[ç]/g, 'c')
     .replace(/[ñ]/g, 'n')
+    .replace(/cel\./g, 'coronel')
+    .replace(/cel /g, 'coronel ')
+    .replace(/aparicio/g, 'aparício')
+    .replace(/mont serrat/g, 'montserrat')
+    .replace(/vila  /g, 'vila ')
+    .replace(/\s+/g, ' ')
     .trim();
 }
 
 /**
- * LISTA OFICIAL DOS 82 BAIRROS DE PORTO ALEGRE
+ * CARREGAMENTO DINÂMICO DOS 94 BAIRROS REAIS
  */
-const BAIRROS_OFICIAIS = [
-  'ABERTA DOS MORROS', 'AGRONOMIA', 'ALEGRIA', 'ANCHIETA', 'ARQUIPÉLAGO', 'AUXILIADORA',
-  'AZENHA', 'BELA VISTA', 'BOM FIM', 'BOM JESUS', 'CAMAQUÃ', 'CAMPO NOVO', 'CAVALHADA',
-  'CENTRO HISTÓRICO', 'CHÁCARA DAS PEDRAS', 'CIDADE BAIXA', 'CORONEL APARÍCIO BORGES',
-  'CRISTAL', 'ESPÍRITO SANTO', 'FARRAPOS', 'FARROUPILHA', 'FLORESTA', 'GLÓRIA',
-  'GUARUJÁ', 'HIGIENÓPOLIS', 'HUMAITÁ', 'ILHA DA PINTADA', 'ILHA DAS FLORES',
-  'ILHA DO PAVÃO', 'ILHAS', 'IPANEMA', 'JARDIM BOTÂNICO', 'JARDIM CARVALHO',
-  'JARDIM DO SALSO', 'JARDIM EUROPA', 'JARDIM FLORESTA', 'JARDIM ÍPANEMA',
-  'JARDIM LINDÓIA', 'JARDIM SABARÁ', 'JARDIM SÃO PEDRO', 'LAGEADO', 'LAMI',
-  'LOMBA DO PINHEIRO', 'MARCÍLIO DIAS', 'MÁRIO QUINTANA', 'MEDIANEIRA', 'MENINO DEUS',
-  'MOINHOS DE VENTO', 'MONT SERRAT', 'NAVEGANTES', 'NONOAI', 'PARTENON', 'PETRÓPOLIS',
-  'PONTA GROSSA', 'PRAIA DE BELAS', 'RESTINGA', 'RIO BRANCO', 'RUBEM BERTA',
-  'SANTA CECÍLIA', 'SANTA MARIA GORETTI', 'SANTA TEREZA', 'SANTANA', 'SANTO ANTÔNIO',
-  'SÃO GERALDO', 'SÃO JOÃO', 'SÃO JOSÉ', 'SÃO SEBASTIÃO', 'SARANDI', 'SERRARIA',
-  'TERESÓPOLIS', 'TRÊS FIGUEIRAS', 'TRISTEZA', 'VILA ASSUNÇÃO', 'VILA CONCEIÇÃO',
-  'VILA IPIRANGA', 'VILA JARDIM', 'VILA JOÃO PESSOA', 'VILA NEW YORK', 'ABERTA DOS MORROS'
-];
+async function loadBairrosFromDatabase(supabaseClient: any): Promise<string[]> {
+  if (CACHE_BAIRROS.length > 0) {
+    return CACHE_BAIRROS;
+  }
+
+  try {
+    // Carregar de regime_urbanistico
+    const { data: regimeBairros, error: regimeError } = await supabaseClient
+      .from('regime_urbanistico')
+      .select('bairro')
+      .not('bairro', 'is', null);
+
+    // Carregar de bairros_risco_desastre
+    const { data: riscoBairros, error: riscoError } = await supabaseClient
+      .from('bairros_risco_desastre')
+      .select('bairro_nome')
+      .not('bairro_nome', 'is', null);
+
+    if (regimeError || riscoError) {
+      console.error('Erro ao carregar bairros:', { regimeError, riscoError });
+      return [];
+    }
+
+    // Combinar e deduplicar
+    const allBairros = new Set<string>();
+    regimeBairros?.forEach(b => allBairros.add(b.bairro.toUpperCase().trim()));
+    riscoBairros?.forEach(b => allBairros.add(b.bairro_nome.toUpperCase().trim()));
+
+    CACHE_BAIRROS = Array.from(allBairros).sort();
+    console.log(`🏘️ Carregados ${CACHE_BAIRROS.length} bairros dinamicamente da base`);
+    
+    return CACHE_BAIRROS;
+  } catch (error) {
+    console.error('Erro ao carregar bairros:', error);
+    return [];
+  }
+}
 
 /**
- * FUNÇÃO PARA EXTRAIR NOME DE BAIRRO DA QUERY (MELHORADA)
+ * CARREGAMENTO DINÂMICO DAS 30 ZONAS REAIS
  */
-function extractBairroFromQuery(query: string): string | null {
-  const normalizedQuery = normalizeBairroName(query);
+async function loadZonasFromDatabase(supabaseClient: any): Promise<string[]> {
+  if (CACHE_ZONAS.length > 0) {
+    return CACHE_ZONAS;
+  }
+
+  try {
+    const { data: zonas, error } = await supabaseClient
+      .from('regime_urbanistico')
+      .select('zona')
+      .not('zona', 'is', null);
+
+    if (error) {
+      console.error('Erro ao carregar zonas:', error);
+      return [];
+    }
+
+    const uniqueZonas = new Set<string>();
+    zonas?.forEach(z => uniqueZonas.add(z.zona.trim()));
+
+    CACHE_ZONAS = Array.from(uniqueZonas).sort();
+    console.log(`🎯 Carregadas ${CACHE_ZONAS.length} zonas dinamicamente da base`);
+    
+    return CACHE_ZONAS;
+  } catch (error) {
+    console.error('Erro ao carregar zonas:', error);
+    return [];
+  }
+}
+
+/**
+ * SISTEMA DE MATCHING INTELIGENTE PARA BAIRROS
+ */
+function findBairroMatch(query: string, bairrosList: string[]): string | null {
+  const normalizedQuery = normalizeName(query);
   
-  // 1. Primeiro, busca exata por bairros conhecidos
-  for (const bairro of BAIRROS_OFICIAIS) {
-    const normalizedBairro = normalizeBairroName(bairro);
-    if (normalizedQuery.includes(normalizedBairro)) {
-      console.log(`🎯 Bairro identificado com precisão: ${bairro}`);
+  // 1. Match exato
+  for (const bairro of bairrosList) {
+    if (normalizeName(bairro) === normalizedQuery) {
+      console.log(`🎯 Match exato: ${bairro}`);
       return bairro;
     }
+  }
+  
+  // 2. Contém o nome completo
+  for (const bairro of bairrosList) {
+    if (normalizedQuery.includes(normalizeName(bairro))) {
+      console.log(`🎯 Match por inclusão: ${bairro}`);
+      return bairro;
+    }
+  }
+  
+  // 3. Bairro contém a query
+  for (const bairro of bairrosList) {
+    if (normalizeName(bairro).includes(normalizedQuery)) {
+      console.log(`🎯 Match por substring: ${bairro}`);
+      return bairro;
+    }
+  }
+  
+  // 4. Fuzzy matching para variações comuns
+  const queryWords = normalizedQuery.split(' ').filter(w => w.length > 2);
+  for (const bairro of bairrosList) {
+    const bairroWords = normalizeName(bairro).split(' ');
+    const matches = queryWords.filter(qw => 
+      bairroWords.some(bw => bw.includes(qw) || qw.includes(bw))
+    );
+    
+    if (matches.length >= Math.min(queryWords.length, 2)) {
+      console.log(`🎯 Match fuzzy: ${bairro} (${matches.length}/${queryWords.length} palavras)`);
+      return bairro;
+    }
+  }
+  
+  return null;
+}
+
+/**
+ * EXTRAÇÃO DINÂMICA DE BAIRRO DA QUERY
+ */
+async function extractBairroFromQuery(query: string, bairrosList: string[]): Promise<string | null> {
+  // 1. Busca por match direto usando sistema inteligente
+  const directMatch = findBairroMatch(query, bairrosList);
+  if (directMatch) {
+    return directMatch;
   }
   
   // 2. Padrões específicos para extrair nomes
@@ -73,12 +182,8 @@ function extractBairroFromQuery(query: string): string | null {
       // Filtrar palavras comuns
       const commonWords = ['porto alegre', 'plano diretor', 'luos', 'lei', 'artigo', 'altura', 'maxima', 'coeficiente', 'zona', 'zot', 'qual', 'como'];
       if (!commonWords.some(word => extracted.toLowerCase().includes(word)) && extracted.length > 3) {
-        // Validar se está na lista de bairros oficiais
-        const normalizedExtracted = normalizeBairroName(extracted);
-        const foundBairro = BAIRROS_OFICIAIS.find(b => 
-          normalizeBairroName(b).includes(normalizedExtracted) || 
-          normalizedExtracted.includes(normalizeBairroName(b))
-        );
+        // Usar sistema inteligente para encontrar o bairro
+        const foundBairro = findBairroMatch(extracted, bairrosList);
         
         if (foundBairro) {
           console.log(`🎯 Bairro identificado por padrão: ${foundBairro} (de: ${extracted})`);
@@ -93,15 +198,18 @@ function extractBairroFromQuery(query: string): string | null {
 }
 
 /**
- * FUNÇÃO PARA CLASSIFICAR TIPO DE QUERY
+ * CLASSIFICAÇÃO DINÂMICA DE QUERY
  */
-function classifyQueryType(query: string): {
+async function classifyQueryType(query: string, supabaseClient: any): Promise<{
   type: 'bairro' | 'artigo' | 'conceitual' | 'listagem' | 'enchentes' | 'geral',
   keywords: string[],
   bairro?: string,
   artigo?: string
-} {
+}> {
   const queryLower = query.toLowerCase();
+  
+  // Carregar dados dinâmicos
+  const bairrosList = await loadBairrosFromDatabase(supabaseClient);
   
   // Classificar por enchentes
   if (queryLower.includes('enchente') || queryLower.includes('inundação') || 
@@ -127,8 +235,8 @@ function classifyQueryType(query: string): {
     };
   }
   
-  // Classificar por bairro
-  const bairro = extractBairroFromQuery(query);
+  // Classificar por bairro (DINÂMICO)
+  const bairro = await extractBairroFromQuery(query, bairrosList);
   if (bairro || queryLower.includes('altura') || queryLower.includes('coeficiente') || queryLower.includes('zot')) {
     return { 
       type: 'bairro', 
@@ -200,8 +308,13 @@ serve(async (req) => {
 
     console.log('🔥 Executando sistema dinâmico sem hardcoding...');
 
-    // CLASSIFICAR TIPO DE QUERY PARA BUSCA INTELIGENTE
-    const queryClassification = classifyQueryType(query);
+    // CARREGAR DADOS DINÂMICOS (COM CACHE)
+    const bairrosList = await loadBairrosFromDatabase(supabaseClient);
+    const zonasList = await loadZonasFromDatabase(supabaseClient);
+    console.log(`📊 Sistema carregado: ${bairrosList.length} bairros, ${zonasList.length} zonas`);
+
+    // CLASSIFICAR TIPO DE QUERY PARA BUSCA INTELIGENTE (DINÂMICO)
+    const queryClassification = await classifyQueryType(query, supabaseClient);
     console.log(`🧠 Query classificada como: ${queryClassification.type}`, queryClassification);
 
     // EXECUTAR ESTRATÉGIA BASEADA NA CLASSIFICAÇÃO
@@ -350,9 +463,9 @@ serve(async (req) => {
     }
     
     async function executeBairroSearch() {
-      console.log(`🏘️ ESTRATÉGIA: Busca por dados urbanísticos...`);
+      console.log(`🏘️ ESTRATÉGIA: Busca por dados urbanísticos (DINÂMICA)...`);
       
-      const extractedBairro = queryClassification.bairro || extractBairroFromQuery(query);
+      const extractedBairro = queryClassification.bairro || await extractBairroFromQuery(query, bairrosList);
       let searchBairro = extractedBairro;
       
       // Estratégia 1: Bairro identificado diretamente
@@ -377,19 +490,15 @@ serve(async (req) => {
         }
       }
       
-      // Estratégia 2: Detectar bairro automaticamente
+      // Estratégia 2: Detectar bairro automaticamente usando sistema inteligente
       if (!searchBairro && (queryLower.includes('altura') || queryLower.includes('coeficiente'))) {
         const words = query.split(' ').filter(w => w.length > 3);
         for (const word of words) {
-          const { data: testBairro } = await supabaseClient
-            .from('regime_urbanistico')
-            .select('bairro')
-            .ilike('bairro', `%${word}%`)
-            .limit(1);
+          const potentialBairro = findBairroMatch(word, bairrosList);
           
-          if (testBairro && testBairro.length > 0) {
-            searchBairro = word;
-            console.log(`🎯 Bairro detectado automaticamente: ${searchBairro}`);
+          if (potentialBairro) {
+            searchBairro = potentialBairro;
+            console.log(`🎯 Bairro detectado automaticamente via matching: ${searchBairro}`);
             break;
           }
         }
@@ -419,8 +528,23 @@ serve(async (req) => {
     async function executeListagemSearch() {
       console.log('📋 ESTRATÉGIA: Busca por listagem/conceitos...');
       
-      // Detectar se é sobre zonas especiais
+      // Detectar se é sobre zonas (DINÂMICO)
       if (queryLower.includes('zonas especiais') || queryLower.includes('quais são as zonas')) {
+        // Usar lista de zonas carregada dinamicamente
+        const zonasEspeciais = zonasList.filter(z => z.toLowerCase().includes('especial'));
+        
+        if (zonasEspeciais.length > 0) {
+          executionResults.push({
+            query: 'Listar zonas especiais (dinâmico)',
+            table: 'cache_zonas',
+            purpose: 'Listar todas as zonas especiais dinamicamente',
+            data: zonasEspeciais.map(z => ({ zona: z }))
+          });
+          hasResults = true;
+          return;
+        }
+        
+        // Fallback para busca na base
         const { data: zonasResults, error } = await supabaseClient
           .from('regime_urbanistico')
           .select('zona')
@@ -430,7 +554,7 @@ serve(async (req) => {
 
         if (!error && zonasResults && zonasResults.length > 0) {
           executionResults.push({
-            query: 'Listar zonas especiais',
+            query: 'Listar zonas especiais (fallback)',
             table: 'regime_urbanistico',
             purpose: 'Listar todas as zonas especiais',
             data: zonasResults
@@ -438,6 +562,22 @@ serve(async (req) => {
           hasResults = true;
           return;
         }
+      }
+      
+      // Listagem de todos os bairros
+      if (queryLower.includes('todos os bairros') || queryLower.includes('quantos bairros')) {
+        executionResults.push({
+          query: 'Listar todos os bairros (dinâmico)',
+          table: 'cache_bairros',
+          purpose: 'Listar todos os bairros dinamicamente',
+          data: [{ 
+            total_bairros: bairrosList.length,
+            bairros_lista: bairrosList,
+            fonte: 'carregamento_dinamico'
+          }]
+        });
+        hasResults = true;
+        return;
       }
       
       // Busca geral conceitual em documentos
