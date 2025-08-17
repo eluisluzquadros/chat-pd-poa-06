@@ -23,46 +23,144 @@ function normalizeBairroName(name: string): string {
 }
 
 /**
- * FUNÇÃO PARA EXTRAIR NOME DE BAIRRO DA QUERY
+ * LISTA OFICIAL DOS 82 BAIRROS DE PORTO ALEGRE
+ */
+const BAIRROS_OFICIAIS = [
+  'ABERTA DOS MORROS', 'AGRONOMIA', 'ALEGRIA', 'ANCHIETA', 'ARQUIPÉLAGO', 'AUXILIADORA',
+  'AZENHA', 'BELA VISTA', 'BOM FIM', 'BOM JESUS', 'CAMAQUÃ', 'CAMPO NOVO', 'CAVALHADA',
+  'CENTRO HISTÓRICO', 'CHÁCARA DAS PEDRAS', 'CIDADE BAIXA', 'CORONEL APARÍCIO BORGES',
+  'CRISTAL', 'ESPÍRITO SANTO', 'FARRAPOS', 'FARROUPILHA', 'FLORESTA', 'GLÓRIA',
+  'GUARUJÁ', 'HIGIENÓPOLIS', 'HUMAITÁ', 'ILHA DA PINTADA', 'ILHA DAS FLORES',
+  'ILHA DO PAVÃO', 'ILHAS', 'IPANEMA', 'JARDIM BOTÂNICO', 'JARDIM CARVALHO',
+  'JARDIM DO SALSO', 'JARDIM EUROPA', 'JARDIM FLORESTA', 'JARDIM ÍPANEMA',
+  'JARDIM LINDÓIA', 'JARDIM SABARÁ', 'JARDIM SÃO PEDRO', 'LAGEADO', 'LAMI',
+  'LOMBA DO PINHEIRO', 'MARCÍLIO DIAS', 'MÁRIO QUINTANA', 'MEDIANEIRA', 'MENINO DEUS',
+  'MOINHOS DE VENTO', 'MONT SERRAT', 'NAVEGANTES', 'NONOAI', 'PARTENON', 'PETRÓPOLIS',
+  'PONTA GROSSA', 'PRAIA DE BELAS', 'RESTINGA', 'RIO BRANCO', 'RUBEM BERTA',
+  'SANTA CECÍLIA', 'SANTA MARIA GORETTI', 'SANTA TEREZA', 'SANTANA', 'SANTO ANTÔNIO',
+  'SÃO GERALDO', 'SÃO JOÃO', 'SÃO JOSÉ', 'SÃO SEBASTIÃO', 'SARANDI', 'SERRARIA',
+  'TERESÓPOLIS', 'TRÊS FIGUEIRAS', 'TRISTEZA', 'VILA ASSUNÇÃO', 'VILA CONCEIÇÃO',
+  'VILA IPIRANGA', 'VILA JARDIM', 'VILA JOÃO PESSOA', 'VILA NEW YORK', 'ABERTA DOS MORROS'
+];
+
+/**
+ * FUNÇÃO PARA EXTRAIR NOME DE BAIRRO DA QUERY (MELHORADA)
  */
 function extractBairroFromQuery(query: string): string | null {
-  const normalizedQuery = query.toLowerCase();
+  const normalizedQuery = normalizeBairroName(query);
   
-  // Padrões comuns para identificar bairros
-  const patterns = [
-    /(?:bairro|no|na|do|da|de|em)\s+([a-záàãâäéèêëíìîïóòõôöúùûüç\s]+?)(?:\?|$|,|\s+(?:qual|como|o que|altura|coef))/i,
-    /(?:^|\s)([a-záàãâäéèêëíìîïóòõôöúùûüç\s]{3,25})(?:\s+(?:qual|como|o que|altura|coef|zot|zona))/i,
-    /(?:^|\s)([a-záàãâäéèêëíìîïóòõôöúùûüç\s]{3,25})(?:\?|$)/i
-  ];
-  
-  for (const pattern of patterns) {
-    const match = normalizedQuery.match(pattern);
-    if (match && match[1]) {
-      const extracted = match[1].trim();
-      // Filtrar palavras muito comuns que não são bairros
-      const commonWords = ['porto alegre', 'plano diretor', 'luos', 'lei', 'artigo', 'altura', 'maxima', 'coeficiente', 'zona', 'zot'];
-      if (!commonWords.some(word => extracted.includes(word)) && extracted.length > 2) {
-        return extracted;
-      }
+  // 1. Primeiro, busca exata por bairros conhecidos
+  for (const bairro of BAIRROS_OFICIAIS) {
+    const normalizedBairro = normalizeBairroName(bairro);
+    if (normalizedQuery.includes(normalizedBairro)) {
+      console.log(`🎯 Bairro identificado com precisão: ${bairro}`);
+      return bairro;
     }
   }
   
-  return null;
-}
-
-/**
- * FUNÇÃO PARA EXTRAIR NÚMERO DE ARTIGO DA QUERY
- */
-function extractArticleFromQuery(query: string): string | null {
+  // 2. Padrões específicos para extrair nomes
   const patterns = [
-    /(?:art|artigo)\s*\.?\s*(\d+)/i,
-    /(?:^|\s)(\d+)(?:\s*(?:,|\.|\s)?\s*(?:inciso|§|parágrafo)?\s*[IVX]+)?/i
+    /(?:bairro|no|na|do|da|de|em)\s+([a-záàãâäéèêëíìîïóòõôöúùûüç\s]+?)(?:\?|$|,|\s+(?:qual|como|o que|altura|coef))/i,
+    /^([a-záàãâäéèêëíìîïóòõôöúùûüç\s]{4,30})(?:\s+(?:qual|como|o que|altura|coef|zot|zona))/i,
+    /^([a-záàãâäéèêëíìîïóòõôöúùûüç\s]{4,30})$/i
   ];
   
   for (const pattern of patterns) {
     const match = query.match(pattern);
     if (match && match[1]) {
-      return match[1];
+      const extracted = match[1].trim();
+      
+      // Filtrar palavras comuns
+      const commonWords = ['porto alegre', 'plano diretor', 'luos', 'lei', 'artigo', 'altura', 'maxima', 'coeficiente', 'zona', 'zot', 'qual', 'como'];
+      if (!commonWords.some(word => extracted.toLowerCase().includes(word)) && extracted.length > 3) {
+        // Validar se está na lista de bairros oficiais
+        const normalizedExtracted = normalizeBairroName(extracted);
+        const foundBairro = BAIRROS_OFICIAIS.find(b => 
+          normalizeBairroName(b).includes(normalizedExtracted) || 
+          normalizedExtracted.includes(normalizeBairroName(b))
+        );
+        
+        if (foundBairro) {
+          console.log(`🎯 Bairro identificado por padrão: ${foundBairro} (de: ${extracted})`);
+          return foundBairro;
+        }
+      }
+    }
+  }
+  
+  console.log(`❌ Nenhum bairro identificado na query: ${query}`);
+  return null;
+}
+
+/**
+ * FUNÇÃO PARA CLASSIFICAR TIPO DE QUERY
+ */
+function classifyQueryType(query: string): {
+  type: 'bairro' | 'artigo' | 'conceitual' | 'listagem' | 'enchentes' | 'geral',
+  keywords: string[],
+  bairro?: string,
+  artigo?: string
+} {
+  const queryLower = query.toLowerCase();
+  
+  // Classificar por enchentes
+  if (queryLower.includes('enchente') || queryLower.includes('inundação') || 
+      queryLower.includes('área de estudo') || queryLower.includes('risco') ||
+      (queryLower.includes('quantos') && queryLower.includes('bairro'))) {
+    return { type: 'enchentes', keywords: ['enchente', 'inundação', 'risco'] };
+  }
+  
+  // Classificar por listagem
+  if (queryLower.includes('quais são') || queryLower.includes('quantos') || 
+      queryLower.includes('liste') || queryLower.includes('listar')) {
+    return { type: 'listagem', keywords: queryLower.split(' ').filter(w => w.length > 3) };
+  }
+  
+  // Classificar por artigo
+  const artMatch = query.match(/(?:art|artigo)\s*\.?\s*(\d+)/i);
+  if (artMatch || queryLower.includes('certificação') || queryLower.includes('sustentabilidade') || 
+      queryLower.includes('volumétrico') || queryLower.includes('luos')) {
+    return { 
+      type: 'artigo', 
+      keywords: ['artigo', 'lei', 'luos'],
+      artigo: artMatch ? artMatch[1] : null
+    };
+  }
+  
+  // Classificar por bairro
+  const bairro = extractBairroFromQuery(query);
+  if (bairro || queryLower.includes('altura') || queryLower.includes('coeficiente') || queryLower.includes('zot')) {
+    return { 
+      type: 'bairro', 
+      keywords: ['altura', 'coeficiente', 'zot'],
+      bairro: bairro
+    };
+  }
+  
+  // Classificar como conceitual
+  if (queryLower.includes('objetivos') || queryLower.includes('princípios') || 
+      queryLower.includes('diretor') || queryLower.includes('definição')) {
+    return { type: 'conceitual', keywords: queryLower.split(' ').filter(w => w.length > 3) };
+  }
+  
+  return { type: 'geral', keywords: queryLower.split(' ').filter(w => w.length > 3) };
+}
+
+/**
+ * FUNÇÃO PARA EXTRAIR NÚMERO DE ARTIGO DA QUERY (MELHORADA)
+ */
+function extractArticleFromQuery(query: string): string | null {
+  const patterns = [
+    /(?:art|artigo)\s*\.?\s*(\d+)/i,
+    /(?:^|\s)(\d+)º?(?:\s*(?:,|\.|\s)?\s*(?:inciso|§|parágrafo)?\s*[IVX]+)?/i
+  ];
+  
+  for (const pattern of patterns) {
+    const match = query.match(pattern);
+    if (match && match[1]) {
+      const articleNum = match[1];
+      console.log(`📋 Artigo identificado: ${articleNum}`);
+      return articleNum;
     }
   }
   
@@ -102,95 +200,185 @@ serve(async (req) => {
 
     console.log('🔥 Executando sistema dinâmico sem hardcoding...');
 
-    // 1. BUSCA POR ARTIGOS DA LEI (DINÂMICA)
-    const articleNumber = extractArticleFromQuery(query);
-    if (articleNumber || queryLower.includes('certificação') || queryLower.includes('sustentabilidade') || queryLower.includes('artigo') || queryLower.includes('art')) {
-      console.log(`📋 Executando busca dinâmica por artigo (detectado: ${articleNumber})...`);
+    // CLASSIFICAR TIPO DE QUERY PARA BUSCA INTELIGENTE
+    const queryClassification = classifyQueryType(query);
+    console.log(`🧠 Query classificada como: ${queryClassification.type}`, queryClassification);
+
+    // EXECUTAR ESTRATÉGIA BASEADA NA CLASSIFICAÇÃO
+    if (queryClassification.type === 'artigo') {
+      await executeArticleSearch();
+    } else if (queryClassification.type === 'bairro') {
+      await executeBairroSearch();
+    } else if (queryClassification.type === 'enchentes') {
+      await executeEnchentesSearch();
+    } else if (queryClassification.type === 'listagem') {
+      await executeListagemSearch();
+    } else if (queryClassification.type === 'conceitual') {
+      await executeConceitualSearch();
+    } else {
+      await executeGeneralSearch();
+    }
+
+    // ESTRATÉGIAS DE BUSCA ESPECIALIZADAS
+    async function executeArticleSearch() {
+      console.log(`📋 ESTRATÉGIA: Busca por artigos específicos...`);
       
-      let searchTerms = [];
+      const articleNumber = queryClassification.artigo || extractArticleFromQuery(query);
+      const searchStrategies = [];
+      
+      // Estratégia 1: Busca por número específico
       if (articleNumber) {
-        searchTerms.push(`%art%${articleNumber}%`);
-        searchTerms.push(`%artigo%${articleNumber}%`);
-      }
-      if (queryLower.includes('certificação') || queryLower.includes('sustentabilidade')) {
-        searchTerms.push('%certificação%sustentabilidade%');
-        searchTerms.push('%sustentabilidade%ambiental%');
+        searchStrategies.push(
+          { term: `%art.%${articleNumber}%`, desc: `Artigo ${articleNumber} com ponto` },
+          { term: `%art %${articleNumber}%`, desc: `Artigo ${articleNumber} com espaço` },
+          { term: `%artigo%${articleNumber}%`, desc: `Artigo ${articleNumber} completo` }
+        );
       }
       
-      // Busca dinâmica em documentos
-      for (const term of searchTerms) {
+      // Estratégia 2: Busca temática
+      if (queryLower.includes('certificação') || queryLower.includes('sustentabilidade')) {
+        searchStrategies.push(
+          { term: '%certificação%sustentabilidade%ambiental%', desc: 'Certificação sustentabilidade' },
+          { term: '%art%81%sustentabilidade%', desc: 'Art 81 sustentabilidade' }
+        );
+      }
+      
+      if (queryLower.includes('volumétrico')) {
+        searchStrategies.push(
+          { term: '%regime%volumétrico%', desc: 'Regime volumétrico' },
+          { term: '%art%75%', desc: 'Art 75 volumétrico' }
+        );
+      }
+      
+      // Executar estratégias
+      for (const strategy of searchStrategies) {
         const { data: docResults, error } = await supabaseClient
           .from('document_embeddings')
           .select('content_chunk, chunk_metadata')
-          .ilike('content_chunk', term)
-          .limit(5);
+          .ilike('content_chunk', strategy.term)
+          .limit(8);
 
         if (!error && docResults && docResults.length > 0) {
+          console.log(`✅ Estratégia bem-sucedida: ${strategy.desc}`);
           executionResults.push({
-            query: `Busca artigo dinâmica: ${term}`,
-            table: 'document_embeddings',
-            purpose: `Buscar artigo ${articleNumber || 'sobre tema'} da lei`,
-            data: docResults
+            query: `Busca artigo: ${strategy.desc}`,
+            table: 'document_embeddings', 
+            purpose: 'Buscar artigo específico da lei',
+            data: docResults,
+            strategy: strategy.desc
           });
           hasResults = true;
-          break; // Parar na primeira busca bem-sucedida
+          return; // Parar na primeira estratégia bem-sucedida
+        }
+      }
+      
+      // Fallback: Busca em document_sections se não encontrou em embeddings
+      if (!hasResults && articleNumber) {
+        const { data: secResults, error } = await supabaseClient
+          .from('document_sections')
+          .select('content, metadata')
+          .or(`content.ilike.%art.${articleNumber}%,content.ilike.%artigo ${articleNumber}%`)
+          .limit(5);
+          
+        if (!error && secResults && secResults.length > 0) {
+          console.log(`✅ Fallback document_sections para artigo ${articleNumber}`);
+          executionResults.push({
+            query: `Fallback artigo ${articleNumber}`,
+            table: 'document_sections',
+            purpose: 'Buscar artigo em document_sections',
+            data: secResults.map(r => ({ content_chunk: r.content, chunk_metadata: r.metadata }))
+          });
+          hasResults = true;
         }
       }
     }
     
-    // 2. BUSCA POR ENCHENTES/ÁREA DE ESTUDO (DINÂMICA)
-    if (queryLower.includes('enchente') || queryLower.includes('inundação') || queryLower.includes('área de estudo') || 
-       (queryLower.includes('proteção') && queryLower.includes('enchente')) ||
-       (queryLower.includes('quantos') && queryLower.includes('bairro'))) {
-      console.log('📋 Executando busca dinâmica por enchentes...');
+    async function executeEnchentesSearch() {
+      console.log('🌊 ESTRATÉGIA: Busca por enchentes/risco...');
       
-      const { data: enchentesResults, error } = await supabaseClient
-        .from('bairros_risco_desastre')
-        .select('bairro_nome, areas_criticas, observacoes, risco_inundacao')
-        .or('areas_criticas.ilike.%enchentes%,risco_inundacao.eq.true')
-        .order('bairro_nome');
+      // Estratégia 1: Busca específica por termos relacionados
+      const riskTerms = queryLower.includes('proteção') ? 
+        ['enchentes%sistema%atual', 'proteção%enchentes', 'área%estudo'] : 
+        ['enchentes', 'inundação', 'risco'];
+      
+      for (const term of riskTerms) {
+        const { data: enchentesResults, error } = await supabaseClient
+          .from('bairros_risco_desastre')
+          .select('bairro_nome, areas_criticas, observacoes, risco_inundacao, nivel_risco_geral')
+          .or(`areas_criticas.ilike.%${term}%,risco_inundacao.eq.true`)
+          .order('bairro_nome');
 
-      if (!error && enchentesResults && enchentesResults.length > 0) {
-        // Filtrar especificamente enchentes de 2024 se mencionado
-        let finalResults = enchentesResults;
-        if (queryLower.includes('2024') || queryLower.includes('área de estudo')) {
-          finalResults = enchentesResults.filter(b => 
-            b.areas_criticas && b.areas_criticas.toLowerCase().includes('enchentes de 2024')
-          );
+        if (!error && enchentesResults && enchentesResults.length > 0) {
+          // Filtros específicos baseados na query
+          let finalResults = enchentesResults;
+          
+          if (queryLower.includes('sistema atual') || queryLower.includes('protegidos')) {
+            finalResults = enchentesResults.filter(b => 
+              b.areas_criticas && 
+              (b.areas_criticas.toLowerCase().includes('sistema atual') ||
+               b.areas_criticas.toLowerCase().includes('protegidos'))
+            );
+          } else if (queryLower.includes('2024') || queryLower.includes('área de estudo')) {
+            finalResults = enchentesResults.filter(b => 
+              b.areas_criticas && b.areas_criticas.toLowerCase().includes('2024')
+            );
+          }
+          
+          if (queryLower.includes('quantos')) {
+            executionResults.push({
+              query: `Contar bairros: ${term}`,
+              table: 'bairros_risco_desastre',
+              purpose: 'Contar quantos bairros foram afetados',
+              data: [{ 
+                total_bairros_enchentes: finalResults.length,
+                bairros_lista: finalResults.map(b => b.bairro_nome),
+                criterio_busca: term
+              }]
+            });
+          } else {
+            executionResults.push({
+              query: `Busca enchentes: ${term}`,
+              table: 'bairros_risco_desastre',
+              purpose: 'Buscar bairros afetados por enchentes',
+              data: finalResults
+            });
+          }
+          hasResults = true;
+          return;
         }
-        
-        if (queryLower.includes('quantos')) {
-          executionResults.push({
-            query: 'Contar bairros afetados por enchentes',
-            table: 'bairros_risco_desastre',
-            purpose: 'Contar quantos bairros foram afetados por enchentes',
-            data: [{ 
-              total_bairros_enchentes: finalResults.length,
-              bairros_lista: finalResults.map(b => b.bairro_nome)
-            }]
-          });
-        } else {
-          executionResults.push({
-            query: 'Busca bairros enchentes',
-            table: 'bairros_risco_desastre',
-            purpose: 'Buscar bairros afetados por enchentes',
-            data: finalResults
-          });
-        }
-        hasResults = true;
       }
     }
     
-    // 3. BUSCA POR DADOS URBANÍSTICOS DE QUALQUER BAIRRO (DINÂMICA)
-    const extractedBairro = extractBairroFromQuery(query);
-    if (extractedBairro || queryLower.includes('altura') || queryLower.includes('coeficiente') || queryLower.includes('zot')) {
-      console.log(`📋 Executando busca dinâmica por bairro (detectado: "${extractedBairro}")...`);
+    async function executeBairroSearch() {
+      console.log(`🏘️ ESTRATÉGIA: Busca por dados urbanísticos...`);
       
+      const extractedBairro = queryClassification.bairro || extractBairroFromQuery(query);
       let searchBairro = extractedBairro;
       
-      // Se não extraiu bairro, tentar detectar automaticamente
+      // Estratégia 1: Bairro identificado diretamente
+      if (searchBairro) {
+        const { data: regimeResults, error } = await supabaseClient
+          .from('regime_urbanistico')
+          .select('zona, bairro, altura_maxima, coef_aproveitamento_basico, coef_aproveitamento_maximo')
+          .ilike('bairro', `%${searchBairro}%`)
+          .order('zona');
+
+        if (!error && regimeResults && regimeResults.length > 0) {
+          console.log(`✅ Encontrado dados para bairro: ${regimeResults[0].bairro}`);
+          executionResults.push({
+            query: `Dados urbanísticos ${searchBairro}`,
+            table: 'regime_urbanistico',
+            purpose: `Obter dados urbanísticos do bairro ${regimeResults[0].bairro}`,
+            data: regimeResults,
+            detectedBairro: searchBairro
+          });
+          hasResults = true;
+          return;
+        }
+      }
+      
+      // Estratégia 2: Detectar bairro automaticamente
       if (!searchBairro && (queryLower.includes('altura') || queryLower.includes('coeficiente'))) {
-        // Buscar primeira palavra que pode ser bairro
         const words = query.split(' ').filter(w => w.length > 3);
         for (const word of words) {
           const { data: testBairro } = await supabaseClient
@@ -201,62 +389,172 @@ serve(async (req) => {
           
           if (testBairro && testBairro.length > 0) {
             searchBairro = word;
+            console.log(`🎯 Bairro detectado automaticamente: ${searchBairro}`);
             break;
           }
         }
-      }
-      
-      if (searchBairro) {
-        const { data: regimeResults, error } = await supabaseClient
-          .from('regime_urbanistico')
-          .select('zona, bairro, altura_maxima, coef_aproveitamento_basico, coef_aproveitamento_maximo')
-          .ilike('bairro', `%${searchBairro}%`)
-          .order('zona');
+        
+        if (searchBairro) {
+          const { data: regimeResults, error } = await supabaseClient
+            .from('regime_urbanistico')
+            .select('zona, bairro, altura_maxima, coef_aproveitamento_basico, coef_aproveitamento_maximo')
+            .ilike('bairro', `%${searchBairro}%`)
+            .order('zona');
 
-        if (!error && regimeResults && regimeResults.length > 0) {
-          executionResults.push({
-            query: `Busca dados urbanísticos ${searchBairro}`,
-            table: 'regime_urbanistico',
-            purpose: `Obter dados urbanísticos do bairro ${regimeResults[0].bairro}`,
-            data: regimeResults,
-            detectedBairro: searchBairro
-          });
-          hasResults = true;
+          if (!error && regimeResults && regimeResults.length > 0) {
+            executionResults.push({
+              query: `Auto-detectado: ${searchBairro}`,
+              table: 'regime_urbanistico',
+              purpose: `Dados urbanísticos do bairro ${regimeResults[0].bairro}`,
+              data: regimeResults,
+              detectedBairro: searchBairro
+            });
+            hasResults = true;
+            return;
+          }
         }
       }
     }
 
-    // 4. BUSCA GERAL EM DOCUMENTOS (FALLBACK DINÂMICO)
-    if (!hasResults) {
-      console.log('📋 Executando busca geral dinâmica...');
+    async function executeListagemSearch() {
+      console.log('📋 ESTRATÉGIA: Busca por listagem/conceitos...');
       
-      const keywords = query.split(' ')
-        .filter(word => word.length > 3)
-        .slice(0, 3)
-        .join('%');
+      // Detectar se é sobre zonas especiais
+      if (queryLower.includes('zonas especiais') || queryLower.includes('quais são as zonas')) {
+        const { data: zonasResults, error } = await supabaseClient
+          .from('regime_urbanistico')
+          .select('zona')
+          .distinct('zona')
+          .ilike('zona', '%especial%')
+          .order('zona');
+
+        if (!error && zonasResults && zonasResults.length > 0) {
+          executionResults.push({
+            query: 'Listar zonas especiais',
+            table: 'regime_urbanistico',
+            purpose: 'Listar todas as zonas especiais',
+            data: zonasResults
+          });
+          hasResults = true;
+          return;
+        }
+      }
       
+      // Busca geral conceitual em documentos
+      const keywords = queryClassification.keywords.slice(0, 3).join('%');
       const { data: docResults, error } = await supabaseClient
         .from('document_embeddings')
         .select('content_chunk, chunk_metadata')
         .ilike('content_chunk', `%${keywords}%`)
-        .limit(5);
+        .limit(8);
 
       if (!error && docResults && docResults.length > 0) {
         executionResults.push({
-          query: 'Busca geral dinâmica',
+          query: `Busca conceitual: ${keywords}`,
           table: 'document_embeddings',
-          purpose: 'Busca geral em documentos',
+          purpose: 'Busca conceitual em documentos',
           data: docResults
         });
         hasResults = true;
       }
     }
 
+    async function executeConceitualSearch() {
+      console.log('🧠 ESTRATÉGIA: Busca conceitual...');
+      
+      const searchTerms = [];
+      
+      if (queryLower.includes('objetivos')) {
+        searchTerms.push('%objetivos%plano%diretor%');
+        searchTerms.push('%princípios%fundamentais%');
+      }
+      
+      if (queryLower.includes('princípios')) {
+        searchTerms.push('%princípios%fundamentais%');
+        searchTerms.push('%art%3%princípios%');
+      }
+      
+      // Adicionar busca geral por keywords
+      if (searchTerms.length === 0) {
+        const keywords = queryClassification.keywords.slice(0, 2).join('%');
+        searchTerms.push(`%${keywords}%`);
+      }
+      
+      for (const term of searchTerms) {
+        const { data: docResults, error } = await supabaseClient
+          .from('document_embeddings')
+          .select('content_chunk, chunk_metadata')
+          .ilike('content_chunk', term)
+          .limit(8);
+
+        if (!error && docResults && docResults.length > 0) {
+          executionResults.push({
+            query: `Busca conceitual: ${term}`,
+            table: 'document_embeddings',
+            purpose: 'Busca conceitual em documentos',
+            data: docResults
+          });
+          hasResults = true;
+          return;
+        }
+      }
+    }
+
+    async function executeGeneralSearch() {
+      console.log('🔍 ESTRATÉGIA: Busca geral com fallback múltiplo...');
+      
+      const keywords = queryClassification.keywords.slice(0, 3);
+      
+      // Estratégia 1: Busca em document_embeddings
+      for (let i = keywords.length; i >= 1; i--) {
+        const searchTerm = `%${keywords.slice(0, i).join('%')}%`;
+        
+        const { data: docResults, error } = await supabaseClient
+          .from('document_embeddings')
+          .select('content_chunk, chunk_metadata')
+          .ilike('content_chunk', searchTerm)
+          .limit(6);
+
+        if (!error && docResults && docResults.length > 0) {
+          console.log(`✅ Busca geral bem-sucedida com ${i} keywords`);
+          executionResults.push({
+            query: `Busca geral: ${searchTerm}`,
+            table: 'document_embeddings',
+            purpose: 'Busca geral em documentos',
+            data: docResults
+          });
+          hasResults = true;
+          return;
+        }
+      }
+      
+      // Estratégia 2: Fallback para document_sections
+      const mainKeyword = keywords[0];
+      if (mainKeyword) {
+        const { data: secResults, error } = await supabaseClient
+          .from('document_sections')
+          .select('content, metadata')
+          .ilike('content', `%${mainKeyword}%`)
+          .limit(5);
+          
+        if (!error && secResults && secResults.length > 0) {
+          console.log(`✅ Fallback document_sections bem-sucedido`);
+          executionResults.push({
+            query: `Fallback geral: ${mainKeyword}`,
+            table: 'document_sections',
+            purpose: 'Busca fallback em sections',
+            data: secResults.map(r => ({ content_chunk: r.content, chunk_metadata: r.metadata }))
+          });
+          hasResults = true;
+        }
+      }
+    }
+
     console.log('✅ Execução dinâmica completa:', {
       totalResults: executionResults.length,
       hasValidData: hasResults,
-      extractedBairro: extractedBairro,
-      extractedArticle: articleNumber
+      queryClassification: queryClassification.type,
+      strategyUsed: executionResults[0]?.query || 'nenhuma'
     });
 
     // SÍNTESE DA RESPOSTA
@@ -357,11 +655,16 @@ serve(async (req) => {
     if (!finalResponse) {
       finalResponse = `Não foi possível encontrar informações específicas para "${query}". `;
       
-      // Sugestões inteligentes baseadas na query
-      if (extractedBairro) {
-        finalResponse += `\n\n💡 **Dica:** Tentei buscar informações sobre o bairro "${extractedBairro}". Verifique se o nome está correto ou tente uma busca mais específica como "altura máxima ${extractedBairro}" ou "coeficiente aproveitamento ${extractedBairro}".`;
-      } else if (articleNumber) {
-        finalResponse += `\n\n💡 **Dica:** Tentei buscar o artigo ${articleNumber}. Tente ser mais específico, como "artigo ${articleNumber} LUOS" ou inclua o tema do artigo.`;
+      // Sugestões inteligentes baseadas na classificação
+      const bairro = queryClassification.bairro;
+      const artigo = queryClassification.artigo;
+      
+      if (bairro) {
+        finalResponse += `\n\n💡 **Dica:** Tentei buscar informações sobre o bairro "${bairro}". Verifique se o nome está correto ou tente uma busca mais específica como "altura máxima ${bairro}" ou "coeficiente aproveitamento ${bairro}".`;
+      } else if (artigo) {
+        finalResponse += `\n\n💡 **Dica:** Tentei buscar o artigo ${artigo}. Tente ser mais específico, como "artigo ${artigo} LUOS" ou inclua o tema do artigo.`;
+      } else if (queryClassification.type === 'conceitual') {
+        finalResponse += '\n\n💡 **Dica:** Para perguntas conceituais, tente ser mais específico. Exemplos: "art. 3º princípios fundamentais", "objetivos do plano diretor".';
       } else {
         finalResponse += '\n\n💡 **Dica:** Seja mais específico em sua consulta. Exemplos: "artigo 81 LUOS", "altura máxima Menino Deus", "enchentes 2024".';
       }
@@ -383,8 +686,8 @@ serve(async (req) => {
         model: model,
         totalQueries: executionResults.length,
         hasValidResults: hasResults,
-        extractedBairro: extractedBairro,
-        extractedArticle: articleNumber,
+        queryClassification: queryClassification,
+        strategyUsed: executionResults[0]?.strategy || executionResults[0]?.purpose || 'fallback',
         isHardcoded: false
       }
     };
@@ -393,8 +696,8 @@ serve(async (req) => {
       confidence: response.confidence,
       executionTime: executionTime,
       sources: response.sources,
-      extractedBairro: extractedBairro,
-      extractedArticle: articleNumber
+      queryType: queryClassification.type,
+      strategyUsed: executionResults[0]?.strategy || 'fallback'
     });
 
     return new Response(JSON.stringify(response), {
