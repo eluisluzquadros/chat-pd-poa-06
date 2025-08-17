@@ -21,7 +21,7 @@ serve(async (req) => {
   try {
     const { query, model = "zhipuai/glm-4-plus", sessionId } = await req.json() as RequestBody;
     
-    console.log(`🔍 FASE 1: Busca vetorial simplificada para: "${query}"`);
+    console.log(`🔍 FASE 1 SIMPLIFICADA: Busca vetorial para: "${query}"`);
     const startTime = Date.now();
 
     // Inicializar Supabase
