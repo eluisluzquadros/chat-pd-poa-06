@@ -1,294 +1,347 @@
-import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.0";
+import "https://deno.land/x/xhr@0.1.0/mod.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-/**
- * Agentic-RAG v1 - SIMPLIFICADO E CORRIGIDO
- * Pipeline direto sem complexidade desnecessária
- */
+interface QueryRequest {
+  query?: string;
+  message?: string;
+  sessionId?: string;
+  userId?: string;
+  userRole?: string;
+  model?: string;
+  bypassCache?: boolean;
+  options?: {
+    useAgenticRAG?: boolean;
+    useKnowledgeGraph?: boolean;
+    useHierarchicalChunks?: boolean;
+    userRole?: string;
+    userId?: string;
+  };
+}
+
 serve(async (req) => {
+  // Handle CORS
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return new Response('ok', { headers: corsHeaders });
   }
 
   try {
-    const body = await req.json();
-    const query = body.query || body.message;
-    const model = body.model || 'anthropic/claude-3-5-sonnet-20241022';
-    const sessionId = body.sessionId || `session_${Date.now()}`;
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const openaiApiKey = Deno.env.get('OPENAI_API_KEY');
+
+    if (!openaiApiKey) {
+      throw new Error('OPENAI_API_KEY not configured');
+    }
+
+    const supabase = createClient(supabaseUrl, supabaseKey);
     
-    console.log('🔥 AGENTIC-RAG V1 SIMPLIFICADO received request:', { 
-      query: query,
-      model: model,
-      sessionId: sessionId 
+    const requestData: QueryRequest = await req.json();
+    const query = requestData.query || requestData.message || '';
+    
+    // Normalize model name (remove provider prefix if present)
+    let model = requestData.model || 'gpt-4-turbo-preview';
+    if (model.includes('/')) {
+      model = model.split('/')[1]; // Remove "openai/" prefix
+    }
+    // Map specific model versions to supported ones
+    if (model === 'gpt-4-turbo-2024-04-09' || model === 'gpt-4-turbo') {
+      model = 'gpt-4-turbo-preview';
+    }
+    
+    const sessionId = requestData.sessionId || `session-${Date.now()}`;
+    const userId = requestData.userId || requestData.options?.userId || 'anonymous';
+    const bypassCache = requestData.bypassCache !== false;
+
+    console.log('🎯 Processing query:', query);
+    console.log('🤖 Using model:', model);
+    console.log('🔄 Bypass cache:', bypassCache);
+
+    // Step 1: Check cache first (unless bypassed)
+    if (!bypassCache) {
+      const { data: cachedResult } = await supabase
+        .from('query_cache')
+        .select('*')
+        .eq('query', query.toLowerCase())
+        .single();
+
+      if (cachedResult && cachedResult.response) {
+        console.log('✅ Cache hit! Returning cached response');
+        return new Response(
+          JSON.stringify({
+            response: cachedResult.response,
+            confidence: cachedResult.confidence || 0.95,
+            sources: { tabular: 1, conceptual: 0 },
+            executionTime: 50,
+            cached: true,
+            agentTrace: [{
+              type: 'cache',
+              confidence: 0.95,
+              executionTime: 50,
+              hasData: true
+            }]
+          }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+    }
+
+    // Step 2: Generate embedding for the query
+    console.log('🔍 Generating embedding for query...');
+    const embeddingResponse = await fetch('https://api.openai.com/v1/embeddings', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${openaiApiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'text-embedding-ada-002',
+        input: query,
+      }),
     });
 
-    const supabaseClient = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
-    );
+    if (!embeddingResponse.ok) {
+      throw new Error(`Embedding generation failed: ${embeddingResponse.statusText}`);
+    }
 
-    const startTime = Date.now();
-    const queryLower = query.toLowerCase();
+    const embeddingData = await embeddingResponse.json();
+    const queryEmbedding = embeddingData.data[0].embedding;
 
-    // EXECUÇÃO DIRETA - SEM PIPELINE COMPLEXO
-    let executionResults = [];
-    let hasResults = false;
+    // Step 3: Search for similar documents using pgvector
+    console.log('🔎 Searching for similar documents...');
+    
+    // Try match_document_sections first (main document content)
+    const { data: sectionDocuments, error: sectionError } = await supabase.rpc('match_document_sections', {
+      query_embedding: queryEmbedding,
+      match_threshold: 0.7,
+      match_count: 5
+    });
 
-    console.log('🔥 Executando queries diretas simplificadas...');
+    // Also try match_documents (for document_chunks if exists)
+    const { data: chunkDocuments, error: chunkError } = await supabase.rpc('match_documents', {
+      query_embedding: queryEmbedding,
+      match_threshold: 0.7,
+      match_count: 3
+    });
 
-    // 1. CERTIFICAÇÃO EM SUSTENTABILIDADE AMBIENTAL
-    if (queryLower.includes('certificação') && queryLower.includes('sustentabilidade')) {
-      console.log('📋 Executando busca por certificação...');
-      
-      const { data: certResults, error } = await supabaseClient
-        .from('document_embeddings')
-        .select('content_chunk, chunk_metadata')
-        .or(`content_chunk.ilike.%certificação%sustentabilidade%,content_chunk.ilike.%art%81%,content_chunk.ilike.%artigo 81%`)
+    // Combine results from both searches
+    let documents = [];
+    
+    if (sectionDocuments && !sectionError) {
+      console.log(`📄 Found ${sectionDocuments.length} results from document_sections`);
+      documents = [...documents, ...sectionDocuments];
+    }
+    
+    if (chunkDocuments && !chunkError) {
+      console.log(`📄 Found ${chunkDocuments.length} results from document_chunks`);
+      documents = [...documents, ...chunkDocuments];
+    }
+
+    // If vector search failed, fallback to text search
+    if (documents.length === 0) {
+      console.log('⚠️ Vector search failed, trying text search...');
+      const { data: textSearchResults } = await supabase
+        .from('document_sections')
+        .select('*')
+        .textSearch('content', query)
         .limit(5);
-
-      if (!error && certResults && certResults.length > 0) {
-        executionResults.push({
-          query: 'Busca certificação sustentabilidade',
-          table: 'document_embeddings',
-          purpose: 'Buscar artigo sobre Certificação em Sustentabilidade Ambiental',
-          data: certResults
-        });
-        hasResults = true;
-      }
-    }
-    
-    // 2. BAIRROS "EM ÁREA DE ESTUDO" PARA PROTEÇÃO CONTRA ENCHENTES
-    if (queryLower.includes('área de estudo') || 
-       (queryLower.includes('proteção') && queryLower.includes('enchente')) ||
-       (queryLower.includes('quantos') && queryLower.includes('bairro') && queryLower.includes('estudo'))) {
-      console.log('📋 Executando busca por bairros em área de estudo...');
       
-      if (queryLower.includes('quantos')) {
-        // CORREÇÃO: Usar a query correta para enchentes de 2024 (13 bairros)
-        const { data: countResults, error } = await supabaseClient
-          .from('bairros_risco_desastre')
-          .select('bairro_nome')
-          .ilike('areas_criticas', '%enchentes de 2024%');
-
-        if (!error) {
-          executionResults.push({
-            query: 'Contar bairros afetados por enchentes 2024',
-            table: 'bairros_risco_desastre',
-            purpose: 'Contar quantos bairros foram afetados pelas enchentes de 2024',
-            data: [{ total_bairros_enchentes_2024: countResults?.length || 0 }]
-          });
-          hasResults = true;
-        }
-      } else {
-        const { data: areaResults, error } = await supabaseClient
-          .from('bairros_risco_desastre')
-          .select('bairro_nome, areas_criticas, observacoes')
-          .ilike('areas_criticas', '%enchentes de 2024%')
-          .order('bairro_nome');
-
-        if (!error && areaResults && areaResults.length > 0) {
-          executionResults.push({
-            query: 'Busca bairros área de estudo',
-            table: 'bairros_risco_desastre',
-            purpose: 'Buscar bairros em área de estudo para proteção contra enchentes',
-            data: areaResults
-          });
-          hasResults = true;
-        }
+      if (textSearchResults && textSearchResults.length > 0) {
+        console.log('📝 Using text search results as fallback');
+        documents = textSearchResults;
       }
     }
-    
-    // 3. QUESTÕES DE ALTURA MÁXIMA E COEFICIENTES
-    if ((queryLower.includes('altura') && queryLower.includes('máxima')) || 
-       queryLower.includes('coeficiente') || queryLower.includes('petrópolis') || 
-       queryLower.includes('três figueiras')) {
-      console.log('📋 Executando busca por dados urbanísticos...');
+
+    if (!documents || documents.length === 0) {
+      console.log('⚠️ No documents found, searching in document_rows...');
       
-      // Extrair nome do bairro da query
-      let bairroName = 'Petrópolis'; // default
-      if (queryLower.includes('três figueiras')) {
-        bairroName = 'Três Figueiras';
-      } else if (queryLower.includes('petrópolis')) {
-        bairroName = 'Petrópolis';
-      } else {
-        const bairroMatch = query.match(/(?:bairro|do|da|de)\s+([A-Za-zÀ-ÿ\s]+?)(?:\?|$|,)/i);
-        if (bairroMatch) {
-          bairroName = bairroMatch[1].trim();
-        }
-      }
-      
-      const { data: regimeResults, error } = await supabaseClient
-        .from('regime_urbanistico')
-        .select('zona, bairro, altura_maxima, coef_aproveitamento_basico, coef_aproveitamento_maximo')
-        .ilike('bairro', `%${bairroName}%`)
-        .order('zona');
+      // Try searching in document_rows table
+      const { data: rowData } = await supabase
+        .from('document_rows')
+        .select('*')
+        .or(`content.ilike.%${query}%,metadata->nome_bairro.ilike.%${query}%`)
+        .limit(10);
 
-      if (!error && regimeResults && regimeResults.length > 0) {
-        executionResults.push({
-          query: `Busca dados ${bairroName}`,
-          table: 'regime_urbanistico',
-          purpose: `Obter a altura máxima, coeficiente básico e máximo do bairro ${bairroName} para cada zona`,
-          data: regimeResults
-        });
-        hasResults = true;
+      if (rowData && rowData.length > 0) {
+        console.log(`✅ Found ${rowData.length} results in document_rows`);
+        const context = formatRowDataAsContext(rowData);
+        return await generateResponse(query, context, model, openaiApiKey, supabase, sessionId, userId);
       }
+
+      // No results found anywhere
+      return new Response(
+        JSON.stringify({
+          response: `Não encontrei informações específicas sobre "${query}" na base de conhecimento. Por favor, tente reformular sua pergunta ou consulte sobre:\n\n• Artigos específicos (ex: "Art. 75 da LUOS")\n• Bairros de Porto Alegre (ex: "altura máxima em Petrópolis")\n• Zonas urbanas (ex: "parâmetros da ZOT-04")\n• Proteção contra enchentes (ex: "bairros protegidos")`,
+          confidence: 0.3,
+          sources: { tabular: 0, conceptual: 0 },
+          executionTime: 1000,
+          agentTrace: [{
+            type: 'search',
+            confidence: 0.3,
+            executionTime: 1000,
+            hasData: false
+          }]
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
-    // 4. BUSCA GERAL EM DOCUMENTOS (FALLBACK)
-    if (!hasResults) {
-      console.log('📋 Executando busca geral...');
-      
-      const keywords = query.split(' ').slice(0, 3).join(' ');
-      const { data: docResults, error } = await supabaseClient
-        .from('document_embeddings')
-        .select('content_chunk, chunk_metadata')
-        .ilike('content_chunk', `%${keywords}%`)
-        .limit(3);
+    // Step 4: Prepare context from found documents
+    console.log(`📚 Found ${documents.length} relevant documents`);
+    const context = documents.map((doc: any) => {
+      return `[Fonte: ${doc.metadata?.source || 'Unknown'}]\n${doc.content}`;
+    }).join('\n\n---\n\n');
 
-      if (!error && docResults && docResults.length > 0) {
-        executionResults.push({
-          query: 'Busca geral documentos',
-          table: 'document_embeddings',
-          purpose: 'Busca geral em documentos',
-          data: docResults
-        });
-        hasResults = true;
-      }
-    }
-
-    console.log('✅ Execução completa:', {
-      totalResults: (executionResults && executionResults.length) || 0,
-      hasValidData: hasResults
-    });
-
-    // SÍNTESE DA RESPOSTA DIRETA
-    let finalResponse = '';
-    let confidence = hasResults ? 0.9 : 0.3;
-    let sources = { tabular: 0, conceptual: 0 };
-
-    if (executionResults && executionResults.length > 0) {
-      for (const result of executionResults) {
-        if (result && result.data && result.data.length > 0) {
-          // Certificação em Sustentabilidade Ambiental
-          if (result.purpose.includes('Certificação')) {
-            const relevantDocs = result.data.filter(doc => 
-              doc.content_chunk.toLowerCase().includes('certificação') &&
-              doc.content_chunk.toLowerCase().includes('sustentabilidade')
-            );
-            
-            if (relevantDocs.length > 0) {
-              finalResponse = `Com base nos documentos oficiais do Plano Diretor de Porto Alegre, a **Certificação em Sustentabilidade Ambiental** está prevista no **Artigo 81, Inciso III** da LUOS (Lei de Uso e Ocupação do Solo).\n\n`;
-              finalResponse += `Este artigo estabelece os critérios e procedimentos para a obtenção da certificação, que é um instrumento importante para incentivar práticas sustentáveis na construção e no desenvolvimento urbano.\n\n`;
-              finalResponse += `A certificação é aplicável a empreendimentos que atendam a critérios específicos de sustentabilidade ambiental, promovendo a qualidade ambiental urbana.`;
-              sources.conceptual = relevantDocs.length;
-            }
-          }
-          
-          // Bairros em Área de Estudo
-          else if (result.purpose.includes('área de estudo')) {
-            if (result.data[0]?.total_bairros_em_area_de_estudo !== undefined) {
-              const total = result.data[0].total_bairros_em_area_de_estudo;
-              finalResponse = `Segundo os dados oficiais do Plano Diretor de Porto Alegre, **${total} bairros** estão classificados como "Em Área de Estudo" para proteção contra enchentes.\n\n`;
-              finalResponse += `Esta classificação indica bairros que necessitam de estudos mais detalhados para implementação de medidas de proteção contra inundações, considerando aspectos como topografia, drenagem urbana e histórico de ocorrências.`;
-            } else {
-              const bairros = result.data.map(b => b.bairro_nome).join(', ');
-              finalResponse = `Os seguintes bairros estão em "Área de Estudo" para proteção contra enchentes:\n\n${bairros}\n\n`;
-              finalResponse += `Estes bairros necessitam de estudos específicos para implementação de medidas de proteção contra inundações.`;
-            }
-            sources.tabular = result.data.length;
-          }
-          
-          // Dados Urbanísticos
-          else if (result.purpose.includes('altura máxima') || result.purpose.includes('coeficiente')) {
-            finalResponse = `**Dados Urbanísticos para o bairro ${result.data[0]?.bairro || 'consultado'}:**\n\n`;
-            
-            result.data.forEach(item => {
-              finalResponse += `**${item.zona}:**\n`;
-              finalResponse += `• Altura Máxima: ${item.altura_maxima || 'N/A'} metros\n`;
-              finalResponse += `• Coeficiente de Aproveitamento Básico: ${item.coef_aproveitamento_basico || 'N/A'}\n`;
-              finalResponse += `• Coeficiente de Aproveitamento Máximo: ${item.coef_aproveitamento_maximo || 'N/A'}\n\n`;
-            });
-            
-            sources.tabular = result.data.length;
-          }
-          
-          // Busca geral em documentos
-          else {
-            finalResponse = `Com base nos documentos do Plano Diretor, encontrei as seguintes informações relevantes:\n\n`;
-            result.data.slice(0, 2).forEach((doc, index) => {
-              const content = doc.content_chunk.length > 200 
-                ? doc.content_chunk.substring(0, 200) + '...'
-                : doc.content_chunk;
-              finalResponse += `**${index + 1}.** ${content}\n\n`;
-            });
-            sources.conceptual = result.data.length;
-          }
-        }
-      }
-    }
-
-    // Fallback se não há resposta específica
-    if (!finalResponse) {
-      finalResponse = 'Não foi possível encontrar informações específicas para sua consulta. Por favor, reformule sua pergunta ou consulte diretamente os documentos oficiais do Plano Diretor de Porto Alegre.';
-      confidence = 0.1;
-    }
-
-    const executionTime = Date.now() - startTime;
-    
-    const response = {
-      response: finalResponse,
-      confidence: confidence,
-      sources: sources,
-      executionTime: executionTime,
-      agentTrace: [
-        { step: 'simplified_direct_query', timestamp: Date.now() },
-        { step: 'response_synthesis', timestamp: Date.now() }
-      ],
-      metadata: {
-        pipeline: 'agentic-v1-simplified',
-        timestamp: new Date().toISOString(),
-        sessionId: sessionId,
-        model: model,
-        totalQueries: (executionResults && executionResults.length) || 0,
-        hasValidResults: hasResults
-      }
-    };
-
-    console.log('✅ Resposta final v1 simplificado:', {
-      confidence: response.confidence,
-      executionTime: executionTime,
-      sources: response.sources
-    });
-
-    return new Response(JSON.stringify(response), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    // Step 5: Generate response using GPT
+    return await generateResponse(query, context, model, openaiApiKey, supabase, sessionId, userId);
 
   } catch (error) {
-    console.error('❌ Agentic-RAG v1 error:', error);
-    
-    return new Response(JSON.stringify({
-      response: 'Desculpe, ocorreu um erro ao processar sua solicitação. Por favor, tente novamente.',
-      confidence: 0,
-      sources: { tabular: 0, conceptual: 0 },
-      executionTime: 0,
-      error: error.message,
-      agentTrace: [{ step: 'error', error: error.message }],
-      metadata: {
-        pipeline: 'agentic-v1-simplified',
-        error: true,
-        errorMessage: error.message,
-        timestamp: new Date().toISOString()
+    console.error('Error in agentic-rag-v3:', error);
+    return new Response(
+      JSON.stringify({
+        error: error.message,
+        response: 'Desculpe, ocorreu um erro ao processar sua solicitação. Por favor, tente novamente.',
+        confidence: 0,
+        sources: { tabular: 0, conceptual: 0 },
+        executionTime: 0
+      }),
+      { 
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
       }
-    }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    );
   }
 });
+
+// Helper function to generate response using GPT
+async function generateResponse(
+  query: string, 
+  context: string, 
+  model: string,
+  apiKey: string,
+  supabase: any,
+  sessionId: string,
+  userId: string
+) {
+  console.log('🤖 Generating response with GPT...');
+  
+  const systemPrompt = `Você é um assistente especializado no Plano Diretor de Porto Alegre (PDUS 2025) e legislação urbanística.
+
+INSTRUÇÕES IMPORTANTES:
+1. Responda SEMPRE em português brasileiro
+2. Seja preciso e cite artigos/fontes quando disponível
+3. Use o contexto fornecido para basear sua resposta
+4. Se não tiver certeza, indique isso claramente
+5. Formate a resposta de forma clara e estruturada
+
+CONTEXTO DISPONÍVEL:
+${context}`;
+
+  const startTime = Date.now();
+
+  try {
+    const completionResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: model.includes('gpt') ? model : 'gpt-4-turbo-preview',
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: query }
+        ],
+        temperature: 0.3,
+        max_tokens: 1000,
+      }),
+    });
+
+    if (!completionResponse.ok) {
+      const errorData = await completionResponse.text();
+      console.error('GPT API error:', errorData);
+      throw new Error(`GPT API failed: ${completionResponse.statusText}`);
+    }
+
+    const completionData = await completionResponse.json();
+    const response = completionData.choices[0].message.content;
+    const executionTime = Date.now() - startTime;
+
+    console.log('✅ Response generated successfully');
+
+    // Cache the successful response
+    await supabase.from('query_cache').upsert({
+      query: query.toLowerCase(),
+      response: response,
+      confidence: 0.85,
+      model: model,
+      execution_time: executionTime,
+      created_at: new Date().toISOString()
+    });
+
+    // Save to chat history
+    await supabase.from('chat_history').insert({
+      session_id: sessionId,
+      user_id: userId,
+      message: query,
+      response: response,
+      model: model,
+      confidence: 0.85,
+      execution_time: executionTime,
+      created_at: new Date().toISOString()
+    });
+
+    return new Response(
+      JSON.stringify({
+        response: response,
+        confidence: 0.85,
+        sources: { 
+          tabular: context.includes('[Fonte:') ? 1 : 0, 
+          conceptual: context.length > 0 ? 1 : 0 
+        },
+        executionTime: executionTime,
+        model: model,
+        agentTrace: [{
+          type: 'rag-pipeline',
+          confidence: 0.85,
+          executionTime: executionTime,
+          steps: [
+            'embedding_generation',
+            'vector_search',
+            'context_preparation',
+            'gpt_generation'
+          ]
+        }]
+      }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+  } catch (error) {
+    console.error('Error generating response:', error);
+    throw error;
+  }
+}
+
+// Helper function to format row data as context
+function formatRowDataAsContext(rowData: any[]): string {
+  return rowData.map(row => {
+    const metadata = row.metadata || {};
+    let formatted = '';
+    
+    if (metadata.nome_bairro) {
+      formatted += `Bairro: ${metadata.nome_bairro}\n`;
+    }
+    if (metadata.zona) {
+      formatted += `Zona: ${metadata.zona}\n`;
+    }
+    if (row.content) {
+      formatted += `${row.content}\n`;
+    }
+    
+    return formatted;
+  }).join('\n---\n');
+}

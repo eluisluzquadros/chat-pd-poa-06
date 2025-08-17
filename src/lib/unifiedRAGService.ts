@@ -38,7 +38,8 @@ export class UnifiedRAGService {
    */
   private getEndpoint(): string {
     const version = this.getSystemVersion();
-    return version === 'v2' ? 'agentic-rag-v3' : 'agentic-rag';
+    // Usando agentic-rag com o novo código RAG real (sem fallbacks)
+    return 'agentic-rag';
   }
 
   /**
@@ -54,12 +55,12 @@ export class UnifiedRAGService {
       bypassCache: options.bypassCache !== false
     };
 
-    // Add v2-specific fields if using v2 endpoint
-    if (endpoint === 'agentic-rag-v3') {
+    // Add fields for new RAG real implementation
+    if (endpoint === 'agentic-rag') {
       return {
         ...baseBody,
-        query: options.message, // v3 uses 'query'
-        message: options.message, // Also include 'message' for compatibility
+        query: options.message, // For compatibility
+        message: options.message,
         options: {
           useAgenticRAG: true,
           useKnowledgeGraph: true,

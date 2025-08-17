@@ -36,7 +36,7 @@ export interface ChatResponseV2 {
 
 class ChatServiceV2 {
   private sessionId: string;
-  private useAgenticRAG: boolean = true;
+  private useAgenticRAG: boolean = false; // Usando v3 com fallbacks
   
   constructor() {
     this.sessionId = this.generateSessionId();
@@ -65,7 +65,7 @@ class ChatServiceV2 {
       // Determine which endpoint to use
       const endpoint = this.useAgenticRAG && options.useAgenticRAG !== false
         ? 'agentic-rag-v2'  // New orchestrator-based pipeline
-        : 'agentic-rag';     // Original pipeline
+        : 'agentic-rag-v3';     // Original pipeline
       
       console.log(`🎯 Using ${endpoint} pipeline`);
       

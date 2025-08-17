@@ -221,9 +221,62 @@ Model selection can be configured per query or globally in the admin dashboard.
 ## Admin Features
 
 Access admin panel at `/admin` (requires admin role):
-- User management
-- Quality assurance testing
-- Benchmark comparisons
-- Feedback analysis
-- Knowledge gap detection
-- System monitoring
+
+### Dashboard Routes
+- `/admin` - Main dashboard with system metrics
+- `/admin/users` - User management and roles
+- `/admin/quality` - QA testing (121 test cases)
+- `/admin/benchmark` - Compare all 21 LLM models
+- `/admin/feedback` - User feedback analysis
+- `/admin/knowledge` - Knowledge base management
+- `/admin/test-qa` - Manual QA test execution
+- `/admin/test-cases` - Manage test cases
+
+### Key Features
+- **Real-time Metrics**: Token usage, response times, error rates
+- **Agent Monitoring**: Track performance of all 5 agents
+- **Session Viewer**: Review conversation history with context
+- **Knowledge Graph Editor**: Visual graph management
+- **Benchmark Tools**: Compare model accuracy and speed
+- **Test Runner**: Execute and monitor QA test runs
+
+## Architecture Decisions
+
+### Why Agentic-RAG v2.0?
+- **Self-refinement**: Automatically improves responses when confidence < 70%
+- **Specialized agents**: Each agent focuses on specific domain expertise
+- **Parallel processing**: Multiple agents work simultaneously
+- **Knowledge graph**: Better understanding of legal relationships
+- **Session memory**: Maintains context across conversations
+
+### Database Indexing Strategy
+- Composite indexes on frequently joined columns
+- GIN indexes for full-text search
+- HNSW indexes for vector similarity (pgvector)
+- Partial indexes for filtered queries
+
+### Caching Strategy
+- Query cache: 24-hour TTL for common queries
+- Session memory: 7-day retention
+- Embedding cache: Permanent for processed documents
+- Agent results: 1-hour cache for identical inputs
+
+## Project-Specific Conventions
+
+### Error Handling
+- All Edge Functions return standardized error responses
+- Errors logged to `error_logs` table with correlation IDs
+- Client-side retry logic for transient failures
+
+### Testing Requirements
+- All new Edge Functions must include unit tests
+- QA test cases must be added for new query types
+- Benchmark new LLM models before adding to production
+
+### Deployment Checklist
+1. Run `npm run test` locally
+2. Deploy functions: `npm run deploy-functions`
+3. Deploy environment: `npm run deploy-env`
+4. Run integration tests: `npm run test:integration`
+5. Verify deployment: `npm run verify-deployment`
+6. Monitor logs: `supabase functions logs --project-ref ngrqwmvuhvjkeohesbxs`
