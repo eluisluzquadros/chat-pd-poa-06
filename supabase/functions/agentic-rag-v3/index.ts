@@ -43,17 +43,7 @@ serve(async (req) => {
     
     const requestData: QueryRequest = await req.json();
     const query = requestData.query || requestData.message || '';
-    
-    // Normalize model name (remove provider prefix if present)
-    let model = requestData.model || 'gpt-4-turbo-preview';
-    if (model.includes('/')) {
-      model = model.split('/')[1]; // Remove "openai/" prefix
-    }
-    // Map specific model versions to supported ones
-    if (model === 'gpt-4-turbo-2024-04-09' || model === 'gpt-4-turbo') {
-      model = 'gpt-4-turbo-preview';
-    }
-    
+    const model = requestData.model || 'gpt-4-turbo-preview';
     const sessionId = requestData.sessionId || `session-${Date.now()}`;
     const userId = requestData.userId || requestData.options?.userId || 'anonymous';
     const bypassCache = requestData.bypassCache !== false;
