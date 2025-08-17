@@ -38,7 +38,7 @@ export class UnifiedRAGService {
    */
   private getEndpoint(): string {
     const version = this.getSystemVersion();
-    return version === 'v2' ? 'agentic-rag-v2' : 'agentic-rag';
+    return version === 'v2' ? 'agentic-rag-v3' : 'agentic-rag';
   }
 
   /**
@@ -55,10 +55,10 @@ export class UnifiedRAGService {
     };
 
     // Add v2-specific fields if using v2 endpoint
-    if (endpoint === 'agentic-rag-v2') {
+    if (endpoint === 'agentic-rag-v3') {
       return {
         ...baseBody,
-        query: options.message, // v2 uses 'query'
+        query: options.message, // v3 uses 'query'
         message: options.message, // Also include 'message' for compatibility
         options: {
           useAgenticRAG: true,
