@@ -39,7 +39,7 @@ export function SystemToggle() {
               {useAgenticRAGv2 ? (
                 <div className="flex items-center gap-2">
                   <Zap className="h-4 w-4 text-orange-500" />
-                  Agentic-RAG v2.0
+                  Agentic-RAG v3.0
                 </div>
               ) : (
                 <div className="flex items-center gap-2">
