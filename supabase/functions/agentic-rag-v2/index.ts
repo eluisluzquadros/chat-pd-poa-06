@@ -1,6 +1,7 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { getBairrosList, getCacheStats } from '../_shared/dynamic-bairros.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -38,43 +39,20 @@ function normalizeName(name: string): string {
 }
 
 /**
- * CARREGAMENTO DINÂMICO DOS 94 BAIRROS REAIS
+ * CARREGAMENTO DINÂMICO DOS BAIRROS - USA SISTEMA COMPARTILHADO
  */
-async function loadBairrosFromDatabase(supabaseClient: any): Promise<string[]> {
-  if (CACHE_BAIRROS.length > 0) {
-    return CACHE_BAIRROS;
-  }
-
+async function loadBairrosFromDatabase(): Promise<string[]> {
   try {
-    // Carregar de regime_urbanistico
-    const { data: regimeBairros, error: regimeError } = await supabaseClient
-      .from('regime_urbanistico')
-      .select('bairro')
-      .not('bairro', 'is', null);
-
-    // Carregar de bairros_risco_desastre
-    const { data: riscoBairros, error: riscoError } = await supabaseClient
-      .from('bairros_risco_desastre')
-      .select('bairro_nome')
-      .not('bairro_nome', 'is', null);
-
-    if (regimeError || riscoError) {
-      console.error('Erro ao carregar bairros:', { regimeError, riscoError });
-      return [];
-    }
-
-    // Combinar e deduplicar
-    const allBairros = new Set<string>();
-    regimeBairros?.forEach(b => allBairros.add(b.bairro.toUpperCase().trim()));
-    riscoBairros?.forEach(b => allBairros.add(b.bairro_nome.toUpperCase().trim()));
-
-    CACHE_BAIRROS = Array.from(allBairros).sort();
-    console.log(`🏘️ Carregados ${CACHE_BAIRROS.length} bairros dinamicamente da base`);
-    
-    return CACHE_BAIRROS;
+    const { validBairros } = await getBairrosList();
+    console.log(`🏘️ Carregados ${validBairros.length} bairros via sistema compartilhado`);
+    return validBairros;
   } catch (error) {
-    console.error('Erro ao carregar bairros:', error);
-    return [];
+    console.error('Erro ao carregar bairros via sistema compartilhado:', error);
+    // Fallback mínimo
+    return [
+      "CENTRO HISTÓRICO", "MOINHOS DE VENTO", "PETRÓPOLIS", 
+      "AUXILIADORA", "BOM FIM", "CIDADE BAIXA", "MENINO DEUS"
+    ];
   }
 }
 
@@ -208,8 +186,8 @@ async function classifyQueryType(query: string, supabaseClient: any): Promise<{
 }> {
   const queryLower = query.toLowerCase();
   
-  // Carregar dados dinâmicos
-  const bairrosList = await loadBairrosFromDatabase(supabaseClient);
+    // Carregar dados dinâmicos
+    const bairrosList = await loadBairrosFromDatabase();
   
   // FASE 1: MELHORAR CLASSIFICAÇÃO - Detectar perguntas conceituais gerais
   
@@ -329,10 +307,14 @@ serve(async (req) => {
 
     console.log('🔥 Executando sistema dinâmico sem hardcoding...');
 
-    // CARREGAR DADOS DINÂMICOS (COM CACHE)
-    const bairrosList = await loadBairrosFromDatabase(supabaseClient);
+    // CARREGAR DADOS DINÂMICOS (COM CACHE COMPARTILHADO)
+    const bairrosList = await loadBairrosFromDatabase();
     const zonasList = await loadZonasFromDatabase(supabaseClient);
     console.log(`📊 Sistema carregado: ${bairrosList.length} bairros, ${zonasList.length} zonas`);
+    
+    // Log do cache compartilhado
+    const cacheStats = getCacheStats();
+    console.log(`💾 Cache compartilhado: ${cacheStats.status}, ${cacheStats.validBairrosCount} bairros`);
 
     // CLASSIFICAR TIPO DE QUERY PARA BUSCA INTELIGENTE (DINÂMICO)
     const queryClassification = await classifyQueryType(query, supabaseClient);
