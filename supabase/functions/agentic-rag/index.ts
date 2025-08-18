@@ -143,19 +143,24 @@ serve(async (req) => {
     console.log('🔎 Searching in legal_articles and regime_urbanistico_consolidado...');
     
     // Search in legal_articles (legal documents with hierarchy)
-    const { data: legalDocuments } = await supabase.rpc('match_legal_articles', {
-      query_embedding: queryEmbedding,
-      match_threshold: 0.65,
-      match_count: 10
-    }).catch(() => {
+    let legalDocuments = null;
+    try {
+      const rpcResult = await supabase.rpc('match_legal_articles', {
+        query_embedding: queryEmbedding,
+        match_threshold: 0.65,
+        match_count: 10
+      });
+      legalDocuments = rpcResult.data;
+    } catch (rpcError) {
       // Fallback to direct query if RPC doesn't exist
       console.log('⚠️ RPC not found, trying direct query...');
-      return supabase
+      const directResult = await supabase
         .from('legal_articles')
         .select('*')
         .or(`full_content.ilike.%${query}%,article_text.ilike.%${query}%`)
         .limit(10);
-    });
+      legalDocuments = directResult.data;
+    }
     
     // Search in regime_urbanistico_consolidado (structured urban planning data)
     const { data: regimeData } = await supabase
