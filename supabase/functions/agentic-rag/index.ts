@@ -142,24 +142,63 @@ serve(async (req) => {
     // Step 3: Search in BOTH tables
     console.log('🔎 Searching in legal_articles and regime_urbanistico_consolidado...');
     
-    // Search in legal_articles (legal documents with hierarchy)
+    // Check if query is asking for a specific article
+    const articleMatch = query.match(/art(?:igo)?\.?\s*(\d+)\s*(?:da\s+)?(LUOS|PDUS|plano diretor|lei de uso)?/i);
     let legalDocuments = null;
-    try {
-      const rpcResult = await supabase.rpc('match_legal_articles', {
-        query_embedding: queryEmbedding,
-        match_threshold: 0.65,
-        match_count: 10
-      });
-      legalDocuments = rpcResult.data;
-    } catch (rpcError) {
-      // Fallback to direct query if RPC doesn't exist
-      console.log('⚠️ RPC not found, trying direct query...');
-      const directResult = await supabase
+    
+    if (articleMatch) {
+      // Direct search for specific article
+      const articleNumber = parseInt(articleMatch[1]);
+      const docType = articleMatch[2]?.toUpperCase() === 'PDUS' || articleMatch[2]?.toLowerCase().includes('plano') ? 'PDUS' : 'LUOS';
+      
+      console.log(`📍 Searching for specific article: ${docType} Art. ${articleNumber}`);
+      
+      // Get the specific article first
+      const { data: specificArticle } = await supabase
         .from('legal_articles')
         .select('*')
-        .or(`full_content.ilike.%${query}%,article_text.ilike.%${query}%`)
-        .limit(10);
-      legalDocuments = directResult.data;
+        .eq('document_type', docType)
+        .eq('article_number', articleNumber)
+        .single();
+      
+      if (specificArticle) {
+        legalDocuments = [specificArticle];
+        
+        // Also get related articles for context
+        const { data: relatedArticles } = await supabase
+          .from('legal_articles')
+          .select('*')
+          .eq('document_type', docType)
+          .gte('article_number', articleNumber - 1)
+          .lte('article_number', articleNumber + 1)
+          .neq('article_number', articleNumber)
+          .limit(4);
+        
+        if (relatedArticles) {
+          legalDocuments = [...legalDocuments, ...relatedArticles];
+        }
+      }
+    }
+    
+    // If no specific article or not found, use vector search
+    if (!legalDocuments || legalDocuments.length === 0) {
+      try {
+        const rpcResult = await supabase.rpc('match_legal_articles', {
+          query_embedding: queryEmbedding,
+          match_threshold: 0.65,
+          match_count: 10
+        });
+        legalDocuments = rpcResult.data;
+      } catch (rpcError) {
+        // Fallback to direct query if RPC doesn't exist
+        console.log('⚠️ RPC not found, trying direct query...');
+        const directResult = await supabase
+          .from('legal_articles')
+          .select('*')
+          .or(`full_content.ilike.%${query}%,article_text.ilike.%${query}%`)
+          .limit(10);
+        legalDocuments = directResult.data;
+      }
     }
     
     // Search in regime_urbanistico_consolidado (structured urban planning data)
@@ -250,21 +289,17 @@ Proteção Contra Enchentes: ${doc.protecao_contra_enchentes ? 'Sim' : 'Não'}`)
     
     const systemPrompt = `Você é um assistente especializado no Plano Diretor de Porto Alegre (PDUS 2025) e legislação urbanística (LUOS).
 
-VOCÊ TEM ACESSO A:
-- 217 artigos do PDUS (Plano Diretor Urbano Sustentável)
-- 123 artigos da LUOS (Lei de Uso e Ocupação do Solo)
-- Toda hierarquia legal: Partes, Títulos, Capítulos, Seções
-- Parágrafos, Incisos e Alíneas
-- Regime Urbanístico Consolidado com dados de todos os bairros
+REGRA FUNDAMENTAL: Você DEVE responder EXCLUSIVAMENTE com base no CONTEXTO fornecido abaixo. TODAS as informações necessárias estão no contexto. LEIA ATENTAMENTE e use o conteúdo completo dos documentos fornecidos.
 
-INSTRUÇÕES:
+INSTRUÇÕES OBRIGATÓRIAS:
 1. Responda SEMPRE em português brasileiro
-2. Cite artigos e dados específicos quando disponível
-3. Use tabelas para apresentar dados de regime urbanístico
-4. Formate a resposta de forma clara e estruturada
-5. Se não encontrar informação específica, indique isso
+2. Use APENAS as informações presentes no CONTEXTO abaixo
+3. Quando perguntado sobre um artigo específico, PROCURE no contexto e CITE o conteúdo COMPLETO
+4. NUNCA diga que não tem acesso ou que não encontrou se o artigo estiver no contexto
+5. Se o artigo estiver no contexto, SEMPRE forneça seu conteúdo completo
+6. Cite o número do artigo e o documento (PDUS ou LUOS) quando aplicável
 
-CONTEXTO DISPONÍVEL:
+CONTEXTO FORNECIDO (USE ESTAS INFORMAÇÕES PARA RESPONDER):
 ${context}`;
 
     const startTime = Date.now();
