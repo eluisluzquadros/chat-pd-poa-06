@@ -25,20 +25,10 @@ export class UnifiedRAGService {
   }
 
   /**
-   * Get the current system version (v1 or v2)
-   */
-  private getSystemVersion(): 'v1' | 'v2' {
-    // SEMPRE USAR V2 - Sistema dinâmico sem hardcoding
-    localStorage.setItem('useAgenticRAGv2', 'true');
-    return 'v2';
-  }
-
-  /**
-   * Get the appropriate endpoint based on system version
+   * Get the endpoint - always use unified agentic-rag
    */
   private getEndpoint(): string {
-    const version = this.getSystemVersion();
-    // Usando agentic-rag com o novo código RAG real (sem fallbacks)
+    // Using single unified agentic-rag with multi-LLM support
     return 'agentic-rag';
   }
 
@@ -191,36 +181,25 @@ export class UnifiedRAGService {
    * Get system status and configuration
    */
   getSystemStatus(): {
-    version: 'v1' | 'v2';
+    version: string;
     endpoint: string;
     features: string[];
   } {
-    const version = this.getSystemVersion();
     const endpoint = this.getEndpoint();
     
     return {
-      version,
+      version: 'unified',
       endpoint,
-      features: version === 'v2' ? [
-        'Autonomous Agents',
-        'Knowledge Graph',
-        'Session Memory',
+      features: [
+        'Multi-LLM Support (21 models)',
+        'Legal Articles Database (654 docs)',
+        'Regime Urbanístico Consolidado',
+        'Vector Search with Embeddings',
+        'Hierarchical Document Processing',
         'Auto-refinement',
-        'Hierarchical Chunking'
-      ] : [
-        'Traditional RAG',
-        'Vector Search',
-        'SQL Generation'
+        'Session Memory'
       ]
     };
-  }
-
-  /**
-   * Toggle between v1 and v2 systems
-   */
-  toggleSystem(useV2: boolean): void {
-    localStorage.setItem('useAgenticRAGv2', String(useV2));
-    console.log(`[UnifiedRAGService] System switched to ${useV2 ? 'v2' : 'v1'}`);
   }
 }
 

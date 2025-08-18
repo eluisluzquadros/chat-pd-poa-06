@@ -6,7 +6,7 @@ import { HeaderActions } from "./sidebar/HeaderActions";
 import { SearchBar } from "./sidebar/SearchBar";
 import { SessionList } from "./sidebar/SessionList";
 import { DeleteSessionDialog } from "./sidebar/DeleteSessionDialog";
-import { SystemToggle } from "./SystemToggle";
+// SystemToggle removed - using unified agentic-rag
 import {
   Sidebar,
   SidebarContent,
@@ -98,7 +98,7 @@ export function AppSidebar({
         <SidebarContent>
           <SidebarGroup>
             <SidebarGroupContent>
-              <SystemToggle />
+              {/* SystemToggle removed - using unified agentic-rag */}
               <SessionList
                 sessions={sortedSessions}
                 currentSessionId={currentSessionId}
