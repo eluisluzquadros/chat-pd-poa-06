@@ -1,0 +1,12 @@
+# Art. 101º
+
+**Hierarquia:** PLANO ESTRATÉGICO > Do Modelo Espacial
+
+A área estruturadora Belém Novo e Ponta Grossa é caracterizada por sua localização em zona de baixa densidade urbana, marcada por valor paisagístico relevante
+junto à orla do Lago Guaíba e pelo papel de centralidade local, sendo indicada para ações de requalificação urbana, estímulo às atividades econômicas sustentáveis, regularização fundiária e integração entre a ocupação urbana e as áreas de importância ambiental, conforme os limites definidos no Anexo 3.2.
+
+
+
+
+
+

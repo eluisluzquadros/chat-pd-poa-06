@@ -34,7 +34,10 @@
     "deploy-functions": "bash scripts/deploy-all-functions.sh",
     "verify-deployment": "node scripts/verify-deployment.mjs",
     "test-rag-altura": "node test-rag-final.mjs",
-    "test:integration": "npm run test-llm-connections && npm run regime:test && npm run test-rag-altura"
+    "test:integration": "npm run test-llm-connections && npm run regime:test && npm run test-rag-altura",
+    "process-kb-local": "node scripts/process-knowledge-base-local.mjs",
+    "kb:process": "node scripts/process-knowledge-base-local.mjs",
+    "kb:clean": "rm -rf pdpoa_knowledge_base_local"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",
@@ -79,6 +82,7 @@
     "embla-carousel-react": "^8.0.0-rc22",
     "framer-motion": "^12.4.7",
     "input-otp": "^1.2.4",
+    "js-yaml": "^4.1.0",
     "lucide-react": "^0.487.0",
     "mammoth": "^1.10.0",
     "next-themes": "^0.3.0",

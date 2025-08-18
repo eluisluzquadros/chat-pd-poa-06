@@ -1,0 +1,13 @@
+# Art. 114º
+
+**Hierarquia:** Da Outorga Onerosa do Direito de Construir
+
+O Poder Executivo poderá formalizar, por meio de Termo de Outorga com Contrapartida (TOC), a prestação de contrapartida não pecuniária pela outorga onerosa do direito de construir, admitindo-se, para esse fim, a entrega de imóvel, permuta de área construída, fornecimento de bens, execução de obras ou prestação de serviços, inclusive de engenharia.
+**Parágrafo único** A contrapartida prevista no caput somente será admitida quando vinculada aos objetivos da política urbana do Município e às finalidades previstas nos arts. 26 e 31 do Estatuto da Cidade.
+
+## Parágrafos
+Parágrafo único: A contrapartida prevista no caput somente será admitida quando vinculada aos objetivos da política urbana do Município e às finalidades previstas nos arts. 26 e 31 do Estatuto da Cidade.
+
+
+
+

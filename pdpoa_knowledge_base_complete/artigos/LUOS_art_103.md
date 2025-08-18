@@ -1,0 +1,11 @@
+# Art. 103º
+
+**Hierarquia:** Do Estudo de Impacto de Vizinhança
+
+Quando exigido no parcelamento do solo, o pedido de diretrizes de Estudo de Impacto de Vizinhança terá tramitação conjunta com as diretrizes de parcelamento, e sua aprovação será condição para a emissão do Parecer de Viabilidade de Projeto Urbanístico, observado o disposto em regulamentação específica, que compatibilizará suas exigências com as etapas, os procedimentos e as peculiaridades do processo de parcelamento do solo.
+
+
+
+
+
+

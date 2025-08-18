@@ -107,8 +107,12 @@ node scripts/clear-cache-and-fix.ts
    - `NEXT_PUBLIC_SUPABASE_URL`: Supabase project URL
    - `NEXT_PUBLIC_SUPABASE_ANON_KEY`: Public anon key
    - `SUPABASE_SERVICE_ROLE_KEY`: Service role key (for backend operations)
-   - `OPENAI_API_KEY`: OpenAI API key
-   - Additional LLM API keys as needed (Claude, Gemini, Groq, etc.)
+   - `NEXT_PUBLIC_SUPABASE_CLI_KEY`:
+   - `OPENAI_API_KEY`: LLM API key
+   - `ANTHROPIC_API_KEY`: LLM API key
+   - `GEMINI_API_KEY`: LLM API key
+   - `DEEPSEEK_API_KEY`: LLM API key
+   - `ZHIPUAI_API_KEY`: LLM API key
 
 3. Deploy environment variables to Supabase:
    ```bash

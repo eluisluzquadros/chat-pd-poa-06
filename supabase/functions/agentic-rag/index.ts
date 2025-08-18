@@ -114,23 +114,56 @@ serve(async (req) => {
 
     // Step 3: Search for similar documents using pgvector
     console.log('🔎 Searching for similar documents...');
+    console.log('📚 Searching in legal_articles table with 654 elements...');
     
-    // Try match_document_sections first (main document content)
+    // PRIORITY 1: Search in legal_articles (complete knowledge base)
+    const { data: legalDocuments, error: legalError } = await supabase.rpc('match_legal_articles', {
+      query_embedding: queryEmbedding,
+      match_threshold: 0.65,
+      match_count: 10
+    }).catch(() => {
+      // If RPC doesn't exist, try direct query
+      console.log('⚠️ RPC not found, trying direct query...');
+      return supabase
+        .from('legal_articles')
+        .select('*')
+        .or(`full_content.ilike.%${query}%,article_text.ilike.%${query}%`)
+        .limit(10);
+    });
+    
+    // PRIORITY 2: Try match_document_sections (legacy documents)
     const { data: sectionDocuments, error: sectionError } = await supabase.rpc('match_document_sections', {
       query_embedding: queryEmbedding,
       match_threshold: 0.7,
-      match_count: 5
-    });
+      match_count: 3
+    }).catch(() => ({ data: null }));
 
-    // Also try match_documents (for document_chunks if exists)
+    // PRIORITY 3: Try match_documents (for document_chunks if exists)
     const { data: chunkDocuments, error: chunkError } = await supabase.rpc('match_documents', {
       query_embedding: queryEmbedding,
       match_threshold: 0.7,
-      match_count: 3
-    });
+      match_count: 2
+    }).catch(() => ({ data: null }));
 
-    // Combine results from both searches
+    // Combine results from all searches
     let documents = [];
+    let legalArticlesFound = 0;
+    let hierarchyElementsFound = 0;
+    
+    if (legalDocuments && !legalError && legalDocuments.length > 0) {
+      console.log(`📚 Found ${legalDocuments.length} results from legal_articles`);
+      // Count articles vs hierarchy elements
+      legalDocuments.forEach((doc: any) => {
+        if (doc.article_number && doc.article_number < 9000) {
+          legalArticlesFound++;
+        } else {
+          hierarchyElementsFound++;
+        }
+      });
+      console.log(`  → ${legalArticlesFound} articles (Art. 1-340)`);
+      console.log(`  → ${hierarchyElementsFound} hierarchy elements (Parts, Titles, Chapters, Sections)`);
+      documents = [...documents, ...legalDocuments];
+    }
     
     if (sectionDocuments && !sectionError) {
       console.log(`📄 Found ${sectionDocuments.length} results from document_sections`);
@@ -193,9 +226,33 @@ serve(async (req) => {
 
     // Step 4: Prepare context from found documents
     console.log(`📚 Found ${documents.length} relevant documents`);
-    const context = documents.map((doc: any) => {
-      return `[Fonte: ${doc.metadata?.source || 'Unknown'}]\n${doc.content}`;
-    }).join('\n\n---\n\n');
+    
+    // Build context with priority for legal_articles
+    const contextParts = [];
+    
+    // Add legal articles and hierarchy
+    const legalDocs = documents.filter((doc: any) => doc.article_number !== undefined);
+    const otherDocs = documents.filter((doc: any) => doc.article_number === undefined);
+    
+    if (legalDocs.length > 0) {
+      legalDocs.forEach((doc: any) => {
+        const docType = doc.document_type || 'PDPOA';
+        const content = doc.full_content || doc.article_text || doc.content || '';
+        if (doc.article_number < 9000) {
+          contextParts.push(`[${docType} - Art. ${doc.article_number}º]\n${content}`);
+        } else {
+          contextParts.push(`[${docType} - Hierarquia]\n${content}`);
+        }
+      });
+    }
+    
+    if (otherDocs.length > 0) {
+      otherDocs.forEach((doc: any) => {
+        contextParts.push(`[Fonte: ${doc.metadata?.source || 'Documento'}]\n${doc.content}`);
+      });
+    }
+    
+    const context = contextParts.join('\n\n---\n\n');
 
     // Step 5: Generate response using GPT
     return await generateResponse(query, context, model, openaiApiKey, supabase, sessionId, userId);
@@ -230,14 +287,21 @@ async function generateResponse(
 ) {
   console.log('🤖 Generating response with GPT...');
   
-  const systemPrompt = `Você é um assistente especializado no Plano Diretor de Porto Alegre (PDUS 2025) e legislação urbanística.
+  const systemPrompt = `Você é um assistente especializado no Plano Diretor de Porto Alegre (PDUS 2025) e legislação urbanística (LUOS).
+
+VOCÊ TEM ACESSO À BASE COMPLETA:
+- 217 artigos do PDUS (Plano Diretor Urbano Sustentável)
+- 123 artigos da LUOS (Lei de Uso e Ocupação do Solo)
+- Toda hierarquia legal: Partes, Títulos, Capítulos, Seções
+- Todos os Parágrafos, Incisos e Alíneas
 
 INSTRUÇÕES IMPORTANTES:
 1. Responda SEMPRE em português brasileiro
-2. Seja preciso e cite artigos/fontes quando disponível
-3. Use o contexto fornecido para basear sua resposta
-4. Se não tiver certeza, indique isso claramente
+2. Cite artigos específicos quando disponível (ex: "Art. 75 da LUOS")
+3. Use a hierarquia completa do documento quando relevante
+4. Se a informação estiver em parágrafos ou incisos, mencione-os
 5. Formate a resposta de forma clara e estruturada
+6. Se não encontrar informação específica, indique isso claramente
 
 CONTEXTO DISPONÍVEL:
 ${context}`;
@@ -301,7 +365,10 @@ ${context}`;
         response: response,
         confidence: 0.85,
         sources: { 
-          tabular: context.includes('[Fonte:') ? 1 : 0, 
+          legal_articles: legalArticlesFound,
+          hierarchy_elements: hierarchyElementsFound,
+          document_sections: sectionDocuments?.length || 0,
+          tabular: context.includes('[Fonte:') || legalArticlesFound > 0 ? 1 : 0, 
           conceptual: context.length > 0 ? 1 : 0 
         },
         executionTime: executionTime,

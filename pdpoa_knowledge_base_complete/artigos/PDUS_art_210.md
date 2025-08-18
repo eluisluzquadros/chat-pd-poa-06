@@ -1,0 +1,11 @@
+# Art. 210º
+
+**Hierarquia:** DISPOSIÇÕES FINAIS E TRANSITÓRIAS
+
+No prazo de até um ano contado da entrada em vigor desta Lei Complementar, o Poder Executivo encaminhará ao Poder Legislativo proposta de revisão do Código de Edificações, com o objetivo de adequá-lo aos instrumentos, medidas de controle e tipologias definidos pelo Plano Diretor e pela Lei de Uso e Ocupação do Solo.
+
+
+
+
+
+
