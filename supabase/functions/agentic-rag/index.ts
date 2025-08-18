@@ -315,26 +315,34 @@ ${context}`;
     console.log('✅ Response generated successfully in', executionTime, 'ms');
 
     // Cache the successful response
-    await supabase.from('query_cache').upsert({
-      query: query.toLowerCase(),
-      response: response,
-      confidence: 0.9,
-      model: selectedModel,
-      execution_time: executionTime,
-      created_at: new Date().toISOString()
-    }).catch(err => console.error('Cache error:', err));
+    try {
+      await supabase.from('query_cache').upsert({
+        query: query.toLowerCase(),
+        response: response,
+        confidence: 0.9,
+        model: selectedModel,
+        execution_time: executionTime,
+        created_at: new Date().toISOString()
+      });
+    } catch (cacheErr) {
+      console.error('Cache error:', cacheErr);
+    }
 
     // Save to chat history
-    await supabase.from('chat_history').insert({
-      session_id: sessionId,
-      user_id: userId,
-      message: query,
-      response: response,
-      model: selectedModel,
-      confidence: 0.9,
-      execution_time: executionTime,
-      created_at: new Date().toISOString()
-    }).catch(err => console.error('History error:', err));
+    try {
+      await supabase.from('chat_history').insert({
+        session_id: sessionId,
+        user_id: userId,
+        message: query,
+        response: response,
+        model: selectedModel,
+        confidence: 0.9,
+        execution_time: executionTime,
+        created_at: new Date().toISOString()
+      });
+    } catch (histErr) {
+      console.error('History error:', histErr);
+    }
 
     return new Response(
       JSON.stringify({
