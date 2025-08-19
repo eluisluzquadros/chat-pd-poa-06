@@ -57,6 +57,39 @@ const LLM_PROVIDERS = {
   'mistral/mistral-medium': { provider: 'mistral', model: 'mistral-medium-latest' },
 };
 
+// Helper functions for Roman numeral conversion
+function romanToArabic(roman: string): number {
+  if (!roman || typeof roman !== 'string') return 0;
+  const romanNumerals: { [key: string]: number } = {
+    'I': 1, 'V': 5, 'X': 10, 'L': 50, 'C': 100, 'D': 500, 'M': 1000
+  };
+  let result = 0;
+  for (let i = 0; i < roman.length; i++) {
+    const current = romanNumerals[roman[i]];
+    const next = romanNumerals[roman[i + 1]];
+    if (next && current < next) {
+      result -= current;
+    } else {
+      result += current;
+    }
+  }
+  return result;
+}
+
+function arabicToRoman(num: number): string {
+  if (!num || num <= 0) return '';
+  const values = [1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1];
+  const symbols = ['M', 'CM', 'D', 'CD', 'C', 'XC', 'L', 'XL', 'X', 'IX', 'V', 'IV', 'I'];
+  let result = '';
+  for (let i = 0; i < values.length; i++) {
+    while (num >= values[i]) {
+      result += symbols[i];
+      num -= values[i];
+    }
+  }
+  return result;
+}
+
 serve(async (req) => {
   // Handle CORS
   if (req.method === 'OPTIONS') {
@@ -73,6 +106,28 @@ serve(async (req) => {
     const sessionId = requestData.sessionId || `session-${Date.now()}`;
     const userId = requestData.userId || 'anonymous';
     const bypassCache = requestData.bypassCache !== false;
+    
+    // Get conversation history for context
+    let previousContext = null;
+    const { data: conversationHistory } = await supabase
+      .from('chat_memory')
+      .select('query, response')
+      .eq('session_id', sessionId)
+      .order('created_at', { ascending: false })
+      .limit(3);
+    
+    // Detect which law was discussed previously
+    let contextualDocType = null;
+    if (conversationHistory && conversationHistory.length > 0) {
+      const lastMessages = conversationHistory.map(h => (h.query + ' ' + h.response).toLowerCase());
+      if (lastMessages.some(msg => msg.includes('pdus') || msg.includes('plano diretor'))) {
+        contextualDocType = 'PDUS';
+        console.log('📝 Previous context detected: PDUS');
+      } else if (lastMessages.some(msg => msg.includes('luos') || msg.includes('lei de uso'))) {
+        contextualDocType = 'LUOS';
+        console.log('📝 Previous context detected: LUOS');
+      }
+    }
     
     // Normalize and validate model selection
     let selectedModel = requestData.model || 'openai/gpt-4-turbo-preview';
@@ -139,36 +194,90 @@ serve(async (req) => {
     const embeddingData = await embeddingResponse.json();
     const queryEmbedding = embeddingData.data[0].embedding;
 
-    // Step 3: Search in BOTH tables
-    console.log('🔎 Searching in legal_articles and regime_urbanistico_consolidado...');
+    // Step 3: Search in BOTH tables + hierarchy
+    console.log('🔎 Searching in legal_articles, hierarchy and regime_urbanistico_consolidado...');
     
-    // Check if query is asking for a specific article
-    const articleMatch = query.match(/art(?:igo)?\.?\s*(\d+)\s*(?:da\s+)?(LUOS|PDUS|plano diretor|lei de uso)?/i);
+    // Enhanced pattern matching for articles and hierarchical elements
+    const articleMatch = query.match(/art(?:igo)?\.?\s*(\d+)\s*(?:da\s+|do\s+)?(LUOS|PDUS|plano diretor|lei de uso)?/i);
+    const titleMatch = query.match(/título\s+([IVX]+|\d+|[A-Z]+)\s*(?:da\s+|do\s+)?(LUOS|PDUS)?/i);
+    const chapterMatch = query.match(/capítulo\s+([IVX]+|\d+)\s*(?:da\s+|do\s+)?(LUOS|PDUS)?/i);
+    const sectionMatch = query.match(/seção\s+([IVX]+|\d+)\s*(?:da\s+|do\s+)?(LUOS|PDUS)?/i);
+    
     let legalDocuments = null;
+    let hierarchyContext = null;
     
+    // Handle specific article requests
     if (articleMatch) {
-      // Direct search for specific article
       const articleNumber = parseInt(articleMatch[1]);
-      const docType = articleMatch[2]?.toUpperCase() === 'PDUS' || articleMatch[2]?.toLowerCase().includes('plano') ? 'PDUS' : 'LUOS';
+      let specifiedDocType = null;
       
-      console.log(`📍 Searching for specific article: ${docType} Art. ${articleNumber}`);
+      // Check if user specified which law
+      if (articleMatch[2]) {
+        if (articleMatch[2].toUpperCase() === 'PDUS' || articleMatch[2].toLowerCase().includes('plano')) {
+          specifiedDocType = 'PDUS';
+        } else if (articleMatch[2].toUpperCase() === 'LUOS' || articleMatch[2].toLowerCase().includes('lei de uso')) {
+          specifiedDocType = 'LUOS';
+        }
+      }
       
-      // Get the specific article first
-      const { data: specificArticle } = await supabase
-        .from('legal_articles')
-        .select('*')
-        .eq('document_type', docType)
-        .eq('article_number', articleNumber)
-        .single();
+      // Use contextual doc type if not specified
+      const docType = specifiedDocType || contextualDocType;
       
-      if (specificArticle) {
-        legalDocuments = [specificArticle];
+      if (docType) {
+        // Search in specific law
+        console.log(`📍 Searching for article ${articleNumber} in ${docType} (based on ${specifiedDocType ? 'user specification' : 'context'})`);
         
-        // Also get related articles for context
-        const { data: relatedArticles } = await supabase
+        const { data: specificArticle } = await supabase
           .from('legal_articles')
           .select('*')
           .eq('document_type', docType)
+          .eq('article_number', articleNumber)
+          .single();
+        
+        if (specificArticle) {
+          legalDocuments = [specificArticle];
+        }
+      } else {
+        // No context - search in ALL laws
+        console.log(`📍 No context specified - searching for article ${articleNumber} in ALL laws`);
+        
+        const { data: articlesFromAllLaws } = await supabase
+          .from('legal_articles')
+          .select('*')
+          .eq('article_number', articleNumber)
+          .in('document_type', ['PDUS', 'LUOS', 'COE']); // Can add more laws here
+        
+        if (articlesFromAllLaws && articlesFromAllLaws.length > 0) {
+          legalDocuments = articlesFromAllLaws;
+          console.log(`📚 Found article ${articleNumber} in ${articlesFromAllLaws.length} law(s)`);
+        }
+      }
+      
+      // Get related articles if we found something
+      if (legalDocuments && legalDocuments.length > 0) {
+        const mainDoc = legalDocuments[0];
+        
+        // Get hierarchy context
+        try {
+          const { data: hierarchyData } = await supabase
+            .rpc('get_complete_hierarchy', { 
+              doc_type: mainDoc.document_type, 
+              art_num: articleNumber 
+            });
+          
+          if (hierarchyData) {
+            hierarchyContext = hierarchyData;
+            console.log(`📊 Hierarchy context: ${hierarchyContext}`);
+          }
+        } catch (e) {
+          console.log('⚠️ Could not get hierarchy context:', e.message);
+        }
+        
+        // Get related articles for context
+        const { data: relatedArticles } = await supabase
+          .from('legal_articles')
+          .select('*')
+          .eq('document_type', mainDoc.document_type)
           .gte('article_number', articleNumber - 1)
           .lte('article_number', articleNumber + 1)
           .neq('article_number', articleNumber)
@@ -180,24 +289,105 @@ serve(async (req) => {
       }
     }
     
-    // If no specific article or not found, use vector search
-    if (!legalDocuments || legalDocuments.length === 0) {
-      try {
-        const rpcResult = await supabase.rpc('match_legal_articles', {
-          query_embedding: queryEmbedding,
-          match_threshold: 0.65,
-          match_count: 10
-        });
-        legalDocuments = rpcResult.data;
-      } catch (rpcError) {
-        // Fallback to direct query if RPC doesn't exist
-        console.log('⚠️ RPC not found, trying direct query...');
-        const directResult = await supabase
+    // Handle hierarchical elements (Títulos, Capítulos, Seções)
+    if (titleMatch || chapterMatch || sectionMatch) {
+      const hierarchyType = titleMatch ? 'titulo' : chapterMatch ? 'capitulo' : 'secao';
+      const hierarchyNumber = titleMatch?.[1] || chapterMatch?.[1] || sectionMatch?.[1];
+      const docType = (titleMatch?.[2] || chapterMatch?.[2] || sectionMatch?.[2] || 'LUOS').toUpperCase();
+      
+      console.log(`📚 Searching for ${hierarchyType} ${hierarchyNumber} in ${docType}`);
+      
+      // Search in legal_hierarchy table
+      const { data: hierarchyData } = await supabase
+        .from('legal_hierarchy')
+        .select('*')
+        .eq('document_type', docType)
+        .eq('hierarchy_type', hierarchyType)
+        .eq('hierarchy_number', hierarchyNumber)
+        .single();
+      
+      if (hierarchyData) {
+        // Get all articles in this hierarchy element
+        const { data: articlesInHierarchy } = await supabase
           .from('legal_articles')
           .select('*')
-          .or(`full_content.ilike.%${query}%,article_text.ilike.%${query}%`)
+          .eq('document_type', docType)
+          .gte('article_number', hierarchyData.article_start)
+          .lte('article_number', hierarchyData.article_end)
           .limit(10);
-        legalDocuments = directResult.data;
+        
+        if (articlesInHierarchy) {
+          legalDocuments = articlesInHierarchy;
+          hierarchyContext = `${hierarchyType.toUpperCase()} ${hierarchyNumber} - ${hierarchyData.hierarchy_name}`;
+        }
+      }
+    }
+    
+    // Old hierarchical search code - removed
+    // The logic above already handles hierarchical searches properly
+    
+    // If no specific element found, use enhanced search
+    if (!legalDocuments || legalDocuments.length === 0) {
+      // First try text search for better hierarchical element matching
+      const keyTerms = query.toLowerCase()
+        .replace(/[?.,!]/g, '')
+        .split(' ')
+        .filter(term => term.length > 3);
+      
+      // Build search conditions
+      const searchConditions = [];
+      if (query.toLowerCase().includes('título')) {
+        searchConditions.push(`full_content.ilike.%título%`);
+      }
+      if (query.toLowerCase().includes('capítulo')) {
+        searchConditions.push(`full_content.ilike.%capítulo%`);
+      }
+      if (query.toLowerCase().includes('seção') || query.toLowerCase().includes('secao')) {
+        searchConditions.push(`full_content.ilike.%seção%`, `full_content.ilike.%secao%`);
+      }
+      if (query.toLowerCase().includes('disposições')) {
+        searchConditions.push(`full_content.ilike.%disposições%`);
+      }
+      
+      // Add general search terms
+      keyTerms.forEach(term => {
+        if (term.length > 4) {
+          searchConditions.push(`full_content.ilike.%${term}%`);
+        }
+      });
+      
+      if (searchConditions.length > 0) {
+        const { data: textSearchResults } = await supabase
+          .from('legal_articles')
+          .select('*')
+          .or(searchConditions.join(','))
+          .limit(15);
+        
+        if (textSearchResults && textSearchResults.length > 0) {
+          legalDocuments = textSearchResults;
+          console.log(`📝 Text search found ${textSearchResults.length} results`);
+        }
+      }
+      
+      // If still no results, try vector search
+      if (!legalDocuments || legalDocuments.length === 0) {
+        try {
+          const rpcResult = await supabase.rpc('match_legal_articles', {
+            query_embedding: queryEmbedding,
+            match_threshold: 0.60,  // Lower threshold for better recall
+            match_count: 15
+          });
+          legalDocuments = rpcResult.data;
+          console.log(`🔍 Vector search found ${rpcResult.data?.length || 0} results`);
+        } catch (rpcError) {
+          console.log('⚠️ RPC not found, trying fallback direct query...');
+          const directResult = await supabase
+            .from('legal_articles')
+            .select('*')
+            .or(`full_content.ilike.%${query}%,article_text.ilike.%${query}%`)
+            .limit(15);
+          legalDocuments = directResult.data;
+        }
       }
     }
     
@@ -250,6 +440,13 @@ serve(async (req) => {
     
     const contextParts = [];
     
+    // Add hierarchy context if available
+    if (hierarchyContext) {
+      contextParts.push("=== LOCALIZAÇÃO HIERÁRQUICA ===");
+      contextParts.push(hierarchyContext);
+      contextParts.push("");
+    }
+    
     // Add legal documents context
     const legalDocs = documents.filter((doc: any) => doc.article_number !== undefined);
     if (legalDocs.length > 0) {
@@ -257,10 +454,38 @@ serve(async (req) => {
       legalDocs.forEach((doc: any) => {
         const docType = doc.document_type || 'PDPOA';
         const content = doc.full_content || doc.article_text || '';
+        
         if (doc.article_number < 9000) {
+          // Regular articles
           contextParts.push(`[${docType} - Art. ${doc.article_number}º]\n${content}`);
         } else {
-          contextParts.push(`[${docType} - Hierarquia]\n${content}`);
+          // Hierarchical elements (Títulos, Capítulos, Seções)
+          // Check what type of element it is
+          if (content.includes('TÍTULO')) {
+            const titleMatch = content.match(/TÍTULO\s+([IVX]+|[0-9]+)/);
+            if (titleMatch) {
+              contextParts.push(`[${docType} - ${titleMatch[0]}]\n${content}`);
+            } else {
+              contextParts.push(`[${docType} - Elemento Hierárquico]\n${content}`);
+            }
+          } else if (content.includes('CAPÍTULO')) {
+            const chapterMatch = content.match(/CAPÍTULO\s+([IVX]+|[0-9]+)/);
+            if (chapterMatch) {
+              contextParts.push(`[${docType} - ${chapterMatch[0]}]\n${content}`);
+            } else {
+              contextParts.push(`[${docType} - Elemento Hierárquico]\n${content}`);
+            }
+          } else if (content.includes('SEÇÃO') || content.includes('SECAO')) {
+            const sectionMatch = content.match(/SE[CÇ]ÃO\s+([IVX]+|[0-9]+)/);
+            if (sectionMatch) {
+              contextParts.push(`[${docType} - ${sectionMatch[0]}]\n${content}`);
+            } else {
+              contextParts.push(`[${docType} - Elemento Hierárquico]\n${content}`);
+            }
+          } else {
+            // Other hierarchical elements (parts, subsections, etc.)
+            contextParts.push(`[${docType} - Elemento Hierárquico]\n${content}`);
+          }
         }
       });
     }
@@ -287,20 +512,40 @@ Proteção Contra Enchentes: ${doc.protecao_contra_enchentes ? 'Sim' : 'Não'}`)
     // Step 5: Generate response using selected LLM
     console.log(`🤖 Generating response with ${llmConfig.provider}/${llmConfig.model}...`);
     
-    const systemPrompt = `Você é um assistente especializado no Plano Diretor de Porto Alegre (PDUS 2025) e legislação urbanística (LUOS).
+    const systemPrompt = `Você é um assistente especializado em legislação urbanística de Porto Alegre, incluindo:
+- PDUS (Plano Diretor Urbano Sustentável 2025)
+- LUOS (Lei de Uso e Ocupação do Solo)
+- COE (Código de Edificações) 
+- Outras leis e normativas municipais
 
-REGRA FUNDAMENTAL: Você DEVE responder EXCLUSIVAMENTE com base no CONTEXTO fornecido abaixo. TODAS as informações necessárias estão no contexto. LEIA ATENTAMENTE e use o conteúdo completo dos documentos fornecidos.
+IMPORTANTE - MÚLTIPLAS LEIS:
+${legalDocuments && legalDocuments.length > 1 && legalDocuments.some(d => d.document_type !== legalDocuments[0].document_type) ? 
+`⚠️ O contexto contém informações de MÚLTIPLAS LEIS. Apresente TODAS as versões encontradas, indicando claramente de qual lei é cada uma.` : 
+`📌 Contexto principal: ${legalDocuments?.[0]?.document_type || 'Não especificado'}`}
 
-INSTRUÇÕES OBRIGATÓRIAS:
-1. Responda SEMPRE em português brasileiro
-2. Use APENAS as informações presentes no CONTEXTO abaixo
-3. Quando perguntado sobre um artigo específico, PROCURE no contexto e CITE o conteúdo COMPLETO
-4. NUNCA diga que não tem acesso ou que não encontrou se o artigo estiver no contexto
-5. Se o artigo estiver no contexto, SEMPRE forneça seu conteúdo completo
-6. Cite o número do artigo e o documento (PDUS ou LUOS) quando aplicável
+REGRAS FUNDAMENTAIS:
+1. Use EXCLUSIVAMENTE o contexto fornecido abaixo para responder
+2. Quando um artigo existir em múltiplas leis, APRESENTE TODAS AS VERSÕES, indicando de qual lei é cada uma
+3. Se o usuário não especificar qual lei, e houver contexto de conversa anterior, use o contexto${contextualDocType ? ` (conversa anterior sobre: ${contextualDocType})` : ''}
+4. Se não houver contexto e a pergunta for ambígua, INFORME sobre a existência de múltiplas leis
 
-CONTEXTO FORNECIDO (USE ESTAS INFORMAÇÕES PARA RESPONDER):
-${context}`;
+INSTRUÇÕES ESPECÍFICAS:
+- Para artigos: Se existir em múltiplas leis, apresente assim:
+  • PDUS - Art. Xº: [conteúdo]
+  • LUOS - Art. Xº: [conteúdo]
+- Sempre identifique de qual lei vem cada informação
+- Mantenha formatação: "Art. Xº", "TÍTULO I", etc.
+- Se o usuário perguntar "e o artigo X" após falar de uma lei específica, continue com a mesma lei
+
+BASE DE CONHECIMENTO DISPONÍVEL:
+- PDUS: 217 artigos (Plano Diretor)
+- LUOS: 655 artigos (Lei de Uso e Ocupação do Solo)
+- Regime Urbanístico: Parâmetros de construção por zona
+
+CONTEXTO FORNECIDO:
+${context}
+
+RESPONDA com base APENAS no contexto acima. Se encontrar o mesmo artigo em múltiplas leis, apresente todas as versões.`;
 
     const startTime = Date.now();
     let response = '';
@@ -363,8 +608,9 @@ ${context}`;
       console.error('Cache error:', cacheErr);
     }
 
-    // Save to chat history
+    // Save to chat history and memory for context
     try {
+      // Save to chat_history
       await supabase.from('chat_history').insert({
         session_id: sessionId,
         user_id: userId,
@@ -375,8 +621,24 @@ ${context}`;
         execution_time: executionTime,
         created_at: new Date().toISOString()
       });
+      
+      // Save to chat_memory for context tracking
+      await supabase.from('chat_memory').insert({
+        session_id: sessionId,
+        user_id: userId,
+        query: query,
+        response: response,
+        context: {
+          detected_law: legalDocuments?.[0]?.document_type || null,
+          article_numbers: legalDocuments?.map(d => d.article_number).filter(n => n) || [],
+          multiple_laws: legalDocuments && legalDocuments.length > 1 && 
+                        legalDocuments.some(d => d.document_type !== legalDocuments[0].document_type)
+        },
+        confidence_score: 0.9,
+        created_at: new Date().toISOString()
+      });
     } catch (histErr) {
-      console.error('History error:', histErr);
+      console.error('History/Memory error:', histErr);
     }
 
     return new Response(

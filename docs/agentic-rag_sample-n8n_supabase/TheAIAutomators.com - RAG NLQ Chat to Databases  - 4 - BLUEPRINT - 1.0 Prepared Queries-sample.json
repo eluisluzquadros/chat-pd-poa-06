@@ -1,0 +1,219 @@
+{
+  "name": "TheAIAutomators.com - RAG NLQ Chat to Databases - BLUEPRINT - 1.0 Prepared Queries copy",
+  "nodes": [
+    {
+      "parameters": {
+        "public": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -3240,
+        -2320
+      ],
+      "id": "c3c7a991-7117-4ec3-9fa0-a2898d58fef7",
+      "name": "When chat message received",
+      "webhookId": "bb4712fd-337a-4a5e-b8e8-20598f202a01"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('When chat message received').item.json.chatInput }}",
+        "options": {
+          "systemMessage": "=You are an enterprise assistant helping users access information.\n\nYou are tasked with answering a question using the information within the database.\n\nIf you cannot answer the question using the provided information, or if no information is returned from the vector store, say:\n\"Sorry, I don't know.\"\n\n***\nlist of tools:\n\n1. Get Orders\n\nQuery parameter should be one of the following:\n\ndelivered\ncancelled\npending\nshipped\n\n2. Get product list\n\n***"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.9,
+      "position": [
+        -2980,
+        -2320
+      ],
+      "id": "4ce71608-a43b-46b5-aa90-0272a1cbca55",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o",
+          "mode": "list",
+          "cachedResultName": "gpt-4o"
+        },
+        "options": {
+          "temperature": 1
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -3100,
+        -2020
+      ],
+      "id": "8f0081fe-dc44-465f-9d60-d6ccc06818e1",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "MM0xMOJkVoJoWOLP",
+          "name": "OpenAi account AW"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "[![The AI Automators](https://www.theaiautomators.com/wp-content/uploads/2025/03/gray-logo.png)](https://www.theaiautomators.com/)",
+        "height": 140,
+        "width": 300,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -3580,
+        -2560
+      ],
+      "id": "2b7020e2-e902-40b4-a3ca-89c9b5fcfd6e",
+      "name": "Sticky Note8"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.3,
+      "position": [
+        -2920,
+        -2020
+      ],
+      "id": "198764df-7533-4575-80ca-41b4c8340300",
+      "name": "Postgres Chat Memory",
+      "credentials": {
+        "postgres": {
+          "id": "hqNKg8BO2KqvjDfN",
+          "name": "Postgres Supabase (AW NLQ)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT DISTINCT\n    product_id,\n    product_name,\n    category_name\nFROM full_order_details;",
+        "options": {
+          "queryReplacement": "="
+        }
+      },
+      "type": "n8n-nodes-base.postgresTool",
+      "typeVersion": 2.6,
+      "position": [
+        -2580,
+        -2020
+      ],
+      "id": "0168860d-d157-40f6-8e00-6300ee44a93a",
+      "name": "Get Product List",
+      "credentials": {
+        "postgres": {
+          "id": "hqNKg8BO2KqvjDfN",
+          "name": "Postgres Supabase (AW NLQ)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT *\nFROM full_order_details\nWHERE order_status = $1;",
+        "options": {
+          "queryReplacement": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Query_Parameters', ``, 'string') }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgresTool",
+      "typeVersion": 2.6,
+      "position": [
+        -2740,
+        -2020
+      ],
+      "id": "a874b015-b015-4741-b449-cb2aa92e749b",
+      "name": "Get Orders",
+      "credentials": {
+        "postgres": {
+          "id": "hqNKg8BO2KqvjDfN",
+          "name": "Postgres Supabase (AW NLQ)"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres Chat Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Product List": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Orders": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "4daf3ca3-6900-4d04-acef-bae1bafbdb8f",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "b5d1ea132a4e071e6288b3143f31284b91560858bdef3f0c88a49f587fc91a29"
+  },
+  "id": "AUp8ntsTJKD6eSkX",
+  "tags": [
+    {
+      "createdAt": "2025-05-12T13:43:59.783Z",
+      "updatedAt": "2025-05-12T13:43:59.783Z",
+      "id": "d3ygIhrGjDmzgrW0",
+      "name": "TheAIAutomators.com"
+    }
+  ]
+}
