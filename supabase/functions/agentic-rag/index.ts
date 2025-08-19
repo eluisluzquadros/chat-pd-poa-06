@@ -392,11 +392,64 @@ serve(async (req) => {
     }
     
     // Search in regime_urbanistico_consolidado (structured urban planning data)
+    console.log('🏗️ Searching regime urbanístico for:', query);
+    
+    // Enhanced search for ZOT patterns and neighborhood names
+    let regimeSearchConditions = [];
+    
+    // Direct search
+    regimeSearchConditions.push(`"Bairro".ilike.%${query}%`);
+    regimeSearchConditions.push(`"Zona".ilike.%${query}%`);
+    
+    // ZOT-specific search patterns
+    const zotMatch = query.match(/zot\s*(\d+)/i);
+    if (zotMatch) {
+      const zotNumber = zotMatch[1].padStart(2, '0'); // Convert "2" to "02"
+      regimeSearchConditions.push(`"Zona".ilike.%ZOT ${zotNumber}%`);
+      regimeSearchConditions.push(`"Zona".ilike.%ZOT${zotNumber}%`);
+      console.log(`🎯 Enhanced ZOT search for: ZOT ${zotNumber}`);
+    }
+    
+    // Extract potential neighborhood names from query
+    const neighborhoodPatterns = [
+      /bairro\s+([^,\s]+(?:\s+[^,\s]+)*)/gi,  // "bairro XYZ"
+      /no\s+([A-ZÁÀÂÃÉÊÍÓÔÕÚÇ][a-záàâãéêíóôõúç\s]+)/gi, // "no Petrópolis"
+      /(centro|petrópolis|jardim\s+são\s+pedro|restinga|agronomia|menino\s+deus|cidade\s+baixa|auxiliadora|moinhos\s+de\s+vento)/gi // Common neighborhoods
+    ];
+    
+    for (const pattern of neighborhoodPatterns) {
+      const matches = [...query.matchAll(pattern)];
+      for (const match of matches) {
+        const neighborhood = match[1] || match[0];
+        if (neighborhood && neighborhood.length > 3) {
+          // Add various normalizations
+          const cleanNeighborhood = neighborhood.trim().toUpperCase()
+            .replace(/PETROPOLIS/g, 'PETRÓPOLIS')
+            .replace(/SAO/g, 'SÃO');
+          
+          regimeSearchConditions.push(`"Bairro".ilike.%${cleanNeighborhood}%`);
+          console.log(`🎯 Extracted neighborhood search: ${cleanNeighborhood}`);
+          
+          // Also try without accents
+          const withoutAccents = cleanNeighborhood
+            .replace(/PETRÓPOLIS/g, 'PETROPOLIS')
+            .replace(/SÃO/g, 'SAO');
+          
+          if (withoutAccents !== cleanNeighborhood) {
+            regimeSearchConditions.push(`"Bairro".ilike.%${withoutAccents}%`);
+            console.log(`🎯 Alternative search: ${withoutAccents}`);
+          }
+        }
+      }
+    }
+    
     const { data: regimeData } = await supabase
       .from('regime_urbanistico_consolidado')
       .select('*')
-      .or(`nome_bairro.ilike.%${query}%,nome_zona.ilike.%${query}%,descricao_zona.ilike.%${query}%`)
-      .limit(5);
+      .or(regimeSearchConditions.join(','))
+      .limit(15);
+    
+    console.log(`🏗️ Found ${regimeData?.length || 0} regime urbanístico results`);
 
     // Combine all results
     let documents = [];
@@ -491,19 +544,21 @@ serve(async (req) => {
     }
     
     // Add regime urbanístico context
-    const regimeDocs = documents.filter((doc: any) => doc.nome_bairro !== undefined);
+    const regimeDocs = documents.filter((doc: any) => doc.Bairro !== undefined);
     if (regimeDocs.length > 0) {
       contextParts.push("\n=== REGIME URBANÍSTICO ===");
       regimeDocs.forEach((doc: any) => {
         contextParts.push(`
-Bairro: ${doc.nome_bairro}
-Zona: ${doc.nome_zona} (${doc.sigla_zona})
-Altura Máxima: ${doc.altura_maxima}m
-Altura na Base: ${doc.altura_na_base}m
-Taxa de Ocupação: ${doc.taxa_de_ocupacao}%
-Índice de Aproveitamento: ${doc.indice_de_aproveitamento}
-Recuo Frontal: ${doc.recuo_frontal}m
-Proteção Contra Enchentes: ${doc.protecao_contra_enchentes ? 'Sim' : 'Não'}`);
+Bairro: ${doc.Bairro}
+Zona: ${doc.Zona}
+Altura Máxima: ${doc.Altura_Maxima___Edificacao_Isolada || 'N/A'}m
+Coeficiente Aproveitamento Básico: ${doc.Coeficiente_de_Aproveitamento___Basico || 'N/A'}
+Coeficiente Aproveitamento Máximo: ${doc.Coeficiente_de_Aproveitamento___Maximo || 'N/A'}
+Área Mínima do Lote: ${doc.Área_Minima_do_Lote || 'N/A'}m²
+Taxa de Permeabilidade (até 1500m²): ${doc['Taxa_de_Permeabilidade_ate_1,500_m2'] || 'N/A'}%
+Afastamento Frontal: ${doc.Afastamentos___Frente || 'N/A'}
+Afastamento Lateral: ${doc.Afastamentos___Laterais || 'N/A'}
+Afastamento Fundos: ${doc.Afastamentos___Fundos || 'N/A'}`);
       });
     }
     

@@ -8,8 +8,8 @@
 -- Tabela principal para métricas de performance
 CREATE TABLE IF NOT EXISTS rag_metrics (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    session_id UUID REFERENCES chat_memory(id),
-    user_id UUID REFERENCES profiles(id),
+    session_id TEXT, -- Changed from UUID reference to TEXT
+    user_id TEXT, -- Changed from UUID reference to TEXT
     
     -- Identificação da versão e query
     rag_version TEXT NOT NULL DEFAULT 'v3', -- v2, v3, etc.
@@ -66,8 +66,8 @@ CREATE INDEX IF NOT EXISTS idx_rag_metrics_hash_time ON rag_metrics(query_hash, 
 -- Tabela para coleta de feedback
 CREATE TABLE IF NOT EXISTS user_feedback (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    session_id UUID REFERENCES chat_memory(id),
-    user_id UUID REFERENCES profiles(id),
+    session_id TEXT, -- Changed from UUID reference to TEXT
+    user_id TEXT, -- Changed from UUID reference to TEXT
     metric_id UUID REFERENCES rag_metrics(id),
     
     -- Feedback básico
@@ -141,7 +141,7 @@ CREATE TABLE IF NOT EXISTS alert_events (
     -- Status
     status TEXT DEFAULT 'active' CHECK (status IN ('active', 'resolved', 'acknowledged')),
     resolved_at TIMESTAMPTZ,
-    resolved_by UUID REFERENCES profiles(id),
+    resolved_by TEXT, -- Changed from UUID reference to TEXT
     
     -- Metadados
     affected_queries INTEGER DEFAULT 0,
@@ -201,8 +201,8 @@ CREATE TABLE IF NOT EXISTS ab_experiments (
 CREATE TABLE IF NOT EXISTS ab_participants (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     experiment_id UUID REFERENCES ab_experiments(id) ON DELETE CASCADE,
-    user_id UUID REFERENCES profiles(id),
-    session_id UUID REFERENCES chat_memory(id),
+    user_id TEXT, -- Changed from UUID reference to TEXT
+    session_id TEXT, -- Changed from UUID reference to TEXT
     
     -- Atribuição
     assigned_version TEXT NOT NULL, -- control ou treatment
