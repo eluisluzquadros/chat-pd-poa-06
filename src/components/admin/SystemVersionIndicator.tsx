@@ -9,32 +9,26 @@ import {
 } from '@/components/ui/tooltip';
 
 export function SystemVersionIndicator() {
-  const useAgenticRAGv2 = localStorage.getItem('useAgenticRAGv2') !== 'false';
-  
   return (
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
           <div className="flex items-center gap-2">
             <Badge 
-              variant={useAgenticRAGv2 ? "default" : "secondary"}
+              variant="default"
               className="flex items-center gap-1"
             >
               <Info className="h-3 w-3" />
-              {useAgenticRAGv2 ? 'Agentic RAG v2' : 'RAG v1'}
+              Agentic RAG
             </Badge>
           </div>
         </TooltipTrigger>
         <TooltipContent>
           <p className="text-sm">
-            {useAgenticRAGv2 
-              ? 'Usando o novo sistema Agentic RAG v2 com agentes autônomos'
-              : 'Usando o sistema RAG v1 tradicional'}
+            Sistema Agentic RAG com agentes autônomos
           </p>
           <p className="text-xs text-muted-foreground mt-1">
-            {useAgenticRAGv2 
-              ? 'Mesmo sistema usado em /chat'
-              : 'Sistema legado para compatibilidade'}
+            Sistema unificado usado em todas as interfaces
           </p>
         </TooltipContent>
       </Tooltip>
