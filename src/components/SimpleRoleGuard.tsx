@@ -17,10 +17,11 @@ export const SimpleRoleGuard = ({
   children, 
   adminOnly = false,
   supervisorOnly = false,
-  redirectTo = "/" 
+  redirectTo = "/chat" 
 }: SimpleRoleGuardProps) => {
   const [isInitializing, setIsInitializing] = useState(true);
   const [hasAccess, setHasAccess] = useState(false);
+  const [userRole, setUserRole] = useState<string | null>(null);
   const location = useLocation();
   
   // Cache persistente no sessionStorage
@@ -72,14 +73,23 @@ export const SimpleRoleGuard = ({
           }
         }
         
+        // Armazenar papel no estado
+        setUserRole(role);
+        
         // Verificar papel explicitamente
         const isAdmin = role === 'admin';
         const isSupervisor = role === 'supervisor' || isAdmin;
+        
+        console.log("SimpleRoleGuard: Verificação de papel", { 
+          role, isAdmin, isSupervisor, adminOnly, supervisorOnly 
+        });
         
         // Determinar acesso baseado nos requisitos da rota
         const access = (adminOnly && isAdmin) || 
                        (supervisorOnly && (isSupervisor || isAdmin)) || 
                        (!adminOnly && !supervisorOnly);
+                       
+        console.log("SimpleRoleGuard: Resultado do acesso:", access);
         
         // Mostrar mensagem de erro apenas uma vez se não tiver acesso
         if (!access) {
@@ -128,6 +138,7 @@ export const SimpleRoleGuard = ({
 
   // Redirecionar se não tiver acesso
   if (!hasAccess) {
+    console.log("SimpleRoleGuard: Acesso negado. Role:", userRole, "AdminOnly:", adminOnly, "SupervisorOnly:", supervisorOnly);
     console.log("SimpleRoleGuard: Redirecionando de", location.pathname, "para", redirectTo);
     return <Navigate to={redirectTo} replace state={{ from: location }} />;
   }
