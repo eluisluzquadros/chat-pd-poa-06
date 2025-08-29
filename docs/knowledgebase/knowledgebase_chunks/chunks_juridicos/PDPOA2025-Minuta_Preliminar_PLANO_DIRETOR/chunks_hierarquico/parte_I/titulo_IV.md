@@ -1,0 +1,7 @@
+
+## Título IV -  Das Iniciativas Prioritárias
+
+###### Art. 115
+São definidas como iniciativas prioritárias, para fins de implementação dos objetivos, estratégias e diretrizes deste Plano Diretor, as seguintes ações, planos e programas estruturantes:
+
+Do Sistema de Gestão, Controle, Planejamento e Financiamento Urbano

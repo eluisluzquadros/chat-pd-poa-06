@@ -1,0 +1,2497 @@
+{
+  "total_bairros": 94,
+  "total_zonas": 385,
+  "data_referencia": "PDPOA 2025",
+  "municipio": "Porto Alegre/RS",
+  "estrutura": [
+    {
+      "bairro": "ABERTA DOS MORROS",
+      "total_zonas": 5,
+      "zonas": [
+        {
+          "zona": "ZOT 04",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "18"
+        },
+        {
+          "zona": "ZOT 15",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "9"
+        },
+        {
+          "zona": "ZOT 02",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "9"
+        },
+        {
+          "zona": "ZOT 01",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "9"
+        },
+        {
+          "zona": "ZOT 14",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "9"
+        }
+      ]
+    },
+    {
+      "bairro": "AGRONOMIA",
+      "total_zonas": 5,
+      "zonas": [
+        {
+          "zona": "ZOT 09",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "18"
+        },
+        {
+          "zona": "ZOT 12",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "60"
+        },
+        {
+          "zona": "ZOT 15",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "9"
+        },
+        {
+          "zona": "ZOT 14",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "9"
+        },
+        {
+          "zona": "ZOT 01",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "9"
+        }
+      ]
+    },
+    {
+      "bairro": "ANCHIETA",
+      "total_zonas": 2,
+      "zonas": [
+        {
+          "zona": "ZOT 13",
+          "categoria_risco": "Protegido pelo Sistema Atual",
+          "altura_maxima": "60"
+        },
+        {
+          "zona": "ZOT 15",
+          "categoria_risco": "Protegido pelo Sistema Atual",
+          "altura_maxima": "9"
+        }
+      ]
+    },
+    {
+      "bairro": "ARQUIPÉLAGO",
+      "total_zonas": 3,
+      "zonas": [
+        {
+          "zona": "ZOT 15",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação; Área de Estudo",
+          "altura_maxima": "9"
+        },
+        {
+          "zona": "ZOT 02",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação; Área de Estudo",
+          "altura_maxima": "9"
+        },
+        {
+          "zona": "ZOT 14",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação; Área de Estudo",
+          "altura_maxima": "9"
+        }
+      ]
+    },
+    {
+      "bairro": "AUXILIADORA",
+      "total_zonas": 3,
+      "zonas": [
+        {
+          "zona": "ZOT 07",
+          "categoria_risco": "Protegido pelo Sistema Atual",
+          "altura_maxima": "60"
+        },
+        {
+          "zona": "ZOT 08.3 - C",
+          "categoria_risco": "Protegido pelo Sistema Atual",
+          "altura_maxima": "90"
+        },
+        {
+          "zona": "ZOT 08.2 - A",
+          "categoria_risco": "Protegido pelo Sistema Atual",
+          "altura_maxima": "130"
+        }
+      ]
+    },
+    {
+      "bairro": "AZENHA",
+      "total_zonas": 6,
+      "zonas": [
+        {
+          "zona": "ZOT 10",
+          "categoria_risco": "Protegido pelo Sistema Atual",
+          "altura_maxima": "33"
+        },
+        {
+          "zona": "ZOT 08.3 - B",
+          "categoria_risco": "Protegido pelo Sistema Atual",
+          "altura_maxima": "90"
+        },
+        {
+          "zona": "ZOT 08.3 - A",
+          "categoria_risco": "Protegido pelo Sistema Atual",
+          "altura_maxima": "130"
+        },
+        {
+          "zona": "ZOT 08",
+          "categoria_risco": "Protegido pelo Sistema Atual",
+          "altura_maxima": "90"
+        },
+        {
+          "zona": "ZOT 07",
+          "categoria_risco": "Protegido pelo Sistema Atual",
+          "altura_maxima": "60"
+        },
+        {
+          "zona": "ZOT 12",
+          "categoria_risco": "Protegido pelo Sistema Atual",
+          "altura_maxima": "60"
+        }
+      ]
+    },
+    {
+      "bairro": "BELA VISTA",
+      "total_zonas": 2,
+      "zonas": [
+        {
+          "zona": "ZOT 08.3 - C",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "90"
+        },
+        {
+          "zona": "ZOT 07",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "60"
+        }
+      ]
+    },
+    {
+      "bairro": "BELÉM NOVO",
+      "total_zonas": 6,
+      "zonas": [
+        {
+          "zona": "ZOT 14",
+          "categoria_risco": "Área de Estudo",
+          "altura_maxima": "9"
+        },
+        {
+          "zona": "ZOT 15",
+          "categoria_risco": "Área de Estudo",
+          "altura_maxima": "9"
+        },
+        {
+          "zona": "ZOT 02",
+          "categoria_risco": "Área de Estudo",
+          "altura_maxima": "9"
+        },
+        {
+          "zona": "ZONA RURAL",
+          "categoria_risco": "Área de Estudo",
+          "altura_maxima": "0"
+        },
+        {
+          "zona": "ZOT 16",
+          "categoria_risco": "Área de Estudo",
+          "altura_maxima": "9"
+        },
+        {
+          "zona": "ZOT 09",
+          "categoria_risco": "Área de Estudo",
+          "altura_maxima": "18"
+        }
+      ]
+    },
+    {
+      "bairro": "BELÉM VELHO",
+      "total_zonas": 4,
+      "zonas": [
+        {
+          "zona": "ZOT 14",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "9"
+        },
+        {
+          "zona": "ZOT 01",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "9"
+        },
+        {
+          "zona": "ZOT 15",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "9"
+        },
+        {
+          "zona": "ZOT 02",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "9"
+        }
+      ]
+    },
+    {
+      "bairro": "BOA VISTA",
+      "total_zonas": 4,
+      "zonas": [
+        {
+          "zona": "ZOT 08.3 - C",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "90"
+        },
+        {
+          "zona": "ZOT 04",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "18"
+        },
+        {
+          "zona": "ZOT 07",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "60"
+        },
+        {
+          "zona": "ESPECIAL",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "0"
+        }
+      ]
+    },
+    {
+      "bairro": "BOA VISTA DO SUL",
+      "total_zonas": 5,
+      "zonas": [
+        {
+          "zona": "ZONA RURAL",
+          "categoria_risco": "Área de Estudo",
+          "altura_maxima": "0"
+        },
+        {
+          "zona": "ZOT 14",
+          "categoria_risco": "Área de Estudo",
+          "altura_maxima": "9"
+        },
+        {
+          "zona": "ZOT 15",
+          "categoria_risco": "Área de Estudo",
+          "altura_maxima": "9"
+        },
+        {
+          "zona": "ZOT 16",
+          "categoria_risco": "Área de Estudo",
+          "altura_maxima": "9"
+        },
+        {
+          "zona": "ZOT 01",
+          "categoria_risco": "Área de Estudo",
+          "altura_maxima": "9"
+        }
+      ]
+    },
+    {
+      "bairro": "BOM FIM",
+      "total_zonas": 2,
+      "zonas": [
+        {
+          "zona": "ZOT 07",
+          "categoria_risco": "Protegido pelo Sistema Atual",
+          "altura_maxima": "60"
+        },
+        {
+          "zona": "ZOT 08.1 - B",
+          "categoria_risco": "Protegido pelo Sistema Atual",
+          "altura_maxima": "75"
+        }
+      ]
+    },
+    {
+      "bairro": "BOM JESUS",
+      "total_zonas": 4,
+      "zonas": [
+        {
+          "zona": "ZOT 08.3 - C",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "90"
+        },
+        {
+          "zona": "ZOT 06",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "42"
+        },
+        {
+          "zona": "ZOT 04",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "18"
+        },
+        {
+          "zona": "ZOT 08.3 - B",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "90"
+        }
+      ]
+    },
+    {
+      "bairro": "CAMAQUÃ",
+      "total_zonas": 2,
+      "zonas": [
+        {
+          "zona": "ZOT 10",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "33"
+        },
+        {
+          "zona": "ZOT 01",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "9"
+        }
+      ]
+    },
+    {
+      "bairro": "CAMPO NOVO",
+      "total_zonas": 5,
+      "zonas": [
+        {
+          "zona": "ZOT 03",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "13"
+        },
+        {
+          "zona": "ZOT 15",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "9"
+        },
+        {
+          "zona": "ZOT 04",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "18"
+        },
+        {
+          "zona": "ZOT 01",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "9"
+        },
+        {
+          "zona": "ZOT 14",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "9"
+        }
+      ]
+    },
+    {
+      "bairro": "CASCATA",
+      "total_zonas": 3,
+      "zonas": [
+        {
+          "zona": "ZOT 15",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "9"
+        },
+        {
+          "zona": "ZOT 01",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "9"
+        },
+        {
+          "zona": "ZOT 14",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "9"
+        }
+      ]
+    },
+    {
+      "bairro": "CAVALHADA",
+      "total_zonas": 6,
+      "zonas": [
+        {
+          "zona": "ZOT 11",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "42"
+        },
+        {
+          "zona": "ZOT 03",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "13"
+        },
+        {
+          "zona": "ZOT 10",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "33"
+        },
+        {
+          "zona": "ZOT 09",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "18"
+        },
+        {
+          "zona": "ZOT 01",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "9"
+        },
+        {
+          "zona": "ZOT 15",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "9"
+        }
+      ]
+    },
+    {
+      "bairro": "CEL. APARICIO BORGES",
+      "total_zonas": 4,
+      "zonas": [
+        {
+          "zona": "ZOT 03",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "13"
+        },
+        {
+          "zona": "ZOT 12",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "60"
+        },
+        {
+          "zona": "ZOT 01",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "9"
+        },
+        {
+          "zona": "ZOT 15",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "9"
+        }
+      ]
+    },
+    {
+      "bairro": "CENTRO HISTÓRICO",
+      "total_zonas": 8,
+      "zonas": [
+        {
+          "zona": "ZOT 08.1 - B",
+          "categoria_risco": "Protegido pelo Sistema Atual",
+          "altura_maxima": "75"
+        },
+        {
+          "zona": "ZOT 08.1 - A",
+          "categoria_risco": "Protegido pelo Sistema Atual",
+          "altura_maxima": "60"
+        },
+        {
+          "zona": "ZOT 08.1 - F",
+          "categoria_risco": "Protegido pelo Sistema Atual",
+          "altura_maxima": "7"
+        },
+        {
+          "zona": "ESPECIAL",
+          "categoria_risco": "Protegido pelo Sistema Atual",
+          "altura_maxima": "0"
+        },
+        {
+          "zona": "ZOT 08.1 - G",
+          "categoria_risco": "Protegido pelo Sistema Atual",
+          "altura_maxima": "0"
+        },
+        {
+          "zona": "ZOT 08.1 - C",
+          "categoria_risco": "Protegido pelo Sistema Atual",
+          "altura_maxima": "90"
+        },
+        {
+          "zona": "ZOT 08.1 - E",
+          "categoria_risco": "Protegido pelo Sistema Atual",
+          "altura_maxima": "130"
+        },
+        {
+          "zona": "ZOT 08.1 - D",
+          "categoria_risco": "Protegido pelo Sistema Atual",
+          "altura_maxima": "100"
+        }
+      ]
+    },
+    {
+      "bairro": "CHAPÉU DO SOL",
+      "total_zonas": 6,
+      "zonas": [
+        {
+          "zona": "ZOT 01",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "9"
+        },
+        {
+          "zona": "ZONA RURAL",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "0"
+        },
+        {
+          "zona": "ZOT 16",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "9"
+        },
+        {
+          "zona": "ZOT 03",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "13"
+        },
+        {
+          "zona": "ZOT 15",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "9"
+        },
+        {
+          "zona": "ZOT 14",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "9"
+        }
+      ]
+    },
+    {
+      "bairro": "CHÁCARA DAS PEDRAS",
+      "total_zonas": 3,
+      "zonas": [
+        {
+          "zona": "ZOT 04",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "18"
+        },
+        {
+          "zona": "ZOT 07",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "60"
+        },
+        {
+          "zona": "ZOT 08.3 - C",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "90"
+        }
+      ]
+    },
+    {
+      "bairro": "CIDADE BAIXA",
+      "total_zonas": 1,
+      "zonas": [
+        {
+          "zona": "ZOT 07",
+          "categoria_risco": "Protegido pelo Sistema Atual",
+          "altura_maxima": "60"
+        }
+      ]
+    },
+    {
+      "bairro": "COSTA E SILVA",
+      "total_zonas": 1,
+      "zonas": [
+        {
+          "zona": "ZOT 13",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "60"
+        }
+      ]
+    },
+    {
+      "bairro": "CRISTAL",
+      "total_zonas": 8,
+      "zonas": [
+        {
+          "zona": "ZOT 06",
+          "categoria_risco": "Protegido pelo Sistema Atual",
+          "altura_maxima": "42"
+        },
+        {
+          "zona": "ZOT 12",
+          "categoria_risco": "Protegido pelo Sistema Atual",
+          "altura_maxima": "60"
+        },
+        {
+          "zona": "ZOT 08.3 - A",
+          "categoria_risco": "Protegido pelo Sistema Atual",
+          "altura_maxima": "130"
+        },
+        {
+          "zona": "ZOT 02",
+          "categoria_risco": "Protegido pelo Sistema Atual",
+          "altura_maxima": "9"
+        },
+        {
+          "zona": "ZOT 11",
+          "categoria_risco": "Protegido pelo Sistema Atual",
+          "altura_maxima": "42"
+        },
+        {
+          "zona": "ZOT 05",
+          "categoria_risco": "Protegido pelo Sistema Atual",
+          "altura_maxima": "33"
+        },
+        {
+          "zona": "ZOT 03",
+          "categoria_risco": "Protegido pelo Sistema Atual",
+          "altura_maxima": "13"
+        },
+        {
+          "zona": "ZOT 15",
+          "categoria_risco": "Protegido pelo Sistema Atual",
+          "altura_maxima": "9"
+        }
+      ]
+    },
+    {
+      "bairro": "CRISTO REDENTOR",
+      "total_zonas": 3,
+      "zonas": [
+        {
+          "zona": "ZOT 12",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "60"
+        },
+        {
+          "zona": "ZOT 07",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "60"
+        },
+        {
+          "zona": "ZOT 06",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "42"
+        }
+      ]
+    },
+    {
+      "bairro": "ESPÍRITO SANTO",
+      "total_zonas": 3,
+      "zonas": [
+        {
+          "zona": "ZOT 02",
+          "categoria_risco": "Área de Estudo",
+          "altura_maxima": "9"
+        },
+        {
+          "zona": "ZOT 04",
+          "categoria_risco": "Área de Estudo",
+          "altura_maxima": "18"
+        },
+        {
+          "zona": "ZOT 03",
+          "categoria_risco": "Área de Estudo",
+          "altura_maxima": "13"
+        }
+      ]
+    },
+    {
+      "bairro": "EXTREMA",
+      "total_zonas": 4,
+      "zonas": [
+        {
+          "zona": "ZOT 14",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "9"
+        },
+        {
+          "zona": "ZONA RURAL",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "0"
+        },
+        {
+          "zona": "ZOT 16",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "9"
+        },
+        {
+          "zona": "ZOT 01",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "9"
+        }
+      ]
+    },
+    {
+      "bairro": "FARRAPOS",
+      "total_zonas": 1,
+      "zonas": [
+        {
+          "zona": "ZOT 08.2 - B",
+          "categoria_risco": "Protegido pelo Sistema Atual",
+          "altura_maxima": "130"
+        }
+      ]
+    },
+    {
+      "bairro": "FARROUPILHA",
+      "total_zonas": 3,
+      "zonas": [
+        {
+          "zona": "ZOT 07",
+          "categoria_risco": "Protegido pelo Sistema Atual",
+          "altura_maxima": "60"
+        },
+        {
+          "zona": "ESPECIAL",
+          "categoria_risco": "Protegido pelo Sistema Atual",
+          "altura_maxima": "0"
+        },
+        {
+          "zona": "ZOT 08.1 - G",
+          "categoria_risco": "Protegido pelo Sistema Atual",
+          "altura_maxima": "0"
+        }
+      ]
+    },
+    {
+      "bairro": "FLORESTA",
+      "total_zonas": 1,
+      "zonas": [
+        {
+          "zona": "ZOT 08.2 - A",
+          "categoria_risco": "Protegido pelo Sistema Atual",
+          "altura_maxima": "130"
+        }
+      ]
+    },
+    {
+      "bairro": "GLÓRIA",
+      "total_zonas": 9,
+      "zonas": [
+        {
+          "zona": "ZOT 12",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "60"
+        },
+        {
+          "zona": "ZOT 09",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "18"
+        },
+        {
+          "zona": "ZOT 01",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "9"
+        },
+        {
+          "zona": "ZOT 15",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "9"
+        },
+        {
+          "zona": "ZOT 03",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "13"
+        },
+        {
+          "zona": "ZOT 14",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "9"
+        },
+        {
+          "zona": "ZOT 06",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "42"
+        },
+        {
+          "zona": "ZOT 05",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "33"
+        },
+        {
+          "zona": "ZOT 10",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "33"
+        }
+      ]
+    },
+    {
+      "bairro": "GUARUJÁ",
+      "total_zonas": 3,
+      "zonas": [
+        {
+          "zona": "ZOT 02",
+          "categoria_risco": "Área de Estudo",
+          "altura_maxima": "9"
+        },
+        {
+          "zona": "ZOT 03",
+          "categoria_risco": "Área de Estudo",
+          "altura_maxima": "13"
+        },
+        {
+          "zona": "ZOT 15",
+          "categoria_risco": "Área de Estudo",
+          "altura_maxima": "9"
+        }
+      ]
+    },
+    {
+      "bairro": "HIGIENÓPOLIS",
+      "total_zonas": 2,
+      "zonas": [
+        {
+          "zona": "ZOT 07",
+          "categoria_risco": "Protegido pelo Sistema Atual",
+          "altura_maxima": "60"
+        },
+        {
+          "zona": "ZOT 08.3 - C",
+          "categoria_risco": "Protegido pelo Sistema Atual",
+          "altura_maxima": "90"
+        }
+      ]
+    },
+    {
+      "bairro": "HUMAITÁ",
+      "total_zonas": 1,
+      "zonas": [
+        {
+          "zona": "ZOT 08.2 - B",
+          "categoria_risco": "Protegido pelo Sistema Atual",
+          "altura_maxima": "130"
+        }
+      ]
+    },
+    {
+      "bairro": "HÍPICA",
+      "total_zonas": 6,
+      "zonas": [
+        {
+          "zona": "ZOT 01",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "9"
+        },
+        {
+          "zona": "ZOT 04",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "18"
+        },
+        {
+          "zona": "ZOT 02",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "9"
+        },
+        {
+          "zona": "ZOT 03",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "13"
+        },
+        {
+          "zona": "ZOT 15",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "9"
+        },
+        {
+          "zona": "ZOT 14",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "9"
+        }
+      ]
+    },
+    {
+      "bairro": "INDEPENDÊNCIA",
+      "total_zonas": 2,
+      "zonas": [
+        {
+          "zona": "ZOT 07",
+          "categoria_risco": "Protegido pelo Sistema Atual",
+          "altura_maxima": "60"
+        },
+        {
+          "zona": "ZOT 08.2 - A",
+          "categoria_risco": "Protegido pelo Sistema Atual",
+          "altura_maxima": "130"
+        }
+      ]
+    },
+    {
+      "bairro": "IPANEMA",
+      "total_zonas": 4,
+      "zonas": [
+        {
+          "zona": "ZOT 10",
+          "categoria_risco": "Área de Estudo",
+          "altura_maxima": "33"
+        },
+        {
+          "zona": "ZOT 03",
+          "categoria_risco": "Área de Estudo",
+          "altura_maxima": "13"
+        },
+        {
+          "zona": "ZOT 04",
+          "categoria_risco": "Área de Estudo",
+          "altura_maxima": "18"
+        },
+        {
+          "zona": "ZOT 02",
+          "categoria_risco": "Área de Estudo",
+          "altura_maxima": "9"
+        }
+      ]
+    },
+    {
+      "bairro": "JARDIM BOTÂNICO",
+      "total_zonas": 4,
+      "zonas": [
+        {
+          "zona": "ZOT 08.3 - B",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "90"
+        },
+        {
+          "zona": "ZOT 08.3 - C",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "90"
+        },
+        {
+          "zona": "ZOT 15",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "9"
+        },
+        {
+          "zona": "ZOT 07",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "60"
+        }
+      ]
+    },
+    {
+      "bairro": "JARDIM CARVALHO",
+      "total_zonas": 7,
+      "zonas": [
+        {
+          "zona": "ZOT 12",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "60"
+        },
+        {
+          "zona": "ZOT 06",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "42"
+        },
+        {
+          "zona": "ZOT 04",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "18"
+        },
+        {
+          "zona": "ZOT 08.3 - C",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "90"
+        },
+        {
+          "zona": "ZOT 15",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "9"
+        },
+        {
+          "zona": "ZOT 08.3 - B",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "90"
+        },
+        {
+          "zona": "ZOT 07",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "60"
+        }
+      ]
+    },
+    {
+      "bairro": "JARDIM DO SALSO",
+      "total_zonas": 4,
+      "zonas": [
+        {
+          "zona": "ZOT 08.3 - B",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "90"
+        },
+        {
+          "zona": "ZOT 08.3 - C",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "90"
+        },
+        {
+          "zona": "ZOT 06",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "42"
+        },
+        {
+          "zona": "ZOT 07",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "60"
+        }
+      ]
+    },
+    {
+      "bairro": "JARDIM EUROPA",
+      "total_zonas": 3,
+      "zonas": [
+        {
+          "zona": "ZOT 08.3 - C",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "90"
+        },
+        {
+          "zona": "ZOT 07",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "60"
+        },
+        {
+          "zona": "ESPECIAL",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "0"
+        }
+      ]
+    },
+    {
+      "bairro": "JARDIM FLORESTA",
+      "total_zonas": 2,
+      "zonas": [
+        {
+          "zona": "ZOT 13",
+          "categoria_risco": "Protegido pelo Sistema Atual",
+          "altura_maxima": "60"
+        },
+        {
+          "zona": "ZOT 06",
+          "categoria_risco": "Protegido pelo Sistema Atual",
+          "altura_maxima": "42"
+        }
+      ]
+    },
+    {
+      "bairro": "JARDIM ISABEL",
+      "total_zonas": 2,
+      "zonas": [
+        {
+          "zona": "ZOT 01",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "9"
+        },
+        {
+          "zona": "ZOT 03",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "13"
+        }
+      ]
+    },
+    {
+      "bairro": "JARDIM ITU",
+      "total_zonas": 6,
+      "zonas": [
+        {
+          "zona": "ZOT 07",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "60"
+        },
+        {
+          "zona": "ZOT 06",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "42"
+        },
+        {
+          "zona": "ZOT 05",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "33"
+        },
+        {
+          "zona": "ZOT 13",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "60"
+        },
+        {
+          "zona": "ZOT 12",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "60"
+        },
+        {
+          "zona": "ZOT 11",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "42"
+        }
+      ]
+    },
+    {
+      "bairro": "JARDIM LEOPOLDINA",
+      "total_zonas": 3,
+      "zonas": [
+        {
+          "zona": "ZOT 12",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "60"
+        },
+        {
+          "zona": "ZOT 10",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "33"
+        },
+        {
+          "zona": "ZOT 13",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "60"
+        }
+      ]
+    },
+    {
+      "bairro": "JARDIM LINDÓIA",
+      "total_zonas": 3,
+      "zonas": [
+        {
+          "zona": "ZOT 12",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "60"
+        },
+        {
+          "zona": "ZOT 06",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "42"
+        },
+        {
+          "zona": "ZOT 13",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "60"
+        }
+      ]
+    },
+    {
+      "bairro": "JARDIM SABARÁ",
+      "total_zonas": 4,
+      "zonas": [
+        {
+          "zona": "ZOT 12",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "60"
+        },
+        {
+          "zona": "ZOT 07",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "60"
+        },
+        {
+          "zona": "ZOT 06",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "42"
+        },
+        {
+          "zona": "ZOT 08.3 - C",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "90"
+        }
+      ]
+    },
+    {
+      "bairro": "JARDIM SÃO PEDRO",
+      "total_zonas": 4,
+      "zonas": [
+        {
+          "zona": "ZOT 13",
+          "categoria_risco": "Protegido pelo Sistema Atual",
+          "altura_maxima": "60"
+        },
+        {
+          "zona": "ZOT 12",
+          "categoria_risco": "Protegido pelo Sistema Atual",
+          "altura_maxima": "60"
+        },
+        {
+          "zona": "ZOT 11",
+          "categoria_risco": "Protegido pelo Sistema Atual",
+          "altura_maxima": "42"
+        },
+        {
+          "zona": "ZOT 06",
+          "categoria_risco": "Protegido pelo Sistema Atual",
+          "altura_maxima": "42"
+        }
+      ]
+    },
+    {
+      "bairro": "LAGEADO",
+      "total_zonas": 5,
+      "zonas": [
+        {
+          "zona": "ZOT 01",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "9"
+        },
+        {
+          "zona": "ZOT 14",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "9"
+        },
+        {
+          "zona": "ZOT 15",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "9"
+        },
+        {
+          "zona": "ZOT 16",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "9"
+        },
+        {
+          "zona": "ZONA RURAL",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "0"
+        }
+      ]
+    },
+    {
+      "bairro": "LAMI",
+      "total_zonas": 6,
+      "zonas": [
+        {
+          "zona": "ZOT 15",
+          "categoria_risco": "Área de Estudo",
+          "altura_maxima": "9"
+        },
+        {
+          "zona": "ZOT 02",
+          "categoria_risco": "Área de Estudo",
+          "altura_maxima": "9"
+        },
+        {
+          "zona": "ZONA RURAL",
+          "categoria_risco": "Área de Estudo",
+          "altura_maxima": "0"
+        },
+        {
+          "zona": "ZOT 14",
+          "categoria_risco": "Área de Estudo",
+          "altura_maxima": "9"
+        },
+        {
+          "zona": "ZOT 16",
+          "categoria_risco": "Área de Estudo",
+          "altura_maxima": "9"
+        },
+        {
+          "zona": "ZOT 05",
+          "categoria_risco": "Área de Estudo",
+          "altura_maxima": "33"
+        }
+      ]
+    },
+    {
+      "bairro": "LOMBA DO PINHEIRO",
+      "total_zonas": 9,
+      "zonas": [
+        {
+          "zona": "ZOT 04",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "18"
+        },
+        {
+          "zona": "ZOT 03",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "13"
+        },
+        {
+          "zona": "ZOT 01",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "9"
+        },
+        {
+          "zona": "ZOT 14",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "9"
+        },
+        {
+          "zona": "ZOT 15",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "9"
+        },
+        {
+          "zona": "ZOT 12",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "60"
+        },
+        {
+          "zona": "ZOT 16",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "9"
+        },
+        {
+          "zona": "ESPECIAL",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "0"
+        },
+        {
+          "zona": "ZOT 09",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "18"
+        }
+      ]
+    },
+    {
+      "bairro": "MEDIANEIRA",
+      "total_zonas": 6,
+      "zonas": [
+        {
+          "zona": "ZOT 06",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "42"
+        },
+        {
+          "zona": "ZOT 07",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "60"
+        },
+        {
+          "zona": "ZOT 12",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "60"
+        },
+        {
+          "zona": "ZOT 10",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "33"
+        },
+        {
+          "zona": "ZOT 08.3 - B",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "90"
+        },
+        {
+          "zona": "ZOT 05",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "33"
+        }
+      ]
+    },
+    {
+      "bairro": "MENINO DEUS",
+      "total_zonas": 5,
+      "zonas": [
+        {
+          "zona": "ZOT 07",
+          "categoria_risco": "Protegido pelo Sistema Atual",
+          "altura_maxima": "60"
+        },
+        {
+          "zona": "ZOT 08",
+          "categoria_risco": "Protegido pelo Sistema Atual",
+          "altura_maxima": "90"
+        },
+        {
+          "zona": "ZOT 08.3 - B",
+          "categoria_risco": "Protegido pelo Sistema Atual",
+          "altura_maxima": "90"
+        },
+        {
+          "zona": "ZOT 08.3 - A",
+          "categoria_risco": "Protegido pelo Sistema Atual",
+          "altura_maxima": "130"
+        },
+        {
+          "zona": "ZOT 05",
+          "categoria_risco": "Protegido pelo Sistema Atual",
+          "altura_maxima": "33"
+        }
+      ]
+    },
+    {
+      "bairro": "MOINHOS DE VENTO",
+      "total_zonas": 4,
+      "zonas": [
+        {
+          "zona": "ZOT 07",
+          "categoria_risco": "Protegido pelo Sistema Atual",
+          "altura_maxima": "60"
+        },
+        {
+          "zona": "ZOT 08.3 - C",
+          "categoria_risco": "Protegido pelo Sistema Atual",
+          "altura_maxima": "90"
+        },
+        {
+          "zona": "ZOT 08.2 - A",
+          "categoria_risco": "Protegido pelo Sistema Atual",
+          "altura_maxima": "130"
+        },
+        {
+          "zona": "ESPECIAL",
+          "categoria_risco": "Protegido pelo Sistema Atual",
+          "altura_maxima": "0"
+        }
+      ]
+    },
+    {
+      "bairro": "MONTSERRAT",
+      "total_zonas": 2,
+      "zonas": [
+        {
+          "zona": "ZOT 07",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "60"
+        },
+        {
+          "zona": "ZOT 08.3 - C",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "90"
+        }
+      ]
+    },
+    {
+      "bairro": "MORRO SANTANA",
+      "total_zonas": 7,
+      "zonas": [
+        {
+          "zona": "ZOT 12",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "60"
+        },
+        {
+          "zona": "ZOT 07",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "60"
+        },
+        {
+          "zona": "ZOT 13",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "60"
+        },
+        {
+          "zona": "ZOT 11",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "42"
+        },
+        {
+          "zona": "ZOT 15",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "9"
+        },
+        {
+          "zona": "ZOT 04",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "18"
+        },
+        {
+          "zona": "ZOT 03",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "13"
+        }
+      ]
+    },
+    {
+      "bairro": "MÁRIO QUINTANA",
+      "total_zonas": 6,
+      "zonas": [
+        {
+          "zona": "ZOT 03",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "13"
+        },
+        {
+          "zona": "ZOT 11",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "42"
+        },
+        {
+          "zona": "ZOT 10",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "33"
+        },
+        {
+          "zona": "ZOT 12",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "60"
+        },
+        {
+          "zona": "ZOT 15",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "9"
+        },
+        {
+          "zona": "ZOT 13",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "60"
+        }
+      ]
+    },
+    {
+      "bairro": "NAVEGANTES",
+      "total_zonas": 1,
+      "zonas": [
+        {
+          "zona": "ZOT 08.2 - B",
+          "categoria_risco": "Protegido pelo Sistema Atual",
+          "altura_maxima": "130"
+        }
+      ]
+    },
+    {
+      "bairro": "NONOAI",
+      "total_zonas": 6,
+      "zonas": [
+        {
+          "zona": "ZOT 12",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "60"
+        },
+        {
+          "zona": "ZOT 05",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "33"
+        },
+        {
+          "zona": "ZOT 03",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "13"
+        },
+        {
+          "zona": "ZOT 02",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "9"
+        },
+        {
+          "zona": "ZOT 15",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "9"
+        },
+        {
+          "zona": "ZOT 01",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "9"
+        }
+      ]
+    },
+    {
+      "bairro": "PARQUE SANTA FÉ",
+      "total_zonas": 1,
+      "zonas": [
+        {
+          "zona": "ZOT 13",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "60"
+        }
+      ]
+    },
+    {
+      "bairro": "PARTENON",
+      "total_zonas": 9,
+      "zonas": [
+        {
+          "zona": "ZOT 08.3 - B",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "90"
+        },
+        {
+          "zona": "ZOT 06",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "42"
+        },
+        {
+          "zona": "ZOT 15",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "9"
+        },
+        {
+          "zona": "ZOT 07",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "60"
+        },
+        {
+          "zona": "ZOT 05",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "33"
+        },
+        {
+          "zona": "ZOT 12",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "60"
+        },
+        {
+          "zona": "ZOT 01",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "9"
+        },
+        {
+          "zona": "ZOT 02",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "9"
+        },
+        {
+          "zona": "ZOT 03",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "13"
+        }
+      ]
+    },
+    {
+      "bairro": "PASSO DA AREIA",
+      "total_zonas": 4,
+      "zonas": [
+        {
+          "zona": "ZOT 02",
+          "categoria_risco": "Protegido pelo Sistema Atual",
+          "altura_maxima": "9"
+        },
+        {
+          "zona": "ZOT 07",
+          "categoria_risco": "Protegido pelo Sistema Atual",
+          "altura_maxima": "60"
+        },
+        {
+          "zona": "ZOT 12",
+          "categoria_risco": "Protegido pelo Sistema Atual",
+          "altura_maxima": "60"
+        },
+        {
+          "zona": "ZOT 11",
+          "categoria_risco": "Protegido pelo Sistema Atual",
+          "altura_maxima": "42"
+        }
+      ]
+    },
+    {
+      "bairro": "PASSO DAS PEDRAS",
+      "total_zonas": 4,
+      "zonas": [
+        {
+          "zona": "ZOT 07",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "60"
+        },
+        {
+          "zona": "ZOT 13",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "60"
+        },
+        {
+          "zona": "ZOT 05",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "33"
+        },
+        {
+          "zona": "ZOT 12",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "60"
+        }
+      ]
+    },
+    {
+      "bairro": "PEDRA REDONDA",
+      "total_zonas": 3,
+      "zonas": [
+        {
+          "zona": "ZOT 01",
+          "categoria_risco": "Área de Estudo",
+          "altura_maxima": "9"
+        },
+        {
+          "zona": "ZOT 15",
+          "categoria_risco": "Área de Estudo",
+          "altura_maxima": "9"
+        },
+        {
+          "zona": "ZOT 03",
+          "categoria_risco": "Área de Estudo",
+          "altura_maxima": "13"
+        }
+      ]
+    },
+    {
+      "bairro": "PETRÓPOLIS",
+      "total_zonas": 3,
+      "zonas": [
+        {
+          "zona": "ZOT 07",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "60"
+        },
+        {
+          "zona": "ZOT 08.3 - C",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "90"
+        },
+        {
+          "zona": "ZOT 08.3 - B",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "90"
+        }
+      ]
+    },
+    {
+      "bairro": "PITINGA",
+      "total_zonas": 4,
+      "zonas": [
+        {
+          "zona": "ZOT 01",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "9"
+        },
+        {
+          "zona": "ZOT 14",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "9"
+        },
+        {
+          "zona": "ZOT 15",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "9"
+        },
+        {
+          "zona": "ZOT 16",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "9"
+        }
+      ]
+    },
+    {
+      "bairro": "PONTA GROSSA",
+      "total_zonas": 5,
+      "zonas": [
+        {
+          "zona": "ZOT 15",
+          "categoria_risco": "Área de Estudo",
+          "altura_maxima": "9"
+        },
+        {
+          "zona": "ZOT 01",
+          "categoria_risco": "Área de Estudo",
+          "altura_maxima": "9"
+        },
+        {
+          "zona": "ZOT 03",
+          "categoria_risco": "Área de Estudo",
+          "altura_maxima": "13"
+        },
+        {
+          "zona": "ZOT 14",
+          "categoria_risco": "Área de Estudo",
+          "altura_maxima": "9"
+        },
+        {
+          "zona": "ZOT 02",
+          "categoria_risco": "Área de Estudo",
+          "altura_maxima": "9"
+        }
+      ]
+    },
+    {
+      "bairro": "PRAIA DE BELAS",
+      "total_zonas": 5,
+      "zonas": [
+        {
+          "zona": "ESPECIAL",
+          "categoria_risco": "Protegido pelo Sistema Atual",
+          "altura_maxima": "0"
+        },
+        {
+          "zona": "ZOT 02",
+          "categoria_risco": "Protegido pelo Sistema Atual",
+          "altura_maxima": "9"
+        },
+        {
+          "zona": "ZOT 08",
+          "categoria_risco": "Protegido pelo Sistema Atual",
+          "altura_maxima": "90"
+        },
+        {
+          "zona": "ZOT 08.3 - A",
+          "categoria_risco": "Protegido pelo Sistema Atual",
+          "altura_maxima": "130"
+        },
+        {
+          "zona": "ZOT 08.3 - B",
+          "categoria_risco": "Protegido pelo Sistema Atual",
+          "altura_maxima": "90"
+        }
+      ]
+    },
+    {
+      "bairro": "RESTINGA",
+      "total_zonas": 6,
+      "zonas": [
+        {
+          "zona": "ZOT 04",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "18"
+        },
+        {
+          "zona": "ZOT 01",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "9"
+        },
+        {
+          "zona": "ZOT 02",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "9"
+        },
+        {
+          "zona": "ZOT 14",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "9"
+        },
+        {
+          "zona": "ZOT 15",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "9"
+        },
+        {
+          "zona": "ZOT 09",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "18"
+        }
+      ]
+    },
+    {
+      "bairro": "RIO BRANCO",
+      "total_zonas": 2,
+      "zonas": [
+        {
+          "zona": "ZOT 08.3 - C",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "90"
+        },
+        {
+          "zona": "ZOT 07",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "60"
+        }
+      ]
+    },
+    {
+      "bairro": "RUBEM BERTA",
+      "total_zonas": 5,
+      "zonas": [
+        {
+          "zona": "ZOT 13",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "60"
+        },
+        {
+          "zona": "ZOT 03",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "13"
+        },
+        {
+          "zona": "ZOT 15",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "9"
+        },
+        {
+          "zona": "ZOT 11",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "42"
+        },
+        {
+          "zona": "ZOT 10",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "33"
+        }
+      ]
+    },
+    {
+      "bairro": "SANTA CECÍLIA",
+      "total_zonas": 3,
+      "zonas": [
+        {
+          "zona": "ZOT 07",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "60"
+        },
+        {
+          "zona": "ZOT 08.3 - B",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "90"
+        },
+        {
+          "zona": "ZOT 08.3 - C",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "90"
+        }
+      ]
+    },
+    {
+      "bairro": "SANTA MARIA GORETTI",
+      "total_zonas": 1,
+      "zonas": [
+        {
+          "zona": "ZOT 12",
+          "categoria_risco": "Protegido pelo Sistema Atual",
+          "altura_maxima": "60"
+        }
+      ]
+    },
+    {
+      "bairro": "SANTA ROSA DE LIMA",
+      "total_zonas": 3,
+      "zonas": [
+        {
+          "zona": "ZOT 03",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "13"
+        },
+        {
+          "zona": "ZOT 13",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "60"
+        },
+        {
+          "zona": "ZOT 15",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "9"
+        }
+      ]
+    },
+    {
+      "bairro": "SANTA TEREZA",
+      "total_zonas": 8,
+      "zonas": [
+        {
+          "zona": "ZOT 12",
+          "categoria_risco": "Protegido pelo Sistema Atual",
+          "altura_maxima": "60"
+        },
+        {
+          "zona": "ZOT 06",
+          "categoria_risco": "Protegido pelo Sistema Atual",
+          "altura_maxima": "42"
+        },
+        {
+          "zona": "ZOT 05",
+          "categoria_risco": "Protegido pelo Sistema Atual",
+          "altura_maxima": "33"
+        },
+        {
+          "zona": "ZOT 04",
+          "categoria_risco": "Protegido pelo Sistema Atual",
+          "altura_maxima": "18"
+        },
+        {
+          "zona": "ZOT 03",
+          "categoria_risco": "Protegido pelo Sistema Atual",
+          "altura_maxima": "13"
+        },
+        {
+          "zona": "ZOT 07",
+          "categoria_risco": "Protegido pelo Sistema Atual",
+          "altura_maxima": "60"
+        },
+        {
+          "zona": "ZOT 15",
+          "categoria_risco": "Protegido pelo Sistema Atual",
+          "altura_maxima": "9"
+        },
+        {
+          "zona": "ZOT 01",
+          "categoria_risco": "Protegido pelo Sistema Atual",
+          "altura_maxima": "9"
+        }
+      ]
+    },
+    {
+      "bairro": "SANTANA",
+      "total_zonas": 2,
+      "zonas": [
+        {
+          "zona": "ZOT 07",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "60"
+        },
+        {
+          "zona": "ZOT 08.3 - B",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "90"
+        }
+      ]
+    },
+    {
+      "bairro": "SANTO ANTÔNIO",
+      "total_zonas": 5,
+      "zonas": [
+        {
+          "zona": "ZOT 10",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "33"
+        },
+        {
+          "zona": "ZOT 06",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "42"
+        },
+        {
+          "zona": "ZOT 12",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "60"
+        },
+        {
+          "zona": "ZOT 05",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "33"
+        },
+        {
+          "zona": "ZOT 08.3 - B",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "90"
+        }
+      ]
+    },
+    {
+      "bairro": "SARANDI",
+      "total_zonas": 5,
+      "zonas": [
+        {
+          "zona": "ZOT 15",
+          "categoria_risco": "Protegido pelo Sistema Atual",
+          "altura_maxima": "9"
+        },
+        {
+          "zona": "ZOT 13",
+          "categoria_risco": "Protegido pelo Sistema Atual",
+          "altura_maxima": "60"
+        },
+        {
+          "zona": "ZOT 05",
+          "categoria_risco": "Protegido pelo Sistema Atual",
+          "altura_maxima": "33"
+        },
+        {
+          "zona": "ZOT 06",
+          "categoria_risco": "Protegido pelo Sistema Atual",
+          "altura_maxima": "42"
+        },
+        {
+          "zona": "ZOT 11",
+          "categoria_risco": "Protegido pelo Sistema Atual",
+          "altura_maxima": "42"
+        }
+      ]
+    },
+    {
+      "bairro": "SERRARIA",
+      "total_zonas": 3,
+      "zonas": [
+        {
+          "zona": "ZOT 02",
+          "categoria_risco": "Área de Estudo",
+          "altura_maxima": "9"
+        },
+        {
+          "zona": "ZOT 15",
+          "categoria_risco": "Área de Estudo",
+          "altura_maxima": "9"
+        },
+        {
+          "zona": "ZOT 03",
+          "categoria_risco": "Área de Estudo",
+          "altura_maxima": "13"
+        }
+      ]
+    },
+    {
+      "bairro": "SÃO CAETANO",
+      "total_zonas": 3,
+      "zonas": [
+        {
+          "zona": "ZOT 16",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "9"
+        },
+        {
+          "zona": "ZONA RURAL",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "0"
+        },
+        {
+          "zona": "ZOT 14",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "9"
+        }
+      ]
+    },
+    {
+      "bairro": "SÃO GERALDO",
+      "total_zonas": 1,
+      "zonas": [
+        {
+          "zona": "ZOT 08.2 - A",
+          "categoria_risco": "Protegido pelo Sistema Atual",
+          "altura_maxima": "130"
+        }
+      ]
+    },
+    {
+      "bairro": "SÃO JOÃO",
+      "total_zonas": 5,
+      "zonas": [
+        {
+          "zona": "ZOT 07",
+          "categoria_risco": "Protegido pelo Sistema Atual",
+          "altura_maxima": "60"
+        },
+        {
+          "zona": "ZOT 08.2 - A",
+          "categoria_risco": "Protegido pelo Sistema Atual",
+          "altura_maxima": "130"
+        },
+        {
+          "zona": "ZOT 08.2 - B",
+          "categoria_risco": "Protegido pelo Sistema Atual",
+          "altura_maxima": "130"
+        },
+        {
+          "zona": "ZOT 08.3 - C",
+          "categoria_risco": "Protegido pelo Sistema Atual",
+          "altura_maxima": "90"
+        },
+        {
+          "zona": "ZOT 12",
+          "categoria_risco": "Protegido pelo Sistema Atual",
+          "altura_maxima": "60"
+        }
+      ]
+    },
+    {
+      "bairro": "SÃO SEBASTIÃO",
+      "total_zonas": 3,
+      "zonas": [
+        {
+          "zona": "ZOT 06",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "42"
+        },
+        {
+          "zona": "ZOT 13",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "60"
+        },
+        {
+          "zona": "ZOT 12",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "60"
+        }
+      ]
+    },
+    {
+      "bairro": "SÉTIMO CÉU",
+      "total_zonas": 3,
+      "zonas": [
+        {
+          "zona": "ESPECIAL",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "0"
+        },
+        {
+          "zona": "ZOT 03",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "12,5"
+        },
+        {
+          "zona": "ZOT 01",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "9"
+        }
+      ]
+    },
+    {
+      "bairro": "TERESÓPOLIS",
+      "total_zonas": 8,
+      "zonas": [
+        {
+          "zona": "ZOT 12",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "60"
+        },
+        {
+          "zona": "ZOT 03",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "13"
+        },
+        {
+          "zona": "ZOT 14",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "9"
+        },
+        {
+          "zona": "ZOT 05",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "33"
+        },
+        {
+          "zona": "ZOT 15",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "9"
+        },
+        {
+          "zona": "ZOT 02",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "9"
+        },
+        {
+          "zona": "ZOT 01",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "9"
+        },
+        {
+          "zona": "ZOT 10",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "33"
+        }
+      ]
+    },
+    {
+      "bairro": "TRISTEZA",
+      "total_zonas": 8,
+      "zonas": [
+        {
+          "zona": "ZOT 10",
+          "categoria_risco": "Área de Estudo",
+          "altura_maxima": "33"
+        },
+        {
+          "zona": "ZOT 04",
+          "categoria_risco": "Área de Estudo",
+          "altura_maxima": "18"
+        },
+        {
+          "zona": "ZOT 05",
+          "categoria_risco": "Área de Estudo",
+          "altura_maxima": "33"
+        },
+        {
+          "zona": "ZOT 02",
+          "categoria_risco": "Área de Estudo",
+          "altura_maxima": "9"
+        },
+        {
+          "zona": "ZOT 01",
+          "categoria_risco": "Área de Estudo",
+          "altura_maxima": "9"
+        },
+        {
+          "zona": "ZOT 03",
+          "categoria_risco": "Área de Estudo",
+          "altura_maxima": "13"
+        },
+        {
+          "zona": "ESPECIAL",
+          "categoria_risco": "Área de Estudo",
+          "altura_maxima": "0"
+        },
+        {
+          "zona": "ZOT 11",
+          "categoria_risco": "Área de Estudo",
+          "altura_maxima": "42"
+        }
+      ]
+    },
+    {
+      "bairro": "TRÊS FIGUEIRAS",
+      "total_zonas": 3,
+      "zonas": [
+        {
+          "zona": "ZOT 08.3 - C",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "90"
+        },
+        {
+          "zona": "ZOT 04",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "18"
+        },
+        {
+          "zona": "ZOT 07",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "60"
+        }
+      ]
+    },
+    {
+      "bairro": "VILA  ASSUNÇÃO",
+      "total_zonas": 2,
+      "zonas": [
+        {
+          "zona": "ZOT 05",
+          "categoria_risco": "Área de Estudo",
+          "altura_maxima": "33"
+        },
+        {
+          "zona": "ZOT 02",
+          "categoria_risco": "Área de Estudo",
+          "altura_maxima": "9"
+        }
+      ]
+    },
+    {
+      "bairro": "VILA CONCEIÇÃO",
+      "total_zonas": 2,
+      "zonas": [
+        {
+          "zona": "ZOT 01",
+          "categoria_risco": "Área de Estudo",
+          "altura_maxima": "9"
+        },
+        {
+          "zona": "ZOT 03",
+          "categoria_risco": "Área de Estudo",
+          "altura_maxima": "13"
+        }
+      ]
+    },
+    {
+      "bairro": "VILA IPIRANGA",
+      "total_zonas": 4,
+      "zonas": [
+        {
+          "zona": "ZOT 07",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "60"
+        },
+        {
+          "zona": "ZOT 12",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "60"
+        },
+        {
+          "zona": "ZOT 06",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "42"
+        },
+        {
+          "zona": "ZOT 13",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "60"
+        }
+      ]
+    },
+    {
+      "bairro": "VILA JARDIM",
+      "total_zonas": 6,
+      "zonas": [
+        {
+          "zona": "ZOT 12",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "60"
+        },
+        {
+          "zona": "ZOT 07",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "60"
+        },
+        {
+          "zona": "ZOT 13",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "60"
+        },
+        {
+          "zona": "ZOT 08.3 - C",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "90"
+        },
+        {
+          "zona": "ZOT 04",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "18"
+        },
+        {
+          "zona": "ZOT 06",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "42"
+        }
+      ]
+    },
+    {
+      "bairro": "VILA JOÃO PESSOA",
+      "total_zonas": 5,
+      "zonas": [
+        {
+          "zona": "ZOT 03",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "13"
+        },
+        {
+          "zona": "ZOT 02",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "9"
+        },
+        {
+          "zona": "ZOT 01",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "9"
+        },
+        {
+          "zona": "ZOT 08.3 - B",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "90"
+        },
+        {
+          "zona": "ZOT 06",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "42"
+        }
+      ]
+    },
+    {
+      "bairro": "VILA NOVA",
+      "total_zonas": 6,
+      "zonas": [
+        {
+          "zona": "ZOT 03",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "13"
+        },
+        {
+          "zona": "ZOT 10",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "33"
+        },
+        {
+          "zona": "ZOT 01",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "9"
+        },
+        {
+          "zona": "ZOT 14",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "9"
+        },
+        {
+          "zona": "ZOT 15",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "9"
+        },
+        {
+          "zona": "ZOT 09",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "18"
+        }
+      ]
+    },
+    {
+      "bairro": "VILA SÃO JOSÉ",
+      "total_zonas": 6,
+      "zonas": [
+        {
+          "zona": "ZOT 02",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "9"
+        },
+        {
+          "zona": "ZOT 03",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "13"
+        },
+        {
+          "zona": "ZOT 01",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "9"
+        },
+        {
+          "zona": "ZOT 15",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "9"
+        },
+        {
+          "zona": "ZOT 06",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "42"
+        },
+        {
+          "zona": "ZOT 08.3 - B",
+          "categoria_risco": "Ocupação Acima da Cota de Inundação",
+          "altura_maxima": "90"
+        }
+      ]
+    }
+  ]
+}

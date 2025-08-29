@@ -1,0 +1,7 @@
+# Taxa Permeabilidade - PDPOA 2025
+
+**Categoria:** taxa_permeabilidade
+**Tags:** taxa_permeabilidade, enchentes_2024
+**Origem:** Caso de teste #425 (Dificuldade: high)
+
+O Plano Diretor não substitui os planos operacionais de manutenção, mas organiza o território com o objetivo de prevenir novos riscos. A proposta valoriza a ampliação de áreas de preservação, a criação de corredores ecológicos, a integração de redes de drenagem e a definição de áreas prioritárias para ação pública. A adaptação climática é um dos objetivos centrais do plano, e a requalificação de áreas vulneráveis está prevista nas Áreas Estruturadoras e nos Sistemas de Espaços Abertos e Ecológicos. É possível dividir o território de Porto Alegre em duas grandes áreas, considerando os eventos climáticos de 2024: uma acima da cota de inundação, e outra abaixo dessa cota, que foi diretamente impactada. Para essa área diretamente afetada, o plano prevê, de forma geral, duas estratégias principais: a recuperação do sistema nas áreas protegidas; e a realização de estudos específicos para as ilhas e para a porção sul do território. Nas áreas protegidas, o Plano Diretor orienta a ocupação com índices compatíveis com a infraestrutura disponível e com o acesso a serviços públicos. Já nas ilhas e na porção sul, onde não há zoneamento de proteção, são propostos índices e taxas urbanísticas mais restritivos, prevendo o posterior detalhamento por meio de estudos já contratados e em andamento.

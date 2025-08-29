@@ -1,0 +1,274 @@
+{
+  "timestamp": "2025-08-19T14:33:49.301Z",
+  "v2Results": [
+    {
+      "version": "V2",
+      "id": "art119",
+      "query": "O que diz o Art. 119 da LUOS?",
+      "category": "Artigo Específico",
+      "passed": false,
+      "responseTime": 7326,
+      "foundKeywords": [
+        "projetos",
+        "protocolados"
+      ],
+      "expectedKeywords": [
+        "projetos",
+        "protocolados",
+        "anteriormente",
+        "disposições transitórias"
+      ],
+      "answer": "O Art. 119º da LUOS diz o seguinte:\n\n\"Art. 119º Os projetos de parcelamento do solo, os projetos de edificação, os projetos especiais de impacto urban...",
+      "confidence": 0.9,
+      "metadata": null
+    },
+    {
+      "version": "V2",
+      "id": "art4",
+      "query": "O que estabelece o Art. 4º da LUOS?",
+      "category": "Artigo Novo",
+      "passed": true,
+      "responseTime": 7219,
+      "foundKeywords": [
+        "zoneamento",
+        "ZOT",
+        "Zonas de Ordenamento Territorial"
+      ],
+      "expectedKeywords": [
+        "zoneamento",
+        "ZOT",
+        "Zonas de Ordenamento Territorial"
+      ],
+      "answer": "O Art. 4º da LUOS estabelece que o zoneamento do Município por Zonas de Ordenamento Territorial (ZOT) classifica o território conforme suas caracterís...",
+      "confidence": 0.9,
+      "metadata": null
+    },
+    {
+      "version": "V2",
+      "id": "titulo10",
+      "query": "Sobre o que trata o Título X da LUOS?",
+      "category": "Hierarquia",
+      "passed": true,
+      "responseTime": 10365,
+      "foundKeywords": [
+        "disposições finais",
+        "transitórias"
+      ],
+      "expectedKeywords": [
+        "disposições finais",
+        "transitórias"
+      ],
+      "answer": "O Título X da Lei de Uso e Ocupação do Solo de Porto Alegre (LUOS) estabelece as disposições finais e transitórias da lei, tratando das regras de tran...",
+      "confidence": 0.9,
+      "metadata": null
+    },
+    {
+      "version": "V2",
+      "id": "context77",
+      "query": "Em qual título e capítulo está o Art. 77 da LUOS?",
+      "category": "Navegação",
+      "passed": false,
+      "responseTime": 6656,
+      "foundKeywords": [],
+      "expectedKeywords": [
+        "Título VI",
+        "Taxa de Permeabilidade",
+        "Capítulo III",
+        "Seção I"
+      ],
+      "answer": "O Art. 77º da LUOS está no Título III, que trata das Normas Gerais de Uso e Ocupação do Solo, e no Capítulo IV, que aborda as Disposições Específicas ...",
+      "confidence": 0.9,
+      "metadata": null
+    },
+    {
+      "version": "V2",
+      "id": "pdus1",
+      "query": "O que diz o artigo 1 do PDUS?",
+      "category": "PDUS",
+      "passed": false,
+      "responseTime": 7168,
+      "foundKeywords": [
+        "plano diretor"
+      ],
+      "expectedKeywords": [
+        "plano diretor",
+        "desenvolvimento urbano"
+      ],
+      "answer": "Desculpe, mas não tenho informações específicas sobre o conteúdo do Plano Diretor de Porto Alegre (PDUS 2025) além do que foi fornecido no contexto. P...",
+      "confidence": 0.9,
+      "metadata": null
+    },
+    {
+      "version": "V2",
+      "id": "zot8",
+      "query": "Quais são as características da ZOT 8?",
+      "category": "ZOT",
+      "passed": false,
+      "error": "request to https://ngrqwmvuhvjkeohesbxs.supabase.co/functions/v1/agentic-rag failed, reason: read ECONNRESET",
+      "responseTime": 2087
+    }
+  ],
+  "v3Results": [
+    {
+      "version": "V3",
+      "id": "art119",
+      "query": "O que diz o Art. 119 da LUOS?",
+      "category": "Artigo Específico",
+      "passed": false,
+      "responseTime": 3213,
+      "foundKeywords": [
+        "projetos",
+        "protocolados"
+      ],
+      "expectedKeywords": [
+        "projetos",
+        "protocolados",
+        "anteriormente",
+        "disposições transitórias"
+      ],
+      "answer": "O Art. 119 da Lei de Uso e Ocupação do Solo (LUOS) estabelece que os projetos de parcelamento do solo, os projetos de edificação, os projetos especiai...",
+      "confidence": 0.95,
+      "metadata": {
+        "original_query": "O que diz o Art. 119 da LUOS?",
+        "intent": "search_article",
+        "article_number": 119,
+        "document_type": "LUOS"
+      }
+    },
+    {
+      "version": "V3",
+      "id": "art4",
+      "query": "O que estabelece o Art. 4º da LUOS?",
+      "category": "Artigo Novo",
+      "passed": true,
+      "responseTime": 3280,
+      "foundKeywords": [
+        "zoneamento",
+        "ZOT",
+        "Zonas de Ordenamento Territorial"
+      ],
+      "expectedKeywords": [
+        "zoneamento",
+        "ZOT",
+        "Zonas de Ordenamento Territorial"
+      ],
+      "answer": "O Art. 4º da Lei de Uso e Ocupação do Solo (LUOS) estabelece que o zoneamento do Município por Zonas de Ordenamento Territorial (ZOT) classifica o ter...",
+      "confidence": 0.95,
+      "metadata": {
+        "original_query": "O que estabelece o Art. 4º da LUOS?",
+        "intent": "search_article",
+        "article_number": 4,
+        "document_type": "LUOS"
+      }
+    },
+    {
+      "version": "V3",
+      "id": "titulo10",
+      "query": "Sobre o que trata o Título X da LUOS?",
+      "category": "Hierarquia",
+      "passed": true,
+      "responseTime": 2544,
+      "foundKeywords": [
+        "disposições finais",
+        "transitórias"
+      ],
+      "expectedKeywords": [
+        "disposições finais",
+        "transitórias"
+      ],
+      "answer": "O Título X da Lei de Uso e Ocupação do Solo (LUOS) trata das Disposições Finais e Transitórias. No entanto, não há informações específicas sobre o con...",
+      "confidence": 0.9,
+      "metadata": {
+        "original_query": "Sobre o que trata o Título X da LUOS?",
+        "intent": "navigate_hierarchy",
+        "document_type": "LUOS",
+        "hierarchy_type": "titulo",
+        "hierarchy_number": "X"
+      }
+    },
+    {
+      "version": "V3",
+      "id": "context77",
+      "query": "Em qual título e capítulo está o Art. 77 da LUOS?",
+      "category": "Navegação",
+      "passed": false,
+      "responseTime": 2507,
+      "foundKeywords": [
+        "Título VI",
+        "Capítulo III"
+      ],
+      "expectedKeywords": [
+        "Título VI",
+        "Taxa de Permeabilidade",
+        "Capítulo III",
+        "Seção I"
+      ],
+      "answer": "O Art. 77 da Lei de Uso e Ocupação do Solo (LUOS) está no TÍTULO VI - Do Uso e da Ocupação do Solo, no CAPÍTULO III - Do Regime Volumétrico....",
+      "confidence": 0.95,
+      "metadata": {
+        "original_query": "Em qual título e capítulo está o Art. 77 da LUOS?",
+        "intent": "search_article",
+        "article_number": 77,
+        "document_type": "LUOS"
+      }
+    },
+    {
+      "version": "V3",
+      "id": "pdus1",
+      "query": "O que diz o artigo 1 do PDUS?",
+      "category": "PDUS",
+      "passed": false,
+      "responseTime": 1484,
+      "foundKeywords": [
+        "plano diretor"
+      ],
+      "expectedKeywords": [
+        "plano diretor",
+        "desenvolvimento urbano"
+      ],
+      "answer": "O artigo 1 do Plano Diretor Urbano Sustentável (PDUS) afirma que o PDUS é o instrumento básico da política urbana municipal e integra um processo cont...",
+      "confidence": 0.95,
+      "metadata": {
+        "original_query": "O que diz o artigo 1 do PDUS?",
+        "intent": "search_article",
+        "article_number": 1,
+        "document_type": "PDUS"
+      }
+    },
+    {
+      "version": "V3",
+      "id": "zot8",
+      "query": "Quais são as características da ZOT 8?",
+      "category": "ZOT",
+      "passed": false,
+      "responseTime": 1282,
+      "foundKeywords": [],
+      "expectedKeywords": [
+        "residencial",
+        "comércio",
+        "serviços",
+        "altura"
+      ],
+      "answer": "Não possuo essa informação....",
+      "confidence": 0.85,
+      "metadata": {
+        "original_query": "Quais são as características da ZOT 8?",
+        "intent": "search_zot",
+        "document_type": "LUOS",
+        "zot_number": "8"
+      }
+    }
+  ],
+  "summary": {
+    "v2": {
+      "passed": 2,
+      "total": 6,
+      "avgTime": 6803.5
+    },
+    "v3": {
+      "passed": 2,
+      "total": 6,
+      "avgTime": 2385
+    }
+  }
+}

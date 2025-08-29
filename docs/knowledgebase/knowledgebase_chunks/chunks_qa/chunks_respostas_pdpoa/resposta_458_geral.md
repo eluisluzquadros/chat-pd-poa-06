@@ -1,0 +1,7 @@
+# Geral - PDPOA 2025
+
+**Categoria:** geral
+**Tags:** geral
+**Origem:** Caso de teste #458 (Dificuldade: high)
+
+A proposta de revisão da Lei de Uso e Ocupação do Solo de Porto Alegre não utiliza mais a taxa de ocupação como parâmetro urbanístico. Na nova proposta, o foco dos parâmetros urbanísticos está na altura máxima, coeficiente de aproveitamento (ou seja, quanto pode ser construído em relação à área do terreno), e taxa de permeabilidade (solo livre e áreas verdes). A taxa de ocupação, tradicionalmente usada para limitar o quanto do terreno pode ser coberto por edificações no térreo, foi retirada dos novos regramentos. Resumo: Taxa de ocupação: Não é mais utilizada na proposta revisada. Taxa de permeabilidade: Continua como parâmetro obrigatório, determinando o mínimo de solo livre para infiltração de água. Outros parâmetros de controle: altura máxima, coeficiente de aproveitamento e, em alguns casos, área mínima de terreno. Por quê? A retirada da taxa de ocupação visa dar mais flexibilidade para a implantação dos projetos, incentivando formas construtivas mais adequadas à cidade compacta, sustentabilidade e soluções inovadoras, desde que respeitada a permeabilidade, altura e coeficiente estabelecidos para cada ZOT. Esses parâmetros fazem parte da proposta de revisão da Lei de Uso e Ocupação do Solo de Porto Alegre. Se precisar de explicação sobre outro parâmetro ou quiser saber os valores de taxa de permeabilidade do seu bairro, me informe o nome do bairro que faço a consulta!

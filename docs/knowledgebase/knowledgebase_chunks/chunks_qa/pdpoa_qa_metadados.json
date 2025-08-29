@@ -1,0 +1,1117 @@
+{
+  "processamento": {
+    "data": "2025-08-20T15:44:15.460096",
+    "fonte": "PDPOA2025-QA-2025-08-17.docx",
+    "versao_processador": "2.0"
+  },
+  "estatisticas": {
+    "total_casos": 124,
+    "total_categorias": 16,
+    "por_dificuldade": {
+      "high": 49,
+      "medium": 67,
+      "easy": 4,
+      "simple": 4
+    },
+    "por_categoria": {
+      "altura_maxima": 4,
+      "ambiental": 2,
+      "bairros": 26,
+      "coeficiente_aproveitamento": 4,
+      "conceitual": 27,
+      "geral": 28,
+      "habitacao": 3,
+      "recuos": 4,
+      "taxa_permeabilidade": 5,
+      "legal": 8,
+      "teste-browser": 1,
+      "lei": 1,
+      "zonas": 8,
+      "altura_maxima | Relacionado a SQL": 1,
+      "teste": 1,
+      "bairro": 1
+    }
+  },
+  "categorias": {
+    "altura_maxima": [
+      {
+        "id": "454",
+        "tags": [
+          "altura_maxima"
+        ],
+        "dificuldade": "high",
+        "versao": "1"
+      },
+      {
+        "id": "471",
+        "tags": [
+          "altura_maxima"
+        ],
+        "dificuldade": "medium",
+        "versao": "1"
+      },
+      {
+        "id": "486",
+        "tags": [
+          "altura_maxima"
+        ],
+        "dificuldade": "medium",
+        "versao": "1"
+      },
+      {
+        "id": "497",
+        "tags": [
+          "altura_maxima"
+        ],
+        "dificuldade": "medium",
+        "versao": "1"
+      }
+    ],
+    "ambiental": [
+      {
+        "id": "427",
+        "tags": [
+          "ambiental",
+          "enchentes_2024"
+        ],
+        "dificuldade": "medium",
+        "versao": "1"
+      },
+      {
+        "id": "438",
+        "tags": [
+          "ambiental"
+        ],
+        "dificuldade": "high",
+        "versao": "1"
+      }
+    ],
+    "bairros": [
+      {
+        "id": "433",
+        "tags": [
+          "bairros"
+        ],
+        "dificuldade": "high",
+        "versao": "1"
+      },
+      {
+        "id": "447",
+        "tags": [
+          "bairros",
+          "centro"
+        ],
+        "dificuldade": "high",
+        "versao": "1"
+      },
+      {
+        "id": "449",
+        "tags": [
+          "bairros",
+          "areas_risco"
+        ],
+        "dificuldade": "high",
+        "versao": "1"
+      },
+      {
+        "id": "469",
+        "tags": [
+          "bairros"
+        ],
+        "dificuldade": "high",
+        "versao": "1"
+      },
+      {
+        "id": "470",
+        "tags": [
+          "bairros"
+        ],
+        "dificuldade": "medium",
+        "versao": "1"
+      },
+      {
+        "id": "474",
+        "tags": [
+          "bairros"
+        ],
+        "dificuldade": "high",
+        "versao": "1"
+      },
+      {
+        "id": "475",
+        "tags": [
+          "bairros"
+        ],
+        "dificuldade": "high",
+        "versao": "1"
+      },
+      {
+        "id": "477",
+        "tags": [
+          "bairros"
+        ],
+        "dificuldade": "high",
+        "versao": "1"
+      },
+      {
+        "id": "478",
+        "tags": [
+          "bairros"
+        ],
+        "dificuldade": "high",
+        "versao": "1"
+      },
+      {
+        "id": "482",
+        "tags": [
+          "bairros",
+          "enchentes_2024"
+        ],
+        "dificuldade": "medium",
+        "versao": "1"
+      },
+      {
+        "id": "483",
+        "tags": [
+          "bairros"
+        ],
+        "dificuldade": "medium",
+        "versao": "1"
+      },
+      {
+        "id": "484",
+        "tags": [
+          "bairros",
+          "protecao",
+          "enchentes_2024"
+        ],
+        "dificuldade": "medium",
+        "versao": "1"
+      },
+      {
+        "id": "487",
+        "tags": [
+          "bairros",
+          "centro",
+          "historico"
+        ],
+        "dificuldade": "medium",
+        "versao": "1"
+      },
+      {
+        "id": "490",
+        "tags": [
+          "bairros"
+        ],
+        "dificuldade": "medium",
+        "versao": "1"
+      },
+      {
+        "id": "491",
+        "tags": [
+          "bairros"
+        ],
+        "dificuldade": "medium",
+        "versao": "1"
+      },
+      {
+        "id": "492",
+        "tags": [
+          "bairros"
+        ],
+        "dificuldade": "medium",
+        "versao": "1"
+      },
+      {
+        "id": "495",
+        "tags": [
+          "bairros",
+          "enchentes_2024",
+          "areas_risco"
+        ],
+        "dificuldade": "medium",
+        "versao": "1"
+      },
+      {
+        "id": "498",
+        "tags": [
+          "bairros",
+          "enchentes_2024",
+          "areas_risco"
+        ],
+        "dificuldade": "medium",
+        "versao": "1"
+      },
+      {
+        "id": "468",
+        "tags": [
+          "bairros"
+        ],
+        "dificuldade": "high",
+        "versao": "2"
+      },
+      {
+        "id": "472",
+        "tags": [
+          "bairros"
+        ],
+        "dificuldade": "medium",
+        "versao": "2"
+      },
+      {
+        "id": "479",
+        "tags": [
+          "bairros"
+        ],
+        "dificuldade": "medium",
+        "versao": "2"
+      },
+      {
+        "id": "496",
+        "tags": [
+          "bairros"
+        ],
+        "dificuldade": "medium",
+        "versao": "2"
+      },
+      {
+        "id": "499",
+        "tags": [
+          "bairros"
+        ],
+        "dificuldade": "high",
+        "versao": "2"
+      },
+      {
+        "id": "504",
+        "tags": [
+          "bairros"
+        ],
+        "dificuldade": "medium",
+        "versao": "2"
+      },
+      {
+        "id": "505",
+        "tags": [
+          "bairros"
+        ],
+        "dificuldade": "medium",
+        "versao": "3"
+      },
+      {
+        "id": "513",
+        "tags": [
+          "bairros"
+        ],
+        "dificuldade": "medium",
+        "versao": "2"
+      }
+    ],
+    "coeficiente_aproveitamento": [
+      {
+        "id": "434",
+        "tags": [
+          "coeficiente_aproveitamento"
+        ],
+        "dificuldade": "medium",
+        "versao": "1"
+      },
+      {
+        "id": "473",
+        "tags": [
+          "coeficiente_aproveitamento"
+        ],
+        "dificuldade": "high",
+        "versao": "1"
+      },
+      {
+        "id": "476",
+        "tags": [
+          "coeficiente_aproveitamento"
+        ],
+        "dificuldade": "medium",
+        "versao": "1"
+      },
+      {
+        "id": "448",
+        "tags": [
+          "coeficiente_aproveitamento"
+        ],
+        "dificuldade": "easy",
+        "versao": "2"
+      }
+    ],
+    "conceitual": [
+      {
+        "id": "413",
+        "tags": [
+          "conceitual"
+        ],
+        "dificuldade": "medium",
+        "versao": "1"
+      },
+      {
+        "id": "415",
+        "tags": [
+          "conceitual"
+        ],
+        "dificuldade": "medium",
+        "versao": "1"
+      },
+      {
+        "id": "416",
+        "tags": [
+          "conceitual"
+        ],
+        "dificuldade": "high",
+        "versao": "1"
+      },
+      {
+        "id": "417",
+        "tags": [
+          "conceitual"
+        ],
+        "dificuldade": "medium",
+        "versao": "1"
+      },
+      {
+        "id": "418",
+        "tags": [
+          "conceitual"
+        ],
+        "dificuldade": "high",
+        "versao": "1"
+      },
+      {
+        "id": "419",
+        "tags": [
+          "conceitual"
+        ],
+        "dificuldade": "medium",
+        "versao": "1"
+      },
+      {
+        "id": "420",
+        "tags": [
+          "conceitual"
+        ],
+        "dificuldade": "high",
+        "versao": "1"
+      },
+      {
+        "id": "428",
+        "tags": [
+          "conceitual"
+        ],
+        "dificuldade": "medium",
+        "versao": "1"
+      },
+      {
+        "id": "429",
+        "tags": [
+          "conceitual"
+        ],
+        "dificuldade": "high",
+        "versao": "1"
+      },
+      {
+        "id": "430",
+        "tags": [
+          "conceitual",
+          "areas_risco"
+        ],
+        "dificuldade": "high",
+        "versao": "1"
+      },
+      {
+        "id": "432",
+        "tags": [
+          "conceitual"
+        ],
+        "dificuldade": "medium",
+        "versao": "1"
+      },
+      {
+        "id": "437",
+        "tags": [
+          "conceitual",
+          "regularizacao"
+        ],
+        "dificuldade": "medium",
+        "versao": "1"
+      },
+      {
+        "id": "439",
+        "tags": [
+          "conceitual"
+        ],
+        "dificuldade": "high",
+        "versao": "1"
+      },
+      {
+        "id": "440",
+        "tags": [
+          "conceitual",
+          "enchentes_2024"
+        ],
+        "dificuldade": "high",
+        "versao": "1"
+      },
+      {
+        "id": "441",
+        "tags": [
+          "conceitual"
+        ],
+        "dificuldade": "high",
+        "versao": "1"
+      },
+      {
+        "id": "442",
+        "tags": [
+          "conceitual"
+        ],
+        "dificuldade": "high",
+        "versao": "1"
+      },
+      {
+        "id": "443",
+        "tags": [
+          "conceitual"
+        ],
+        "dificuldade": "high",
+        "versao": "1"
+      },
+      {
+        "id": "445",
+        "tags": [
+          "conceitual"
+        ],
+        "dificuldade": "high",
+        "versao": "1"
+      },
+      {
+        "id": "456",
+        "tags": [
+          "conceitual"
+        ],
+        "dificuldade": "high",
+        "versao": "2"
+      },
+      {
+        "id": "460",
+        "tags": [
+          "conceitual"
+        ],
+        "dificuldade": "high",
+        "versao": "1"
+      },
+      {
+        "id": "463",
+        "tags": [
+          "conceitual"
+        ],
+        "dificuldade": "high",
+        "versao": "1"
+      },
+      {
+        "id": "464",
+        "tags": [
+          "conceitual"
+        ],
+        "dificuldade": "medium",
+        "versao": "1"
+      },
+      {
+        "id": "465",
+        "tags": [
+          "conceitual"
+        ],
+        "dificuldade": "medium",
+        "versao": "1"
+      },
+      {
+        "id": "466",
+        "tags": [
+          "conceitual"
+        ],
+        "dificuldade": "high",
+        "versao": "1"
+      },
+      {
+        "id": "410",
+        "tags": [
+          "conceitual"
+        ],
+        "dificuldade": "medium",
+        "versao": "2"
+      },
+      {
+        "id": "411",
+        "tags": [
+          "conceitual"
+        ],
+        "dificuldade": "medium",
+        "versao": "2"
+      },
+      {
+        "id": "412",
+        "tags": [
+          "conceitual"
+        ],
+        "dificuldade": "high",
+        "versao": "2"
+      }
+    ],
+    "geral": [
+      {
+        "id": "421",
+        "tags": [
+          "geral"
+        ],
+        "dificuldade": "high",
+        "versao": "1"
+      },
+      {
+        "id": "422",
+        "tags": [
+          "geral"
+        ],
+        "dificuldade": "high",
+        "versao": "1"
+      },
+      {
+        "id": "444",
+        "tags": [
+          "geral"
+        ],
+        "dificuldade": "high",
+        "versao": "1"
+      },
+      {
+        "id": "450",
+        "tags": [
+          "geral"
+        ],
+        "dificuldade": "medium",
+        "versao": "1"
+      },
+      {
+        "id": "451",
+        "tags": [
+          "geral"
+        ],
+        "dificuldade": "high",
+        "versao": "1"
+      },
+      {
+        "id": "452",
+        "tags": [
+          "geral"
+        ],
+        "dificuldade": "medium",
+        "versao": "1"
+      },
+      {
+        "id": "453",
+        "tags": [
+          "geral"
+        ],
+        "dificuldade": "medium",
+        "versao": "1"
+      },
+      {
+        "id": "455",
+        "tags": [
+          "geral"
+        ],
+        "dificuldade": "medium",
+        "versao": "1"
+      },
+      {
+        "id": "459",
+        "tags": [
+          "geral"
+        ],
+        "dificuldade": "high",
+        "versao": "1"
+      },
+      {
+        "id": "467",
+        "tags": [
+          "geral"
+        ],
+        "dificuldade": "high",
+        "versao": "1"
+      },
+      {
+        "id": "501",
+        "tags": [
+          "geral"
+        ],
+        "dificuldade": "medium",
+        "versao": "1"
+      },
+      {
+        "id": "502",
+        "tags": [
+          "geral"
+        ],
+        "dificuldade": "medium",
+        "versao": "1"
+      },
+      {
+        "id": "507",
+        "tags": [
+          "geral"
+        ],
+        "dificuldade": "medium",
+        "versao": "1"
+      },
+      {
+        "id": "508",
+        "tags": [
+          "geral"
+        ],
+        "dificuldade": "medium",
+        "versao": "1"
+      },
+      {
+        "id": "509",
+        "tags": [
+          "geral"
+        ],
+        "dificuldade": "medium",
+        "versao": "1"
+      },
+      {
+        "id": "510",
+        "tags": [
+          "geral"
+        ],
+        "dificuldade": "medium",
+        "versao": "1"
+      },
+      {
+        "id": "512",
+        "tags": [
+          "geral"
+        ],
+        "dificuldade": "medium",
+        "versao": "1"
+      },
+      {
+        "id": "516",
+        "tags": [
+          "geral"
+        ],
+        "dificuldade": "medium",
+        "versao": "1"
+      },
+      {
+        "id": "409",
+        "tags": [
+          "geral",
+          "espaco_publico"
+        ],
+        "dificuldade": "high",
+        "versao": "2"
+      },
+      {
+        "id": "458",
+        "tags": [
+          "geral"
+        ],
+        "dificuldade": "high",
+        "versao": "2"
+      },
+      {
+        "id": "511",
+        "tags": [
+          "geral"
+        ],
+        "dificuldade": "medium",
+        "versao": "2"
+      },
+      {
+        "id": "515",
+        "tags": [
+          "geral"
+        ],
+        "dificuldade": "medium",
+        "versao": "2"
+      },
+      {
+        "id": "567",
+        "tags": [
+          "geral"
+        ],
+        "dificuldade": "medium",
+        "versao": "1"
+      },
+      {
+        "id": "462",
+        "tags": [
+          "geral"
+        ],
+        "dificuldade": "easy",
+        "versao": "2"
+      },
+      {
+        "id": "503",
+        "tags": [
+          "geral"
+        ],
+        "dificuldade": "medium",
+        "versao": "2"
+      },
+      {
+        "id": "565",
+        "tags": [
+          "geral"
+        ],
+        "dificuldade": "easy",
+        "versao": "1"
+      },
+      {
+        "id": "568",
+        "tags": [
+          "geral"
+        ],
+        "dificuldade": "easy",
+        "versao": "1"
+      },
+      {
+        "id": "569",
+        "tags": [
+          "geral"
+        ],
+        "dificuldade": "medium",
+        "versao": "1"
+      }
+    ],
+    "habitacao": [
+      {
+        "id": "414",
+        "tags": [
+          "habitacao"
+        ],
+        "dificuldade": "high",
+        "versao": "1"
+      },
+      {
+        "id": "426",
+        "tags": [
+          "habitacao",
+          "regularizacao",
+          "areas_irregulares"
+        ],
+        "dificuldade": "medium",
+        "versao": "1"
+      },
+      {
+        "id": "435",
+        "tags": [
+          "habitacao"
+        ],
+        "dificuldade": "high",
+        "versao": "1"
+      }
+    ],
+    "recuos": [
+      {
+        "id": "461",
+        "tags": [
+          "recuos"
+        ],
+        "dificuldade": "medium",
+        "versao": "1"
+      },
+      {
+        "id": "500",
+        "tags": [
+          "recuos"
+        ],
+        "dificuldade": "medium",
+        "versao": "1"
+      },
+      {
+        "id": "506",
+        "tags": [
+          "recuos"
+        ],
+        "dificuldade": "medium",
+        "versao": "1"
+      },
+      {
+        "id": "517",
+        "tags": [
+          "recuos"
+        ],
+        "dificuldade": "medium",
+        "versao": "2"
+      }
+    ],
+    "taxa_permeabilidade": [
+      {
+        "id": "425",
+        "tags": [
+          "taxa_permeabilidade",
+          "enchentes_2024"
+        ],
+        "dificuldade": "high",
+        "versao": "1"
+      },
+      {
+        "id": "457",
+        "tags": [
+          "taxa_permeabilidade"
+        ],
+        "dificuldade": "high",
+        "versao": "1"
+      },
+      {
+        "id": "493",
+        "tags": [
+          "taxa_permeabilidade"
+        ],
+        "dificuldade": "medium",
+        "versao": "1"
+      },
+      {
+        "id": "494",
+        "tags": [
+          "taxa_permeabilidade"
+        ],
+        "dificuldade": "medium",
+        "versao": "2"
+      },
+      {
+        "id": "514",
+        "tags": [
+          "taxa_permeabilidade"
+        ],
+        "dificuldade": "medium",
+        "versao": "3"
+      }
+    ],
+    "legal": [
+      {
+        "id": "543",
+        "tags": [
+          "legal",
+          "artigo",
+          "luos"
+        ],
+        "dificuldade": "high",
+        "versao": "2"
+      },
+      {
+        "id": "546",
+        "tags": [
+          "legal",
+          "artigo",
+          "luos"
+        ],
+        "dificuldade": "medium",
+        "versao": "4"
+      },
+      {
+        "id": "547",
+        "tags": [
+          "legal",
+          "artigo",
+          "luos"
+        ],
+        "dificuldade": "simple",
+        "versao": "3"
+      },
+      {
+        "id": "548",
+        "tags": [
+          "legal",
+          "artigo",
+          "luos",
+          "eiv",
+          "art90",
+          "anexo7",
+          "vizinhança"
+        ],
+        "dificuldade": "high",
+        "versao": "3"
+      },
+      {
+        "id": "549",
+        "tags": [
+          "legal",
+          "artigo",
+          "luos"
+        ],
+        "dificuldade": "simple",
+        "versao": "3"
+      },
+      {
+        "id": "551",
+        "tags": [
+          "legal",
+          "artigo",
+          "luos"
+        ],
+        "dificuldade": "simple",
+        "versao": "3"
+      },
+      {
+        "id": "544",
+        "tags": [
+          "legal",
+          "artigo",
+          "luos"
+        ],
+        "dificuldade": "high",
+        "versao": "2"
+      },
+      {
+        "id": "550",
+        "tags": [
+          "legal",
+          "artigo",
+          "luos"
+        ],
+        "dificuldade": "high",
+        "versao": "2"
+      }
+    ],
+    "teste-browser": [
+      {
+        "id": "562",
+        "tags": [
+          "teste-browser",
+          "v2"
+        ],
+        "dificuldade": "medium",
+        "versao": "4"
+      }
+    ],
+    "lei": [
+      {
+        "id": "563",
+        "tags": [
+          "lei",
+          "artigo",
+          "luos"
+        ],
+        "dificuldade": "medium",
+        "versao": "4"
+      }
+    ],
+    "zonas": [
+      {
+        "id": "423",
+        "tags": [
+          "zonas"
+        ],
+        "dificuldade": "medium",
+        "versao": "1"
+      },
+      {
+        "id": "424",
+        "tags": [
+          "zonas",
+          "centro"
+        ],
+        "dificuldade": "high",
+        "versao": "1"
+      },
+      {
+        "id": "431",
+        "tags": [
+          "zonas"
+        ],
+        "dificuldade": "high",
+        "versao": "1"
+      },
+      {
+        "id": "436",
+        "tags": [
+          "zonas"
+        ],
+        "dificuldade": "high",
+        "versao": "1"
+      },
+      {
+        "id": "481",
+        "tags": [
+          "zonas"
+        ],
+        "dificuldade": "medium",
+        "versao": "1"
+      },
+      {
+        "id": "489",
+        "tags": [
+          "zonas"
+        ],
+        "dificuldade": "medium",
+        "versao": "1"
+      },
+      {
+        "id": "446",
+        "tags": [
+          "zonas"
+        ],
+        "dificuldade": "high",
+        "versao": "2"
+      },
+      {
+        "id": "488",
+        "tags": [
+          "zonas"
+        ],
+        "dificuldade": "medium",
+        "versao": "2"
+      }
+    ],
+    "altura_maxima | Relacionado a SQL": [
+      {
+        "id": "485",
+        "tags": [
+          "altura_maxima | Relacionado a SQL"
+        ],
+        "dificuldade": "medium",
+        "versao": "2"
+      }
+    ],
+    "teste": [
+      {
+        "id": "560",
+        "tags": [
+          "teste",
+          "zot",
+          "altura"
+        ],
+        "dificuldade": "simple",
+        "versao": "4"
+      }
+    ],
+    "bairro": [
+      {
+        "id": "561",
+        "tags": [
+          "bairro",
+          "boa-vista",
+          "coeficiente",
+          "aproveitamento",
+          "zot",
+          "atualizado"
+        ],
+        "dificuldade": "medium",
+        "versao": "4"
+      }
+    ]
+  },
+  "estrutura_arquivos": {
+    "markdown_consolidado": "pdpoa_qa_knowledge_base.md",
+    "chunks_categoria": "chunks_categorias_pdpoa/",
+    "chunks_individuais": "chunks_respostas_pdpoa/",
+    "metadados": "pdpoa_qa_metadados.json"
+  }
+}

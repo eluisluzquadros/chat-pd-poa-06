@@ -1,0 +1,5 @@
+
+#### Seção III
+
+###### Art. 208
+Sem prejuízo da concessão dos incentivos previstos no art. 204, decreto do Poder Executivo instituirá e disciplinará incentivos destinados a empreendimentos ou proprietários que promovam a preservação e o uso sustentável de componentes do Sistema Ecológico definidos nesta Lei Complementar, podendo ser concedidos, como contrapartida, incentivos urbanísticos, redução no percentual de destinação de áreas públicas no parcelamento do solo e aplicação de exigências menos restritivas do regime urbanístico da Zona de Ordenamento Territorial em que estiverem inseridos.

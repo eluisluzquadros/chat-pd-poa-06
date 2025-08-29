@@ -1,0 +1,7 @@
+# Bairros - PDPOA 2025
+
+**Categoria:** bairros
+**Tags:** bairros
+**Origem:** Caso de teste #433 (Dificuldade: high)
+
+No bairro Três Figueiras, de acordo com o Plano Diretor de Porto Alegre, podem ser construídos edifícios seguindo as diretrizes das seguintes zonas: ZOT 08.3 - C: Coeficiente de aproveitamento básico de 3.6, coeficiente de aproveitamento máximo de 7.5 e altura máxima de 90.0 metros. ZOT 04: Coeficiente de aproveitamento básico de 2.0, coeficiente de aproveitamento máximo de 4.0 e altura máxima de 18.0 metros. ZOT 07: Coeficiente de aproveitamento básico de 3.6, coeficiente de aproveitamento máximo de 6.5 e altura máxima de 60.0 metros. Essas informações definem as restrições e possibilidades de construção no bairro Três Figueiras, de acordo com o Plano Diretor de Porto Alegre. Detalhes das ZOTs ZOT 08.3 - C: Permite uma altura máxima de 90 metros, com coeficiente de aproveitamento básico de 3.6 e máximo de 7.5. ZOT 04: Permite uma altura máxima de 18 metros, com coeficiente de aproveitamento básico de 2.0 e máximo de 4.0. ZOT 07: Permite uma altura máxima de 60 metros, com coeficiente de aproveitamento básico de 3.6 e máximo de 6.5. Essas informações permitem que você compreenda as possibilidades de construção dentro do bairro Três Figueiras, considerando os parâmetros de altura e coeficientes de aproveitamento.
