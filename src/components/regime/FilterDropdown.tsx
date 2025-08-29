@@ -23,10 +23,10 @@ export function FilterDropdown({
   placeholder
 }: FilterDropdownProps) {
   return (
-    <div className="space-y-2">
-      <label className="text-sm font-medium text-foreground">{label}</label>
+    <div className="space-y-2 min-w-0 flex-1 max-w-[200px]">
+      <label className="text-sm font-medium text-foreground block truncate">{label}</label>
       <Select value={value} onValueChange={onChange}>
-        <SelectTrigger>
+        <SelectTrigger className="w-full">
           <SelectValue placeholder={placeholder} />
         </SelectTrigger>
         <SelectContent>

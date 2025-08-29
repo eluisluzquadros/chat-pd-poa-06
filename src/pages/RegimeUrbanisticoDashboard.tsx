@@ -148,36 +148,40 @@ export default function RegimeUrbanisticoDashboard() {
             </div>
 
             {/* Filters and Controls */}
-            <div className="flex flex-wrap items-center gap-4">
-              <FilterDropdown
-                label="Bairro"
-                value={selectedBairro || 'todos'}
-                onChange={(value) => {
-                  setSelectedBairro(value || 'todos');
-                  setCurrentPage(1);
-                }}
-                options={bairros}
-                placeholder="Todos os bairros"
-              />
-              
-              <FilterDropdown
-                label="Zona"
-                value={selectedZona || 'todos'}
-                onChange={(value) => {
-                  setSelectedZona(value || 'todos');
-                  setCurrentPage(1);
-                }}
-                options={zonas}
-                placeholder="Todas as zonas"
-              />
+            <div className="flex flex-col md:flex-row items-start md:items-center gap-4">
+              {/* Left side: Filters */}
+              <div className="flex flex-col sm:flex-row gap-4 flex-1 w-full md:w-auto">
+                <FilterDropdown
+                  label="Bairro"
+                  value={selectedBairro || 'todos'}
+                  onChange={(value) => {
+                    setSelectedBairro(value || 'todos');
+                    setCurrentPage(1);
+                  }}
+                  options={bairros}
+                  placeholder="Todos os bairros"
+                />
+                
+                <FilterDropdown
+                  label="Zona"
+                  value={selectedZona || 'todos'}
+                  onChange={(value) => {
+                    setSelectedZona(value || 'todos');
+                    setCurrentPage(1);
+                  }}
+                  options={zonas}
+                  placeholder="Todas as zonas"
+                />
+              </div>
 
-              <SortControls
-                sortField={sortField}
-                sortDirection={sortDirection}
-                onSortChange={handleSortChange}
-              />
+              {/* Right side: Sort and Export */}
+              <div className="flex items-center gap-4 w-full md:w-auto">
+                <SortControls
+                  sortField={sortField}
+                  sortDirection={sortDirection}
+                  onSortChange={handleSortChange}
+                />
 
-              <div className="ml-auto flex gap-2">
                 <ExportButton 
                   data={regimeData}
                   filters={{ searchTerm, bairro: selectedBairro, zona: selectedZona }}
