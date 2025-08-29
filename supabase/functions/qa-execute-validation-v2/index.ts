@@ -233,6 +233,47 @@ serve(async (req) => {
     console.log(`[QA-VALIDATION-V2] Starting validation at ${new Date().toISOString()}`);
     console.log(`[QA-VALIDATION-V2] Request params:`, { mode, models, randomCount, includeSQL, excludeSQL });
 
+    // VALIDAÇÃO CRÍTICA: Verificar se apenas modelos LLM válidos estão sendo usados
+    const validModels = [
+      'anthropic/claude-3-5-sonnet-20241022',
+      'anthropic/claude-3-5-haiku-20241022', 
+      'openai/gpt-4o',
+      'openai/gpt-4o-mini',
+      'openai/gpt-3.5-turbo',
+      'deepseek/deepseek-chat',
+      'meta-llama/llama-3.1-8b-instruct',
+      'meta-llama/llama-3.1-70b-instruct',
+      'meta-llama/llama-3.1-405b-instruct',
+      'google/gemini-flash-1.5',
+      'google/gemini-pro-1.5',
+      'mistralai/mistral-7b-instruct',
+      'mistralai/mixtral-8x7b-instruct'
+    ];
+
+    // Filtrar apenas modelos válidos e rejeitar nomes de sistemas como "agentic-rag"
+    const validatedModels = models.filter(model => {
+      const isValid = validModels.includes(model);
+      if (!isValid) {
+        console.error(`[QA-VALIDATION-V2] REJEITADO: "${model}" não é um modelo LLM válido`);
+      }
+      return isValid;
+    });
+
+    if (validatedModels.length === 0) {
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: `Nenhum modelo válido fornecido. Modelos aceitos: ${validModels.join(', ')}`,
+          rejectedModels: models.filter(m => !validModels.includes(m))
+        }),
+        { status: 400, headers: corsHeaders }
+      );
+    }
+
+    if (validatedModels.length !== models.length) {
+      console.warn(`[QA-VALIDATION-V2] Alguns modelos foram rejeitados. Validados: ${validatedModels.join(', ')}`);
+    }
+
     console.log('Starting QA validation with options:', { mode, models, randomCount });
 
     // Fetch test cases based on mode
@@ -273,10 +314,10 @@ serve(async (req) => {
         .slice(0, randomCount);
     }
 
-    console.log(`Running validation on ${casesToRun.length} test cases with ${models.length} models`);
+    console.log(`Running validation on ${casesToRun.length} test cases with ${validatedModels.length} models`);
 
     // Execute validations for each model in parallel
-    const validationPromises = models.map(async (model) => {
+    const validationPromises = validatedModels.map(async (model) => {
       // Generate a valid UUID v4
       const runId = crypto.randomUUID();
       totalRunsCreated++;
@@ -595,7 +636,7 @@ serve(async (req) => {
       };
     });
 
-    console.log(`[QA-VALIDATION-V2] Waiting for all ${models.length} model validations to complete...`);
+    console.log(`[QA-VALIDATION-V2] Waiting for all ${validatedModels.length} model validations to complete...`);
     
     // Wait for all models to complete with better error handling
     const allResults = await Promise.allSettled(validationPromises);
@@ -621,7 +662,7 @@ serve(async (req) => {
     const totalPassed = successfulResults.reduce((sum, r) => sum + r.passedTests, 0);
     const executionTime = Date.now() - requestStartTime;
 
-    console.log(`[QA-VALIDATION-V2] Validation completed in ${executionTime}ms. Success: ${totalRuns}/${models.length} models, ${totalPassed}/${totalTestsRun} tests passed`);
+    console.log(`[QA-VALIDATION-V2] Validation completed in ${executionTime}ms. Success: ${totalRuns}/${validatedModels.length} models, ${totalPassed}/${totalTestsRun} tests passed`);
 
     return new Response(
       JSON.stringify({
