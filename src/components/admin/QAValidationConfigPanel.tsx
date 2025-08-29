@@ -13,7 +13,7 @@ import { UPDATED_MODEL_CONFIGS } from '@/config/llm-models-2025';
 import { supabase } from '@/integrations/supabase/client';
 
 interface QAValidationConfig {
-  models: string; // Changed to single model selection
+  models: string[]; // Array of model strings for backend compatibility
   executionMode: 'all' | 'random' | 'specific' | 'category' | 'difficulty';
   randomCount?: number;
   specificCaseIds?: string[];
@@ -42,7 +42,7 @@ const DIFFICULTIES = ['easy', 'medium'];
 
 export function QAValidationConfigPanel({ onExecute, isRunning }: QAValidationConfigPanelProps) {
   const [config, setConfig] = useState<QAValidationConfig>({
-    models: 'anthropic/claude-3-5-sonnet-20241022', // Single model
+    models: ['anthropic/claude-3-5-sonnet-20241022'], // Array with single model
     executionMode: 'random',
     randomCount: 10,
     categories: [],
@@ -112,7 +112,7 @@ export function QAValidationConfigPanel({ onExecute, isRunning }: QAValidationCo
 
   const handleExecute = () => {
     // Validate configuration
-    if (!config.models) {
+    if (!config.models || config.models.length === 0) {
       return;
     }
 
@@ -177,8 +177,8 @@ export function QAValidationConfigPanel({ onExecute, isRunning }: QAValidationCo
           </Label>
           <div className="space-y-4">
             <RadioGroup
-              value={config.models}
-              onValueChange={(value) => setConfig(prev => ({ ...prev, models: value }))}
+              value={config.models[0] || ''}
+              onValueChange={(value) => setConfig(prev => ({ ...prev, models: [value] }))}
               className="space-y-3"
             >
               {Object.entries(groupedModels).map(([provider, models]) => (
@@ -203,10 +203,10 @@ export function QAValidationConfigPanel({ onExecute, isRunning }: QAValidationCo
               ))}
             </RadioGroup>
             
-            {config.models && (
+            {config.models.length > 0 && (
               <div className="mt-3">
                 <Badge variant="secondary">
-                  {UPDATED_MODEL_CONFIGS.find(m => m.model === config.models)?.displayName || config.models}
+                  {UPDATED_MODEL_CONFIGS.find(m => m.model === config.models[0])?.displayName || config.models[0]}
                 </Badge>
               </div>
             )}
@@ -405,7 +405,7 @@ export function QAValidationConfigPanel({ onExecute, isRunning }: QAValidationCo
         <div className="bg-muted/50 p-4 rounded-lg">
           <h4 className="font-medium mb-2">Resumo da Execução</h4>
           <div className="space-y-1 text-sm">
-            <p><strong>Modelo:</strong> {UPDATED_MODEL_CONFIGS.find(m => m.model === config.models)?.displayName || config.models}</p>
+            <p><strong>Modelo:</strong> {UPDATED_MODEL_CONFIGS.find(m => m.model === config.models[0])?.displayName || config.models[0]}</p>
             <p><strong>Casos:</strong> {getExecutionSummary()}</p>
             <p><strong>Total estimado:</strong> {testCasesCount} testes</p>
           </div>
@@ -414,7 +414,7 @@ export function QAValidationConfigPanel({ onExecute, isRunning }: QAValidationCo
         {/* Execute Button */}
         <Button 
           onClick={handleExecute}
-          disabled={isRunning || !config.models}
+          disabled={isRunning || config.models.length === 0}
           className="w-full"
           size="lg"
         >
