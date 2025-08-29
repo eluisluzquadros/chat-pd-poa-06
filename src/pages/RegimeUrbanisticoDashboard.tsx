@@ -1,12 +1,16 @@
 import React, { useState, useMemo } from 'react';
 import { Header } from '@/components/Header';
-import { SearchInput } from '@/components/regime/SearchInput';
+import { SearchBarV2 } from '@/components/regime/SearchBarV2';
 import { FilterDropdown } from '@/components/regime/FilterDropdown';
-import { RegimeCard } from '@/components/regime/RegimeCard';
+import { FilterChips } from '@/components/regime/FilterChips';
+import { RegimeCardV2 } from '@/components/regime/RegimeCardV2';
 import { StatsCounter } from '@/components/regime/StatsCounter';
 import { ExportButton } from '@/components/regime/ExportButton';
+import { SkeletonGrid } from '@/components/regime/SkeletonLoader';
+import { EmptyState } from '@/components/regime/EmptyState';
+import { SortControls, SortField, SortDirection } from '@/components/regime/SortControls';
 import { useRegimeData } from '@/hooks/useRegimeData';
-import { Loader2, Building2 } from 'lucide-react';
+import { Building2, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export default function RegimeUrbanisticoDashboard() {
@@ -14,6 +18,9 @@ export default function RegimeUrbanisticoDashboard() {
   const [selectedBairro, setSelectedBairro] = useState<string>('todos');
   const [selectedZona, setSelectedZona] = useState<string>('todos');
   const [currentPage, setCurrentPage] = useState(1);
+  const [sortField, setSortField] = useState<SortField>('bairro');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
+  const [recentSearches, setRecentSearches] = useState<string[]>([]);
   const itemsPerPage = 20;
 
   const {
@@ -39,7 +46,63 @@ export default function RegimeUrbanisticoDashboard() {
     setCurrentPage(1);
   };
 
+  const handleSortChange = (field: SortField, direction: SortDirection) => {
+    setSortField(field);
+    setSortDirection(direction);
+    setCurrentPage(1);
+  };
+
+  const handleSearchChange = (value: string) => {
+    setSearchTerm(value);
+    setCurrentPage(1);
+  };
+
+  const handleSuggestionClick = (suggestion: string) => {
+    if (!recentSearches.includes(suggestion)) {
+      setRecentSearches(prev => [suggestion, ...prev.slice(0, 4)]);
+    }
+  };
+
   const hasActiveFilters = searchTerm || (selectedBairro !== 'todos') || (selectedZona !== 'todos');
+
+  // Get active filter chips
+  const activeFilters = useMemo(() => {
+    const filters = [];
+    if (searchTerm) {
+      filters.push({
+        id: 'search',
+        label: 'Busca',
+        value: searchTerm,
+        type: 'search' as const,
+        onRemove: () => setSearchTerm('')
+      });
+    }
+    if (selectedBairro !== 'todos') {
+      filters.push({
+        id: 'bairro',
+        label: 'Bairro',
+        value: selectedBairro,
+        type: 'bairro' as const,
+        onRemove: () => setSelectedBairro('todos')
+      });
+    }
+    if (selectedZona !== 'todos') {
+      filters.push({
+        id: 'zona',
+        label: 'Zona',
+        value: selectedZona,
+        type: 'zona' as const,
+        onRemove: () => setSelectedZona('todos')
+      });
+    }
+    return filters;
+  }, [searchTerm, selectedBairro, selectedZona]);
+
+  // Get suggestions for search
+  const searchSuggestions = useMemo(() => {
+    const allSuggestions = [...bairros, ...zonas];
+    return allSuggestions.slice(0, 8);
+  }, [bairros, zonas]);
 
   const totalPages = Math.ceil(filteredCount / itemsPerPage);
 
@@ -50,103 +113,133 @@ export default function RegimeUrbanisticoDashboard() {
       <main className="container-wide py-8">
         {/* Header Section */}
         <div className="mb-8">
-          <div className="flex items-center gap-3 mb-4">
-            <Building2 className="h-8 w-8 text-primary" />
-            <h1 className="text-3xl font-bold text-foreground">Explorar Dados</h1>
+          <div className="flex items-center gap-3 mb-6">
+            <div className="p-3 rounded-xl bg-primary/10">
+              <Building2 className="h-8 w-8 text-primary" />
+            </div>
+            <div>
+              <h1 className="text-4xl font-bold text-foreground mb-2">Explorar Dados</h1>
+              <p className="text-muted-foreground text-lg">
+                Navegue pelos parâmetros construtivos por bairro e zona urbanística de Porto Alegre
+              </p>
+            </div>
+            <div className="ml-auto">
+              <div className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-primary/10 to-primary/5 rounded-full border border-primary/20">
+                <Sparkles className="h-4 w-4 text-primary" />
+                <span className="text-sm font-medium text-primary">Dados Atualizados</span>
+              </div>
+            </div>
           </div>
-          <p className="text-muted-foreground text-lg">
-            Navegue pelos parâmetros construtivos por bairro e zona urbanística de Porto Alegre
-          </p>
         </div>
 
         {/* Filters Section */}
-        <div className="bg-card rounded-lg p-6 mb-8 shadow-sm border">
-          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-4">
-            <SearchInput 
-              value={searchTerm}
-              onChange={setSearchTerm}
-              placeholder="Buscar por bairro ou zona..."
-            />
-            
-            <FilterDropdown
-              label="Bairro"
-              value={selectedBairro || 'todos'}
-              onChange={(value) => {
-                setSelectedBairro(value || 'todos');
-                setCurrentPage(1);
-              }}
-              options={bairros}
-              placeholder="Todos os bairros"
-            />
-            
-            <FilterDropdown
-              label="Zona"
-              value={selectedZona || 'todos'}
-              onChange={(value) => {
-                setSelectedZona(value || 'todos');
-                setCurrentPage(1);
-              }}
-              options={zonas}
-              placeholder="Todas as zonas"
-            />
+        <div className="bg-card/50 backdrop-blur-sm rounded-2xl p-6 mb-8 shadow-elegant border border-muted/20">
+          <div className="space-y-6">
+            {/* Search Bar */}
+            <div className="max-w-xl">
+              <SearchBarV2
+                value={searchTerm}
+                onChange={handleSearchChange}
+                placeholder="Buscar por bairro ou zona..."
+                suggestions={searchSuggestions}
+                recentSearches={recentSearches}
+                onSuggestionClick={handleSuggestionClick}
+              />
+            </div>
 
-            <div className="flex gap-2">
-              <ExportButton 
-                data={regimeData}
-                filters={{ searchTerm, bairro: selectedBairro, zona: selectedZona }}
-                isDisabled={isLoading || !regimeData?.length}
+            {/* Filters and Controls */}
+            <div className="flex flex-wrap items-center gap-4">
+              <FilterDropdown
+                label="Bairro"
+                value={selectedBairro || 'todos'}
+                onChange={(value) => {
+                  setSelectedBairro(value || 'todos');
+                  setCurrentPage(1);
+                }}
+                options={bairros}
+                placeholder="Todos os bairros"
               />
               
-              {hasActiveFilters && (
-                <Button 
-                  variant="outline" 
-                  onClick={handleClearFilters}
-                  className="flex-1"
-                >
-                  Limpar Filtros
-                </Button>
-              )}
-            </div>
-          </div>
+              <FilterDropdown
+                label="Zona"
+                value={selectedZona || 'todos'}
+                onChange={(value) => {
+                  setSelectedZona(value || 'todos');
+                  setCurrentPage(1);
+                }}
+                options={zonas}
+                placeholder="Todas as zonas"
+              />
 
-          <StatsCounter 
-            total={totalCount}
-            filtered={filteredCount}
-            bairrosCount={bairros.length}
-            zonasCount={zonas.length}
-            isLoading={isLoading}
-          />
+              <SortControls
+                sortField={sortField}
+                sortDirection={sortDirection}
+                onSortChange={handleSortChange}
+              />
+
+              <div className="ml-auto flex gap-2">
+                <ExportButton 
+                  data={regimeData}
+                  filters={{ searchTerm, bairro: selectedBairro, zona: selectedZona }}
+                  isDisabled={isLoading || !regimeData?.length}
+                />
+              </div>
+            </div>
+
+            {/* Active Filters */}
+            <FilterChips
+              filters={activeFilters}
+              onClearAll={handleClearFilters}
+            />
+
+            {/* Stats */}
+            <StatsCounter 
+              total={totalCount}
+              filtered={filteredCount}
+              bairrosCount={bairros.length}
+              zonasCount={zonas.length}
+              isLoading={isLoading}
+            />
+          </div>
         </div>
 
         {/* Results Section */}
         {isLoading ? (
-          <div className="flex items-center justify-center py-16">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            <span className="ml-2 text-muted-foreground">Carregando dados...</span>
-          </div>
+          <SkeletonGrid count={6} />
         ) : error ? (
-          <div className="text-center py-16">
-            <p className="text-destructive mb-4">Erro ao carregar dados: {error}</p>
-            <Button onClick={() => window.location.reload()}>
-              Tentar Novamente
-            </Button>
-          </div>
+          <EmptyState
+            type="error"
+            description={`Erro ao carregar dados: ${error}`}
+            actionLabel="Tentar Novamente"
+            onAction={() => window.location.reload()}
+          />
         ) : !regimeData?.length ? (
-          <div className="text-center py-16">
-            <Building2 className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-foreground mb-2">
-              Nenhum resultado encontrado
-            </h3>
-            <p className="text-muted-foreground">
-              Tente ajustar os filtros para encontrar dados do regime urbanístico.
-            </p>
-          </div>
+          <EmptyState
+            type="no-results"
+            suggestions={bairros.slice(0, 5)}
+            onSuggestionClick={(suggestion) => {
+              setSearchTerm(suggestion);
+              handleSuggestionClick(suggestion);
+            }}
+          />
         ) : (
           <>
+            {/* Results Header */}
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h2 className="text-2xl font-semibold text-foreground">
+                  Resultados 
+                  <span className="text-lg text-muted-foreground font-normal ml-2">
+                    ({filteredCount.toLocaleString()} {filteredCount === 1 ? 'resultado' : 'resultados'})
+                  </span>
+                </h2>
+              </div>
+            </div>
+
             {/* Results Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
               {regimeData.map((item, index) => (
-                <RegimeCard 
+                <RegimeCardV2 
                   key={`${item.Bairro}-${item.Zona}-${index}`}
                   data={item}
                 />
