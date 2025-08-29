@@ -59,13 +59,13 @@ export function AgenticRAGValidator() {
       const { data: testCases, error } = await supabase
         .from('qa_test_cases')
         .select('*')
-        .eq('is_active', true)
-        .order('category', { ascending: true });
+        .eq('is_active', true as any)
+        .order('category', { ascending: true }) as any;
 
       if (error) throw error;
 
       if (testCases) {
-        const results: TestResult[] = testCases.map(tc => ({
+        const results: TestResult[] = (testCases as any).map((tc: any) => ({
           id: tc.id.toString(),
           query: tc.query || tc.question,
           category: tc.category,
@@ -106,9 +106,9 @@ export function AgenticRAGValidator() {
         total_tests: testResults.length,
         status: 'running',
         started_at: new Date().toISOString()
-      })
+      } as any)
       .select()
-      .single();
+      .single() as any;
 
     let completedCount = 0;
     let passedCount = 0;
@@ -194,13 +194,13 @@ export function AgenticRAGValidator() {
             .from('qa_validation_results')
             .insert({
               test_case_id: test.id,
-              validation_run_id: validationRun.id,
+              validation_run_id: (validationRun as any).id,
               model: selectedModel,
               actual_answer: result.response?.substring(0, 2000),
               is_correct: passed,
               accuracy_score: evaluation.accuracy,
               response_time_ms: responseTime
-            });
+            } as any);
         }
 
       } catch (error) {
@@ -229,8 +229,8 @@ export function AgenticRAGValidator() {
           passed_tests: passedCount,
           overall_accuracy: passedCount / completedCount,
           avg_response_time_ms: Math.round(totalResponseTime / completedCount)
-        })
-        .eq('id', validationRun.id);
+        } as any)
+        .eq('id', (validationRun as any).id);
     }
 
     setIsRunning(false);

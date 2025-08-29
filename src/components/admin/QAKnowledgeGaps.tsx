@@ -50,7 +50,7 @@ export function QAKnowledgeGaps() {
       const { data: latestRun } = await supabase
         .from('qa_validation_runs')
         .select('id')
-        .eq('status', 'completed')
+        .eq('status', 'completed' as any)
         .order('completed_at', { ascending: false })
         .limit(1)
         .single();
@@ -73,8 +73,8 @@ export function QAKnowledgeGaps() {
             tags
           )
         `)
-        .eq('validation_run_id', latestRun.id)
-        .eq('is_correct', false)
+        .eq('validation_run_id', (latestRun as any).id)
+        .eq('is_correct', false as any)
         .order('accuracy_score', { ascending: true });
 
       if (!failedResults || failedResults.length === 0) {
@@ -218,7 +218,7 @@ export function QAKnowledgeGaps() {
           failed_questions: gap.failedTests.map(t => t.question)
         },
         confidence_score: gap.severity === 'critical' ? 0.9 : gap.severity === 'high' ? 0.8 : 0.7
-      });
+      } as any);
       
       toast.success("Gap de conhecimento registrado para ação");
       

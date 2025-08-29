@@ -47,7 +47,7 @@ export function BenchmarkDashboard() {
           .limit(10);
 
         if (benchmarks?.length) {
-          const history = benchmarks.map((benchmark, index) => ({
+          const history = benchmarks.map((benchmark: any, index: number) => ({
             id: benchmark.id.toString(),
             timestamp: benchmark.timestamp,
             status: 'completed' as const,

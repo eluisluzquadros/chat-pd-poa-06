@@ -57,7 +57,7 @@ export function QAErrorAnalysis() {
             expected_answer
           )
         `)
-        .eq('is_correct', false)
+        .eq('is_correct', false as any)
         .order('created_at', { ascending: false })
         .limit(100);
 

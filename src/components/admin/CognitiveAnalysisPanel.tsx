@@ -79,9 +79,9 @@ export function CognitiveAnalysisPanel() {
         // Analyze each result
         const analyses: TestCaseAnalysis[] = [];
         
-        for (const result of results) {
-          if (result.actual_answer && result.qa_test_cases) {
-            const analysis = await analyzeCognitiveDistance(result);
+        for (const result of results as any) {
+          if ((result as any).actual_answer && (result as any).qa_test_cases) {
+            const analysis = await analyzeCognitiveDistance(result as any);
             if (analysis) {
               analyses.push(analysis);
             }

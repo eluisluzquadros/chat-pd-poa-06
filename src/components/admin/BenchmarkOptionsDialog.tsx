@@ -78,11 +78,11 @@ export function BenchmarkOptionsDialog({ onExecute, isRunning, progress }: Bench
       const { data } = await supabase
         .from('qa_test_cases')
         .select('category, difficulty, complexity')
-        .eq('is_active', true);
+        .eq('is_active', true as any) as any;
 
       if (data) {
-        const uniqueCategories = Array.from(new Set(data.map(item => item.category).filter(Boolean)));
-        const uniqueDifficulties = Array.from(new Set(data.map(item => item.difficulty || item.complexity).filter(Boolean)));
+        const uniqueCategories = Array.from(new Set((data as any).map((item: any) => item.category).filter(Boolean))) as string[];
+        const uniqueDifficulties = Array.from(new Set((data as any).map((item: any) => item.difficulty || item.complexity).filter(Boolean))) as string[];
         
         setCategories(uniqueCategories);
         setDifficulties(uniqueDifficulties);
@@ -98,23 +98,23 @@ export function BenchmarkOptionsDialog({ onExecute, isRunning, progress }: Bench
       let query = supabase
         .from('qa_test_cases')
         .select('*', { count: 'exact', head: true })
-        .eq('is_active', true);
+        .eq('is_active', true as any);
 
       if (executionMode === 'filtered') {
         if (selectedCategories.length > 0) {
-          query = query.in('category', selectedCategories);
+          query = query.in('category', selectedCategories as any);
         }
 
         if (selectedDifficulties.length > 0) {
-          query = query.in('difficulty', selectedDifficulties);
+          query = query.in('difficulty', selectedDifficulties as any);
         }
       }
 
       if (excludeSQL) {
-        query = query.eq('is_sql_related', false);
+        query = query.eq('is_sql_related', false as any);
       }
 
-      const { count } = await query;
+      const { count } = await query as any;
       setTestCaseCount(count || 0);
     };
 

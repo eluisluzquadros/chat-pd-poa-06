@@ -59,7 +59,7 @@ export function QAResultsDetailModal({
       const { data: resultsData, error: resultsError } = await supabase
         .from('qa_validation_results')
         .select('*, evaluation_reasoning')
-        .eq('validation_run_id', runId)
+        .eq('validation_run_id', runId as any)
         .order('created_at', { ascending: false });
 
       if (resultsError) {
