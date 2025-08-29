@@ -1,0 +1,15 @@
+# Art. 117º
+
+**Hierarquia:** PLANEJAMENTO, GESTÃO E EXECUÇÃO DA POLÍTICA URBANA > Do Sistema de Gestão, Controle, Planejamento e Financiamento Urbano
+
+O Sistema de Gestão, Controle, Planejamento e Financiamento Urbano (SGC) é a estrutura de coordenação e articulação da política urbana municipal, fundamentado na premissa de que o desenvolvimento urbano é um processo contínuo, dinâmico e adaptável, e tem como objetivos precípuos:
+– assegurar a gestão qualificada e integrada da política urbana, voltada à implementação das estratégias definidas pelo Plano Diretor e à melhoria da qualidade de vida;
+– garantir a participação da sociedade na formulação, execução e revisão da política urbana;
+– instituir processo permanente e sistematizado de atualização do Plano Diretor, da Lei de Uso e Ocupação do Solo e dos demais planos urbanísticos, com base na avaliação de resultados e no reconhecimento da dinâmica inerente ao processo de desenvolvimento urbano;
+– assegurar o controle, a gestão e o monitoramento contínuo dos recursos vinculados à política urbana, abrangendo a arrecadação e a destinação dos valores decorrentes da aplicação dos instrumentos urbanísticos e das atividades relacionadas ao licenciamento urbanístico, bem como a análise dos impactos financeiros da ação urbanística sobre a arrecadação municipal, garantindo sua destinação à qualificação dos espaços públicos urbanos e ao financiamento da política urbana.
+
+
+
+
+
+

@@ -1,0 +1,18 @@
+# Art. 121º
+
+**Hierarquia:** PLANEJAMENTO, GESTÃO E EXECUÇÃO DA POLÍTICA URBANA > Do Sistema de Gestão, Controle, Planejamento e Financiamento Urbano
+
+Para assegurar o cumprimento dos objetivos deste Plano Diretor, com transparência, eficiência e qualidade na gestão urbana, o SGC será composto pelos seguintes componentes:
+– o órgão gerenciador do SGC, nos termos do art. 120 desta Lei Complementar;
+– a unidade técnica responsável pelo planejamento urbano, no âmbito da Smamus;
+– o Comitê dos Estudos de Impacto de Vizinhança (CEIV);
+– o Comitê de Gerenciamento do Espaço Público (CGEP);
+– o Centro de Inteligência Territorial (CIT);
+– o Conselho Municipal de Desenvolvimento Urbano Ambiental (CMDUA);
+– os órgãos setoriais da Administração Direta e Indireta que atuem de forma integrada na implementação e monitoramento dos sistemas estruturantes e das políticas urbanas municipais.
+
+
+
+
+
+

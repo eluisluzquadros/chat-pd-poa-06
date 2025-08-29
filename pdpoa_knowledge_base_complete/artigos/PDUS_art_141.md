@@ -1,0 +1,20 @@
+# Art. 141º
+
+**Hierarquia:** PLANEJAMENTO, GESTÃO E EXECUÇÃO DA POLÍTICA URBANA > Dos Instrumentos Urbanísticos
+
+A execução da política urbana observará, entre outros mecanismos, os seguintes instrumentos e políticas:
+– planos urbanísticos e instrumentos de ordenamento e controle do uso do solo;
+– parcerias para renovação urbana;
+– instrumentos de gestão do território urbano;
+– regularização fundiária e reassentamento;
+– incentivos urbanísticos vinculados aos objetivos deste Plano Diretor.
+**Parágrafo único** Além dos instrumentos previstos no Estatuto da Cidade, que poderão ser adotados na forma da legislação municipal, o Município poderá instituir, mediante lei específica, instrumentos complementares destinados à consecução dos objetivos deste Plano Diretor.
+Capítulo I
+Dos Planos Urbanísticos e dos Instrumentos de Ordenamento e Controle do Uso do Solo
+
+## Parágrafos
+Parágrafo único: Além dos instrumentos previstos no Estatuto da Cidade, que poderão ser adotados na forma da legislação municipal, o Município poderá instituir, mediante lei específica, instrumentos complementares destinados à consecução dos objetivos deste Plano Diretor.
+
+
+
+

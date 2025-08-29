@@ -1,0 +1,14 @@
+# Art. 118º
+
+**Hierarquia:** PLANEJAMENTO, GESTÃO E EXECUÇÃO DA POLÍTICA URBANA > Do Sistema de Gestão, Controle, Planejamento e Financiamento Urbano
+
+O SGC opera em três níveis funcionais:
+– formulação de estratégias, diretrizes e políticas públicas, incluindo a atualização permanente do Plano Diretor e da Lei de Uso e Ocupação do Solo;
+– implementação da política urbana, por meio da elaboração e execução de planos, programas e projetos urbanísticos;
+– monitoramento e avaliação do desenvolvimento urbano, com base em indicadores de desempenho, abrangendo o acompanhamento da aplicação dos instrumentos urbanísticos, a análise dos efeitos das políticas públicas sobre as dinâmicas urbanas e territoriais, bem como o controle e a avaliação dos impactos financeiros da ação urbanística e da arrecadação vinculada, com vistas à qualificação dos espaços públicos urbanos e ao financiamento da política urbana.
+
+
+
+
+
+

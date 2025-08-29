@@ -1,0 +1,1693 @@
+{
+  "docType": "LUOS",
+  "partes": [],
+  "artigos": [
+    {
+      "type": "artigo",
+      "numero": 1,
+      "content": "Fica instituída a Lei de Uso e Ocupação do Solo de Porto Alegre (LUOS), que regulamenta o uso, a ocupação e o parcelamento do solo no território municipal, estabelecendo o zoneamento da cidade, os parâmetros urbanísticos que orientam a distribuição das atividades urbanas e as normas gerais para o licenciamento urbanístico e edilício, em conformidade com as diretrizes e objetivos do Plano Diretor.",
+      "secao": null,
+      "capitulo": null,
+      "titulo": "Das Disposições Gerais",
+      "parte": null,
+      "paragrafos": [],
+      "incisos": [],
+      "alineas": []
+    },
+    {
+      "type": "artigo",
+      "numero": 2,
+      "content": "A LUOS tem como objetivo geral disciplinar o uso, a ocupação e o parcelamento do solo, estabelecendo o zoneamento municipal e os parâmetros urbanísticos e edilícios que regulam a distribuição das atividades no território, a densificação, a forma e a organização das edificações e sua integração com a estrutura urbana.",
+      "secao": null,
+      "capitulo": null,
+      "titulo": "Das Disposições Gerais",
+      "parte": null,
+      "paragrafos": [],
+      "incisos": [],
+      "alineas": []
+    },
+    {
+      "type": "artigo",
+      "numero": 3,
+      "content": "A LUOS regulamenta o zoneamento do Município, definindo o regime urbanístico aplicável a cada Zona de Ordenamento Territorial (ZOT), conforme o disposto nos Anexos 1 e 2 desta Lei Complementar.\n**Parágrafo único** Entende-se como regime urbanístico o conjunto de normas e parâmetros de natureza urbanística e edilícia que regem o uso, a ocupação e o parcelamento do solo em cada ZOT, permitindo a identificação dos padrões aplicáveis a cada gleba ou lote urbano conforme sua localização.",
+      "secao": null,
+      "capitulo": null,
+      "titulo": "Das Disposições Gerais",
+      "parte": null,
+      "paragrafos": [
+        {
+          "tipo": "paragrafo_unico",
+          "content": "Entende-se como regime urbanístico o conjunto de normas e parâmetros de natureza urbanística e edilícia que regem o uso, a ocupação e o parcelamento do solo em cada ZOT, permitindo a identificação dos padrões aplicáveis a cada gleba ou lote urbano conforme sua localização."
+        }
+      ],
+      "incisos": [],
+      "alineas": []
+    },
+    {
+      "type": "artigo",
+      "numero": 4,
+      "content": "O zoneamento do Município por Zonas de Ordenamento Territorial (ZOT) classifica o território conforme suas características e estratégias de desenvolvimento local, em conformidade com o Macrozoneamento estabelecido pelo Plano Diretor.",
+      "secao": null,
+      "capitulo": null,
+      "titulo": "Das Zonas de Ordenamento Territorial",
+      "parte": null,
+      "paragrafos": [],
+      "incisos": [],
+      "alineas": []
+    },
+    {
+      "type": "artigo",
+      "numero": 5,
+      "content": "O zoneamento municipal é composto por 16 (dezesseis) Zonas de Ordenamento Territorial (ZOT), definidas de acordo com suas características e diretrizes de desenvolvimento urbano para distintas regiões da cidade, conforme demonstrado nos Anexos 1 e 2 desta Lei Complementar.\n**Parágrafo único** A cada ZOT são atribuídos padrões urbanísticos específicos, adequados às suas características e funções no território municipal.",
+      "secao": null,
+      "capitulo": null,
+      "titulo": "Das Zonas de Ordenamento Territorial",
+      "parte": null,
+      "paragrafos": [
+        {
+          "tipo": "paragrafo_unico",
+          "content": "A cada ZOT são atribuídos padrões urbanísticos específicos, adequados às suas características e funções no território municipal."
+        }
+      ],
+      "incisos": [],
+      "alineas": []
+    },
+    {
+      "type": "artigo",
+      "numero": 6,
+      "content": "A Zona de Ordenamento Territorial 1 (ZOT 1) caracteriza-se pela predominância de usos residenciais, apresentando baixa tendência à transformação do tecido edificado ou restrições de ocupação decorrentes da interface com Áreas de Interesse Cultural ou áreas de relevância ambiental.\n**Parágrafo único** A finalidade da ZOT 1 é compatibilizar a preservação das características locais com a diversificação de usos, promovendo a proximidade entre moradia e atividades cotidianas, reduzindo deslocamentos urbanos e estimulando o desenvolvimento econômico local, por meio de incentivos à ocupação qualificada, ao\ncomércio de pequeno porte e a serviços compatíveis com o uso residencial, conforme os padrões urbanísticos estabelecidos no Anexo 2.1 desta Lei Complementar.",
+      "secao": null,
+      "capitulo": null,
+      "titulo": "Das Zonas de Ordenamento Territorial",
+      "parte": null,
+      "paragrafos": [
+        {
+          "tipo": "paragrafo_unico",
+          "content": "A finalidade da ZOT 1 é compatibilizar a preservação das características locais com a diversificação de usos, promovendo a proximidade entre moradia e atividades cotidianas, reduzindo deslocamentos urbanos e estimulando o desenvolvimento econômico local, por meio de incentivos à ocupação qualificada, ao"
+        }
+      ],
+      "incisos": [],
+      "alineas": []
+    },
+    {
+      "type": "artigo",
+      "numero": 7,
+      "content": "A Zona de Ordenamento Territorial 2 (ZOT 2) é caracterizada pela predominância de usos residenciais, por volumetrias predominantemente baixas e baixa tendência à transformação do tecido urbano edificado, podendo incluir Áreas de Interesse Cultural onde a diversidade de usos contribua para a preservação das edificações e para a vitalidade das ambiências.\n**Parágrafo único** A finalidade da ZOT 2 é promover a miscigenação de atividades como estratégia para fortalecer a vitalidade urbana e a autossuficiência dos núcleos urbanos isolados, garantindo, contudo, a preservação das características morfológicas existentes, conforme os padrões urbanísticos estabelecidos no Anexo 2.2 desta Lei Complementar.",
+      "secao": null,
+      "capitulo": null,
+      "titulo": "Das Zonas de Ordenamento Territorial",
+      "parte": null,
+      "paragrafos": [
+        {
+          "tipo": "paragrafo_unico",
+          "content": "A finalidade da ZOT 2 é promover a miscigenação de atividades como estratégia para fortalecer a vitalidade urbana e a autossuficiência dos núcleos urbanos isolados, garantindo, contudo, a preservação das características morfológicas existentes, conforme os padrões urbanísticos estabelecidos no Anexo 2.2 desta Lei Complementar."
+        }
+      ],
+      "incisos": [],
+      "alineas": []
+    },
+    {
+      "type": "artigo",
+      "numero": 8,
+      "content": "A Zona de Ordenamento Territorial 3 (ZOT 3) é caracterizada pela predominância de edificações de baixa volumetria, associada a uma tendência moderada de transformação do tecido urbano e potencial para adensamento e reestruturação.\n**Parágrafo único** A finalidade da ZOT 3 é estimular o desenvolvimento urbano, promover a miscigenação de atividades e fomentar a geração de postos de trabalho, reduzindo as distâncias nos deslocamentos cotidianos e assegurando a vitalidade urbana, conforme os padrões urbanísticos estabelecidos no Anexo 2.3 desta Lei Complementar.",
+      "secao": null,
+      "capitulo": null,
+      "titulo": "Das Zonas de Ordenamento Territorial",
+      "parte": null,
+      "paragrafos": [
+        {
+          "tipo": "paragrafo_unico",
+          "content": "A finalidade da ZOT 3 é estimular o desenvolvimento urbano, promover a miscigenação de atividades e fomentar a geração de postos de trabalho, reduzindo as distâncias nos deslocamentos cotidianos e assegurando a vitalidade urbana, conforme os padrões urbanísticos estabelecidos no Anexo 2.3 desta Lei Complementar."
+        }
+      ],
+      "incisos": [],
+      "alineas": []
+    },
+    {
+      "type": "artigo",
+      "numero": 9,
+      "content": "A Zona de Ordenamento Territorial 4 (ZOT 4) é caracterizada pela diversidade de padrões volumétricos e uma tendência moderada de transformação do tecido edificado, com potencial para reestruturação e adensamento urbano.\n**Parágrafo único** A finalidade da ZOT 4 é incentivar a produção habitacional e a miscigenação de atividades, assegurando a vitalidade urbana, fomentando a geração de postos de trabalho e reduzindo as distâncias nos deslocamentos diários, conforme os padrões urbanísticos estabelecidos no Anexo 2.4 desta Lei Complementar.",
+      "secao": null,
+      "capitulo": null,
+      "titulo": "Das Zonas de Ordenamento Territorial",
+      "parte": null,
+      "paragrafos": [
+        {
+          "tipo": "paragrafo_unico",
+          "content": "A finalidade da ZOT 4 é incentivar a produção habitacional e a miscigenação de atividades, assegurando a vitalidade urbana, fomentando a geração de postos de trabalho e reduzindo as distâncias nos deslocamentos diários, conforme os padrões urbanísticos estabelecidos no Anexo 2.4 desta Lei Complementar."
+        }
+      ],
+      "incisos": [],
+      "alineas": []
+    },
+    {
+      "type": "artigo",
+      "numero": 10,
+      "content": "A Zona de Ordenamento Territorial 5 (ZOT 5) caracteriza-se pela diversidade de padrões volumétricos e pela tendência moderada de transformação do tecido edificado, com potencial de transformação urbana.\n**Parágrafo único** A finalidade da ZOT 5 é estimular a ampliação da oferta habitacional e a miscigenação de atividades, promovendo o desenvolvimento econômico local, aproximando moradia e emprego, reduzindo deslocamentos urbanos e assegurando a vitalidade dos espaços públicos, conforme os padrões urbanísticos estabelecidos no Anexo 2.5 desta Lei Complementar.",
+      "secao": null,
+      "capitulo": null,
+      "titulo": "Das Zonas de Ordenamento Territorial",
+      "parte": null,
+      "paragrafos": [
+        {
+          "tipo": "paragrafo_unico",
+          "content": "A finalidade da ZOT 5 é estimular a ampliação da oferta habitacional e a miscigenação de atividades, promovendo o desenvolvimento econômico local, aproximando moradia e emprego, reduzindo deslocamentos urbanos e assegurando a vitalidade dos espaços públicos, conforme os padrões urbanísticos estabelecidos no Anexo 2.5 desta Lei Complementar."
+        }
+      ],
+      "incisos": [],
+      "alineas": []
+    },
+    {
+      "type": "artigo",
+      "numero": 11,
+      "content": "A Zona de Ordenamento Territorial 6 (ZOT 6) é caracterizada pela diversidade de padrões volumétricos, com tendência moderada de transformação do tecido edificado ou de requalificação urbana, contando com oferta significativa de empregos, com potencial de adensamento e de transformação urbana.\n**Parágrafo único** A finalidade da ZOT 6 é estimular o adensamento, ampliar a oferta de moradia e incentivar a miscigenação de atividades, promovendo o desenvolvimento econômico local, aproximando empregos das áreas residenciais, reduzindo deslocamentos diários e garantindo a vitalidade urbana, conforme os padrões urbanísticos estabelecidos no Anexo 2.6 desta Lei Complementar.",
+      "secao": null,
+      "capitulo": null,
+      "titulo": "Das Zonas de Ordenamento Territorial",
+      "parte": null,
+      "paragrafos": [
+        {
+          "tipo": "paragrafo_unico",
+          "content": "A finalidade da ZOT 6 é estimular o adensamento, ampliar a oferta de moradia e incentivar a miscigenação de atividades, promovendo o desenvolvimento econômico local, aproximando empregos das áreas residenciais, reduzindo deslocamentos diários e garantindo a vitalidade urbana, conforme os padrões urbanísticos estabelecidos no Anexo 2.6 desta Lei Complementar."
+        }
+      ],
+      "incisos": [],
+      "alineas": []
+    },
+    {
+      "type": "artigo",
+      "numero": 12,
+      "content": "A Zona de Ordenamento Territorial 7 (ZOT 7) é caracterizada pela diversidade de padrões volumétricos e por um processo significativo de transformação urbana, apresentando média a alta renovação do tecido edificado, ampla oferta de empregos, infraestrutura urbana consolidada e adequada disponibilidade de equipamentos comunitários, estando localizada em áreas estratégicas próximas a centralidades e eixos de transporte de média e alta capacidade, com elevado potencial de transformação urbana.\n**Parágrafo único** A finalidade da ZOT 7 é estimular o adensamento, ampliar a oferta de moradia e fomentar a miscigenação de atividades, contribuindo para o fortalecimento da dinâmica econômica da cidade, promovendo a integração entre moradia e emprego, ampliando o acesso a serviços e equipamentos urbanos, reduzindo deslocamentos diários e garantindo a vitalidade dos espaços públicos, aprimorando a eficiência urbana por meio da otimização da infraestrutura existente e do fortalecimento da conectividade com os serviços públicos, conforme os padrões urbanísticos estabelecidos no Anexo 2.7 desta Lei Complementar.",
+      "secao": null,
+      "capitulo": null,
+      "titulo": "Das Zonas de Ordenamento Territorial",
+      "parte": null,
+      "paragrafos": [
+        {
+          "tipo": "paragrafo_unico",
+          "content": "A finalidade da ZOT 7 é estimular o adensamento, ampliar a oferta de moradia e fomentar a miscigenação de atividades, contribuindo para o fortalecimento da dinâmica econômica da cidade, promovendo a integração entre moradia e emprego, ampliando o acesso a serviços e equipamentos urbanos, reduzindo deslocamentos diários e garantindo a vitalidade dos espaços públicos, aprimorando a eficiência urbana por meio da otimização da infraestrutura existente e do fortalecimento da conectividade com os serviços públicos, conforme os padrões urbanísticos estabelecidos no Anexo 2.7 desta Lei Complementar."
+        }
+      ],
+      "incisos": [],
+      "alineas": []
+    },
+    {
+      "type": "artigo",
+      "numero": 13,
+      "content": "A Zona de Ordenamento Territorial 8 (ZOT 8) apresenta características semelhantes às da ZOT 7, diferenciando-se por sua vinculação a planos e projetos estratégicos de desenvolvimento urbano, visando reestruturação e qualificação territorial.\n**Parágrafo único** A finalidade da ZOT 8 é consolidar áreas de transformação urbana por meio da articulação entre investimentos públicos e privados, promovendo o adensamento qualificado, a diversificação de atividades e a otimização da infraestrutura e dos serviços urbanos, assegurando a integração entre centralidades e redes de mobilidade, fortalecendo a dinâmica econômica e aprimorando a conectividade entre os diferentes setores da cidade, conforme os padrões urbanísticos estabelecidos no Anexo 2.8 desta Lei Complementar.",
+      "secao": null,
+      "capitulo": null,
+      "titulo": "Das Zonas de Ordenamento Territorial",
+      "parte": null,
+      "paragrafos": [
+        {
+          "tipo": "paragrafo_unico",
+          "content": "A finalidade da ZOT 8 é consolidar áreas de transformação urbana por meio da articulação entre investimentos públicos e privados, promovendo o adensamento qualificado, a diversificação de atividades e a otimização da infraestrutura e dos serviços urbanos, assegurando a integração entre centralidades e redes de mobilidade, fortalecendo a dinâmica econômica e aprimorando a conectividade entre os diferentes setores da cidade, conforme os padrões urbanísticos estabelecidos no Anexo 2.8 desta Lei Complementar."
+        }
+      ],
+      "incisos": [],
+      "alineas": []
+    },
+    {
+      "type": "artigo",
+      "numero": 14,
+      "content": "A Zona de Ordenamento Territorial 9 (ZOT 9) é caracterizada por alto grau de miscigenação de atividades, diversidade de padrões volumétricos e baixa tendência à transformação do tecido edificado.\n**Parágrafo único** A finalidade da ZOT 9 é incentivar a miscigenação de atividades e fomentar o desenvolvimento econômico, permitindo o uso residencial de forma integrada ao setor produtivo, aproximando habitação e emprego, reduzindo deslocamentos urbanos e garantindo vitalidade aos espaços públicos, conforme os padrões urbanísticos estabelecidos no Anexo 2.9 desta Lei Complementar.",
+      "secao": null,
+      "capitulo": null,
+      "titulo": "Das Zonas de Ordenamento Territorial",
+      "parte": null,
+      "paragrafos": [
+        {
+          "tipo": "paragrafo_unico",
+          "content": "A finalidade da ZOT 9 é incentivar a miscigenação de atividades e fomentar o desenvolvimento econômico, permitindo o uso residencial de forma integrada ao setor produtivo, aproximando habitação e emprego, reduzindo deslocamentos urbanos e garantindo vitalidade aos espaços públicos, conforme os padrões urbanísticos estabelecidos no Anexo 2.9 desta Lei Complementar."
+        }
+      ],
+      "incisos": [],
+      "alineas": []
+    },
+    {
+      "type": "artigo",
+      "numero": 15,
+      "content": "A Zona de Ordenamento Territorial 10 (ZOT 10) caracteriza-se pelo alto grau de miscigenação de atividades, pela diversidade de padrões volumétricos e pela tendência moderada de transformação do tecido edificado.\n**Parágrafo único** A finalidade da ZOT 10 é impulsionar o desenvolvimento econômico local, estimulando a miscigenação de atividades e a ampliação da oferta habitacional, aproximando moradia e emprego, reduzindo deslocamentos urbanos e fortalecendo a vitalidade dos espaços públicos, conforme os padrões urbanísticos estabelecidos no Anexo 2.10 desta Lei Complementar.",
+      "secao": null,
+      "capitulo": null,
+      "titulo": "Das Zonas de Ordenamento Territorial",
+      "parte": null,
+      "paragrafos": [
+        {
+          "tipo": "paragrafo_unico",
+          "content": "A finalidade da ZOT 10 é impulsionar o desenvolvimento econômico local, estimulando a miscigenação de atividades e a ampliação da oferta habitacional, aproximando moradia e emprego, reduzindo deslocamentos urbanos e fortalecendo a vitalidade dos espaços públicos, conforme os padrões urbanísticos estabelecidos no Anexo 2.10 desta Lei Complementar."
+        }
+      ],
+      "incisos": [],
+      "alineas": []
+    },
+    {
+      "type": "artigo",
+      "numero": 16,
+      "content": "A Zona de Ordenamento Territorial 11 (ZOT 11) é caracterizada por áreas passíveis de estruturação ou requalificação urbana, alto grau de miscigenação de atividades, diversidade de padrões volumétricos e alta tendência de transformação do tecido edificado.\n**Parágrafo único** A finalidade da ZOT 11 é fortalecer o desenvolvimento econômico local, estimulando a miscigenação de atividades, o adensamento e a ampliação da oferta habitacional, aproximando moradia e emprego, reduzindo deslocamentos urbanos e garantindo a vitalidade dos espaços públicos, conforme os padrões urbanísticos estabelecidos no Anexo 2.11 desta Lei Complementar.",
+      "secao": null,
+      "capitulo": null,
+      "titulo": "Das Zonas de Ordenamento Territorial",
+      "parte": null,
+      "paragrafos": [
+        {
+          "tipo": "paragrafo_unico",
+          "content": "A finalidade da ZOT 11 é fortalecer o desenvolvimento econômico local, estimulando a miscigenação de atividades, o adensamento e a ampliação da oferta habitacional, aproximando moradia e emprego, reduzindo deslocamentos urbanos e garantindo a vitalidade dos espaços públicos, conforme os padrões urbanísticos estabelecidos no Anexo 2.11 desta Lei Complementar."
+        }
+      ],
+      "incisos": [],
+      "alineas": []
+    },
+    {
+      "type": "artigo",
+      "numero": 17,
+      "content": "A Zona de Ordenamento Territorial 12 (ZOT 12) é caracterizada por sua localização estratégica em áreas próximas a centralidades ou polos de desenvolvimento econômico, apresentando alto grau de miscigenação de atividades, padrões volumétricos variados, elevada transformação do tecido edificado e ampla oferta de empregos, incluindo áreas que ainda demandam estruturação urbana, mas que possuem condições favoráveis ao desenvolvimento urbano.\n**Parágrafo único** A finalidade da ZOT 12 é consolidar-se como um polo dinâmico de atividades urbanas, promovendo o adensamento, a diversificação de usos e a ampliação da oferta habitacional, de modo a aproximar moradia e emprego, reduzir deslocamentos, fortalecer a vitalidade dos espaços públicos e otimizar a infraestrutura e os serviços urbanos, conforme os padrões urbanísticos estabelecidos no Anexo 2.12 desta Lei Complementar.",
+      "secao": null,
+      "capitulo": null,
+      "titulo": "Das Zonas de Ordenamento Territorial",
+      "parte": null,
+      "paragrafos": [
+        {
+          "tipo": "paragrafo_unico",
+          "content": "A finalidade da ZOT 12 é consolidar-se como um polo dinâmico de atividades urbanas, promovendo o adensamento, a diversificação de usos e a ampliação da oferta habitacional, de modo a aproximar moradia e emprego, reduzir deslocamentos, fortalecer a vitalidade dos espaços públicos e otimizar a infraestrutura e os serviços urbanos, conforme os padrões urbanísticos estabelecidos no Anexo 2.12 desta Lei Complementar."
+        }
+      ],
+      "incisos": [],
+      "alineas": []
+    },
+    {
+      "type": "artigo",
+      "numero": 18,
+      "content": "A Zona de Ordenamento Territorial 13 (ZOT 13) apresenta características similares às da ZOT 12, diferenciando-se por estar vinculada a planos e projetos promotores de desenvolvimento urbano.\n**Parágrafo único** A finalidade da ZOT 13 é consolidar-se como um território estratégico para a implementação de projetos urbanos estruturantes, favorecendo a qualificação do espaço construído, o aproveitamento do solo e a diversificação de usos, de forma a estimular a integração entre moradia, emprego, serviços e mobilidade, garantindo maior eficiência urbana e otimização da infraestrutura instalada, conforme os padrões urbanísticos estabelecidos no Anexo 2.13 desta Lei Complementar.",
+      "secao": null,
+      "capitulo": null,
+      "titulo": "Das Zonas de Ordenamento Territorial",
+      "parte": null,
+      "paragrafos": [
+        {
+          "tipo": "paragrafo_unico",
+          "content": "A finalidade da ZOT 13 é consolidar-se como um território estratégico para a implementação de projetos urbanos estruturantes, favorecendo a qualificação do espaço construído, o aproveitamento do solo e a diversificação de usos, de forma a estimular a integração entre moradia, emprego, serviços e mobilidade, garantindo maior eficiência urbana e otimização da infraestrutura instalada, conforme os padrões urbanísticos estabelecidos no Anexo 2.13 desta Lei Complementar."
+        }
+      ],
+      "incisos": [],
+      "alineas": []
+    },
+    {
+      "type": "artigo",
+      "numero": 19,
+      "content": "A Zona de Ordenamento Territorial 14 (ZOT 14) caracteriza-se por sua localização entre áreas urbanizadas e não urbanizadas da cidade, devendo ser promovida uma ocupação equilibrada, com uso sustentável do solo e gradualidade no adensamento,\nde modo a garantir a convivência harmônica entre atividades urbanas, rurais e de preservação ambiental.\n**Parágrafo único** A finalidade da ZOT 14 é incentivar o desenvolvimento de usos mistos que integrem habitação, atividades produtivas de baixo impacto, comércio local e infraestrutura de suporte, assegurando a compatibilidade entre as dinâmicas urbanas e as características ambientais locais, conforme os padrões urbanísticos estabelecidos no Anexo 2.14 desta Lei Complementar.",
+      "secao": null,
+      "capitulo": null,
+      "titulo": "Das Zonas de Ordenamento Territorial",
+      "parte": null,
+      "paragrafos": [
+        {
+          "tipo": "paragrafo_unico",
+          "content": "A finalidade da ZOT 14 é incentivar o desenvolvimento de usos mistos que integrem habitação, atividades produtivas de baixo impacto, comércio local e infraestrutura de suporte, assegurando a compatibilidade entre as dinâmicas urbanas e as características ambientais locais, conforme os padrões urbanísticos estabelecidos no Anexo 2.14 desta Lei Complementar."
+        }
+      ],
+      "incisos": [],
+      "alineas": []
+    },
+    {
+      "type": "artigo",
+      "numero": 20,
+      "content": "A Zona de Ordenamento Territorial 15 (ZOT 15) caracteriza-se pela presença significativa de bens naturais essenciais para a manutenção do equilíbrio ecológico, incluindo nascentes, corpos d’água e áreas vegetadas relevantes, sendo suscetível a conflitos com a expansão urbana desordenada, especialmente devido à ocupação irregular, à dificuldade de manutenção por parte dos ocupantes e a outros fatores que comprometem sua preservação.\n**Parágrafo único** A finalidade da ZOT 15 é priorizar a preservação do ambiente natural, permitindo ocupações de forma controlada, desde que assegurado o uso sustentável, a manutenção dos ecossistemas e a viabilidade de atividades que promovam a conservação ambiental e o desenvolvimento de práticas sustentáveis, conforme os padrões urbanísticos estabelecidos no Anexo 2.15 desta Lei Complementar.",
+      "secao": null,
+      "capitulo": null,
+      "titulo": "Das Zonas de Ordenamento Territorial",
+      "parte": null,
+      "paragrafos": [
+        {
+          "tipo": "paragrafo_unico",
+          "content": "A finalidade da ZOT 15 é priorizar a preservação do ambiente natural, permitindo ocupações de forma controlada, desde que assegurado o uso sustentável, a manutenção dos ecossistemas e a viabilidade de atividades que promovam a conservação ambiental e o desenvolvimento de práticas sustentáveis, conforme os padrões urbanísticos estabelecidos no Anexo 2.15 desta Lei Complementar."
+        }
+      ],
+      "incisos": [],
+      "alineas": []
+    },
+    {
+      "type": "artigo",
+      "numero": 21,
+      "content": "A Zona de Ordenamento Territorial 16 (ZOT 16) compreende áreas que apresentam significativa presença de atividades primárias e extrativas, mas que se destacam, predominantemente, por sua importância ambiental, exigindo estratégias de desenvolvimento compatíveis com a preservação dos recursos naturais.\n**Parágrafo único** A ZOT 16 tem finalidades e diretrizes de desenvolvimento similares às da ZOT 15, assegurando a coexistência entre atividades produtivas e a proteção ambiental, conforme os padrões urbanísticos estabelecidos no Anexo 2.16 desta Lei Complementar.",
+      "secao": null,
+      "capitulo": null,
+      "titulo": "Das Zonas de Ordenamento Territorial",
+      "parte": null,
+      "paragrafos": [
+        {
+          "tipo": "paragrafo_unico",
+          "content": "A ZOT 16 tem finalidades e diretrizes de desenvolvimento similares às da ZOT 15, assegurando a coexistência entre atividades produtivas e a proteção ambiental, conforme os padrões urbanísticos estabelecidos no Anexo 2.16 desta Lei Complementar."
+        }
+      ],
+      "incisos": [],
+      "alineas": []
+    },
+    {
+      "type": "artigo",
+      "numero": 22,
+      "content": "A Zona Rural e as Unidades de Conservação, embora delimitadas no Anexo 1 desta Lei Complementar, não são classificadas como Zonas de Ordenamento Territorial (ZOT), ficando sujeitas às normas específicas que regem seu uso e ocupação.\n**Parágrafo único** Nas Zonas de Amortecimento das Unidades de Conservação aplicar-se- á o regime urbanístico da ZOT em que estiverem inseridas, observadas as disposições do plano de manejo da unidade e as restrições ambientais de ocupação para essas áreas.",
+      "secao": null,
+      "capitulo": null,
+      "titulo": "Das Zonas de Ordenamento Territorial",
+      "parte": null,
+      "paragrafos": [
+        {
+          "tipo": "paragrafo_unico",
+          "content": "Nas Zonas de Amortecimento das Unidades de Conservação aplicar-se- á o regime urbanístico da ZOT em que estiverem inseridas, observadas as disposições do plano de manejo da unidade e as restrições ambientais de ocupação para essas áreas."
+        }
+      ],
+      "incisos": [],
+      "alineas": []
+    },
+    {
+      "type": "artigo",
+      "numero": 23,
+      "content": "Salvo exceções expressamente previstas nesta Lei Complementar e na legislação urbanística aplicável, somente serão admitidos a edificação e o parcelamento do solo em imóveis devidamente registrados no Registro de Imóveis e que possuam frente para logradouro público.",
+      "secao": null,
+      "capitulo": null,
+      "titulo": "Das Disposições Gerais sobre Parcelamento do Solo, Edificações e Regime Urbanístico",
+      "parte": null,
+      "paragrafos": [],
+      "incisos": [],
+      "alineas": []
+    },
+    {
+      "type": "artigo",
+      "numero": 24,
+      "content": "O regime urbanístico aplicável para fins de parcelamento do solo ou edificação incidirá sobre a menor poligonal correspondente ao imóvel, observados os limites da matrícula no Registro de Imóveis e as disposições desta Lei Complementar.",
+      "secao": null,
+      "capitulo": null,
+      "titulo": "Das Disposições Gerais sobre Parcelamento do Solo, Edificações e Regime Urbanístico",
+      "parte": null,
+      "paragrafos": [],
+      "incisos": [],
+      "alineas": []
+    },
+    {
+      "type": "artigo",
+      "numero": 25,
+      "content": "No licenciamento de projetos de edificação e na aprovação do parcelamento do solo, poderão incidir restrições específicas sobre o imóvel, decorrentes dos seguintes elementos:\n– traçado do Plano Diretor;\n– faixa não edificável, relativa a:\náreas destinadas à implantação de redes e equipamentos públicos urbanos vinculados à prestação de serviços de competência do Município;\náreas de preservação permanente, conforme legislação aplicável;\nrestrições administrativas impostas por outros entes federativos, tais como faixas de domínio de rodovias, ferrovias e servidões administrativas.",
+      "secao": null,
+      "capitulo": null,
+      "titulo": "Das Disposições Gerais sobre Parcelamento do Solo, Edificações e Regime Urbanístico",
+      "parte": null,
+      "paragrafos": [],
+      "incisos": [],
+      "alineas": []
+    },
+    {
+      "type": "artigo",
+      "numero": 26,
+      "content": "Para imóveis atingidos pelo traçado do Plano Diretor, o coeficiente de aproveitamento e a taxa de permeabilidade serão calculados conforme as seguintes condições:\n– quando houver possibilidade de ocupação fora da área atingida pelo traçado:\no coeficiente de aproveitamento e a taxa de permeabilidade serão calculados exclusivamente sobre a área remanescente do terreno;\no coeficiente de aproveitamento e a taxa de permeabilidade poderão ser calculados sobre a totalidade da área do terreno, mediante Transferência do Direito de Construir (TDC).\n– quando a ocupação parcial ou total for inviabilizada pelo traçado, caso sua execução esteja prevista no Plano Diretor e não haja previsão de implantação imediata, será admitida a edificação na área incidente, desde que:\natenda ao recuo de jardim medido a partir do alinhamento existente, quando houver;\no coeficiente de aproveitamento básico e a taxa de permeabilidade sejam aplicados sobre a totalidade da área do terreno, com altura máxima da edificação limitada a 9,00 m (nove metros).",
+      "secao": null,
+      "capitulo": null,
+      "titulo": "Das Disposições Gerais sobre Parcelamento do Solo, Edificações e Regime Urbanístico",
+      "parte": null,
+      "paragrafos": [],
+      "incisos": [],
+      "alineas": []
+    },
+    {
+      "type": "artigo",
+      "numero": 27,
+      "content": "Nas áreas classificadas pelo órgão de planejamento urbano como estratégicas em relação à drenagem urbana, será exigida a construção de reservatórios de retenção de águas pluviais nos lotes edificados, observadas a localização, as dimensões e a vazão, conforme critérios definidos em decreto do Poder Executivo.\n**Parágrafo único** A exigência prevista no caput não se aplica nos seguintes casos:\n– terrenos com área inferior a 600m²;\n– edificações destinadas à habitação unifamiliar;\n– ampliações em edificações existentes, desde que não agravem a situação preexistente;\n– edificações inventariadas como de estruturação ou tombadas;\n– edificações inseridas na ZOT 8.1;\n– edificações destinadas a atividades de unidades de triagem e de destinação final de resíduos sólidos.",
+      "secao": null,
+      "capitulo": null,
+      "titulo": "Das Disposições Gerais sobre Parcelamento do Solo, Edificações e Regime Urbanístico",
+      "parte": null,
+      "paragrafos": [
+        {
+          "tipo": "paragrafo_unico",
+          "content": "A exigência prevista no caput não se aplica nos seguintes casos:"
+        }
+      ],
+      "incisos": [],
+      "alineas": []
+    },
+    {
+      "type": "artigo",
+      "numero": 28,
+      "content": "São vedados a edificação e o parcelamento do solo para fins urbanos:\n– em terrenos alagadiços ou sujeitos a inundações, antes da adoção de medidas que assegurem o escoamento das águas ou garantam a proteção contra cheias e inundações;\n– em áreas aterradas com materiais nocivos à saúde, salvo manifestação favorável do órgão ambiental competente quanto à sua reutilização, conforme o uso pretendido;\n– em terrenos ou parcelas de terrenos com declividade igual ou superior a 30% (trinta por cento), salvo se atendidas exigências técnicas específicas, conforme manifestação do órgão competente;\n– em terrenos cuja condição geológica ou hidrológica não seja compatível com a edificação, salvo se forem atendidas exigências técnicas específicas, conforme manifestação do órgão competente;\n– em imóveis que, no curso do parcelamento do solo, resultem em terrenos encravados ou lotes em desacordo com os padrões estabelecidos nesta Lei Complementar;\n– em Áreas de Preservação Permanente, salvo nas seguintes situações, mediante manifestação do órgão ambiental competente e observância dos parâmetros da legislação ambiental:\nimplantação de infraestrutura de interesse público, como sistemas de drenagem, saneamento, abastecimento de água, energia, comunicação, mobilidade urbana, e outros, desde que comprovada a inviabilidade de alternativa locacional suficiente e adequada, adotadas medidas mitigadoras e compensatórias, quando necessário;\nregularização fundiária de interesse social, nos termos da legislação federal vigente, para assentamentos consolidados até a data de referência estabelecida pelo órgão ambiental competente, condicionada à adoção de medidas compensatórias e mitigadoras que reduzam os impactos ambientais;\nintervenções destinadas à proteção e recuperação ambiental, incluindo projetos de estabilização de encostas, controle de erosão, reflorestamento, manejo sustentável, recuperação de áreas degradadas, e outras medidas congêneres, desde que tecnicamente justificadas e aprovadas pelo órgão competente;\nedificações ou empreendimentos de utilidade pública ou de baixo impacto ambiental, desde que atendidos os requisitos legais e ambientais aplicáveis.",
+      "secao": null,
+      "capitulo": null,
+      "titulo": "Das Disposições Gerais sobre Parcelamento do Solo, Edificações e Regime Urbanístico",
+      "parte": null,
+      "paragrafos": [],
+      "incisos": [],
+      "alineas": []
+    },
+    {
+      "type": "artigo",
+      "numero": 29,
+      "content": "É vedado o parcelamento do solo em terrenos situados fora do alcance dos equipamentos urbanos, especialmente redes públicas de abastecimento de água potável e energia elétrica, salvo se atendidas as exigências dos órgãos competentes.",
+      "secao": null,
+      "capitulo": null,
+      "titulo": "Das Disposições Gerais sobre Parcelamento do Solo, Edificações e Regime Urbanístico",
+      "parte": null,
+      "paragrafos": [],
+      "incisos": [],
+      "alineas": []
+    },
+    {
+      "type": "artigo",
+      "numero": 30,
+      "content": "A instituição de condomínio por unidades autônomas será permitida, nos termos da Lei Federal nº 4.591, de 16 de dezembro de 1964, em imóvel único ou conjunto de imóveis cuja área total não ultrapasse o limite máximo de quarteirão estabelecido para a ZOT correspondente.",
+      "secao": null,
+      "capitulo": null,
+      "titulo": "Das Disposições Gerais sobre Parcelamento do Solo, Edificações e Regime Urbanístico",
+      "parte": null,
+      "paragrafos": [],
+      "incisos": [],
+      "alineas": []
+    },
+    {
+      "type": "artigo",
+      "numero": 31,
+      "content": "As Estruturas de Planejamento Urbano são diretrizes do Plano Diretor que orientam o desenvolvimento territorial e fundamentam as decisões de planejamento urbano, sem modificar os padrões urbanísticos das Zonas de Ordenamento Territorial, salvo quando expressamente previsto pelo Plano Diretor ou por esta Lei Complementar.",
+      "secao": null,
+      "capitulo": null,
+      "titulo": "Das Estruturas de Planejamento Urbano",
+      "parte": null,
+      "paragrafos": [],
+      "incisos": [],
+      "alineas": []
+    },
+    {
+      "type": "artigo",
+      "numero": 32,
+      "content": "São Estruturas de Planejamento Urbano:\n– os Setores de Ocupação do Território (SOT);\n– as Macrozonas (MZ);\n– as Unidades de Planejamento Local (UPL);\n– os bairros;\n– as Zonas de Ocupação (ZO);\n– as Áreas Estruturadoras (AE);\n– as Áreas de Requalificação Urbana (ARU);\n– as Áreas de Operação Urbana Consorciada (OUC);\n– as Áreas de Plano Local (PL);\n– as Áreas de Plano de Pormenor (PP);\n– as Áreas com Estudo de Impacto de Vizinhança (EIV) aprovado;\n– as Áreas de Parceria para Renovação Urbana;\n– as Bacias Hidrográficas;\n– as Unidades de Conservação;\n– as Áreas de Estímulo à Infraestrutura Verde (AEV);\n– as Áreas de Recuperação de Corpos d’Água (ARC);\n– os Corredores de Biodiversidade (CB);\n– os Percursos e Conexões Paisagísticas (PCP);\n– os Pontos de Emergência Visual (PEV);\n– as Áreas de Desenvolvimento Cultural e Criativo (ADCC);\n– as Áreas de Interesse Cultural (AIC);\n– os Elementos de Interesse Cultural (EIC);\n– os Corredores Culturais (CC);\n– as Áreas de Interesse Institucional (AII);\n– as Estruturas de Mobilidade:\nestrutura viária e equipamentos de mobilidade;\nestrutura férrea;\nestrutura hidroviária;\nestrutura aeroviária.\n– os Equipamentos Comunitários:\nlazer;\neducação;\nsegurança;\nsaúde;\ncomunitários.\n– a Infraestrutura Urbana:\nrede de abastecimento de água;\nrede de saneamento;\nrede de drenagem e sistema de proteção contra cheias;\ncoleta de resíduos sólidos;\nenergia e iluminação pública;\ntelecomunicações;\ngás.",
+      "secao": null,
+      "capitulo": null,
+      "titulo": "Das Estruturas de Planejamento Urbano",
+      "parte": null,
+      "paragrafos": [],
+      "incisos": [],
+      "alineas": []
+    },
+    {
+      "type": "artigo",
+      "numero": 33,
+      "content": "Parcelamento do solo urbano é a divisão da terra em unidades juridicamente autônomas, com vistas à edificação, podendo ser realizado na forma de loteamento, desmembramento e fracionamento, sempre mediante aprovação municipal.",
+      "secao": null,
+      "capitulo": null,
+      "titulo": "Do Parcelamento do Solo",
+      "parte": null,
+      "paragrafos": [],
+      "incisos": [],
+      "alineas": []
+    },
+    {
+      "type": "artigo",
+      "numero": 34,
+      "content": "Os padrões do parcelamento do solo são definidos pelo traçado do Plano Diretor e pela ZOT correspondente, conforme disposto no Anexo 2 desta Lei Complementar.",
+      "secao": null,
+      "capitulo": null,
+      "titulo": "Do Parcelamento do Solo",
+      "parte": null,
+      "paragrafos": [],
+      "incisos": [],
+      "alineas": []
+    },
+    {
+      "type": "artigo",
+      "numero": 35,
+      "content": "São padrões do parcelamento do solo:\n– área mínima de lote;\n– testada mínima de lote;\n– área máxima de quarteirão;\n– testada máxima de quarteirão;\n– área mínima de quarteirão;\n– área de destinação pública.",
+      "secao": null,
+      "capitulo": null,
+      "titulo": "Do Parcelamento do Solo",
+      "parte": null,
+      "paragrafos": [],
+      "incisos": [],
+      "alineas": []
+    },
+    {
+      "type": "artigo",
+      "numero": 36,
+      "content": "No parcelamento do solo, deverá ser garantida a destinação de áreas para a malha viária, equipamentos públicos urbanos e comunitários, áreas de relevante interesse ambiental ou a execução de obras e serviços voltados à infraestrutura de drenagem, proteção contra cheias e sustentabilidade urbana, conforme o traçado do Plano Diretor e os padrões urbanísticos estabelecidos para a ZOT correspondente.",
+      "secao": null,
+      "capitulo": null,
+      "titulo": "Do Parcelamento do Solo",
+      "parte": null,
+      "paragrafos": [],
+      "incisos": [],
+      "alineas": []
+    },
+    {
+      "type": "artigo",
+      "numero": 37,
+      "content": "O percentual mínimo de destinação de áreas para equipamentos ou a conversão em obras e serviços no parcelamento do solo será definido conforme os padrões\nurbanísticos estabelecidos para a ZOT correspondente, nos termos do Anexo 2 desta Lei Complementar.",
+      "secao": null,
+      "capitulo": null,
+      "titulo": "Do Parcelamento do Solo",
+      "parte": null,
+      "paragrafos": [],
+      "incisos": [],
+      "alineas": []
+    },
+    {
+      "type": "artigo",
+      "numero": 38,
+      "content": "Quando a incidência do traçado do Plano Diretor ou de outras áreas não edificáveis sobre a área objeto do parcelamento do solo resultar em destinação pública\nsuperior ao percentual máximo estabelecido para a ZOT correspondente, o excedente poderá ser compensado mediante Transferência do Direito de Construir (TDC).\n**Parágrafo único** Poderão ser objeto de compensação por meio da TDC, para aplicação na área objeto do parcelamento do solo:\n– as áreas destinadas à malha viária que excederem os gabaritos de 17,50m (dezessete metros e cinquenta centímetros);\n– as áreas destinadas a equipamentos públicos urbanos e comunitários que ultrapassarem os limites estabelecidos para a ZOT correspondente;\n– as áreas de relevante interesse ambiental que excederem os limites previstos para a ZOT correspondente, desde que haja interesse público no seu recebimento.",
+      "secao": null,
+      "capitulo": null,
+      "titulo": "Do Parcelamento do Solo",
+      "parte": null,
+      "paragrafos": [
+        {
+          "tipo": "paragrafo_unico",
+          "content": "Poderão ser objeto de compensação por meio da TDC, para aplicação na área objeto do parcelamento do solo:"
+        }
+      ],
+      "incisos": [],
+      "alineas": []
+    },
+    {
+      "type": "artigo",
+      "numero": 39,
+      "content": "As áreas de relevante interesse ambiental presentes no imóvel poderão ser descontadas para fins de cálculo da destinação de áreas públicas.",
+      "secao": null,
+      "capitulo": null,
+      "titulo": "Do Parcelamento do Solo",
+      "parte": null,
+      "paragrafos": [],
+      "incisos": [],
+      "alineas": []
+    },
+    {
+      "type": "artigo",
+      "numero": 40,
+      "content": "Os padrões das faces e das áreas dos quarteirões poderão ser ajustados nas seguintes situações:\n– quando situados em área com estrutura urbana consolidada, onde a rede viária existente ou projetada torne desnecessária a adoção do padrão estabelecido, desde que compatível com a configuração urbana existente ou planejada;\n– quando a gleba estiver inserida em diferentes Zonas de Ordenamento Territorial com padrões urbanísticos distintos, desde que a adaptação seja necessária para a transição entre essas áreas;\n– quando a implantação de equipamentos urbanos ou estruturas exigir dimensões superiores, desde que seja assegurada a continuidade e a circulação de pedestres;\n– quando a preservação do patrimônio ambiental ou cultural for incompatível com a abertura de novas vias ou logradouros públicos, seu prolongamento, modificação ou ampliação;\n– quando situados nas ZOT 9, 10, 11, 12 e 13, desde que a atividade a ser implantada exija padrões diferenciados, incompatíveis com os parâmetros originalmente estabelecidos para a área.",
+      "secao": null,
+      "capitulo": null,
+      "titulo": "Do Parcelamento do Solo",
+      "parte": null,
+      "paragrafos": [],
+      "incisos": [],
+      "alineas": []
+    },
+    {
+      "type": "artigo",
+      "numero": 41,
+      "content": "O padrão de testada mínima e área mínima de lote poderão ser alterados para adequação ao padrão fundiário predominante ou em compatibilização com o traçado do Plano Diretor.",
+      "secao": null,
+      "capitulo": null,
+      "titulo": "Do Parcelamento do Solo",
+      "parte": null,
+      "paragrafos": [],
+      "incisos": [],
+      "alineas": []
+    },
+    {
+      "type": "artigo",
+      "numero": 42,
+      "content": "No parcelamento do solo destinado ao atendimento da Demanda Habitacional Prioritária (DHP), nos termos do Plano Diretor, poderão ser adotados parâmetros urbanísticos diferenciados, considerando as características do terreno e a viabilidade técnica da destinação de áreas públicas, conforme definido pelo planejamento urbano local.",
+      "secao": null,
+      "capitulo": null,
+      "titulo": "Do Parcelamento do Solo",
+      "parte": null,
+      "paragrafos": [],
+      "incisos": [],
+      "alineas": []
+    },
+    {
+      "type": "artigo",
+      "numero": 43,
+      "content": "Na regularização fundiária, além da adaptação dos padrões de destinação de áreas públicas, poderão ser admitidos parâmetros diferenciados para o sistema viário, levando-se em conta as condições cadastrais e a configuração consolidada da ocupação.",
+      "secao": null,
+      "capitulo": null,
+      "titulo": "Do Parcelamento do Solo",
+      "parte": null,
+      "paragrafos": [],
+      "incisos": [],
+      "alineas": []
+    },
+    {
+      "type": "artigo",
+      "numero": 44,
+      "content": "Aprovado o projeto urbanístico de parcelamento do solo, o interessado deverá submetê-lo ao Registro Imobiliário em um prazo de 180 (cento e oitenta) dias, sob pena de caducidade.",
+      "secao": null,
+      "capitulo": null,
+      "titulo": "Do Parcelamento do Solo",
+      "parte": null,
+      "paragrafos": [],
+      "incisos": [],
+      "alineas": []
+    },
+    {
+      "type": "artigo",
+      "numero": 45,
+      "content": "Desde a data de registro do parcelamento do solo no Cartório de Registro de Imóveis, passam a integrar o domínio do Município o sistema viário e os equipamentos públicos urbanos e comunitários constantes do projeto e do memorial descritivo.\n**Parágrafo único** Desde a aprovação do parcelamento do solo, as áreas referidas no\ncaput deste artigo não poderão ter sua destinação alterada pelo loteador, salvo nos casos\nde caducidade do ato de aprovação, cancelamento do registro do loteamento ou alteração do loteamento registrado, nos termos dos arts. 18, 23 e 28 da Lei Federal nº 6.766, de 19 de dezembro de 1979.\nCapítulo I Do Loteamento",
+      "secao": null,
+      "capitulo": null,
+      "titulo": "Do Parcelamento do Solo",
+      "parte": null,
+      "paragrafos": [
+        {
+          "tipo": "paragrafo_unico",
+          "content": "Desde a aprovação do parcelamento do solo, as áreas referidas no"
+        }
+      ],
+      "incisos": [],
+      "alineas": []
+    },
+    {
+      "type": "artigo",
+      "numero": 46,
+      "content": "Loteamento é a subdivisão do imóvel em lotes destinados à edificação, com abertura de novas vias públicas de circulação ou prolongamento, modificação ou ampliação das vias existentes, observados os padrões urbanísticos estabelecidos para a ZOT correspondente.",
+      "secao": null,
+      "capitulo": null,
+      "titulo": "Do Parcelamento do Solo",
+      "parte": null,
+      "paragrafos": [],
+      "incisos": [],
+      "alineas": []
+    },
+    {
+      "type": "artigo",
+      "numero": 47,
+      "content": "Não se caracteriza como loteamento a implantação, abertura, prolongamento, modificação ou ampliação de vias públicas pelo Município, quando destinadas exclusivamente à continuidade da malha viária existente, sem envolver a subdivisão de imóvel para fins de edificação.",
+      "secao": null,
+      "capitulo": null,
+      "titulo": "Do Parcelamento do Solo",
+      "parte": null,
+      "paragrafos": [],
+      "incisos": [],
+      "alineas": []
+    },
+    {
+      "type": "artigo",
+      "numero": 48,
+      "content": "Nos loteamentos, a área destinada a equipamentos públicos urbanos e comunitários não poderá ser inferior a 18% (dezoito por cento) da gleba parcelada, nem superior a 50% (cinquenta por cento), salvo quando houver manifestação favorável do Município, hipótese em que o acréscimo poderá ser compensado mediante Transferência do Direito de Construir (TDC).\n**Parágrafo único** O percentual mínimo de 18% (dezoito por cento) para destinação de áreas públicas poderá ser reduzido quando houver previsão expressa em Planos Locais, Planos de Pormenor ou quando se tratar de loteamento destinado à Demanda Habitacional Prioritária (DHP), nos termos desta Lei Complementar.",
+      "secao": null,
+      "capitulo": null,
+      "titulo": "Do Parcelamento do Solo",
+      "parte": null,
+      "paragrafos": [
+        {
+          "tipo": "paragrafo_unico",
+          "content": "O percentual mínimo de 18% (dezoito por cento) para destinação de áreas públicas poderá ser reduzido quando houver previsão expressa em Planos Locais, Planos de Pormenor ou quando se tratar de loteamento destinado à Demanda Habitacional Prioritária (DHP), nos termos desta Lei Complementar."
+        }
+      ],
+      "incisos": [],
+      "alineas": []
+    },
+    {
+      "type": "artigo",
+      "numero": 49,
+      "content": "Compete ao loteador, conforme as diretrizes e normas técnicas dos órgãos competentes:\n– projetar e executar a arborização das vias, praças e parques do loteamento;\n– projetar, executar e implantar os equipamentos públicos urbanos e a malha viária;\n– fornecer e instalar placas de identificação dos logradouros, executar as obras de demarcação dos lotes e das quadras, conforme os projetos aprovados;\n– implantar a sinalização viária básica nos acessos principais e nas vias arteriais do loteamento.",
+      "secao": null,
+      "capitulo": null,
+      "titulo": "Do Parcelamento do Solo",
+      "parte": null,
+      "paragrafos": [],
+      "incisos": [],
+      "alineas": []
+    },
+    {
+      "type": "artigo",
+      "numero": 50,
+      "content": "A aprovação das obras de urbanização deverá ser solicitada no prazo de 180 (cento e oitenta) dias contados da data do registro do parcelamento no Cartório de Registro de Imóveis, devendo sua conclusão ocorrer no prazo máximo de 5 (cinco) anos.\n**Parágrafo único** O prazo para conclusão das obras poderá ser prorrogado a critério do Município, desde que solicitado dentro de sua vigência.",
+      "secao": null,
+      "capitulo": null,
+      "titulo": "Do Parcelamento do Solo",
+      "parte": null,
+      "paragrafos": [
+        {
+          "tipo": "paragrafo_unico",
+          "content": "O prazo para conclusão das obras poderá ser prorrogado a critério do Município, desde que solicitado dentro de sua vigência."
+        }
+      ],
+      "incisos": [],
+      "alineas": []
+    },
+    {
+      "type": "artigo",
+      "numero": 51,
+      "content": "Para assegurar a execução das obras de urbanização, o loteador deverá prestar garantia em valor equivalente ao custo das intervenções, podendo optar por garantia hipotecária, caução em dinheiro, títulos da dívida pública, fiança bancária ou seguro garantia, devendo, no caso da garantia hipotecária, corresponder, no mínimo, a 40% (quarenta por cento) da área dos lotes privados.",
+      "secao": null,
+      "capitulo": null,
+      "titulo": "Do Parcelamento do Solo",
+      "parte": null,
+      "paragrafos": [],
+      "incisos": [],
+      "alineas": []
+    },
+    {
+      "type": "artigo",
+      "numero": 52,
+      "content": "Se constatado que o loteamento não possui licenciamento ou foi executado em desacordo com os projetos aprovados, o Município notificará o loteador para regularização.",
+      "secao": null,
+      "capitulo": null,
+      "titulo": "Do Parcelamento do Solo",
+      "parte": null,
+      "paragrafos": [],
+      "incisos": [],
+      "alineas": []
+    },
+    {
+      "type": "artigo",
+      "numero": 53,
+      "content": "Desmembramento é o parcelamento do solo que consiste na subdivisão de imóvel em lotes destinados à edificação, aproveitando o sistema viário oficial e enquadrando-se nos padrões urbanísticos estabelecidos para a ZOT correspondente, conforme o Anexo 2 desta Lei Complementar.",
+      "secao": null,
+      "capitulo": null,
+      "titulo": "Do Parcelamento do Solo",
+      "parte": null,
+      "paragrafos": [],
+      "incisos": [],
+      "alineas": []
+    },
+    {
+      "type": "artigo",
+      "numero": 54,
+      "content": "Considera-se fracionamento a subdivisão de imóvel em lotes destinados à edificação, com aproveitamento do sistema viário oficial existente, observados os padrões urbanísticos estabelecidos para a ZOT correspondente e atendidos os seguintes requisitos:\n– a área resultante do fracionamento deve ser igual ou inferior ao módulo mínimo de fracionamento estabelecido para a ZOT correspondente;\n– caso a área resultante do fracionamento seja superior ao módulo mínimo, o fracionamento será admitido somente se o imóvel for oriundo de parcelamento aprovado e se houver comprovação de que, à época da aprovação, houve destinação de áreas públicas para equipamentos comunitários, conforme a legislação vigente.",
+      "secao": null,
+      "capitulo": null,
+      "titulo": "Do Parcelamento do Solo",
+      "parte": null,
+      "paragrafos": [],
+      "incisos": [],
+      "alineas": []
+    },
+    {
+      "type": "artigo",
+      "numero": 55,
+      "content": "Considera-se fracionamento, desde que não implique agravamento no traçado do Plano Diretor, o parcelamento do solo nas seguintes situações:\n– o parcelamento de imóvel resultante de remembramento de imóveis:\nquando a área do imóvel for inferior ao módulo de fracionamento estabelecido para a ZOT correspondente;\nquando a área do imóvel for superior ao módulo de fracionamento, mas inferior à área máxima de quarteirão, desde que os lotes resultantes respeitem os módulos mínimos de fracionamento estabelecidos;\nquando houver combinação de áreas inferiores e superiores ao módulo de fracionamento, desde que a capacidade construtiva dos imóveis resultantes não exceda a do terreno original antes do remembramento;\nquando a área do imóvel for superior à área máxima de quarteirão, desde que os lotes resultantes respeitem esse limite;\nquando houver combinação de áreas inferiores e superiores à área máxima de quarteirão, desde que os lotes resultantes respeitem esse limite.\n– o parcelamento de terreno para destacar parte vinculada a projeto arquitetônico aprovado sob legislação anterior, desde que fique demonstrada a intenção de fracionamento.\n– na Zona Intensiva, a divisão de terreno visando ao posterior parcelamento do solo, desde que cada parcela resultante possua área igual ou superior a 6,75 ha (seis hectares e setenta e cinco ares).\n– o parcelamento de terreno para destacar parte da área original, independentemente da dimensão, desde que as parcelas destacadas com área inferior a 6,75 ha (seis hectares e setenta e cinco ares) estejam vinculadas a projeto de loteamento em tramitação.\n– o parcelamento de terreno em Área Funcional Urbana, nos termos do §3º do art. 51, para destacar parte do imóvel, desde que a parcela destacada tenha dimensão superior a dois módulos de fracionamento e que sua destinação não descaracterize a área funcional.\n– o parcelamento de área destinada à regularização fundiária, vinculada a projeto de regularização em andamento no Município.\n– o parcelamento de uma área de até 22.500m² (vinte e dois mil e quinhentos metros quadrados) por matrícula, permitido uma única vez, desde que a parcela remanescente seja objeto de loteamento destinado ao atendimento da Demanda Habitacional Prioritária (DHP) e atenda às diretrizes urbanísticas do órgão de planejamento.\n– divisão amigável ou judicial, bem como partilha de imóveis, nas seguintes hipóteses:\ndissolução da sociedade conjugal;\nsucessão \"causa mortis\";\ndissolução de sociedade ou associação;\nextinção de condomínio.\n– destaque de parte do imóvel para fins de interesse público, independentemente dos padrões urbanísticos estabelecidos no Anexo 2 desta Lei Complementar.",
+      "secao": null,
+      "capitulo": null,
+      "titulo": "Do Parcelamento do Solo",
+      "parte": null,
+      "paragrafos": [],
+      "incisos": [],
+      "alineas": []
+    },
+    {
+      "type": "artigo",
+      "numero": 56,
+      "content": "O parcelamento do solo urbano dependerá de prévia aprovação do Município e será processado em quatro etapas:\n– Diretrizes de Parcelamento do Solo, em que o Município emitirá parecer contendo as diretrizes urbanísticas, ambientais e de infraestrutura a serem observadas no parcelamento;\n– Projeto Urbanístico Preliminar, na qual será avaliada a conformidade do projeto inicial em relação às diretrizes estabelecidas;\n– Aprovação do Projeto Urbanístico e dos Projetos Complementares, etapa em que serão analisados os detalhamentos técnicos do parcelamento, incluindo a definição da malha viária, infraestrutura urbana e destinação de áreas públicas, com a consequente aprovação do parcelamento para registro e execução;\n– Execução das Obras do Parcelamento do Solo, etapa em que o interessado implementará as intervenções exigidas, sob fiscalização do Município, para posterior emissão do Termo de Recebimento Definitivo.\n**Parágrafo único** O procedimento de aprovação de todas as espécies de parcelamento do solo será disciplinado por regulamento do órgão de planejamento urbano, que estabelecerá a documentação e os estudos técnicos exigidos para cada etapa, podendo prever a supressão ou a concomitância de etapas, conforme a espécie de parcelamento, sua tipologia e demais peculiaridades, observado o regime urbanístico incidente sobre o imóvel.",
+      "secao": null,
+      "capitulo": null,
+      "titulo": "Do Parcelamento do Solo",
+      "parte": null,
+      "paragrafos": [
+        {
+          "tipo": "paragrafo_unico",
+          "content": "O procedimento de aprovação de todas as espécies de parcelamento do solo será disciplinado por regulamento do órgão de planejamento urbano, que estabelecerá a documentação e os estudos técnicos exigidos para cada etapa, podendo prever a supressão ou a concomitância de etapas, conforme a espécie de parcelamento, sua tipologia e demais peculiaridades, observado o regime urbanístico incidente sobre o imóvel."
+        }
+      ],
+      "incisos": [],
+      "alineas": []
+    },
+    {
+      "type": "artigo",
+      "numero": 57,
+      "content": "Na etapa de Diretrizes de Parcelamento do Solo, o Município analisará a localização do imóvel, sua adequação ao Plano Diretor e à ZOT correspondente, a infraestrutura existente e projetada e a destinação de áreas públicas, emitindo Parecer de Diretrizes, que deverá ser observado nas etapas subsequentes.\n**Parágrafo único** As diretrizes terão validade de 2 (dois) anos e deverão ser observadas em todas as fases subsequentes do parcelamento.",
+      "secao": null,
+      "capitulo": null,
+      "titulo": "Do Parcelamento do Solo",
+      "parte": null,
+      "paragrafos": [
+        {
+          "tipo": "paragrafo_unico",
+          "content": "As diretrizes terão validade de 2 (dois) anos e deverão ser observadas em todas as fases subsequentes do parcelamento."
+        }
+      ],
+      "incisos": [],
+      "alineas": []
+    },
+    {
+      "type": "artigo",
+      "numero": 58,
+      "content": "Na etapa de Projeto Urbanístico Preliminar, o Município avaliará a adequação do projeto ao Parecer de Diretrizes, analisando a configuração dos lotes, o sistema viário, a destinação de áreas públicas, o atendimento às exigências ambientais aplicáveis ao parcelamento e a compatibilidade com a infraestrutura existente, podendo solicitar\najustes técnicos, ao final do que será emitido o Parecer de Viabilidade de Projeto Urbanístico.",
+      "secao": null,
+      "capitulo": null,
+      "titulo": "Do Parcelamento do Solo",
+      "parte": null,
+      "paragrafos": [],
+      "incisos": [],
+      "alineas": []
+    },
+    {
+      "type": "artigo",
+      "numero": 59,
+      "content": "Na etapa de Aprovação do Projeto Urbanístico e dos Projetos Complementares, o Município verificará a conformidade do projeto definitivo do parcelamento, incluindo a divisão dos lotes, a definição das vias, as redes de infraestrutura e os padrões construtivos, além da compatibilização do projeto com os estudos técnicos exigidos, ao final da qual será editado o ato formal de aprovação do parcelamento do solo.\n**Parágrafo único** O interessado deverá providenciar o registro do parcelamento junto ao Cartório de Registro de Imóveis no prazo de 180 (cento e oitenta) dias, sob pena de caducidade da aprovação.",
+      "secao": null,
+      "capitulo": null,
+      "titulo": "Do Parcelamento do Solo",
+      "parte": null,
+      "paragrafos": [
+        {
+          "tipo": "paragrafo_unico",
+          "content": "O interessado deverá providenciar o registro do parcelamento junto ao Cartório de Registro de Imóveis no prazo de 180 (cento e oitenta) dias, sob pena de caducidade da aprovação."
+        }
+      ],
+      "incisos": [],
+      "alineas": []
+    },
+    {
+      "type": "artigo",
+      "numero": 60,
+      "content": "Na etapa de Execução das Obras do Parcelamento do Solo, o interessado deverá realizar as obras de infraestrutura e urbanização conforme os projetos aprovados, sendo obrigatória a fiscalização municipal para aferição da conformidade, com a emissão do Termo de Recebimento Provisório ao final das intervenções e do Termo de Recebimento Definitivo após a verificação da adequação integral às exigências estabelecidas.",
+      "secao": null,
+      "capitulo": null,
+      "titulo": "Do Parcelamento do Solo",
+      "parte": null,
+      "paragrafos": [],
+      "incisos": [],
+      "alineas": []
+    },
+    {
+      "type": "artigo",
+      "numero": 61,
+      "content": "A emissão do Parecer de Viabilidade de Projeto Urbanístico poderá permitir a análise e aprovação técnica do projeto arquitetônico de edificação, ficando a emissão do respectivo alvará de construção condicionada:\n– no caso de loteamento, à expedição do ato formal de aprovação do projeto urbanístico;\n– no caso de desmembramento, à efetiva destinação de áreas públicas ou, quando convertida a obrigação, à assinatura do TCAP;\n– no caso de fracionamento, à apresentação da matrícula do lote originado.",
+      "secao": null,
+      "capitulo": null,
+      "titulo": "Do Parcelamento do Solo",
+      "parte": null,
+      "paragrafos": [],
+      "incisos": [],
+      "alineas": []
+    },
+    {
+      "type": "artigo",
+      "numero": 62,
+      "content": "Quando a destinação de áreas públicas não ocorrer na forma do art. 37, §1º, I desta Lei Complementar, a emissão do alvará de construção ficará condicionada:\n– à apresentação das matrículas das áreas de destinação pública em nome do Município, quando for o caso;\n– à assinatura do Termo de Conversão de Áreas Públicas (TCAP), no caso de conversão em obras e serviços;\n– à comprovação do pagamento da guia de arrecadação correspondente, no caso de conversão em moeda corrente.",
+      "secao": null,
+      "capitulo": null,
+      "titulo": "Do Parcelamento do Solo",
+      "parte": null,
+      "paragrafos": [],
+      "incisos": [],
+      "alineas": []
+    },
+    {
+      "type": "artigo",
+      "numero": 63,
+      "content": "Na destinação de áreas públicas, não será exigido do requerente o cumprimento de qualquer obrigação que dependa de desapropriação a cargo do Município ou que, em razão de impedimento reconhecido por decisão judicial, não possa ser integralmente atendida, hipótese em que será exigida a conversão da obrigação ou sua compensação pecuniária, nos termos desta Lei Complementar.",
+      "secao": null,
+      "capitulo": null,
+      "titulo": "Do Parcelamento do Solo",
+      "parte": null,
+      "paragrafos": [],
+      "incisos": [],
+      "alineas": []
+    },
+    {
+      "type": "artigo",
+      "numero": 64,
+      "content": "O licenciamento edilício poderá ocorrer simultaneamente à execução das obras de urbanização do parcelamento do solo, ficando a emissão da Carta de Habitação (Habite-se) condicionada à comprovação do cadastramento oficial do logradouro junto ao sistema viário do Município.\n**Parágrafo único** Enquanto persistir a garantia hipotecária de lotes ao Município para fins de obras de urbanização, não será admitida a aprovação de projetos de edificação sobre esses lotes.",
+      "secao": null,
+      "capitulo": null,
+      "titulo": "Do Parcelamento do Solo",
+      "parte": null,
+      "paragrafos": [
+        {
+          "tipo": "paragrafo_unico",
+          "content": "Enquanto persistir a garantia hipotecária de lotes ao Município para fins de obras de urbanização, não será admitida a aprovação de projetos de edificação sobre esses lotes."
+        }
+      ],
+      "incisos": [],
+      "alineas": []
+    },
+    {
+      "type": "artigo",
+      "numero": 65,
+      "content": "No perímetro urbano do Município, são atribuídos às ZOT, além dos padrões de parcelamento do solo, os seguintes parâmetros de regime urbanístico:\n– regime de atividades;\n– coeficiente de aproveitamento básico e máximo;\n– regime volumétrico.",
+      "secao": null,
+      "capitulo": null,
+      "titulo": "Do Uso e da Ocupação do Solo",
+      "parte": null,
+      "paragrafos": [],
+      "incisos": [],
+      "alineas": []
+    },
+    {
+      "type": "artigo",
+      "numero": 66,
+      "content": "Ressalvadas as hipóteses de exigência de EIV, quando a atividade pretendida ou o porte do empreendimento demandar análise específica de compatibilidade com o entorno ou condições específicas de implantação, especialmente quanto à mobilidade, à\npaisagem urbana, ao saneamento, à drenagem e à capacidade da rede de serviços públicos, a aplicação do regime urbanístico da ZOT poderá ser ajustada mediante parecer técnico fundamentado do órgão de planejamento urbano, desde que respeitadas as características e finalidades da ZOT em que se localizar o imóvel.\nCapítulo I\nDo Regime de Atividades",
+      "secao": null,
+      "capitulo": null,
+      "titulo": "Do Uso e da Ocupação do Solo",
+      "parte": null,
+      "paragrafos": [],
+      "incisos": [],
+      "alineas": []
+    },
+    {
+      "type": "artigo",
+      "numero": 67,
+      "content": "O regime de atividades é um dos elementos do regime urbanístico e estabelece a compatibilidade entre os usos do solo e as ZOT, disciplinando a admissibilidade das atividades conforme seu impacto urbanístico, sua interferência na infraestrutura instalada e sua adequação às diretrizes do planejamento urbano.",
+      "secao": null,
+      "capitulo": null,
+      "titulo": "Do Uso e da Ocupação do Solo",
+      "parte": null,
+      "paragrafos": [],
+      "incisos": [],
+      "alineas": []
+    },
+    {
+      "type": "artigo",
+      "numero": 68,
+      "content": "O regime de atividades de cada ZOT é definido no Anexo 2 desta Lei Complementar.",
+      "secao": null,
+      "capitulo": null,
+      "titulo": "Do Uso e da Ocupação do Solo",
+      "parte": null,
+      "paragrafos": [],
+      "incisos": [],
+      "alineas": []
+    },
+    {
+      "type": "artigo",
+      "numero": 69,
+      "content": "A classificação das atividades é definida conforme sua relação com as Zonas de Ordenamento Territorial, da seguinte forma:\n– Atividades Inócuas;\n– Incomodidade Nível 1;\n– Incomodidade Nível 2;\n– Incomodidade Nível 3;\n– Atividades Especiais.",
+      "secao": null,
+      "capitulo": null,
+      "titulo": "Do Uso e da Ocupação do Solo",
+      "parte": null,
+      "paragrafos": [],
+      "incisos": [],
+      "alineas": []
+    },
+    {
+      "type": "artigo",
+      "numero": 70,
+      "content": "As atividades e edificações regularizadas sob a vigência de legislações anteriores serão classificadas como conformes ou desconformes, de acordo com sua compatibilidade com a ZOT em que se inserem, nos termos do Anexo 3 desta Lei Complementar.\nCapítulo II\nDo Coeficiente de Aproveitamento",
+      "secao": null,
+      "capitulo": null,
+      "titulo": "Do Uso e da Ocupação do Solo",
+      "parte": null,
+      "paragrafos": [],
+      "incisos": [],
+      "alineas": []
+    },
+    {
+      "type": "artigo",
+      "numero": 71,
+      "content": "O coeficiente de aproveitamento é o índice urbanístico que determina o potencial construtivo de um terreno, calculado pela multiplicação entre a sua área e o valor do coeficiente definido para a ZOT correspondente, nos termos do Anexo 2 desta Lei Complementar.",
+      "secao": null,
+      "capitulo": null,
+      "titulo": "Do Uso e da Ocupação do Solo",
+      "parte": null,
+      "paragrafos": [],
+      "incisos": [],
+      "alineas": []
+    },
+    {
+      "type": "artigo",
+      "numero": 72,
+      "content": "O coeficiente de aproveitamento classifica-se em dois tipos:\n– coeficiente de aproveitamento básico, que representa o índice aplicado à área do terreno para determinar o potencial construtivo básico, permitido sem quaisquer contrapartidas;\n– coeficiente de aproveitamento máximo, que representa o índice aplicado à área do terreno para definir o potencial construtivo total, cujo excedente em relação ao potencial\nbásico dependerá da Outorga Onerosa do Direito de Construir, da Transferência do Direito de Construir ou de outros instrumentos previstos na legislação urbanística.",
+      "secao": null,
+      "capitulo": null,
+      "titulo": "Do Uso e da Ocupação do Solo",
+      "parte": null,
+      "paragrafos": [],
+      "incisos": [],
+      "alineas": []
+    },
+    {
+      "type": "artigo",
+      "numero": 73,
+      "content": "São isentas de contabilização no cálculo do potencial construtivo definido pelo coeficiente de aproveitamento as seguintes áreas:\n– áreas destinadas à guarda de veículos, bicicletas ou outros meios de transporte alternativos e suas respectivas circulações verticais e horizontais;\n– residências unifamiliares compostas por até duas unidades autônomas implantadas em um mesmo terreno;\n– a área destinada à atividade econômica vinculada à habitação unifamiliar;\n– áreas edificadas de imóveis tombados ou inventariados;\n– espaços da edificação classificados como fachada ativa;\n– galerias de uso público;\n– edificações destinadas a atividades de unidades de triagem e de destinação final de resíduos sólidos;\n– construções auxiliares incidentes no recuo de jardim, tais como guaritas, marquises, toldos, acessos cobertos, entre outras, observadas as disposições do Código de Edificações;\n– projeção de balanço no recuo de jardim, beirais, floreiras, abas e outros elementos construtivos, desde que observadas as disposições do Código de Edificações e as exigências da legislação de proteção contra incêndio.",
+      "secao": null,
+      "capitulo": null,
+      "titulo": "Do Uso e da Ocupação do Solo",
+      "parte": null,
+      "paragrafos": [],
+      "incisos": [],
+      "alineas": []
+    },
+    {
+      "type": "artigo",
+      "numero": 74,
+      "content": "Os empreendimentos localizados na ZOT 8.2 – 4º Distrito estarão sujeitos aos coeficientes de aproveitamento estabelecidos para essa zona, podendo, mediante atendimento aos critérios e à pontuação mínima definidos no Anexo 2.8.2, adotar os coeficientes diferenciados previstos no mesmo anexo.\nCapítulo III\nDo Regime Volumétrico",
+      "secao": null,
+      "capitulo": null,
+      "titulo": "Do Uso e da Ocupação do Solo",
+      "parte": null,
+      "paragrafos": [],
+      "incisos": [],
+      "alineas": []
+    },
+    {
+      "type": "artigo",
+      "numero": 75,
+      "content": "O regime volumétrico é um dos componentes do regime urbanístico e compreende os parâmetros que definem os limites físicos da edificação no lote, conforme estabelecido para cada ZOT, podendo incluir os seguintes conceitos:\n– taxa de permeabilidade (TP): proporção mínima da área do terreno que deve permanecer livre de pavimentação ou construção que inviabilize a infiltração da água no solo;\n– referência de nível (RN): ponto de referência adotado no projeto arquitetônico para fins de medição da altura da edificação, ou de volumes que a compõem, escolhido pelo responsável técnico em qualquer ponto do terreno natural ou do passeio com frente para o imóvel, observados os limites definidos no art. 80 desta Lei Complementar;\n– altura: distância vertical entre a referência de nível da edificação e o nível correspondente à parte inferior da laje que encerra o último pavimento, desconsideradas estruturas técnicas superiores;\n– recuos laterais e de fundos: afastamentos mínimos obrigatórios entre a edificação e as divisas laterais e posteriores do lote;\n– recuo de jardim: afastamento mínimo entre a edificação e a divisa frontal do lote, destinado à criação de área aberta voltada à qualificação do espaço público, podendo incluir espaço verde, área de transição, fruição ou ampliação da calçada.\nSeção I\nDa Taxa de Permeabilidade",
+      "secao": null,
+      "capitulo": null,
+      "titulo": "Do Uso e da Ocupação do Solo",
+      "parte": null,
+      "paragrafos": [],
+      "incisos": [],
+      "alineas": []
+    },
+    {
+      "type": "artigo",
+      "numero": 76,
+      "content": "A taxa de permeabilidade exigida para cada imóvel será determinada conforme a ZOT em que se insere, nos termos dos padrões definidos no Anexo 2 desta Lei Complementar.",
+      "secao": null,
+      "capitulo": null,
+      "titulo": "Do Uso e da Ocupação do Solo",
+      "parte": null,
+      "paragrafos": [],
+      "incisos": [],
+      "alineas": []
+    },
+    {
+      "type": "artigo",
+      "numero": 77,
+      "content": "Poderão ser adotadas medidas alternativas para atendimento da TP, conforme as condições e proporções estabelecidas no Anexo 6 desta Lei Complementar.",
+      "secao": null,
+      "capitulo": null,
+      "titulo": "Do Uso e da Ocupação do Solo",
+      "parte": null,
+      "paragrafos": [],
+      "incisos": [],
+      "alineas": []
+    },
+    {
+      "type": "artigo",
+      "numero": 78,
+      "content": "A exigência de atendimento à TP poderá ser dispensada, total ou parcialmente, mediante avaliação técnica do órgão de planejamento urbano, nas seguintes hipóteses:\n– edificação tombada ou inventariada como de estruturação;\n– terreno com forma irregular ou com condições topográficas excepcionais;\n– compatibilização de projeto ou adoção de solução alternativa, devidamente justificada.",
+      "secao": null,
+      "capitulo": null,
+      "titulo": "Do Uso e da Ocupação do Solo",
+      "parte": null,
+      "paragrafos": [],
+      "incisos": [],
+      "alineas": []
+    },
+    {
+      "type": "artigo",
+      "numero": 79,
+      "content": "Fica dispensado o atendimento da taxa de permeabilidade nas seguintes hipóteses:\n– aumentos, reformas ou reciclagem de uso em edificações preexistentes, nas seguintes situações:\nquando o aumento proposto se der sobre área já edificada;\nquando o aumento proposto não afetar a área permeável existente no terreno.\n– edificações novas, aumentos, reformas e reciclagem de uso destinados a atividades incompatíveis com áreas permeáveis, tais como postos de combustíveis, unidades industriais e atividades correlatas, centros de logística e distribuição, unidades de triagem e de destinação final de resíduos sólidos, entre outras de natureza equivalente;\n– terrenos com matrícula individual de área igual ou inferior a 150 m² (cento e cinquenta metros quadrados), independentemente da ZOT em que estejam inseridos;\n– terrenos localizados no Centro Histórico.\nSeção II\nDa Referência de Nível",
+      "secao": null,
+      "capitulo": null,
+      "titulo": "Do Uso e da Ocupação do Solo",
+      "parte": null,
+      "paragrafos": [],
+      "incisos": [],
+      "alineas": []
+    },
+    {
+      "type": "artigo",
+      "numero": 80,
+      "content": "A referência de nível (RN) é o ponto de origem adotado para a medição da altura da edificação, definido no projeto arquitetônico pelo responsável técnico.",
+      "secao": null,
+      "capitulo": null,
+      "titulo": "Do Uso e da Ocupação do Solo",
+      "parte": null,
+      "paragrafos": [],
+      "incisos": [],
+      "alineas": []
+    },
+    {
+      "type": "artigo",
+      "numero": 81,
+      "content": "A altura da edificação é definida pela distância vertical entre a Referência de Nível (RN) e o nível correspondente à parte inferior da laje que encerra o último pavimento, devendo ser calculada por volume construído, de forma independente, mesmo quando integrados no mesmo projeto arquitetônico.",
+      "secao": null,
+      "capitulo": null,
+      "titulo": "Do Uso e da Ocupação do Solo",
+      "parte": null,
+      "paragrafos": [],
+      "incisos": [],
+      "alineas": []
+    },
+    {
+      "type": "artigo",
+      "numero": 82,
+      "content": "Os recuos laterais e de fundos são aplicáveis conforme as condições estabelecidas nesta Lei Complementar, observando-se o seguinte:\n– os recuos laterais e de fundos serão exigidos quando a edificação ultrapassar o limite máximo de construção permitido nas divisas do lote, conforme previsto no Anexo 2 desta\nLei Complementar, e deverão ser calculados em 18% (dezoito por cento) da altura de cada volume da edificação em relação à divisa correspondente;\n– serão permitidos sobre os recuos a projeção de beirais, marquises, abas e outros elementos construtivos, desde que observadas as disposições do Código de Edificações e as exigências da legislação de proteção contra incêndio;\n– serão admitidos balanços de até 1,20 m (um metro e vinte centímetros) sobre a via pública, garantida a passagem livre mínima de 3 m (três metros) de altura;\n– não serão computadas nos recuos de altura as áreas da edificação que se enquadrem nas hipóteses previstas no art. 81, §§ 1º e 2º desta Lei Complementar.\nSeção V\nDo Recuo de Jardim",
+      "secao": null,
+      "capitulo": null,
+      "titulo": "Do Uso e da Ocupação do Solo",
+      "parte": null,
+      "paragrafos": [],
+      "incisos": [],
+      "alineas": []
+    },
+    {
+      "type": "artigo",
+      "numero": 83,
+      "content": "O recuo de jardim é o afastamento mínimo entre a edificação e a divisa frontal do lote, aplicável a todas as testadas voltadas para logradouros públicos, conforme os padrões definidos nos Anexos 2 e 5 desta Lei Complementar.",
+      "secao": null,
+      "capitulo": null,
+      "titulo": "Do Uso e da Ocupação do Solo",
+      "parte": null,
+      "paragrafos": [],
+      "incisos": [],
+      "alineas": []
+    },
+    {
+      "type": "artigo",
+      "numero": 84,
+      "content": "São admitidos, no recuo de jardim, os seguintes elementos:\n– construções auxiliares como guaritas, limitadas a 5% (cinco por cento) da área do recuo de jardim, toldos, acessos cobertos, marquises, beirais, abas, escadarias, rampas de acesso, medidores de energia, caixas de correio, pergolados, esculturas e outros elementos de qualificação paisagística;\n– estruturas de cobertura e fechamento independentes da edificação, admitidas exclusivamente no pavimento térreo e vinculadas a atividades de bar, café, restaurante, armazém, livraria, padaria e similares, desde que promovam a integração com o espaço público e garantam transparência mínima de 50% (cinquenta por cento) das fachadas;\n– balanços da edificação sobre o recuo de jardim, limitados a 1,20 m (um metro e vinte centímetros) a partir do segundo pavimento, garantida a passagem livre mínima de 3 m (três metros) de altura;\n– construções subterrâneas ou semi-enterradas localizadas abaixo da Referência de Nível, desde que não ultrapassem 0,60 m de altura em relação ao Perfil Natural do Terreno (PNT) e não ocupem recuos viários;\n– muros laterais e frontais com altura máxima de 1,20 m em relação ao PNT, admitidos elementos construtivos predominantemente vazados ou translúcidos nas vedações;\n– muros frontais ou laterais com altura de até 2,00 m em terrenos baldios ou destinados a estabelecimentos de ensino, templos, atividades industriais, transporte de cargas ou valores, hospitais, conventos, seminários, quartéis, presídios e órgãos de segurança;\n– estacionamentos descobertos e port-cochères, desde que garantida a segurança dos pedestres, limitado o rebaixo do meio-fio a no máximo 50% da testada, respeitado o limite absoluto de 7 metros;\n– edificações existentes e regularmente implantadas, inclusive as que forem objeto de reforma e reciclagem de uso.\n**Parágrafo único** Quando os recuos de jardim forem absorvidos por alargamentos viários previstos no traçado do Plano Diretor, o Município poderá dispensá-los total ou parcialmente.",
+      "secao": null,
+      "capitulo": null,
+      "titulo": "Do Uso e da Ocupação do Solo",
+      "parte": null,
+      "paragrafos": [
+        {
+          "tipo": "paragrafo_unico",
+          "content": "Quando os recuos de jardim forem absorvidos por alargamentos viários previstos no traçado do Plano Diretor, o Município poderá dispensá-los total ou parcialmente."
+        }
+      ],
+      "incisos": [],
+      "alineas": []
+    },
+    {
+      "type": "artigo",
+      "numero": 85,
+      "content": "O licenciamento urbanístico e edilício compreende o conjunto de atos administrativos mediante os quais o Município analisa e aprova os projetos de parcelamento do solo, edificação, regularização e o Estudo de Impacto de Vizinhança – EIV, autorizando o exercício do direito de construir e a ocupação do solo urbano, nos termos desta Lei Complementar e seus regulamentos.",
+      "secao": null,
+      "capitulo": null,
+      "titulo": "Do Licenciamento Urbanístico e Edilício",
+      "parte": null,
+      "paragrafos": [],
+      "incisos": [],
+      "alineas": []
+    },
+    {
+      "type": "artigo",
+      "numero": 86,
+      "content": "O procedimento de licenciamento será disciplinado por regulamento, observando as seguintes diretrizes:\n– tramitação exclusivamente digital;\n– observância aos parâmetros urbanísticos e edilícios definidos no Plano Diretor, nesta Lei Complementar e seus regulamentos;\n– atuação obrigatória de responsável técnico habilitado, mediante apresentação da respectiva responsabilidade técnica;\n– presunção de boa-fé e veracidade das informações e declarações prestadas no processo, cabendo ao responsável técnico e ao requerente assegurar a conformidade dos dados apresentados com a situação fática e urbanística relacionada ao objeto do licenciamento;\n– simplificação de formalidades e racionalização de etapas, priorizando a eficiência do processo.",
+      "secao": null,
+      "capitulo": null,
+      "titulo": "Do Licenciamento Urbanístico e Edilício",
+      "parte": null,
+      "paragrafos": [],
+      "incisos": [],
+      "alineas": []
+    },
+    {
+      "type": "artigo",
+      "numero": 87,
+      "content": "A aprovação do projeto arquitetônico e a emissão do alvará de construção terão validade de 5 (cinco) anos, contados da data de expedição do alvará, prorrogáveis uma única vez.\n**Parágrafo único** O alvará de construção oriundo de modificação ou ajuste extingue o antecedente, por via de extinção objetiva de licença, e assim também o faz aquele outorgado em novo processo de licenciamento para o mesmo objeto.",
+      "secao": null,
+      "capitulo": null,
+      "titulo": "Do Licenciamento Urbanístico e Edilício",
+      "parte": null,
+      "paragrafos": [
+        {
+          "tipo": "paragrafo_unico",
+          "content": "O alvará de construção oriundo de modificação ou ajuste extingue o antecedente, por via de extinção objetiva de licença, e assim também o faz aquele outorgado em novo processo de licenciamento para o mesmo objeto."
+        }
+      ],
+      "incisos": [],
+      "alineas": []
+    },
+    {
+      "type": "artigo",
+      "numero": 88,
+      "content": "São de exclusiva responsabilidade do responsável técnico e do proprietário ou possuidor do imóvel a elaboração do projeto, a veracidade das informações prestadas e a conformidade da execução com a legislação aplicável.",
+      "secao": null,
+      "capitulo": null,
+      "titulo": "Do Licenciamento Urbanístico e Edilício",
+      "parte": null,
+      "paragrafos": [],
+      "incisos": [],
+      "alineas": []
+    },
+    {
+      "type": "artigo",
+      "numero": 89,
+      "content": "A Carta de Habitação (Habite-se) será emitida com base em declaração do responsável técnico de que a execução da obra está em conformidade com o projeto aprovado, nos termos definidos em regulamento.",
+      "secao": null,
+      "capitulo": null,
+      "titulo": "Do Licenciamento Urbanístico e Edilício",
+      "parte": null,
+      "paragrafos": [],
+      "incisos": [],
+      "alineas": []
+    },
+    {
+      "type": "artigo",
+      "numero": 90,
+      "content": "O Estudo de Impacto de Vizinhança (EIV) é o instrumento urbanístico destinado a avaliar os efeitos positivos e negativos de empreendimentos ou atividades sobre a qualidade de vida urbana, a infraestrutura urbana e o entorno imediato, visando compatibilizá-los com as condições da vizinhança consolidada, sendo exigido nos casos definidos no Anexo 7 desta Lei Complementar.\n**Parágrafo único** O Estudo de Impacto de Vizinhança será exigido para as atividades e tipologias previstos no Anexo 7, e deverá ser requerido previamente à análise do projeto arquitetônico ou do projeto de parcelamento do solo, conforme o caso.",
+      "secao": null,
+      "capitulo": null,
+      "titulo": "Do Estudo de Impacto de Vizinhança",
+      "parte": null,
+      "paragrafos": [
+        {
+          "tipo": "paragrafo_unico",
+          "content": "O Estudo de Impacto de Vizinhança será exigido para as atividades e tipologias previstos no Anexo 7, e deverá ser requerido previamente à análise do projeto arquitetônico ou do projeto de parcelamento do solo, conforme o caso."
+        }
+      ],
+      "incisos": [],
+      "alineas": []
+    },
+    {
+      "type": "artigo",
+      "numero": 91,
+      "content": "Independentemente de previsão no Anexo 7 desta Lei Complementar, poderá ser proposto EIV com a finalidade de solicitar a aplicação de parâmetros urbanísticos diferenciados daqueles previstos para a ZOT em que se localiza o empreendimento.\n**Parágrafo único** A aprovação do EIV, nos termos do caput, implicará o estabelecimento de regime urbanístico específico, aplicável exclusivamente ao empreendimento.",
+      "secao": null,
+      "capitulo": null,
+      "titulo": "Do Estudo de Impacto de Vizinhança",
+      "parte": null,
+      "paragrafos": [
+        {
+          "tipo": "paragrafo_unico",
+          "content": "A aprovação do EIV, nos termos do caput, implicará o estabelecimento de regime urbanístico específico, aplicável exclusivamente ao empreendimento."
+        }
+      ],
+      "incisos": [],
+      "alineas": []
+    },
+    {
+      "type": "artigo",
+      "numero": 92,
+      "content": "A elaboração do EIV não substitui a elaboração e a aprovação de Estudo de Impacto Ambiental (EIA), quando exigido nos termos da legislação ambiental.",
+      "secao": null,
+      "capitulo": null,
+      "titulo": "Do Estudo de Impacto de Vizinhança",
+      "parte": null,
+      "paragrafos": [],
+      "incisos": [],
+      "alineas": []
+    },
+    {
+      "type": "artigo",
+      "numero": 93,
+      "content": "O EIV consistirá em documento único, devendo conter a proposta preliminar do empreendimento, o Termo de Referência, os estudos exigidos, as medidas mitigadoras e compensatórias propostas, o parecer técnico conclusivo do Comitê dos Estudos de Impacto de Vizinhança (CEIV), o relatório simplificado de audiência pública e o ato formal de aprovação do EIV por deliberação do Conselho Municipal de Desenvolvimento Urbano Ambiental (CMDUA).",
+      "secao": null,
+      "capitulo": null,
+      "titulo": "Do Estudo de Impacto de Vizinhança",
+      "parte": null,
+      "paragrafos": [],
+      "incisos": [],
+      "alineas": []
+    },
+    {
+      "type": "artigo",
+      "numero": 94,
+      "content": "O EIV deverá conter a avaliação dos seguintes aspectos:\n– adensamento populacional;\n– equipamentos urbanos e comunitários;\n– uso e ocupação do solo;\n– valorização imobiliária;\n– mobilidade urbana, geração de tráfego e demanda por transporte público;\n– condições de ventilação e iluminação natural;\n– paisagem urbana e patrimônio natural e cultural.",
+      "secao": null,
+      "capitulo": null,
+      "titulo": "Do Estudo de Impacto de Vizinhança",
+      "parte": null,
+      "paragrafos": [],
+      "incisos": [],
+      "alineas": []
+    },
+    {
+      "type": "artigo",
+      "numero": 95,
+      "content": "O EIV deverá incluir, obrigatoriamente, os seguintes estudos, sem prejuízo de outros definidos regulamento:\n– Estudo de Impacto de Tráfego;\n– Simulação de Sombras, Ventilação e Iluminância Natural;\n– Estudo de Capacidade da Infraestrutura Urbana;\n– Estudo de Compatibilidade de Usos;\n– Avaliação de Impacto Visual e Paisagístico.\n**Parágrafo único** O estudo de valorização imobiliária será exigido exclusivamente nos casos previstos no art. 91 desta Lei Complementar, quando o empreendimento pretender superar o coeficiente de aproveitamento máximo da ZOT em que estiver inserido.",
+      "secao": null,
+      "capitulo": null,
+      "titulo": "Do Estudo de Impacto de Vizinhança",
+      "parte": null,
+      "paragrafos": [
+        {
+          "tipo": "paragrafo_unico",
+          "content": "O estudo de valorização imobiliária será exigido exclusivamente nos casos previstos no art. 91 desta Lei Complementar, quando o empreendimento pretender superar o coeficiente de aproveitamento máximo da ZOT em que estiver inserido."
+        }
+      ],
+      "incisos": [],
+      "alineas": []
+    },
+    {
+      "type": "artigo",
+      "numero": 96,
+      "content": "A elaboração, o protocolo, a análise e a aprovação do EIV obedecerão aos prazos e condições estabelecidos em regulamento do órgão de planejamento urbano.",
+      "secao": null,
+      "capitulo": null,
+      "titulo": "Do Estudo de Impacto de Vizinhança",
+      "parte": null,
+      "paragrafos": [],
+      "incisos": [],
+      "alineas": []
+    },
+    {
+      "type": "artigo",
+      "numero": 97,
+      "content": "O requerente deverá solicitar ao Município a emissão do Termo de Referência para a elaboração do EIV, que definirá o escopo, os parâmetros técnicos e os elementos mínimos de diagnóstico a serem considerados no estudo.",
+      "secao": null,
+      "capitulo": null,
+      "titulo": "Do Estudo de Impacto de Vizinhança",
+      "parte": null,
+      "paragrafos": [],
+      "incisos": [],
+      "alineas": []
+    },
+    {
+      "type": "artigo",
+      "numero": 98,
+      "content": "A análise do EIV caberá ao Comitê dos Estudos de Impacto de Vizinhança (CEIV), com composição e atribuições definidas em regulamento.\n**Parágrafo único** O CEIV terá atuação contínua ao longo de todas as etapas do procedimento, cabendo-lhe, entre outras atribuições definidas em regulamento:\n– emitir o Termo de Referência para a elaboração do Estudo de Impacto de Vizinhança;\n– analisar e aprovar todos os estudos apresentados pelo requerente, podendo solicitar ajustes e correções;\n– acompanhar a tramitação do processo, zelando pelo cumprimento dos prazos e pela adequada instrução dos autos;\n– proferir despachos e manifestações técnicas necessárias à regularidade do procedimento;\n– emitir parecer técnico conclusivo ao final da tramitação do estudo, opinando pelo deferimento ou indeferimento do EIV, com identificação clara das medidas mitigadoras e compensatórias a cargo do requerente, previamente à realização de audiência pública.",
+      "secao": null,
+      "capitulo": null,
+      "titulo": "Do Estudo de Impacto de Vizinhança",
+      "parte": null,
+      "paragrafos": [
+        {
+          "tipo": "paragrafo_unico",
+          "content": "O CEIV terá atuação contínua ao longo de todas as etapas do procedimento, cabendo-lhe, entre outras atribuições definidas em regulamento:"
+        }
+      ],
+      "incisos": [],
+      "alineas": []
+    },
+    {
+      "type": "artigo",
+      "numero": 99,
+      "content": "O parecer técnico conclusivo emitido pelo CEIV deverá conter recomendações claras e exequíveis, delimitando de forma objetiva as intervenções, condicionantes e medidas necessárias para a mitigação ou compensação dos impactos identificados.",
+      "secao": null,
+      "capitulo": null,
+      "titulo": "Do Estudo de Impacto de Vizinhança",
+      "parte": null,
+      "paragrafos": [],
+      "incisos": [],
+      "alineas": []
+    },
+    {
+      "type": "artigo",
+      "numero": 100,
+      "content": "Com o parecer técnico conclusivo, o EIV será objeto de audiência pública, a cargo do requerente e com supervisão do Município.",
+      "secao": null,
+      "capitulo": null,
+      "titulo": "Do Estudo de Impacto de Vizinhança",
+      "parte": null,
+      "paragrafos": [],
+      "incisos": [],
+      "alineas": []
+    },
+    {
+      "type": "artigo",
+      "numero": 101,
+      "content": "Após a realização de audiência pública, o EIV será submetido ao CMDUA, para deliberação e aprovação por maioria simples.",
+      "secao": null,
+      "capitulo": null,
+      "titulo": "Do Estudo de Impacto de Vizinhança",
+      "parte": null,
+      "paragrafos": [],
+      "incisos": [],
+      "alineas": []
+    },
+    {
+      "type": "artigo",
+      "numero": 102,
+      "content": "Após a aprovação do EIV, o requerente será convocado para assinar Termo de Compromisso que formalizará todas as medidas de mitigação e compensação dos impactos urbanísticos do projeto, sendo seu cumprimento condição para a emissão do Habite-se do empreendimento.\n**Parágrafo único** O Termo de Compromisso poderá prever o faseamento da execução das obrigações, admitindo-se, nesse caso, a emissão de habite-se parcial, vinculada ao cumprimento de etapas específicas.",
+      "secao": null,
+      "capitulo": null,
+      "titulo": "Do Estudo de Impacto de Vizinhança",
+      "parte": null,
+      "paragrafos": [
+        {
+          "tipo": "paragrafo_unico",
+          "content": "O Termo de Compromisso poderá prever o faseamento da execução das obrigações, admitindo-se, nesse caso, a emissão de habite-se parcial, vinculada ao cumprimento de etapas específicas."
+        }
+      ],
+      "incisos": [],
+      "alineas": []
+    },
+    {
+      "type": "artigo",
+      "numero": 103,
+      "content": "Quando exigido no parcelamento do solo, o pedido de diretrizes de Estudo de Impacto de Vizinhança terá tramitação conjunta com as diretrizes de parcelamento, e sua aprovação será condição para a emissão do Parecer de Viabilidade de Projeto Urbanístico, observado o disposto em regulamentação específica, que compatibilizará suas exigências com as etapas, os procedimentos e as peculiaridades do processo de parcelamento do solo.",
+      "secao": null,
+      "capitulo": null,
+      "titulo": "Do Estudo de Impacto de Vizinhança",
+      "parte": null,
+      "paragrafos": [],
+      "incisos": [],
+      "alineas": []
+    },
+    {
+      "type": "artigo",
+      "numero": 104,
+      "content": "Independentemente do enquadramento na tabela do Anexo 7, são dispensadas da exigência de EIV:\n– as intervenções destinadas exclusivamente à adequação de edificações ou empreendimentos preexistentes, quando compatíveis com a estrutura urbana e a paisagem consolidada;\n– as modificações ou ampliações de projetos já licenciados, desde que não impliquem alteração substancial do porte ou da volumetria originalmente aprovados.",
+      "secao": null,
+      "capitulo": null,
+      "titulo": "Do Estudo de Impacto de Vizinhança",
+      "parte": null,
+      "paragrafos": [],
+      "incisos": [],
+      "alineas": []
+    },
+    {
+      "type": "artigo",
+      "numero": 105,
+      "content": "No caso de operação urbana consorciada, o EIV será elaborado previamente à instituição da operação, integrando os elementos de instrução do respectivo projeto de lei, nos termos do art. 33 da Lei Federal nº 10.257, de 10 de julho de 2001 (Estatuto da Cidade).\n**Parágrafo único** A elaboração do EIV será dispensada nos casos em que a avaliação de impacto for realizada por meio de Estudo de Impacto Ambiental – EIA, acompanhado de Relatório de Impacto Ambiental – RIMA ou Documento Síntese – DS, desde que os conteúdos de análise previstos nos arts. 94 e 95 desta Lei Complementar estejam integralmente contemplados.",
+      "secao": null,
+      "capitulo": null,
+      "titulo": "Do Estudo de Impacto de Vizinhança",
+      "parte": null,
+      "paragrafos": [
+        {
+          "tipo": "paragrafo_unico",
+          "content": "A elaboração do EIV será dispensada nos casos em que a avaliação de impacto for realizada por meio de Estudo de Impacto Ambiental – EIA, acompanhado de Relatório de Impacto Ambiental – RIMA ou Documento Síntese – DS, desde que os conteúdos de análise previstos nos arts. 94 e 95 desta Lei Complementar estejam integralmente contemplados."
+        }
+      ],
+      "incisos": [],
+      "alineas": []
+    },
+    {
+      "type": "artigo",
+      "numero": 106,
+      "content": "A outorga onerosa do direito de construir (OODC) é a autorização concedida pelo Município para utilização de potencial construtivo adicional além do coeficiente de aproveitamento básico do lote, até o limite do coeficiente de aproveitamento máximo, mediante contrapartida definida nesta Lei Complementar.",
+      "secao": null,
+      "capitulo": null,
+      "titulo": "Da Outorga Onerosa do Direito de Construir",
+      "parte": null,
+      "paragrafos": [],
+      "incisos": [],
+      "alineas": []
+    },
+    {
+      "type": "artigo",
+      "numero": 107,
+      "content": "No curso do procedimento de licenciamento urbanístico e edilício, mediante concessão da outorga onerosa do direito de construir, o aproveitamento do terreno poderá superar o coeficiente de aproveitamento básico, até o limite do coeficiente de aproveitamento máximo permitido.",
+      "secao": null,
+      "capitulo": null,
+      "titulo": "Da Outorga Onerosa do Direito de Construir",
+      "parte": null,
+      "paragrafos": [],
+      "incisos": [],
+      "alineas": []
+    },
+    {
+      "type": "artigo",
+      "numero": 108,
+      "content": "A contrapartida pecuniária devida pela outorga onerosa do direito de construir será calculada pela seguinte fórmula:\nVC = (VMT × AC × FP) ÷ CA\n**Parágrafo único** Para fins da fórmula prevista no caput, aplicam-se as seguintes definições:\n– VC: valor da contrapartida devida pela outorga onerosa do direito de construir;\n– VMT: valor de mercado do metro quadrado do terreno, apurado por face de quarteirão;\n– AC: área construída adicional pretendida no projeto;\n– FP: fator de planejamento;\n– CA: coeficiente de aproveitamento básico da face de quarteirão.",
+      "secao": null,
+      "capitulo": null,
+      "titulo": "Da Outorga Onerosa do Direito de Construir",
+      "parte": null,
+      "paragrafos": [
+        {
+          "tipo": "paragrafo_unico",
+          "content": "Para fins da fórmula prevista no caput, aplicam-se as seguintes definições:"
+        }
+      ],
+      "incisos": [],
+      "alineas": []
+    },
+    {
+      "type": "artigo",
+      "numero": 109,
+      "content": "O fator de planejamento (FP) terá coeficiente variável entre zero (0) e um inteiro e cinco décimos (1,5), considerados os seguintes aspectos:\n– disponibilidade de infraestrutura e equipamentos públicos capazes de suportar maior adensamento;\n– interesse em estimular o desenvolvimento urbano de determinada área;\n– incentivo à implantação de habitação de interesse social;\n– conveniência de restringir a ocupação de áreas sujeitas à sobrecarga de infraestrutura, riscos geotécnicos, hidrológicos ou outros fatores de interesse público.\n**Parágrafo único** Na ausência regulamento que defina o fator de planejamento, será aplicado o valor um inteiro (1,0).",
+      "secao": null,
+      "capitulo": null,
+      "titulo": "Da Outorga Onerosa do Direito de Construir",
+      "parte": null,
+      "paragrafos": [
+        {
+          "tipo": "paragrafo_unico",
+          "content": "Na ausência regulamento que defina o fator de planejamento, será aplicado o valor um inteiro (1,0)."
+        }
+      ],
+      "incisos": [],
+      "alineas": []
+    },
+    {
+      "type": "artigo",
+      "numero": 110,
+      "content": "O valor da contrapartida apurado nos termos do art. 108 desta Lei Complementar será atualizado anualmente com base no Índice Geral de Preços – Mercado (IGP-M) e será reavaliado pelo Poder Executivo a cada quatro anos, conforme condições de mercado.",
+      "secao": null,
+      "capitulo": null,
+      "titulo": "Da Outorga Onerosa do Direito de Construir",
+      "parte": null,
+      "paragrafos": [],
+      "incisos": [],
+      "alineas": []
+    },
+    {
+      "type": "artigo",
+      "numero": 111,
+      "content": "São isentas do pagamento da contrapartida da outorga onerosa do direito de construir:\n– edificações destinadas à habitação de interesse social enquadradas na faixa de menor renda definida pela política habitacional federal vigente;\n– edificações existentes ou regularizadas, nos casos de reciclagem de uso ou de reforma sem ampliação da área construída;\n– edificações destinadas a equipamentos públicos urbanos e comunitários;\n– edificações públicas voltadas à prestação de serviços à população ou ao exercício de funções institucionais da Administração Pública, em qualquer esfera ou Poder;\n– edificações destinadas a instituições de ensino formal, de nível fundamental, médio ou superior, hospitais e instituições de longa permanência para idosos, ainda que de natureza privada.\n**Parágrafo único** Regulamento disporá sobre a concessão de isenções e descontos relativos ao pagamento da outorga onerosa do direito de construir para edificações destinadas à habitação de interesse social, conforme as demais faixas de renda definidas pela política habitacional federal vigente.",
+      "secao": null,
+      "capitulo": null,
+      "titulo": "Da Outorga Onerosa do Direito de Construir",
+      "parte": null,
+      "paragrafos": [
+        {
+          "tipo": "paragrafo_unico",
+          "content": "Regulamento disporá sobre a concessão de isenções e descontos relativos ao pagamento da outorga onerosa do direito de construir para edificações destinadas à habitação de interesse social, conforme as demais faixas de renda definidas pela política habitacional federal vigente."
+        }
+      ],
+      "incisos": [],
+      "alineas": []
+    },
+    {
+      "type": "artigo",
+      "numero": 112,
+      "content": "Os recursos provenientes da outorga onerosa do direito de construir serão destinados em partes iguais ao Fundo Municipal de Gestão de Território – FMGT, instituído pela Lei Complementar nº 946, de 18 de julho de 2022, e ao Fundo Municipal de Habitação de Interesse Social – FMHIS, instituído pela Lei Complementar nº 612, de 19 de fevereiro de 2009.",
+      "secao": null,
+      "capitulo": null,
+      "titulo": "Da Outorga Onerosa do Direito de Construir",
+      "parte": null,
+      "paragrafos": [],
+      "incisos": [],
+      "alineas": []
+    },
+    {
+      "type": "artigo",
+      "numero": 113,
+      "content": "O Poder Executivo poderá suspender, por decreto, a concessão da OODC em unidades territoriais específicas, quando houver diagnóstico técnico do Centro de Inteligência Territorial (CIT) que identifique a necessidade de incremento da infraestrutura urbana.",
+      "secao": null,
+      "capitulo": null,
+      "titulo": "Da Outorga Onerosa do Direito de Construir",
+      "parte": null,
+      "paragrafos": [],
+      "incisos": [],
+      "alineas": []
+    },
+    {
+      "type": "artigo",
+      "numero": 114,
+      "content": "O Poder Executivo poderá formalizar, por meio de Termo de Outorga com Contrapartida (TOC), a prestação de contrapartida não pecuniária pela outorga onerosa do direito de construir, admitindo-se, para esse fim, a entrega de imóvel, permuta de área construída, fornecimento de bens, execução de obras ou prestação de serviços, inclusive de engenharia.\n**Parágrafo único** A contrapartida prevista no caput somente será admitida quando vinculada aos objetivos da política urbana do Município e às finalidades previstas nos arts. 26 e 31 do Estatuto da Cidade.",
+      "secao": null,
+      "capitulo": null,
+      "titulo": "Da Outorga Onerosa do Direito de Construir",
+      "parte": null,
+      "paragrafos": [
+        {
+          "tipo": "paragrafo_unico",
+          "content": "A contrapartida prevista no caput somente será admitida quando vinculada aos objetivos da política urbana do Município e às finalidades previstas nos arts. 26 e 31 do Estatuto da Cidade."
+        }
+      ],
+      "incisos": [],
+      "alineas": []
+    },
+    {
+      "type": "artigo",
+      "numero": 115,
+      "content": "Quando o valor da outorga onerosa do direito de construir exceder o orçamento da contrapartida pactuada, o Termo de Outorga com Contrapartida (TOC) poderá ser aditado até o valor total devido, para contemplar novas contrapartidas vinculadas aos arts. 26 e 31 do Estatuto da Cidade.\n**Parágrafo único** O saldo não executado ou não convertido em contrapartida será quitado pelo beneficiário em pecúnia, com destinação proporcional na forma do art. 112 desta Lei Complementar.",
+      "secao": null,
+      "capitulo": null,
+      "titulo": "Da Outorga Onerosa do Direito de Construir",
+      "parte": null,
+      "paragrafos": [
+        {
+          "tipo": "paragrafo_unico",
+          "content": "O saldo não executado ou não convertido em contrapartida será quitado pelo beneficiário em pecúnia, com destinação proporcional na forma do art. 112 desta Lei Complementar."
+        }
+      ],
+      "incisos": [],
+      "alineas": []
+    },
+    {
+      "type": "artigo",
+      "numero": 116,
+      "content": "O TOC poderá prever, como contrapartida, o fornecimento ou desenvolvimento de soluções tecnológicas voltadas ao controle do ordenamento territorial e ao direcionamento da expansão urbana, nos seguintes casos:\n– apoio à gestão do planejamento urbano por meio de sistemas de informação geográfica, geoprocessamento, georreferenciamento, modelagem e simulações;\n– automação e racionalização dos processos de licenciamento urbanístico e ambiental, com suporte à análise de impactos sobre as estruturas urbanas e o patrimônio cultural, ambiental e paisagístico.",
+      "secao": null,
+      "capitulo": null,
+      "titulo": "Da Outorga Onerosa do Direito de Construir",
+      "parte": null,
+      "paragrafos": [],
+      "incisos": [],
+      "alineas": []
+    },
+    {
+      "type": "artigo",
+      "numero": 117,
+      "content": "A concessão da outorga onerosa do direito de construir será vinculada ao projeto arquitetônico aprovado e licenciado, admitido o ressarcimento da quantia paga, mediante requerimento, quando o direito de construir não for exercido, hipótese em que o alvará de construção será extinto.",
+      "secao": null,
+      "capitulo": null,
+      "titulo": "Da Outorga Onerosa do Direito de Construir",
+      "parte": null,
+      "paragrafos": [],
+      "incisos": [],
+      "alineas": []
+    },
+    {
+      "type": "artigo",
+      "numero": 118,
+      "content": "Regulamento disporá sobre as condições de pagamento da outorga onerosa do direito de construir, bem como sobre os requisitos e o procedimento para a formalização do Termo de Outorga com Contrapartida.",
+      "secao": null,
+      "capitulo": null,
+      "titulo": "Da Outorga Onerosa do Direito de Construir",
+      "parte": null,
+      "paragrafos": [],
+      "incisos": [],
+      "alineas": []
+    },
+    {
+      "type": "artigo",
+      "numero": 119,
+      "content": "Os projetos de parcelamento do solo, os projetos de edificação, os projetos especiais de impacto urbano e os demais requerimentos de licenciamento edilício protocolados antes da entrada em vigor desta Lei Complementar serão analisados, processados e executados conforme a legislação vigente à época de seu protocolo.",
+      "secao": null,
+      "capitulo": null,
+      "titulo": "Das Disposições Finais e Transitórias",
+      "parte": null,
+      "paragrafos": [],
+      "incisos": [],
+      "alineas": []
+    },
+    {
+      "type": "artigo",
+      "numero": 120,
+      "content": "As edificações comprovadamente existentes há mais de 15 (quinze) anos, conforme registros do cadastro imobiliário municipal ou por meio de documentação idônea, serão consideradas conformes para fins urbanísticos, devendo observar a legislação vigente apenas na parte a construir, sem prejuízo da aplicação integral das normas de proteção contra incêndio à totalidade da edificação.",
+      "secao": null,
+      "capitulo": null,
+      "titulo": "Das Disposições Finais e Transitórias",
+      "parte": null,
+      "paragrafos": [],
+      "incisos": [],
+      "alineas": []
+    },
+    {
+      "type": "artigo",
+      "numero": 121,
+      "content": "Os processos administrativos de modificação de projetos aprovados sob a vigência do traçado e do regime urbanístico previstos no Plano Diretor anterior a esta Lei Complementar serão analisados com base nesse mesmo traçado e regime, quando a modificação decorrer, comprovadamente:\n– da necessidade de adequação do projeto à configuração da gleba ou do lote de terreno, em razão de divergência com o assentamento registral, comprovada por meio de dúvida suscitada perante o juízo competente, de decisão proferida em procedimento judicial de retificação ou em ação judicial de anulação do registro, nos termos dos arts. 196 a 216 da Lei Federal nº 6.015, de 31 de dezembro de 1973;\n– de decisão judicial superveniente que altere a configuração da gleba ou do lote de terreno, inclusive em decorrência de sentença com efeitos sobre a delimitação e titularidade registral do imóvel.\n**Parágrafo único** Para os fins deste artigo, a construção deverá ser licenciada e as obras deverão ser iniciadas no prazo de 3 (três) anos, contado da data do trânsito em julgado da decisão judicial que fundamentar a modificação.",
+      "secao": null,
+      "capitulo": null,
+      "titulo": "Das Disposições Finais e Transitórias",
+      "parte": null,
+      "paragrafos": [
+        {
+          "tipo": "paragrafo_unico",
+          "content": "Para os fins deste artigo, a construção deverá ser licenciada e as obras deverão ser iniciadas no prazo de 3 (três) anos, contado da data do trânsito em julgado da decisão judicial que fundamentar a modificação."
+        }
+      ],
+      "incisos": [],
+      "alineas": []
+    },
+    {
+      "type": "artigo",
+      "numero": 122,
+      "content": "Integram esta Lei Complementar os seguintes anexos:\n– Anexo 1 - Mapa – Zonas de Ordenamento Territorial (ZOT);\n– Anexo 2 – Tabelas – ZOT;\n– Anexo 2.1 – ZOT 1;\n– Anexo 2.2 – ZOT 2;\n– Anexo 2.3 – ZOT 3;\n– Anexo 2.4 – ZOT 4;\n– Anexo 2.5 – ZOT 5;\n– Anexo 2.6 – ZOT 6;\n– Anexo 2.7 – ZOT 7;\n– Anexo 2.8 – ZOT 8;\n– Anexo 2.9 – ZOT 9;\n– Anexo 2.10 – ZOT 10;\n– Anexo 2.11 – ZOT 11;\n– Anexo 2.12 – ZOT 12;\n– Anexo 2.13 – ZOT 13;\n– Anexo 2.14 – ZOT 14;\n– Anexo 2.15 – ZOT 15;\n– Anexo 2.16 – ZOT 16;\n– Anexo 3 – Atividades e Prédios Preexistentes;\n– Anexo 4 – Controle de Polarização;\n– Anexo 5 – Recuo de Jardim;\n– Anexo 6 – Medidas Alternativas da Taxa de Permeabilidade;\n– Anexo 7 – Empreendimentos ao Estudo de Impacto de Vizinhança (EIV).",
+      "secao": null,
+      "capitulo": null,
+      "titulo": "Das Disposições Finais e Transitórias",
+      "parte": null,
+      "paragrafos": [],
+      "incisos": [],
+      "alineas": []
+    },
+    {
+      "type": "artigo",
+      "numero": 123,
+      "content": "Esta Lei Complementar entra em vigor 180 (cento e oitenta) dias após sua publicação.",
+      "secao": null,
+      "capitulo": null,
+      "titulo": "Das Disposições Finais e Transitórias",
+      "parte": null,
+      "paragrafos": [],
+      "incisos": [],
+      "alineas": []
+    }
+  ],
+  "fullHierarchy": []
+}

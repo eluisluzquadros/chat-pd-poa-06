@@ -1,0 +1,13 @@
+# Art. 158º
+
+**Hierarquia:** PLANEJAMENTO, GESTÃO E EXECUÇÃO DA POLÍTICA URBANA > Dos Instrumentos Urbanísticos
+
+O plano de pormenor será composto, no mínimo, por:
+– documento textual contendo a caracterização da área pormenorizada, os enquadramentos legais e administrativos, os instrumentos urbanísticos aplicáveis, as intervenções previstas e as etapas de implementação;
+– representação gráfica da implantação do plano, incluindo a proposta de ordenamento do uso do solo e as intervenções previstas.
+
+
+
+
+
+
