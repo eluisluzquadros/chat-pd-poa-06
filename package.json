@@ -13,7 +13,8 @@
     "deploy:functions": "cd backend/supabase && npx supabase functions deploy",
     "deploy:all": "npm run build && npm run deploy:functions",
     "test": "cd tests && npm test",
-    "clean": "rm -rf node_modules frontend/node_modules frontend/dist"
+    "clean": "rm -rf node_modules frontend/node_modules frontend/dist",
+    "build:dev": "vite build --mode development"
   },
   "devDependencies": {
     "concurrently": "^8.2.2"
