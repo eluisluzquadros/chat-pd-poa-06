@@ -14,6 +14,8 @@ import {
 import { SystemVersionIndicator } from '@/components/admin/SystemVersionIndicator';
 import { toast } from 'sonner';
 import { unifiedRAGService } from '@/lib/unifiedRAGService';
+import { SimpleRoleGuard } from '@/components/SimpleRoleGuard';
+import { Header } from '@/components/Header';
 
 // Import only the working components
 import { QATestCasesList } from '@/components/admin/QATestCasesList';
@@ -39,7 +41,7 @@ interface ValidationProgress {
   status: string;
 }
 
-export default function QualityV2() {
+function QualityV2() {
   const [metrics, setMetrics] = useState<Metrics>({
     totalValidationRuns: 0,
     avgAccuracy: 0,
@@ -340,7 +342,11 @@ export default function QualityV2() {
   }, []);
 
   return (
-    <div className="space-y-6 p-6">
+    <SimpleRoleGuard adminOnly={true}>
+      <div className="min-h-screen bg-background">
+        <Header />
+        <main className="container mx-auto px-6 py-8 max-w-7xl">
+          <div className="space-y-6">
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
@@ -620,6 +626,11 @@ export default function QualityV2() {
           <CognitiveAnalysisPanel />
         </TabsContent>
       </Tabs>
-    </div>
+          </div>
+        </main>
+      </div>
+    </SimpleRoleGuard>
   );
 }
+
+export default QualityV2;

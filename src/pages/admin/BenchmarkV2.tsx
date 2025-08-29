@@ -20,6 +20,8 @@ import { AgenticRAGBenchmark } from '@/components/admin/AgenticRAGBenchmark';
 import { toast } from 'sonner';
 import { unifiedRAGService } from '@/lib/unifiedRAGService';
 import { UPDATED_MODEL_CONFIGS } from '@/config/llm-models-2025';
+import { SimpleRoleGuard } from '@/components/SimpleRoleGuard';
+import { Header } from '@/components/Header';
 
 interface BenchmarkMetrics {
   totalBenchmarks: number;
@@ -56,7 +58,7 @@ interface BenchmarkProgress {
   estimatedTimeRemaining: number;
 }
 
-export default function BenchmarkV2() {
+function BenchmarkV2() {
   const [metrics, setMetrics] = useState<BenchmarkMetrics>({
     totalBenchmarks: 0,
     bestQualityModel: { model: 'N/A', score: 0 },
@@ -452,7 +454,11 @@ export default function BenchmarkV2() {
   }, []);
 
   return (
-    <div className="space-y-6 p-6">
+    <SimpleRoleGuard adminOnly={true}>
+      <div className="min-h-screen bg-background">
+        <Header />
+        <main className="container mx-auto px-6 py-8 max-w-7xl">
+          <div className="space-y-6">
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
@@ -875,6 +881,11 @@ export default function BenchmarkV2() {
           </div>
         </DialogContent>
       </Dialog>
-    </div>
+          </div>
+        </main>
+      </div>
+    </SimpleRoleGuard>
   );
 }
+
+export default BenchmarkV2;

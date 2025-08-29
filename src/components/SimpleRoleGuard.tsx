@@ -17,22 +17,16 @@ export const SimpleRoleGuard = ({
   children, 
   adminOnly = false,
   supervisorOnly = false,
-  redirectTo = "/auth" 
+  redirectTo = "/chat" 
 }: SimpleRoleGuardProps) => {
   const [isInitializing, setIsInitializing] = useState(true);
   const [hasAccess, setHasAccess] = useState(false);
   const [userRole, setUserRole] = useState<string | null>(null);
   const location = useLocation();
   
-  // Limpar caches problemáticos no início
+  // Log de inicialização sem limpeza de cache
   useEffect(() => {
-    console.log("🧹 SimpleRoleGuard: Limpando caches");
-    // Limpar todos os caches de role
-    Object.keys(sessionStorage).forEach(key => {
-      if (key.includes('role') || key.includes('auth-cache')) {
-        sessionStorage.removeItem(key);
-      }
-    });
+    console.log("🔍 SimpleRoleGuard: Iniciando verificação sem limpeza de cache");
   }, []);
   
   // Verificação simplificada e direta
