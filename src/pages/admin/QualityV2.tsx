@@ -13,14 +13,15 @@ import {
 } from 'lucide-react';
 import { SystemVersionIndicator } from '@/components/admin/SystemVersionIndicator';
 import { toast } from 'sonner';
-import { unifiedRAGService } from '@/lib/unifiedRAGService';
 import { SimpleRoleGuard } from '@/components/SimpleRoleGuard';
 import { Header } from '@/components/Header';
+import { useQAValidator } from '@/hooks/useQAValidator';
 
-// Import only the working components
+// Import components
 import { QATestCasesList } from '@/components/admin/QATestCasesList';
 import { QAExecutionHistory } from '@/components/admin/QAExecutionHistory';
 import { CognitiveAnalysisPanel } from '@/components/admin/CognitiveAnalysisPanel';
+import { QAValidationConfigPanel } from '@/components/admin/QAValidationConfigPanel';
 
 interface Metrics {
   totalValidationRuns: number;
@@ -62,9 +63,13 @@ function QualityV2() {
     status: ''
   });
 
-  const [selectedTab, setSelectedTab] = useState('overview');
+  const [selectedTab, setSelectedTab] = useState('config');
   const [testResults, setTestResults] = useState<any[]>([]);
   const [modelPerformance, setModelPerformance] = useState<any[]>([]);
+  const [selectedRunId, setSelectedRunId] = useState<string | null>(null);
+  
+  // Use the enhanced QA validator hook
+  const { runValidation: executeValidation, isRunning, progress } = useQAValidator();
 
   // Fetch metrics and data
   const fetchMetrics = async () => {
@@ -158,6 +163,11 @@ function QualityV2() {
         .limit(100);
 
       setTestResults(results || []);
+      
+      // Set the most recent run ID for cognitive analysis
+      if (runs && runs.length > 0) {
+        setSelectedRunId(runs[0].id);
+      }
 
     } catch (error) {
       console.error('Error fetching metrics:', error);
@@ -167,150 +177,30 @@ function QualityV2() {
     }
   };
 
-  // Run validation
-  const runValidation = async (options: {
-    model?: string;
-    mode?: 'all' | 'sample' | 'specific';
-    testCaseIds?: string[];
-    sampleSize?: number;
-  }) => {
+  // Handle validation execution from new config panel
+  const handleValidationExecution = async (config: any) => {
     try {
-      setValidationProgress({
-        isRunning: true,
-        current: 0,
-        total: options.sampleSize || 121,
-        percentage: 0,
-        currentModel: options.model || 'gpt-3.5-turbo',
-        status: 'Iniciando validação...'
-      });
+      // Convert config to format expected by useQAValidator
+      const validationOptions = {
+        models: config.models,
+        mode: config.executionMode,
+        randomCount: config.randomCount,
+        categories: config.categories,
+        difficulties: config.difficulties,
+        includeSQL: config.includeSQL,
+        excludeSQL: config.excludeSQL
+      };
 
-      // Get test cases based on mode
-      let query = supabase
-        .from('qa_test_cases')
-        .select('*')
-        .eq('is_active', true);
-
-      if (options.mode === 'specific' && options.testCaseIds) {
-        query = query.in('id', options.testCaseIds.map(id => parseInt(id)));
-      } else if (options.mode === 'sample' && options.sampleSize) {
-        query = query.limit(options.sampleSize);
-      }
-
-      const { data: testCases, error: testError } = await query;
-
-      if (testError || !testCases?.length) {
-        throw new Error('Nenhum caso de teste encontrado');
-      }
-
-      // Create validation run
-      const { data: run, error: runError } = await supabase
-        .from('qa_validation_runs')
-        .insert({
-          model: options.model || 'gpt-3.5-turbo',
-          total_tests: testCases.length,
-          passed_tests: 0,
-          overall_accuracy: 0,
-          status: 'running',
-          started_at: new Date().toISOString()
-        })
-        .select()
-        .single();
-
-      if (runError || !run) {
-        throw new Error('Erro ao criar execução de validação');
-      }
-
-      // Process test cases
-      let passed = 0;
-      let totalAccuracy = 0;
-
-      for (let i = 0; i < testCases.length; i++) {
-        const testCase = testCases[i];
-        
-        setValidationProgress(prev => ({
-          ...prev,
-          current: i + 1,
-          percentage: Math.round(((i + 1) / testCases.length) * 100),
-          status: `Testando caso ${i + 1} de ${testCases.length}...`
-        }));
-
-        try {
-          // Call RAG system using unified service
-          const result = await unifiedRAGService.testQuery(
-            testCase.query || testCase.question,
-            options.model || 'gpt-3.5-turbo'
-          );
-
-          // Evaluate result
-          const isCorrect = evaluateAnswer(result.response, testCase);
-          const accuracy = calculateAccuracy(result.response, testCase);
-
-          if (isCorrect) passed++;
-          totalAccuracy += accuracy;
-
-          // Save result
-          await supabase
-            .from('qa_validation_results')
-            .insert({
-              test_case_id: testCase.id.toString(),
-              validation_run_id: run.id,
-              model: options.model || 'gpt-3.5-turbo',
-              actual_answer: result.response?.substring(0, 2000),
-              is_correct: isCorrect,
-              accuracy_score: accuracy,
-              response_time_ms: result.executionTime || 0
-            });
-
-        } catch (error) {
-          console.error(`Error testing case ${testCase.id}:`, error);
-        }
-
-        // Update run progress
-        await supabase
-          .from('qa_validation_runs')
-          .update({
-            passed_tests: passed,
-            overall_accuracy: totalAccuracy / (i + 1)
-          })
-          .eq('id', run.id);
-      }
-
-      // Complete validation
-      await supabase
-        .from('qa_validation_runs')
-        .update({
-          status: 'completed',
-          completed_at: new Date().toISOString(),
-          overall_accuracy: totalAccuracy / testCases.length,
-          avg_response_time_ms: Math.round(validationProgress.total * 1000 / testCases.length)
-        })
-        .eq('id', run.id);
-
-      toast.success(`Validação concluída! ${passed}/${testCases.length} casos aprovados`);
+      await executeValidation(validationOptions);
       
-      setValidationProgress({
-        isRunning: false,
-        current: 0,
-        total: 0,
-        percentage: 0,
-        currentModel: '',
-        status: ''
-      });
-
-      fetchMetrics();
+      // Refresh metrics after validation
+      setTimeout(() => {
+        fetchMetrics();
+      }, 2000);
 
     } catch (error) {
-      console.error('Validation error:', error);
-      toast.error(`Erro na validação: ${error.message}`);
-      
-      setValidationProgress({
-        isRunning: false,
-        current: 0,
-        total: 0,
-        percentage: 0,
-        currentModel: '',
-        status: ''
-      });
+      console.error('Validation execution error:', error);
+      toast.error(`Erro na execução: ${error.message}`);
     }
   };
 
@@ -365,37 +255,22 @@ function QualityV2() {
             <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
             Atualizar
           </Button>
-          <Button 
-            onClick={() => runValidation({ mode: 'sample', sampleSize: 10 })}
-            disabled={validationProgress.isRunning}
-          >
-            <Play className="h-4 w-4 mr-2" />
-            Teste Rápido (10 casos)
-          </Button>
-          <Button 
-            variant="default"
-            onClick={() => runValidation({ mode: 'all' })}
-            disabled={validationProgress.isRunning}
-          >
-            <Play className="h-4 w-4 mr-2" />
-            Validação Completa
-          </Button>
         </div>
       </div>
 
       {/* Progress Bar */}
-      {validationProgress.isRunning && (
+      {isRunning && progress && (
         <Card>
           <CardContent className="pt-6">
             <div className="space-y-4">
               <div className="flex justify-between text-sm">
-                <span>{validationProgress.status}</span>
-                <span>{validationProgress.percentage}%</span>
+                <span>Executando validação QA...</span>
+                <span>{progress.percentage}%</span>
               </div>
-              <Progress value={validationProgress.percentage} />
+              <Progress value={progress.percentage} />
               <div className="flex justify-between text-xs text-muted-foreground">
-                <span>Modelo: {validationProgress.currentModel}</span>
-                <span>{validationProgress.current} de {validationProgress.total}</span>
+                <span>Progresso: {progress.current} de {progress.total}</span>
+                <span>Múltiplos modelos sendo testados</span>
               </div>
             </div>
           </CardContent>
@@ -460,12 +335,19 @@ function QualityV2() {
       {/* Main Content Tabs */}
       <Tabs value={selectedTab} onValueChange={setSelectedTab}>
         <TabsList className="grid w-full grid-cols-5">
+          <TabsTrigger value="config">Configuração</TabsTrigger>
           <TabsTrigger value="overview">Visão Geral</TabsTrigger>
           <TabsTrigger value="executions">Execuções</TabsTrigger>
           <TabsTrigger value="cases">Casos de Teste</TabsTrigger>
-          <TabsTrigger value="models">Modelos</TabsTrigger>
           <TabsTrigger value="cognitive">Análise Cognitiva</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="config" className="space-y-4">
+          <QAValidationConfigPanel 
+            onExecute={handleValidationExecution}
+            isRunning={isRunning}
+          />
+        </TabsContent>
 
         <TabsContent value="overview" className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -623,7 +505,10 @@ function QualityV2() {
         </TabsContent>
 
         <TabsContent value="cognitive">
-          <CognitiveAnalysisPanel />
+          <CognitiveAnalysisPanel 
+            runId={selectedRunId || undefined}
+            autoAnalyze={false}
+          />
         </TabsContent>
       </Tabs>
           </div>

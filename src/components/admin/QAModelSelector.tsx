@@ -1,108 +1,87 @@
 import React from 'react';
-import { 
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue 
-} from '@/components/ui/select';
-import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
+import { Label } from '@/components/ui/label';
 import { UPDATED_MODEL_CONFIGS } from '@/config/llm-models-2025';
+import { Cpu, Zap, Clock, DollarSign } from 'lucide-react';
 
 interface QAModelSelectorProps {
-  selectedModel?: string;
-  onModelSelect?: (model: string) => void;
+  selectedModel: string;
+  onModelChange: (model: string) => void;
   label?: string;
-  showCosts?: boolean;
+  showDetails?: boolean;
 }
 
-// Generate available models from the updated config
-const AVAILABLE_MODELS = UPDATED_MODEL_CONFIGS
-  .filter(config => config.available)
-  .map(config => ({
-    value: `${config.provider}/${config.model}`,
-    label: config.displayName,
-    provider: config.provider.charAt(0).toUpperCase() + config.provider.slice(1),
-    description: config.description,
-    costPerInputToken: config.costPerInputToken,
-    costPerOutputToken: config.costPerOutputToken,
-    averageLatency: config.averageLatency
-  }));
-
-// Group models by provider for better UX
-const groupedModels = AVAILABLE_MODELS.reduce((acc, model) => {
-  if (!acc[model.provider]) {
-    acc[model.provider] = [];
-  }
-  acc[model.provider].push(model);
-  return acc;
-}, {} as Record<string, typeof AVAILABLE_MODELS>);
-
-const getCostBadgeVariant = (inputCost: number) => {
-  if (inputCost < 0.001) return 'default'; // Low cost
-  if (inputCost < 0.01) return 'secondary'; // Medium cost
-  return 'destructive'; // High cost
-};
-
-const getLatencyBadgeVariant = (latency: number) => {
-  if (latency < 2000) return 'default'; // Fast
-  if (latency < 4000) return 'secondary'; // Medium
-  return 'destructive'; // Slow
-};
-
 export function QAModelSelector({ 
-  selectedModel = 'anthropic/claude-3-5-sonnet-20241022', 
-  onModelSelect,
-  label = 'Modelo para Validação QA',
-  showCosts = true
+  selectedModel, 
+  onModelChange, 
+  label = "Modelo LLM",
+  showDetails = true 
 }: QAModelSelectorProps) {
-  const selectedModelInfo = AVAILABLE_MODELS.find(m => m.value === selectedModel);
-  
+  const selectedConfig = UPDATED_MODEL_CONFIGS.find(config => config.model === selectedModel);
+
+  const groupedModels = UPDATED_MODEL_CONFIGS.reduce((acc, model) => {
+    if (!acc[model.provider]) {
+      acc[model.provider] = [];
+    }
+    acc[model.provider].push(model);
+    return acc;
+  }, {} as Record<string, typeof UPDATED_MODEL_CONFIGS>);
+
+  const formatCost = (cost: number) => {
+    if (cost >= 0.01) {
+      return `$${cost.toFixed(3)}`;
+    }
+    return `$${(cost * 1000).toFixed(2)}k`;
+  };
+
+  const formatLatency = (ms: number) => {
+    if (ms >= 1000) {
+      return `${(ms / 1000).toFixed(1)}s`;
+    }
+    return `${ms}ms`;
+  };
+
   return (
     <div className="space-y-3">
-      <Label htmlFor="qa-model-select" className="text-sm font-medium">
-        {label} ({AVAILABLE_MODELS.length} disponíveis)
+      <Label className="flex items-center gap-2">
+        <Cpu className="h-4 w-4" />
+        {label}
       </Label>
-      <Select value={selectedModel} onValueChange={onModelSelect}>
-        <SelectTrigger id="qa-model-select" className="w-full">
-          <SelectValue placeholder="Selecione um modelo para testes" />
+      
+      <Select value={selectedModel} onValueChange={onModelChange}>
+        <SelectTrigger>
+          <SelectValue placeholder="Selecione um modelo">
+            {selectedConfig ? (
+              <div className="flex items-center gap-2">
+                <Badge variant="outline" className="capitalize">
+                  {selectedConfig.provider}
+                </Badge>
+                {selectedConfig.displayName}
+              </div>
+            ) : (
+              "Selecione um modelo"
+            )}
+          </SelectValue>
         </SelectTrigger>
-        <SelectContent className="max-h-[400px]">
+        <SelectContent className="max-h-80">
           {Object.entries(groupedModels).map(([provider, models]) => (
             <div key={provider}>
-              <div className="px-2 py-1 text-xs font-semibold text-muted-foreground bg-muted/50">
-                {provider} ({models.length} modelos)
+              <div className="px-2 py-1.5 text-sm font-semibold text-muted-foreground capitalize bg-muted/50">
+                {provider}
               </div>
-              {models.map((model) => (
-                <SelectItem key={model.value} value={model.value} className="pl-4">
-                  <div className="flex flex-col w-full space-y-1">
-                    <div className="flex items-center justify-between w-full">
-                      <span className="font-medium">{model.label}</span>
-                      <div className="flex gap-1">
-                        {showCosts && (
-                          <>
-                            <Badge 
-                              variant={getCostBadgeVariant(model.costPerInputToken)}
-                              className="text-xs"
-                            >
-                              ${(model.costPerInputToken * 1000).toFixed(3)}/1K
-                            </Badge>
-                            <Badge 
-                              variant={getLatencyBadgeVariant(model.averageLatency)}
-                              className="text-xs"
-                            >
-                              {model.averageLatency}ms
-                            </Badge>
-                          </>
-                        )}
-                      </div>
+              {models.map(model => (
+                <SelectItem key={model.model} value={model.model}>
+                  <div className="flex items-center justify-between w-full">
+                    <span>{model.displayName}</span>
+                    <div className="flex gap-2 ml-4">
+                      <Badge variant="secondary" className="text-xs">
+                        {formatLatency(model.averageLatency)}
+                      </Badge>
+                      <Badge variant="outline" className="text-xs">
+                        {formatCost(model.costPerInputToken)}/1K
+                      </Badge>
                     </div>
-                    {model.description && (
-                      <span className="text-xs text-muted-foreground">
-                        {model.description}
-                      </span>
-                    )}
                   </div>
                 </SelectItem>
               ))}
@@ -110,26 +89,38 @@ export function QAModelSelector({
           ))}
         </SelectContent>
       </Select>
-      
-      {selectedModelInfo && (
-        <div className="p-3 bg-muted/30 rounded-lg">
+
+      {showDetails && selectedConfig && (
+        <div className="bg-muted/50 p-3 rounded-lg space-y-2">
           <div className="flex items-center justify-between">
-            <div className="flex flex-col">
-              <span className="font-medium text-sm">{selectedModelInfo.label}</span>
-              <span className="text-xs text-muted-foreground">{selectedModelInfo.provider}</span>
+            <h4 className="font-medium text-sm">{selectedConfig.displayName}</h4>
+            <Badge variant="outline" className="capitalize">
+              {selectedConfig.provider}
+            </Badge>
+          </div>
+          
+          <div className="grid grid-cols-2 gap-3 text-xs">
+            <div className="flex items-center gap-1">
+              <Clock className="h-3 w-3 text-muted-foreground" />
+              <span>Latência: {formatLatency(selectedConfig.averageLatency)}</span>
             </div>
-            <div className="flex gap-2">
-              <Badge variant={getCostBadgeVariant(selectedModelInfo.costPerInputToken)}>
-                ${(selectedModelInfo.costPerInputToken * 1000).toFixed(3)}/1K tokens
-              </Badge>
-              <Badge variant={getLatencyBadgeVariant(selectedModelInfo.averageLatency)}>
-                ~{selectedModelInfo.averageLatency}ms
-              </Badge>
+            <div className="flex items-center gap-1">
+              <DollarSign className="h-3 w-3 text-muted-foreground" />
+              <span>Input: {formatCost(selectedConfig.costPerInputToken)}/1K</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <Zap className="h-3 w-3 text-muted-foreground" />
+              <span>Max Tokens: {selectedConfig.maxTokens.toLocaleString()}</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <DollarSign className="h-3 w-3 text-muted-foreground" />
+              <span>Output: {formatCost(selectedConfig.costPerOutputToken)}/1K</span>
             </div>
           </div>
-          {selectedModelInfo.description && (
+
+          {selectedConfig.description && (
             <p className="text-xs text-muted-foreground mt-2">
-              {selectedModelInfo.description}
+              {selectedConfig.description}
             </p>
           )}
         </div>
