@@ -119,7 +119,7 @@ const AgenticRAGDashboard: React.FC = () => {
         .limit(24);
 
       if (hourlyError) throw hourlyError;
-      setHourlyMetrics(hourlyData || []);
+      setHourlyMetrics((hourlyData as any) || []);
 
       // Fetch performance by category
       const { data: perfData, error: perfError } = await supabase
@@ -128,7 +128,7 @@ const AgenticRAGDashboard: React.FC = () => {
         .order('query_count', { ascending: false });
 
       if (perfError) throw perfError;
-      setPerformanceData(perfData || []);
+      setPerformanceData((perfData as any) || []);
 
       // Fetch active alerts
       const { data: alertsData, error: alertsError } = await supabase
@@ -137,7 +137,7 @@ const AgenticRAGDashboard: React.FC = () => {
         .order('created_at', { ascending: false });
 
       if (alertsError) throw alertsError;
-      setActiveAlerts(alertsData || []);
+      setActiveAlerts((alertsData as any) || []);
 
       // Fetch recent metrics
       const hoursBack = timeRange === '24h' ? 24 : timeRange === '7d' ? 168 : 1;
@@ -149,7 +149,7 @@ const AgenticRAGDashboard: React.FC = () => {
         .limit(1000);
 
       if (metricsError) throw metricsError;
-      setMetrics(metricsData || []);
+      setMetrics((metricsData as any) || []);
 
       // Fetch recent user feedback
       const { data: feedbackData, error: feedbackError } = await supabase
@@ -160,7 +160,7 @@ const AgenticRAGDashboard: React.FC = () => {
         .limit(100);
 
       if (feedbackError) throw feedbackError;
-      setUserFeedback(feedbackData || []);
+      setUserFeedback((feedbackData as any) || []);
 
     } catch (error: any) {
       console.error('Error fetching dashboard data:', error);

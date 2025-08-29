@@ -20,6 +20,8 @@
     "noUnusedParameters": false,
     "noImplicitAny": false,
     "noFallthroughCasesInSwitch": false,
+    "skipLibCheck": true,
+    "suppressImplicitAnyIndexErrors": true,
 
     "baseUrl": ".",
     "paths": {

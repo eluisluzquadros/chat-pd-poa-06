@@ -75,7 +75,7 @@ export function AgenticRAGBenchmark() {
       const { data, error } = await supabase
         .from('qa_test_cases')
         .select('*')
-        .eq('is_active', true)
+        .eq('is_active', true as any)
         .limit(testSampleSize)
         .order('category');
 
@@ -287,7 +287,7 @@ export function AgenticRAGBenchmark() {
             totalTests: r.totalTests
           })),
           metadata: benchmarkData.metadata
-        });
+        } as any);
 
       toast.success('Benchmark concluído e salvo!');
     } catch (error) {

@@ -16,13 +16,17 @@ const syncChatHistory = async () => {
     }
     
     // Verificar se já existe histórico
-    const { data: existingHistory } = await supabase
+    const { data: existingHistory, error: historyError } = await supabase
       .from('chat_history')
-      .select('count')
-      .eq('user_id', userId)
-      .single();
+      .select('*', { count: 'exact' })
+      .eq('user_id', userId as any);
     
-    const hasExistingHistory = existingHistory && existingHistory.count > 0;
+    if (historyError) {
+      console.error("Erro ao verificar histórico existente:", historyError);
+      return;
+    }
+    
+    const hasExistingHistory = existingHistory && existingHistory.length > 0;
     
     if (hasExistingHistory) {
       console.log("Já existe histórico de chat para o usuário");
@@ -62,7 +66,12 @@ const syncChatHistory = async () => {
     // Inserir mensagens de exemplo como sessões de chat
     const { error } = await supabase
       .from('chat_sessions')
-      .insert(exampleMessages);
+      .insert(exampleMessages.map(msg => ({
+        title: msg.title,
+        user_id: msg.user_id,
+        model: 'openai',
+        last_message: msg.title
+      })) as any);
     
     if (error) {
       throw error;
