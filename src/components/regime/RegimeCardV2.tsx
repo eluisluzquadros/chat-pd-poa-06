@@ -34,25 +34,25 @@ export function RegimeCardV2({ data }: RegimeCardV2Props) {
     {
       icon: Building2,
       label: 'Altura Máxima',
-      value: data['Altura Máxima (m)'] || 'N/D',
+      value: data['Altura_Maxima___Edificacao_Isolada'] || 'N/D',
       unit: 'm',
-      progress: getProgressPercentage(data['Altura Máxima (m)'], 100),
+      progress: getProgressPercentage(data['Altura_Maxima___Edificacao_Isolada'], 100),
       color: 'text-blue-600 dark:text-blue-400'
     },
     {
       icon: Ruler,
       label: 'Área Mín. Lote',
-      value: data['Área Mínima do Lote (m²)'] || 'N/D',
+      value: data['Área_Minima_do_Lote'] || 'N/D',
       unit: 'm²',
-      progress: getProgressPercentage(data['Área Mínima do Lote (m²)'], 1000),
+      progress: getProgressPercentage(data['Área_Minima_do_Lote'], 1000),
       color: 'text-green-600 dark:text-green-400'
     },
     {
       icon: TreePine,
       label: 'Taxa Permeabilidade',
-      value: data['Taxa de Permeabilidade (%)'] || 'N/D',
+      value: data['Taxa_de_Permeabilidade_ate_1,500_m2'] || data['Taxa_de_Permeabilidade_acima_de_1,500_m2'] || 'N/D',
       unit: '%',
-      progress: getProgressPercentage(data['Taxa de Permeabilidade (%)'], 100),
+      progress: getProgressPercentage(data['Taxa_de_Permeabilidade_ate_1,500_m2'] || data['Taxa_de_Permeabilidade_acima_de_1,500_m2'], 100),
       color: 'text-emerald-600 dark:text-emerald-400'
     }
   ];
@@ -142,11 +142,13 @@ export function RegimeCardV2({ data }: RegimeCardV2Props) {
           <div className="space-y-3 animate-fade-in">
             <div className="grid grid-cols-2 gap-3 text-sm">
               {[
-                { label: 'CA Básico', value: data['Coeficiente de Aproveitamento Básico'] },
-                { label: 'CA Máximo', value: data['Coeficiente de Aproveitamento Máximo'] },
-                { label: 'Rec. Lateral', value: data['Recuo Lateral (m)'] },
-                { label: 'Rec. Frontal', value: data['Recuo Frontal (m)'] }
-              ].map((item, index) => (
+                { label: 'CA Básico', value: data['Coeficiente_de_Aproveitamento___Basico'] },
+                { label: 'CA Máximo', value: data['Coeficiente_de_Aproveitamento___Maximo'] },
+                { label: 'Afastamento Lateral', value: data['Afastamentos___Laterais'] },
+                { label: 'Afastamento Frente', value: data['Afastamentos___Frente'] },
+                { label: 'Recuo de Jardim', value: data['Recuo_de_Jardim'] },
+                { label: 'Afastamento Fundos', value: data['Afastamentos___Fundos'] }
+              ].slice(0, 4).map((item, index) => (
                 <div key={index} className="p-2 bg-muted/10 rounded border border-muted/20">
                   <p className="text-xs text-muted-foreground font-medium">{item.label}</p>
                   <p className="text-foreground font-semibold">{item.value || 'N/D'}</p>
