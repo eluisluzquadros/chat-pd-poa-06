@@ -57,8 +57,7 @@ function App() {
               {/* Página de callback para OAuth */}
               <Route path="/auth/callback" element={<AuthCallback />} />
               
-              {/* Explorer and Insights routes */}
-              <Route path="/explorer" element={<SimpleAuthGuard><React.Suspense fallback={null}>{React.createElement(React.lazy(() => import('./pages/Explorer')))}</React.Suspense></SimpleAuthGuard>} />
+              {/* Insights route */}
               <Route path="/insights" element={<SimpleAuthGuard><React.Suspense fallback={null}>{React.createElement(React.lazy(() => import('./pages/Insights')))}</React.Suspense></SimpleAuthGuard>} />
               
               {/* Basic authenticated routes */}

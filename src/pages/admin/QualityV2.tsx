@@ -9,19 +9,21 @@ import { supabase } from '@/integrations/supabase/client';
 import { 
   RefreshCw, Play, FileText, BarChart3, Users, 
   TrendingUp, AlertCircle, CheckCircle, XCircle,
-  Clock, Zap, Award
+  Clock, Zap, Award, Trash2, AlertTriangle
 } from 'lucide-react';
 import { SystemVersionIndicator } from '@/components/admin/SystemVersionIndicator';
 import { toast } from 'sonner';
 import { SimpleRoleGuard } from '@/components/SimpleRoleGuard';
 import { Header } from '@/components/Header';
 import { useQAValidator } from '@/hooks/useQAValidator';
+import { useQAHistoryReset } from '@/hooks/useQAHistoryReset';
 
 // Import components
 import { QATestCasesList } from '@/components/admin/QATestCasesList';
 import { QAExecutionHistory } from '@/components/admin/QAExecutionHistory';
 import { CognitiveAnalysisPanel } from '@/components/admin/CognitiveAnalysisPanel';
 import { QAValidationConfigPanel } from '@/components/admin/QAValidationConfigPanel';
+import { QAResetConfirmDialog } from '@/components/admin/QAResetConfirmDialog';
 
 interface Metrics {
   totalValidationRuns: number;
@@ -52,6 +54,12 @@ function QualityV2() {
     activeModels: 0,
     lastRunDate: null
   });
+  
+  const [modelPerformance, setModelPerformance] = useState<any[]>([]);
+  const [selectedRunId, setSelectedRunId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [resetDialogOpen, setResetDialogOpen] = useState(false);
+  const [currentStats, setCurrentStats] = useState<{runs: number; results: number} | null>(null);
 
   const [isLoading, setIsLoading] = useState(true);
   const [validationProgress, setValidationProgress] = useState<ValidationProgress>({
@@ -65,11 +73,11 @@ function QualityV2() {
 
   const [selectedTab, setSelectedTab] = useState('config');
   const [testResults, setTestResults] = useState<any[]>([]);
-  const [modelPerformance, setModelPerformance] = useState<any[]>([]);
-  const [selectedRunId, setSelectedRunId] = useState<string | null>(null);
+  
+  const { loading: resetLoading, resetHistory, getCurrentStats } = useQAHistoryReset();
   
   // Use the enhanced QA validator hook
-  const { runValidation: executeValidation, isRunning, progress } = useQAValidator();
+  const { runValidation: executeValidation2, isRunning, progress } = useQAValidator();
 
   // Fetch metrics and data
   const fetchMetrics = async () => {
@@ -191,7 +199,7 @@ function QualityV2() {
         excludeSQL: config.excludeSQL
       };
 
-      await executeValidation(validationOptions);
+      await executeValidation2(validationOptions);
       
       // Refresh metrics after validation
       setTimeout(() => {
@@ -347,6 +355,44 @@ function QualityV2() {
             onExecute={handleValidationExecution}
             isRunning={isRunning}
           />
+          
+          {/* Zona de Perigo - Reset Completo */}
+          <Card className="border-destructive/50">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-destructive">
+                <AlertTriangle className="h-5 w-5" />
+                Zona de Perigo
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
+                <h4 className="font-medium mb-2">Reset Completo do Histórico QA</h4>
+                <p className="text-sm text-muted-foreground mb-3">
+                  Delete permanentemente todo o histórico de execuções, resultados e métricas.
+                  Esta ação é irreversível e permitirá começar com dados limpos.
+                </p>
+                {currentStats && (
+                  <p className="text-xs text-muted-foreground mb-3">
+                    <strong>Dados atuais:</strong> {currentStats.runs} execuções, {currentStats.results} resultados
+                  </p>
+                )}
+                <Button 
+                  variant="destructive" 
+                  size="sm"
+                  onClick={async () => {
+                    const stats = await getCurrentStats();
+                    setCurrentStats(stats);
+                    setResetDialogOpen(true);
+                  }}
+                  disabled={resetLoading}
+                  className="gap-2"
+                >
+                  <Trash2 className="h-3 w-3" />
+                  Reset Completo
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         </TabsContent>
 
         <TabsContent value="overview" className="space-y-4">
@@ -511,6 +557,24 @@ function QualityV2() {
           />
         </TabsContent>
       </Tabs>
+      
+      {/* Reset Confirmation Dialog */}
+      <QAResetConfirmDialog
+        open={resetDialogOpen}
+        onOpenChange={setResetDialogOpen}
+        onConfirm={async () => {
+          const result = await resetHistory();
+          if (result.success) {
+            setResetDialogOpen(false);
+            // Refresh metrics after successful reset
+            await fetchMetrics();
+            // Clear current stats
+            setCurrentStats(null);
+          }
+        }}
+        loading={resetLoading}
+        currentStats={currentStats || undefined}
+      />
           </div>
         </main>
       </div>
