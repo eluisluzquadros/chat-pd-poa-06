@@ -57,11 +57,23 @@ export const useAuthContext = () => {
         setUserId(currentUser.id);
         setIsAuthenticated(true);
         
-        // Assumir admin por padrão para evitar problemas de permissão
-        setUserRole('admin' as AppRole);
-        setIsAdmin(true);
-        setIsSupervisor(true);
-        setIsAnalyst(true);
+        // Buscar role real do usuário no banco de dados
+        try {
+          const userRole = await AuthService.getUserRole(currentUser.id);
+          console.log("Papel do usuário:", userRole);
+          
+          setUserRole(userRole as AppRole);
+          setIsAdmin(userRole === 'admin');
+          setIsSupervisor(userRole === 'supervisor' || userRole === 'admin');
+          setIsAnalyst(userRole === 'analyst' || userRole === 'supervisor' || userRole === 'admin');
+        } catch (roleError) {
+          console.error("Erro ao buscar role do usuário:", roleError);
+          // Em caso de erro, assumir role mais restrito
+          setUserRole('user' as AppRole);
+          setIsAdmin(false);
+          setIsSupervisor(false);
+          setIsAnalyst(false);
+        }
       } else {
         setUser(null);
         setUserId(null);

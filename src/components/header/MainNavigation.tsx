@@ -6,6 +6,7 @@ import { Users, FileText, MessageCircle, BarChart3, Shield, Database } from 'luc
 
 export const MainNavigation = () => {
   const navigate = useNavigate();
+  const { isAdmin, isSupervisor } = useAuth();
 
   return (
     <nav>
@@ -30,25 +31,29 @@ export const MainNavigation = () => {
           </button>
         </li>
         
-        <li>
-          <button 
-            onClick={() => navigate('/admin/dashboard')} 
-            className="hover:underline flex items-center cursor-pointer"
-          >
-            <BarChart3 className="h-4 w-4 mr-1" />
-            Dashboard
-          </button>
-        </li>
+        {(isAdmin || isSupervisor) && (
+          <li>
+            <button 
+              onClick={() => navigate('/admin/dashboard')} 
+              className="hover:underline flex items-center cursor-pointer"
+            >
+              <BarChart3 className="h-4 w-4 mr-1" />
+              Dashboard
+            </button>
+          </li>
+        )}
         
-        <li>
-          <button 
-            onClick={() => navigate('/admin/users')} 
-            className="hover:underline flex items-center cursor-pointer"
-          >
-            <Users className="h-4 w-4 mr-1" />
-            Usuários
-          </button>
-        </li>
+        {isAdmin && (
+          <li>
+            <button 
+              onClick={() => navigate('/admin/users')} 
+              className="hover:underline flex items-center cursor-pointer"
+            >
+              <Users className="h-4 w-4 mr-1" />
+              Usuários
+            </button>
+          </li>
+        )}
       </ul>
     </nav>
   );
