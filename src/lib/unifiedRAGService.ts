@@ -34,15 +34,16 @@ export class UnifiedRAGService {
 
   /**
    * Format the request body based on endpoint requirements
+   * PADRONIZAÇÃO: Força userRole='citizen' e cache habilitado para consistência
    */
   private formatRequestBody(options: RAGRequestOptions, endpoint: string): any {
     const baseBody = {
       message: options.message,
-      userRole: options.userRole || 'user',
+      userRole: 'citizen', // PADRONIZADO: sempre 'citizen' para RAG consistency
       sessionId: options.sessionId || `session-${Date.now()}`,
       userId: options.userId || 'anonymous',
-      model: options.model || 'gpt-3.5-turbo',
-      bypassCache: options.bypassCache !== false
+      model: options.model || 'gpt-3.5-turbo', // PADRONIZADO: modelo default unificado
+      bypassCache: options.bypassCache === true // PADRONIZADO: cache habilitado por padrão
     };
 
     // Add fields for new RAG real implementation
@@ -55,9 +56,12 @@ export class UnifiedRAGService {
           useAgenticRAG: true,
           useKnowledgeGraph: true,
           useHierarchicalChunks: true,
-          userRole: options.userRole || 'user',
+          userRole: 'citizen', // PADRONIZADO: sempre 'citizen' para RAG
           userId: options.userId || 'anonymous'
-        }
+        },
+        // Metadata para auditoria (não afeta comportamento RAG)
+        originalUserRole: options.userRole || 'user',
+        adminContext: options.userRole && ['tester', 'qa-validator', 'admin'].includes(options.userRole)
       };
     }
 
@@ -139,9 +143,9 @@ export class UnifiedRAGService {
       message: question,
       model,
       sessionId: sessionId || `qa-test-${Date.now()}`,
-      userId: 'qa-validator',
-      userRole: 'tester',
-      bypassCache: true
+      userId: 'qa-validator', // Para auditoria
+      userRole: 'tester', // Para auditoria (será convertido para 'citizen' internamente)
+      bypassCache: false // PADRONIZADO: usar cache por padrão
     });
   }
 
@@ -170,8 +174,8 @@ export class UnifiedRAGService {
       for (const query of queries) {
         const result = await this.testQuery(query, model, sessionId);
         results.push(result);
-        // Small delay between queries
-        await new Promise(resolve => setTimeout(resolve, 500));
+        // Small delay between queries (reduzido para performance)
+        await new Promise(resolve => setTimeout(resolve, 200));
       }
       return results;
     }
@@ -197,7 +201,9 @@ export class UnifiedRAGService {
         'Vector Search with Embeddings',
         'Hierarchical Document Processing',
         'Auto-refinement',
-        'Session Memory'
+        'Session Memory',
+        'Padronized Responses (userRole=citizen)',
+        'Unified Cache Strategy'
       ]
     };
   }

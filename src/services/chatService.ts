@@ -57,7 +57,7 @@ export class ChatService {
         model: model || 'gpt-3.5-turbo',
         sessionId: sessionId || `session_${Date.now()}`,
         userId: finalSession.user.id,
-        userRole: userRole || 'citizen',
+        userRole: userRole || 'citizen', // Para auditoria (será padronizado internamente)
         bypassCache: false
       });
 
