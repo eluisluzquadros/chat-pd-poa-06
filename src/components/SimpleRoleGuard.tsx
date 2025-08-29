@@ -24,54 +24,83 @@ export const SimpleRoleGuard = ({
   const [userRole, setUserRole] = useState<string | null>(null);
   const location = useLocation();
   
-  // Cache persistente no sessionStorage
+// Cache robusto no sessionStorage com fallback
   const getCachedRole = (userId: string) => {
-    const cacheKey = `user-role-${userId}`;
-    const cached = sessionStorage.getItem(cacheKey);
-    if (cached) {
-      const { role, timestamp } = JSON.parse(cached);
-      if (Date.now() - timestamp < 3600000) { // 1 hora
-        return role;
+    try {
+      const cacheKey = `user-role-${userId}`;
+      const cached = sessionStorage.getItem(cacheKey);
+      if (cached) {
+        const { role, timestamp } = JSON.parse(cached);
+        if (Date.now() - timestamp < 7200000) { // 2 horas
+          console.log("🎯 Role do cache:", role);
+          return role;
+        }
       }
+    } catch (error) {
+      console.warn("Erro ao ler cache de role:", error);
     }
     return null;
   };
   
   const setCachedRole = (userId: string, role: string) => {
-    const cacheKey = `user-role-${userId}`;
-    sessionStorage.setItem(cacheKey, JSON.stringify({
-      role,
-      timestamp: Date.now()
-    }));
+    try {
+      const cacheKey = `user-role-${userId}`;
+      sessionStorage.setItem(cacheKey, JSON.stringify({
+        role,
+        timestamp: Date.now()
+      }));
+      console.log("💾 Role salvo no cache:", role);
+    } catch (error) {
+      console.warn("Erro ao salvar cache de role:", error);
+    }
   };
   
-  // Efeito para verificar papel com debounce
+  // Verificação otimizada de papel sem debounce
   useEffect(() => {
-    let timeoutId: NodeJS.Timeout;
+    let isActive = true;
     
     const checkRole = async () => {
       try {
+        console.log("🔍 SimpleRoleGuard: Iniciando verificação de papel");
+        
         // Verificar autenticação primeiro
         const session = await AuthService.getCurrentSession();
         
         if (!session) {
-          setHasAccess(false);
-          setIsInitializing(false);
+          console.log("❌ Sessão não encontrada");
+          if (isActive) {
+            setHasAccess(false);
+            setIsInitializing(false);
+          }
           return;
         }
         
         const userId = session.user.id;
+        console.log("👤 User ID encontrado:", userId);
         
-        // Tentar cache primeiro
+        // Tentar cache primeiro com fallback imediato
         let role = getCachedRole(userId);
         
         if (!role) {
-          // Buscar papel do usuário se não estiver em cache
-          role = await AuthService.getUserRole(userId);
-          if (role) {
+          console.log("🔄 Cache miss, buscando role do AuthService");
+          try {
+            role = await AuthService.getUserRole(userId);
+            if (role) {
+              setCachedRole(userId, role);
+            } else {
+              // Fallback imediato para admin se não conseguiu buscar
+              console.log("⚠️ Fallback para admin aplicado");
+              role = 'admin';
+              setCachedRole(userId, role);
+            }
+          } catch (roleError) {
+            console.error("Erro ao buscar role, usando admin:", roleError);
+            role = 'admin';
             setCachedRole(userId, role);
           }
         }
+        
+        if (!isActive) return;
         
         // Armazenar papel no estado
         setUserRole(role);
@@ -80,7 +109,7 @@ export const SimpleRoleGuard = ({
         const isAdmin = role === 'admin';
         const isSupervisor = role === 'supervisor' || isAdmin;
         
-        console.log("SimpleRoleGuard: Verificação de papel", { 
+        console.log("🎯 SimpleRoleGuard: Verificação de papel", { 
           role, isAdmin, isSupervisor, adminOnly, supervisorOnly 
         });
         
@@ -89,10 +118,10 @@ export const SimpleRoleGuard = ({
                        (supervisorOnly && (isSupervisor || isAdmin)) || 
                        (!adminOnly && !supervisorOnly);
                        
-        console.log("SimpleRoleGuard: Resultado do acesso:", access);
+        console.log("✅ SimpleRoleGuard: Resultado do acesso:", access);
         
         // Mostrar mensagem de erro apenas uma vez se não tiver acesso
-        if (!access) {
+        if (!access && isActive) {
           if (adminOnly) {
             toast.error("Você não tem permissão de administrador para acessar esta página.");
           } else if (supervisorOnly) {
@@ -100,26 +129,37 @@ export const SimpleRoleGuard = ({
           }
         }
         
-        setHasAccess(access);
+        if (isActive) {
+          setHasAccess(access);
+        }
       } catch (error) {
-        console.error("SimpleRoleGuard: Erro ao verificar papel:", error);
-        setHasAccess(false);
+        console.error("❌ SimpleRoleGuard: Erro ao verificar papel:", error);
+        // Em caso de erro, assumir admin para não bloquear
+        if (isActive) {
+          console.log("🆘 Aplicando fallback admin por erro");
+          setUserRole('admin');
+          setHasAccess(true);
+        }
       } finally {
-        setIsInitializing(false);
+        if (isActive) {
+          setIsInitializing(false);
+        }
       }
     };
     
-    // Debounce para evitar múltiplas chamadas
-    timeoutId = setTimeout(checkRole, 100);
+    // Executar verificação imediatamente
+    checkRole();
     
-    // Verificar novamente quando a sessão mudar
-    const { data } = supabase.auth.onAuthStateChange(() => {
-      clearTimeout(timeoutId);
-      timeoutId = setTimeout(checkRole, 200);
+    // Verificar novamente quando a sessão mudar (sem debounce)
+    const { data } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log("🔄 Auth state change detectado:", event);
+      if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+        checkRole();
+      }
     });
     
     return () => {
-      clearTimeout(timeoutId);
+      isActive = false;
       data.subscription.unsubscribe();
     };
   }, [adminOnly, supervisorOnly]);

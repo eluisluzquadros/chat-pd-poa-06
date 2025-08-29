@@ -15,7 +15,7 @@ const SESSION_CACHE_TTL = 15 * 60 * 1000; // 15 minutos
 
 // Throttling para operações de auth
 const authCallsThrottle = new Map<string, number>();
-const AUTH_THROTTLE_DELAY = 300; // 300ms entre chamadas do mesmo tipo
+const AUTH_THROTTLE_DELAY = 100; // 100ms entre chamadas do mesmo tipo
 
 // Controle de refresh token para evitar rate limiting
 let lastTokenRefresh = 0;
@@ -278,8 +278,8 @@ export const AuthService = {
       const now = Date.now();
       
       if (now - lastCall < AUTH_THROTTLE_DELAY) {
-        console.log("getUserRole throttled, usando cache ou padrão");
-        return cached?.role || 'admin'; // Fallback para admin se throttled
+        console.log("⚡ getUserRole throttled, usando cache ou admin fallback");
+        return cached?.role || 'admin'; // Fallback imediato para admin se throttled
       }
       
       authCallsThrottle.set(throttleKey, now);

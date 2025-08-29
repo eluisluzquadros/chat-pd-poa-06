@@ -92,7 +92,7 @@ export function QAResultsDetailModal({
           tags,
           is_sql_related
         `)
-        .in('id', testCaseIds);
+        .in('id', testCaseIds as any);
 
       if (testCasesError) {
         console.error('Error fetching test cases:', testCasesError);
