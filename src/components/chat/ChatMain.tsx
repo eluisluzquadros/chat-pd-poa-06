@@ -47,12 +47,14 @@ export function ChatMain({
           <SidebarTrigger className="text-foreground hover:bg-accent" />
         </div>
         
-        <div className="absolute top-4 right-4 z-30">
-          <ModelSelector 
-            selectedModel={selectedModel} 
-            onModelSelect={onModelSelect}
-          />
-        </div>
+        {isAdmin && (
+          <div className="absolute top-4 right-4 z-30">
+            <ModelSelector 
+              selectedModel={selectedModel} 
+              onModelSelect={onModelSelect}
+            />
+          </div>
+        )}
         {hasMessages ? (
           <>
             {/* Lista de mensagens com scroll próprio */}
