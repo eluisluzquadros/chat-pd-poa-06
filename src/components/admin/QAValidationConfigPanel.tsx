@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
@@ -12,7 +13,7 @@ import { UPDATED_MODEL_CONFIGS } from '@/config/llm-models-2025';
 import { supabase } from '@/integrations/supabase/client';
 
 interface QAValidationConfig {
-  models: string[];
+  models: string; // Changed to single model selection
   executionMode: 'all' | 'random' | 'specific' | 'category' | 'difficulty';
   randomCount?: number;
   specificCaseIds?: string[];
@@ -41,7 +42,7 @@ const DIFFICULTIES = ['easy', 'medium'];
 
 export function QAValidationConfigPanel({ onExecute, isRunning }: QAValidationConfigPanelProps) {
   const [config, setConfig] = useState<QAValidationConfig>({
-    models: ['anthropic/claude-3-5-sonnet-20241022'],
+    models: 'anthropic/claude-3-5-sonnet-20241022', // Single model
     executionMode: 'random',
     randomCount: 10,
     categories: [],
@@ -111,7 +112,7 @@ export function QAValidationConfigPanel({ onExecute, isRunning }: QAValidationCo
 
   const handleExecute = () => {
     // Validate configuration
-    if (config.models.length === 0) {
+    if (!config.models) {
       return;
     }
 
@@ -174,46 +175,41 @@ export function QAValidationConfigPanel({ onExecute, isRunning }: QAValidationCo
             <Cpu className="h-4 w-4" />
             Modelos LLM
           </Label>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-            {Object.entries(groupedModels).map(([provider, models]) => (
-              <div key={provider} className="space-y-2">
-                <Label className="text-sm font-medium capitalize">{provider}</Label>
-                {models.map(model => (
-                  <div key={model.model} className="flex items-center space-x-2">
-                    <Checkbox
-                      id={model.model}
-                      checked={config.models.includes(model.model)}
-                      onCheckedChange={(checked) => {
-                        if (checked) {
-                          setConfig(prev => ({
-                            ...prev,
-                            models: [...prev.models, model.model]
-                          }));
-                        } else {
-                          setConfig(prev => ({
-                            ...prev,
-                            models: prev.models.filter(m => m !== model.model)
-                          }));
-                        }
-                      }}
-                    />
-                    <Label htmlFor={model.model} className="text-sm">
-                      {model.displayName}
-                    </Label>
+          <div className="space-y-4">
+            <RadioGroup
+              value={config.models}
+              onValueChange={(value) => setConfig(prev => ({ ...prev, models: value }))}
+              className="space-y-3"
+            >
+              {Object.entries(groupedModels).map(([provider, models]) => (
+                <div key={provider} className="space-y-2">
+                  <Label className="text-sm font-medium capitalize text-muted-foreground">
+                    {provider}
+                  </Label>
+                  <div className="pl-4 space-y-2">
+                    {models.map(model => (
+                      <div key={model.model} className="flex items-center space-x-2">
+                        <RadioGroupItem 
+                          value={model.model} 
+                          id={model.model}
+                        />
+                        <Label htmlFor={model.model} className="text-sm cursor-pointer">
+                          {model.displayName}
+                        </Label>
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
-            ))}
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {config.models.map(model => {
-              const modelConfig = UPDATED_MODEL_CONFIGS.find(m => m.model === model);
-              return (
-                <Badge key={model} variant="outline">
-                  {modelConfig?.displayName || model}
+                </div>
+              ))}
+            </RadioGroup>
+            
+            {config.models && (
+              <div className="mt-3">
+                <Badge variant="secondary">
+                  {UPDATED_MODEL_CONFIGS.find(m => m.model === config.models)?.displayName || config.models}
                 </Badge>
-              );
-            })}
+              </div>
+            )}
           </div>
         </div>
 
@@ -409,16 +405,16 @@ export function QAValidationConfigPanel({ onExecute, isRunning }: QAValidationCo
         <div className="bg-muted/50 p-4 rounded-lg">
           <h4 className="font-medium mb-2">Resumo da Execução</h4>
           <div className="space-y-1 text-sm">
-            <p><strong>Modelos:</strong> {config.models.length} selecionados</p>
+            <p><strong>Modelo:</strong> {UPDATED_MODEL_CONFIGS.find(m => m.model === config.models)?.displayName || config.models}</p>
             <p><strong>Casos:</strong> {getExecutionSummary()}</p>
-            <p><strong>Total estimado:</strong> {config.models.length * testCasesCount} testes</p>
+            <p><strong>Total estimado:</strong> {testCasesCount} testes</p>
           </div>
         </div>
 
         {/* Execute Button */}
         <Button 
           onClick={handleExecute}
-          disabled={isRunning || config.models.length === 0}
+          disabled={isRunning || !config.models}
           className="w-full"
           size="lg"
         >
