@@ -117,9 +117,9 @@ export const MessageList = memo(function MessageList({
                       : "text-muted-foreground"
                   )}>
                     <span>{message.timestamp.toLocaleTimeString('pt-BR')}</span>
-                    {message.role === "assistant" && (
-                      <span className="ml-2 hidden sm:inline">via Chat-PD-POA:</span>
-                    )}
+                     {message.role === "assistant" && (
+                       <span className="ml-2 hidden sm:inline">via Chat-PD-POA</span>
+                     )}
                   </div>
                 </div>
               </div>
