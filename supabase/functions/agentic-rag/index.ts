@@ -14,8 +14,113 @@ const corsHeaders = {
 };
 
 // ============================================================
-// FEATURES AVANÇADAS DO V3 - INTEGRAÇÃO
+// FEATURES AVANÇADAS DO V3 - INTEGRAÇÃO + SEGURANÇA
 // ============================================================
+
+// SECURITY GUARDRAILS - Proteção contra ataques
+class SecurityGuardrails {
+  private static readonly DANGEROUS_PATTERNS = [
+    /ignore\s+previous\s+instructions/i,
+    /forget\s+everything/i,
+    /act\s+as\s+(?:a\s+)?(?:developer|admin|root|system)/i,
+    /you\s+are\s+now\s+(?:a\s+)?(?:developer|admin|root|system)/i,
+    /switch\s+to\s+(?:developer|admin|root|system)\s+mode/i,
+    /your\s+instructions\s+are\s+now/i,
+    /new\s+instructions?\s*:/i,
+    /override\s+(?:previous|original)\s+instructions/i,
+    /system\s+prompt\s*:/i,
+    /assistant\s*:\s*i\s+will/i,
+    /roleplay\s+as/i,
+    /pretend\s+(?:you\s+are|to\s+be)/i,
+    /<\s*script[\s\S]*?>/i,
+    /javascript\s*:/i,
+    /eval\s*\(/i,
+    /document\.cookie/i,
+    /window\.location/i,
+    /localStorage/i,
+    /sessionStorage/i,
+  ];
+
+  private static readonly MAX_QUERY_LENGTH = 2000;
+  private static readonly SUSPICIOUS_CHARS = /<|>|{|}|\[|\]|`|;|eval|script|javascript|vbscript/gi;
+
+  static validateInput(query: string): { isValid: boolean; reason?: string } {
+    // Check length
+    if (!query || query.trim().length === 0) {
+      return { isValid: false, reason: 'Query vazia' };
+    }
+
+    if (query.length > this.MAX_QUERY_LENGTH) {
+      return { isValid: false, reason: 'Query muito longa - possível ataque DoS' };
+    }
+
+    // Check for dangerous patterns
+    for (const pattern of this.DANGEROUS_PATTERNS) {
+      if (pattern.test(query)) {
+        console.warn(`🚨 Blocked dangerous pattern: ${pattern.source}`);
+        return { isValid: false, reason: 'Padrão de prompt injection detectado' };
+      }
+    }
+
+    // Check for excessive suspicious characters
+    const suspiciousMatches = query.match(this.SUSPICIOUS_CHARS);
+    if (suspiciousMatches && suspiciousMatches.length > 5) {
+      return { isValid: false, reason: 'Muitos caracteres suspeitos detectados' };
+    }
+
+    // Check for SQL injection patterns
+    const sqlPatterns = [
+      /union\s+select/i,
+      /drop\s+table/i,
+      /delete\s+from/i,
+      /insert\s+into/i,
+      /update\s+set/i,
+      /exec\s*\(/i,
+      /execute\s*\(/i,
+    ];
+
+    for (const pattern of sqlPatterns) {
+      if (pattern.test(query)) {
+        console.warn(`🚨 Blocked SQL injection pattern: ${pattern.source}`);
+        return { isValid: false, reason: 'Padrão de SQL injection detectado' };
+      }
+    }
+
+    return { isValid: true };
+  }
+
+  static sanitizeInput(query: string): string {
+    return query
+      .replace(/<script[\s\S]*?<\/script>/gi, '')
+      .replace(/javascript:/gi, '')
+      .replace(/on\w+\s*=/gi, '')
+      .trim();
+  }
+}
+
+// STANDARD MESSAGES - Mensagens padronizadas
+const STANDARD_ERROR_MESSAGE = "Desculpe mas no momento estamos enfrentando instabilidades nos servidores e nosso time já está trabalhando para resolver a situação. Considere envir sua pergunta pelos canais oficiais. Você pode acessar os dados do regime urbanístico por bairros e zonas usando nosso mapa interativo.";
+
+const STANDARD_FOOTER = `
+
+📍 Explore mais:
+Mapa com Regras Construtivas:https://bit.ly/3ILdXRA ↗
+Contribua com sugestões:https://bit.ly/4oefZKm ↗
+💬 Dúvidas? planodiretor@portoalegre.rs.gov.br
+
+💬 Sua pergunta é importante! Considere enviá-la pelos canais oficiais para contribuir com o aperfeiçoamento do plano.`;
+
+// Helper function to add standard footer
+function addStandardFooter(response: string): string {
+  if (!response) return STANDARD_FOOTER.trim();
+  
+  // Check if footer already exists
+  if (response.includes('📍 Explore mais:')) {
+    return response;
+  }
+  
+  return response.trim() + STANDARD_FOOTER;
+}
 
 // TOKEN COUNTER - Gestão de contexto
 class TokenCounter {
@@ -109,7 +214,7 @@ class FallbackManager {
         if (cached?.response) {
           console.log(`✅ Found similar cached response for keyword: ${keyword}`);
           return {
-            response: cached.response,
+            response: addStandardFooter(cached.response),
             confidence: (cached.confidence || 0.7) * 0.8, // Reduce confidence
             fallback: true,
             strategy: 'similar_cache'
@@ -118,17 +223,10 @@ class FallbackManager {
       }
     }
     
-    // Strategy 3: Return informative error message
-    console.log('🔄 Applying fallback: Returning user-friendly error message');
+    // Strategy 3: Return standard error message
+    console.log('🔄 Applying fallback: Returning standard error message');
     return {
-      response: `Desculpe, encontrei um problema ao processar sua pergunta sobre "${query.substring(0, 50)}...". 
-      
-Por favor, tente:
-- Reformular sua pergunta de forma mais específica
-- Dividir perguntas complexas em partes menores
-- Verificar se está perguntando sobre PDUS ou LUOS especificamente
-
-Se o problema persistir, o sistema pode estar temporariamente sobrecarregado. Tente novamente em alguns instantes.`,
+      response: addStandardFooter(STANDARD_ERROR_MESSAGE),
       confidence: 0,
       fallback: true,
       strategy: 'error_message',
@@ -372,10 +470,31 @@ serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseKey);
     
     const requestData: QueryRequest = await req.json();
-    const query = requestData.query || requestData.message || '';
+    const rawQuery = requestData.query || requestData.message || '';
     const sessionId = requestData.sessionId || `session-${Date.now()}`;
     const userId = requestData.userId || 'anonymous';
     const bypassCache = requestData.bypassCache !== false;
+    
+    // SECURITY VALIDATION - Validate and sanitize input
+    const securityCheck = SecurityGuardrails.validateInput(rawQuery);
+    if (!securityCheck.isValid) {
+      console.warn(`🚨 Security violation: ${securityCheck.reason} for query: ${rawQuery.substring(0, 50)}...`);
+      return new Response(JSON.stringify({
+        response: addStandardFooter(STANDARD_ERROR_MESSAGE),
+        confidence: 0,
+        sources: {},
+        model: selectedModel,
+        tokensUsed: 0,
+        executionTime: 0,
+        cached: false,
+        security_blocked: true
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 400
+      });
+    }
+    
+    const query = SecurityGuardrails.sanitizeInput(rawQuery);
     
     // Get conversation history for context
     let previousContext = null;
@@ -490,7 +609,7 @@ serve(async (req) => {
         console.log('✅ Cache hit! Returning cached response');
         return new Response(
           JSON.stringify({
-            response: cachedResult.response,
+            response: addStandardFooter(cachedResult.response),
             confidence: cachedResult.confidence || 0.95,
             sources: { 
               legal_articles: true,
@@ -960,7 +1079,16 @@ BASE DE CONHECIMENTO DISPONÍVEL:
 CONTEXTO FORNECIDO:
 ${context}
 
-RESPONDA com base APENAS no contexto acima. Se encontrar o mesmo artigo em múltiplas leis, apresente todas as versões.`;
+RESPONDA com base APENAS no contexto acima. Se encontrar o mesmo artigo em múltiplas leis, apresente todas as versões.
+
+IMPORTANTE: SEMPRE finalize sua resposta com o seguinte template EXATO (não altere os links):
+
+📍 Explore mais:
+Mapa com Regras Construtivas:https://bit.ly/3ILdXRA ↗
+Contribua com sugestões:https://bit.ly/4oefZKm ↗
+💬 Dúvidas? planodiretor@portoalegre.rs.gov.br
+
+💬 Sua pergunta é importante! Considere enviá-la pelos canais oficiais para contribuir com o aperfeiçoamento do plano.`;
 
     const startTime = Date.now();
     let response = '';
@@ -1087,7 +1215,7 @@ RESPONDA com base APENAS no contexto acima. Se encontrar o mesmo artigo em múlt
             break;
           } else if (attemptNumber >= maxAttempts) {
             // Final fallback
-            response = fallbackResult.response || `Desculpe, não consegui processar sua pergunta após ${maxAttempts} tentativas. Por favor, tente novamente mais tarde.`;
+            response = addStandardFooter(fallbackResult.response || STANDARD_ERROR_MESSAGE);
             break;
           }
           attemptNumber++;
@@ -1158,7 +1286,7 @@ RESPONDA com base APENAS no contexto acima. Se encontrar o mesmo artigo em múlt
 
     return new Response(
       JSON.stringify({
-        response: response,
+        response: addStandardFooter(response),
         confidence: 0.9,
         sources: { 
           legal_articles: legalArticlesFound,
@@ -1178,7 +1306,7 @@ RESPONDA com base APENAS no contexto acima. Se encontrar o mesmo artigo em múlt
     return new Response(
       JSON.stringify({
         error: error.message,
-        response: 'Desculpe, ocorreu um erro ao processar sua solicitação. Por favor, tente novamente.',
+        response: addStandardFooter(STANDARD_ERROR_MESSAGE),
         confidence: 0,
         sources: { error: true },
         executionTime: 0
