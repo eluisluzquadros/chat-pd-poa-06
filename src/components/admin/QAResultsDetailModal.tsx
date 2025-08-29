@@ -55,12 +55,12 @@ export function QAResultsDetailModal({
   const fetchResults = async () => {
     setLoading(true);
     try {
-      // Since test_case_id is now TEXT and qa_test_cases.id is integer, 
-      // we need to manually join the data instead of using foreign key relationship
+      // Prioritize results with evaluation_reasoning when available
       const { data: resultsData, error: resultsError } = await supabase
         .from('qa_validation_results')
         .select('*, evaluation_reasoning')
         .eq('validation_run_id', runId as any)
+        .order('evaluation_reasoning', { ascending: false, nullsLast: true })
         .order('created_at', { ascending: false });
 
       if (resultsError) {
@@ -373,15 +373,23 @@ export function QAResultsDetailModal({
                 </div>
               </div>
 
-              {/* LLM Evaluation Reasoning */}
-              {selectedResult.evaluation_reasoning && (
-                <div>
-                  <h4 className="font-medium mb-2 text-purple-600">Avaliação LLM</h4>
-                  <div className="p-3 bg-purple-50 rounded-lg border border-purple-200">
+              {/* LLM Evaluation Reasoning - Always show */}
+              <div>
+                <h4 className="font-medium mb-2 text-purple-600 flex items-center gap-2">
+                  <Target className="h-4 w-4" />
+                  Justificativa da Avaliação
+                </h4>
+                <div className="p-3 bg-purple-50 rounded-lg border border-purple-200">
+                  {selectedResult.evaluation_reasoning ? (
                     <p className="text-sm whitespace-pre-wrap">{selectedResult.evaluation_reasoning}</p>
-                  </div>
+                  ) : (
+                    <p className="text-sm text-muted-foreground italic">
+                      Justificativa LLM não disponível para este resultado. 
+                      Resultados mais recentes incluem avaliação detalhada por IA.
+                    </p>
+                  )}
                 </div>
-              )}
+              </div>
 
               {/* Error Details */}
               {selectedResult.error_details && (

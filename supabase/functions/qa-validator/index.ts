@@ -358,27 +358,89 @@ serve(async (req) => {
         const expectedAnswerField = testCase.expected_answer || testCase.expected_response || '';
         const expectedAnswer = expectedAnswerField.toLowerCase().trim();
         
-        // Calculate accuracy
+        // Calculate accuracy with LLM evaluation
         let isCorrect = false;
         let accuracy = 0;
+        let evaluationReasoning = '';
         
-        if (actualAnswer.includes(expectedAnswer) || expectedAnswer.includes(actualAnswer)) {
-          isCorrect = true;
-          accuracy = 1;
-        } else if (actualAnswer.length > 0) {
-          // Word overlap calculation
-          const actualWords = actualAnswer.split(/\s+/);
-          const expectedWords = expectedAnswer.split(/\s+/);
-          const commonWords = actualWords.filter(word => 
-            expectedWords.some(expWord => word.includes(expWord) || expWord.includes(word))
-          ).length;
-          accuracy = Math.min(commonWords / Math.max(expectedWords.length, 1), 1);
-          isCorrect = accuracy > 0.5;
-        }
-        
-        // Factor in confidence
-        if (confidence > 0) {
-          accuracy = accuracy * 0.7 + confidence * 0.3;
+        try {
+          // Use LLM to evaluate the answer quality
+          const evaluationPrompt = `
+Você é um avaliador especializado em questões sobre legislação urbana de Porto Alegre.
+
+PERGUNTA: ${questionText}
+
+RESPOSTA ESPERADA: ${expectedAnswerField}
+
+RESPOSTA RECEBIDA: ${answer}
+
+Avalie a qualidade da resposta recebida comparada com a resposta esperada. Considere:
+1. Precisão factual das informações
+2. Completude da resposta
+3. Relevância para a pergunta
+4. Clareza e objetividade
+
+Forneça uma pontuação de 0 a 1 (onde 1 = perfeita) e justifique sua avaliação explicando:
+- Pontos corretos da resposta
+- Informações faltantes ou incorretas
+- Grau de similaridade com a resposta esperada
+
+Formato da resposta:
+PONTUAÇÃO: [0.0 a 1.0]
+JUSTIFICATIVA: [explicação detalhada]`;
+
+          const evaluationResponse = await callEdgeFunction(
+            supabase,
+            'agentic-rag',
+            {
+              message: evaluationPrompt,
+              userRole: 'user',
+              sessionId: `qa-eval-${validationRun.id}`,
+              userId: 'qa-evaluator',
+              model: 'openai/gpt-4o-mini' // Use fast model for evaluation
+            },
+            5000 // 5s timeout for evaluation
+          );
+
+          const evalText = evaluationResponse.response || '';
+          
+          // Parse evaluation
+          const scoreMatch = evalText.match(/PONTUAÇÃO:\s*([0-9.]+)/);
+          const justificationMatch = evalText.match(/JUSTIFICATIVA:\s*([\s\S]*)/);
+          
+          if (scoreMatch) {
+            accuracy = parseFloat(scoreMatch[1]);
+            accuracy = Math.max(0, Math.min(1, accuracy)); // Clamp between 0-1
+            isCorrect = accuracy > 0.6;
+          }
+          
+          if (justificationMatch) {
+            evaluationReasoning = justificationMatch[1].trim();
+          }
+          
+          console.log(`LLM Evaluation - Score: ${accuracy}, Reasoning: ${evaluationReasoning.substring(0, 100)}...`);
+          
+        } catch (evalError) {
+          console.warn('LLM evaluation failed, using fallback method:', evalError.message);
+          
+          // Fallback to simple comparison
+          if (actualAnswer.includes(expectedAnswer) || expectedAnswer.includes(actualAnswer)) {
+            isCorrect = true;
+            accuracy = 0.9;
+            evaluationReasoning = 'Avaliação básica: Resposta contém elementos da resposta esperada.';
+          } else if (actualAnswer.length > 0) {
+            // Word overlap calculation
+            const actualWords = actualAnswer.split(/\s+/);
+            const expectedWords = expectedAnswer.split(/\s+/);
+            const commonWords = actualWords.filter(word => 
+              expectedWords.some(expWord => word.includes(expWord) || expWord.includes(word))
+            ).length;
+            accuracy = Math.min(commonWords / Math.max(expectedWords.length, 1), 1);
+            isCorrect = accuracy > 0.5;
+            evaluationReasoning = `Avaliação básica: Similaridade por palavras (${commonWords}/${expectedWords.length} palavras em comum).`;
+          } else {
+            evaluationReasoning = 'Avaliação básica: Resposta vazia ou muito curta.';
+          }
         }
         
         // Save result - IMPORTANT: use UUID for test_case_id
@@ -392,7 +454,8 @@ serve(async (req) => {
           response_time_ms: Math.round(responseTime),
           error_type: null,
           error_details: null,
-          generated_sql: response.generatedSql || null
+          generated_sql: response.generatedSql || null,
+          evaluation_reasoning: evaluationReasoning || 'Sem avaliação LLM disponível.'
         };
         
         console.log('Attempting to save result:', JSON.stringify(result, null, 2));
@@ -432,7 +495,8 @@ serve(async (req) => {
           response_time_ms: Date.now() - testStartTime,
           error_type: error.message.includes('timeout') ? 'timeout' : 'api_error',
           error_details: error.message,
-          generated_sql: null
+          generated_sql: null,
+          evaluation_reasoning: `Erro durante execução: ${error.message}`
         };
         
         await supabase
