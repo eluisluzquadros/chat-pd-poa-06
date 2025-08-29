@@ -70,16 +70,22 @@ export default function RegimeUrbanisticoDashboard() {
             
             <FilterDropdown
               label="Bairro"
-              value={selectedBairro}
-              onChange={setSelectedBairro}
+              value={selectedBairro || 'todos'}
+              onChange={(value) => {
+                setSelectedBairro(value || 'todos');
+                setCurrentPage(1);
+              }}
               options={bairros}
               placeholder="Todos os bairros"
             />
             
             <FilterDropdown
               label="Zona"
-              value={selectedZona}
-              onChange={setSelectedZona}
+              value={selectedZona || 'todos'}
+              onChange={(value) => {
+                setSelectedZona(value || 'todos');
+                setCurrentPage(1);
+              }}
               options={zonas}
               placeholder="Todas as zonas"
             />

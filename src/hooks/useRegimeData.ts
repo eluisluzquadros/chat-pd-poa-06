@@ -45,8 +45,12 @@ export function useRegimeData({
         if (allData) {
           setTotalCount(allData.length);
           
-          const uniqueBairros = [...new Set(allData.map(item => item.Bairro))].sort();
-          const uniqueZonas = [...new Set(allData.map(item => item.Zona))].sort();
+          const uniqueBairros = [...new Set(allData.map(item => item.Bairro))]
+            .filter(bairro => bairro && bairro.trim() !== '') // Filter out empty values
+            .sort();
+          const uniqueZonas = [...new Set(allData.map(item => item.Zona))]
+            .filter(zona => zona && zona.trim() !== '') // Filter out empty values
+            .sort();
           
           setAllBairros(uniqueBairros);
           setAllZonas(uniqueZonas);

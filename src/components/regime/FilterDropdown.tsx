@@ -31,11 +31,13 @@ export function FilterDropdown({
         </SelectTrigger>
         <SelectContent>
           <SelectItem value="todos">Todos</SelectItem>
-          {options.map((option) => (
-            <SelectItem key={option} value={option}>
-              {option}
-            </SelectItem>
-          ))}
+          {options
+            .filter(option => option && option.trim() !== '') // Filter out empty strings
+            .map((option) => (
+              <SelectItem key={option} value={option}>
+                {option}
+              </SelectItem>
+            ))}
         </SelectContent>
       </Select>
     </div>
