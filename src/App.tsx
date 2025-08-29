@@ -22,6 +22,7 @@ import FeedbackManagement from "./pages/admin/FeedbackManagement";
 import UserSettings from "./pages/UserSettings";
 import Reports from "./pages/Reports";
 import BenchmarkV2 from "./pages/admin/BenchmarkV2";
+import RegimeUrbanisticoDashboard from "./pages/RegimeUrbanisticoDashboard";
 import Metrics from "./pages/admin/Metrics";
 import PlatformSettings from "./pages/admin/PlatformSettings";
 import AgenticRAGDashboard from "./components/admin/AgenticRAGDashboard";
@@ -62,6 +63,7 @@ function App() {
               
               {/* Basic authenticated routes */}
               <Route path="/chat" element={<SimpleAuthGuard><Chat /></SimpleAuthGuard>} />
+              <Route path="/explorar-dados" element={<SimpleAuthGuard><RegimeUrbanisticoDashboard /></SimpleAuthGuard>} />
               <Route path="/settings" element={<SimpleAuthGuard><UserSettings /></SimpleAuthGuard>} />
               
               {/* Admin routes */}

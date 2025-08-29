@@ -2,7 +2,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
-import { Users, FileText, MessageCircle, BarChart3, Shield } from 'lucide-react';
+import { Users, FileText, MessageCircle, BarChart3, Shield, Database } from 'lucide-react';
 
 export const MainNavigation = () => {
   const navigate = useNavigate();
@@ -17,6 +17,16 @@ export const MainNavigation = () => {
           >
             <MessageCircle className="h-4 w-4 mr-1" />
             Assistente
+          </button>
+        </li>
+        
+        <li>
+          <button 
+            onClick={() => navigate('/explorar-dados')} 
+            className="hover:underline flex items-center cursor-pointer"
+          >
+            <Database className="h-4 w-4 mr-1" />
+            Explorar Dados
           </button>
         </li>
         
