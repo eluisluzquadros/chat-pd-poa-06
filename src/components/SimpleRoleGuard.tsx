@@ -54,11 +54,21 @@ export const SimpleRoleGuard = ({
         const isSupervisor = role === 'supervisor' || isAdmin;
         
         // Determinar acesso baseado nos requisitos da rota
-        const access = (adminOnly && isAdmin) || 
-                       (supervisorOnly && (isSupervisor || isAdmin)) || 
-                       (!adminOnly && !supervisorOnly);
+        let access = false;
+        
+        if (!adminOnly && !supervisorOnly) {
+          // Rota sem restrições especiais - qualquer usuário autenticado pode acessar
+          access = true;
+        } else if (adminOnly) {
+          // Apenas admin pode acessar
+          access = isAdmin;
+        } else if (supervisorOnly) {
+          // Admin ou supervisor podem acessar
+          access = isSupervisor || isAdmin;
+        }
         
         console.log("SimpleRoleGuard: Acesso concedido:", access);
+        console.log("SimpleRoleGuard: adminOnly:", adminOnly, "supervisorOnly:", supervisorOnly);
         
         // Mostrar mensagem de erro se não tiver acesso
         if (!access) {

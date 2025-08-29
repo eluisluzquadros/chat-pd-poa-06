@@ -278,8 +278,19 @@ export const AuthService = {
       const now = Date.now();
       
       if (now - lastCall < AUTH_THROTTLE_DELAY) {
-        console.log("getUserRole throttled, usando cache ou padrão");
-        return cached?.role || 'admin'; // Fallback para admin se throttled
+        console.log("getUserRole throttled, usando cache");
+        const cachedRole = cached?.role || sessionStorage.getItem('urbanista-user-role');
+        if (cachedRole) {
+          console.log("Usando role do cache/sessionStorage:", cachedRole);
+          return cachedRole;
+        }
+        // Fallback mais inteligente baseado no email
+        const session = await this.getCurrentSession();
+        if (session?.user?.email === 'admin@example.com') {
+          console.log("Fallback: Admin detectado pelo email");
+          return 'admin';
+        }
+        return 'user'; // Fallback seguro em vez de admin
       }
       
       authCallsThrottle.set(throttleKey, now);
