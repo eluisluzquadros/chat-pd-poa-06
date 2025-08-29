@@ -72,11 +72,11 @@ export const AuthInitializer = ({
               setIsAnalyst(role === 'analyst' || role === 'supervisor' || role === 'admin');
             } catch (error: any) {
               console.error("Erro ao obter papel do usuário:", error);
-              // Assumir role admin em caso de erro
-              setUserRole('admin' as AppRole);
-              setIsAdmin(true);
-              setIsSupervisor(true);
-              setIsAnalyst(true);
+              // Assumir role user em caso de erro (mais restritivo)
+              setUserRole('user' as AppRole);
+              setIsAdmin(false);
+              setIsSupervisor(false);
+              setIsAnalyst(false);
             }
           }, 200); // Delay para evitar rate limiting
         } else {

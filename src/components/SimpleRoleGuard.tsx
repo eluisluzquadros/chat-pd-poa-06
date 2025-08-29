@@ -64,11 +64,27 @@ export const SimpleRoleGuard = ({
         
         console.log("✅ Sessão encontrada:", session.user.email);
         
+        // Buscar role real do usuário
+        const realRole = await AuthService.getUserRole(session.user.id);
+        console.log("🔍 Role real do usuário:", realRole);
+        
+        // Verificar se tem acesso baseado no role real
+        let hasAccess = false;
+        
+        if (adminOnly && realRole === 'admin') {
+          hasAccess = true;
+        } else if (supervisorOnly && (realRole === 'supervisor' || realRole === 'admin')) {
+          hasAccess = true;
+        } else if (!adminOnly && !supervisorOnly) {
+          // Para componentes sem restrição específica, permitir todos os roles
+          hasAccess = true;
+        }
+        
         if (isActive) {
-          setUserRole('admin');
-          setHasAccess(true);
+          setUserRole(realRole);
+          setHasAccess(hasAccess);
           setIsInitializing(false);
-          console.log("✅ Acesso liberado para:", session.user.email);
+          console.log(`✅ Verificação completa - Role: ${realRole}, Acesso: ${hasAccess}`);
         }
         
       } catch (error) {
@@ -99,9 +115,26 @@ export const SimpleRoleGuard = ({
       
       if (event === 'SIGNED_IN' && session) {
         console.log("✅ Login detectado no SimpleRoleGuard");
-        setUserRole('admin');
-        setHasAccess(true);
-        setIsInitializing(false);
+        // Buscar role real e verificar acesso
+        setTimeout(async () => {
+          if (!isActive) return;
+          
+          const realRole = await AuthService.getUserRole(session.user.id);
+          console.log("🔍 Role real no auth change:", realRole);
+          
+          let hasAccess = false;
+          if (adminOnly && realRole === 'admin') {
+            hasAccess = true;
+          } else if (supervisorOnly && (realRole === 'supervisor' || realRole === 'admin')) {
+            hasAccess = true;
+          } else if (!adminOnly && !supervisorOnly) {
+            hasAccess = true;
+          }
+          
+          setUserRole(realRole);
+          setHasAccess(hasAccess);
+          setIsInitializing(false);
+        }, 100);
       } else if (event === 'SIGNED_OUT') {
         console.log("❌ Logout detectado no SimpleRoleGuard");
         setHasAccess(false);
@@ -112,12 +145,12 @@ export const SimpleRoleGuard = ({
     // Verificação inicial
     checkAccess();
     
-    // Timeout de fallback - após 2 segundos, assumir admin se nada aconteceu
+    // Timeout de fallback - após 2 segundos, negar acesso se não conseguiu verificar
     const fallbackTimeout = setTimeout(() => {
       if (isActive && isInitializing) {
-        console.log("⏰ Timeout de fallback - assumindo acesso admin");
-        setUserRole('admin');
-        setHasAccess(true);
+        console.log("⏰ Timeout de fallback - negando acesso por segurança");
+        setUserRole(null);
+        setHasAccess(false);
         setIsInitializing(false);
       }
     }, 2000);

@@ -270,8 +270,8 @@ export const AuthService = {
       const now = Date.now();
       
       if (now - lastCall < AUTH_THROTTLE_DELAY) {
-        console.log("⚡ getUserRole throttled, usando cache ou admin fallback");
-        return cached?.role || 'admin'; // Fallback imediato para admin se throttled
+        console.log("⚡ getUserRole throttled, usando cache ou user fallback");
+        return cached?.role || 'user'; // Fallback para user se throttled
       }
       
       authCallsThrottle.set(throttleKey, now);
@@ -331,13 +331,13 @@ export const AuthService = {
         console.error("Erro ao buscar account:", accountError);
       }
       
-      const finalRole = accountData?.role || 'admin'; // Default para admin
+      const finalRole = accountData?.role || 'user'; // Default para user
       userRoleCache.set(userId, { role: finalRole, timestamp: now });
       return finalRole;
     } catch (error) {
       console.error("Erro ao obter papel do usuário:", error);
-      // Em caso de erro, assumir admin para o usuário principal
-      const fallbackRole = 'admin';
+      // Em caso de erro, assumir user (role mais restrito)
+      const fallbackRole = 'user';
       userRoleCache.set(userId, { role: fallbackRole, timestamp: Date.now() });
       return fallbackRole;
     }
