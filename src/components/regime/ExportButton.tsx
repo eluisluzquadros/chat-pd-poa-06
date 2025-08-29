@@ -97,19 +97,6 @@ export function ExportButton({ data, filters, isDisabled }: ExportButtonProps) {
     }
   };
 
-  return (
-    <Button
-      variant="outline"
-      onClick={handleExport}
-      disabled={isDisabled || isExporting}
-      className="flex items-center gap-2"
-    >
-      {isExporting ? (
-        <Loader2 className="h-4 w-4 animate-spin" />
-      ) : (
-        <Download className="h-4 w-4" />
-      )}
-      {isExporting ? 'Exportando...' : 'Exportar CSV'}
-    </Button>
-  );
+  // Button temporarily hidden - uncomment to re-enable export functionality
+  return null;
 }
