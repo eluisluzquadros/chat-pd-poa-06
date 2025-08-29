@@ -12,7 +12,7 @@ import { useState } from "react";
 import { DeleteDocumentDialog } from "./components/DeleteDocumentDialog";
 import { DocumentForm } from "./components/DocumentForm";
 import { useDocumentEdit } from "./hooks/useDocumentEdit";
-import { AuthGuard } from "@/components/layout/AuthGuard";
+import { SimpleAuthGuard } from "@/components/SimpleAuthGuard";
 import { Loader2 } from "lucide-react";
 
 export default function DocumentEdit() {
@@ -108,7 +108,7 @@ export default function DocumentEdit() {
 
   if (isLoading) {
     return (
-      <AuthGuard>
+      <SimpleAuthGuard>
         <div className="min-h-screen bg-background">
           <Header />
           <main className="container mx-auto px-4 py-8 pt-24">
@@ -118,13 +118,13 @@ export default function DocumentEdit() {
             </div>
             </main>
           </div>
-      </AuthGuard>
+      </SimpleAuthGuard>
     );
   }
 
   if (error || !document) {
     return (
-      <AuthGuard>
+      <SimpleAuthGuard>
         <div className="min-h-screen bg-background">
           <Header />
           <main className="container mx-auto px-4 py-8 pt-24">
@@ -139,12 +139,12 @@ export default function DocumentEdit() {
             </div>
             </main>
           </div>
-      </AuthGuard>
+      </SimpleAuthGuard>
     );
   }
 
   return (
-    <AuthGuard>
+    <SimpleAuthGuard>
       <div className="min-h-screen bg-background">
         <Header />
         <main className="container mx-auto px-4 py-8 pt-24">
@@ -190,6 +190,6 @@ export default function DocumentEdit() {
           isDeleting={deleteMutation.isPending} 
         />
       </div>
-    </AuthGuard>
+    </SimpleAuthGuard>
   );
 }

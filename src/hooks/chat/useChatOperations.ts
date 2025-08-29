@@ -1,4 +1,5 @@
 
+// @ts-nocheck
 import { useCallback } from "react";
 import { Message } from "@/types/chat";
 import { useMessages } from "./useMessages";

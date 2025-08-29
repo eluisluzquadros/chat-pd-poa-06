@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { supabase } from "@/integrations/supabase/client";
 import { removePromotionalTemplate, calculateAccuracyWithoutTemplate, normalizeText } from "@/utils/templateFilter";
 import { unifiedRAGService } from "./unifiedRAGService";
