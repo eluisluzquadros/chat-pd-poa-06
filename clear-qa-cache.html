@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Limpar Cache QA</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .success {
+            color: green;
+            margin-top: 20px;
+        }
+        .info {
+            background: #e9ecef;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 20px;
+        }
+        pre {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧹 Limpeza de Cache QA</h1>
+        
+        <p>Use esta página para limpar o cache do sistema QA e resolver problemas de exibição.</p>
+        
+        <button onclick="clearQACache()">Limpar Cache QA</button>
+        <button onclick="clearAllLocalStorage()">Limpar Todo LocalStorage</button>
+        <button onclick="showStorageInfo()">Mostrar Informações</button>
+        
+        <div id="result"></div>
+        
+        <div class="info">
+            <h3>Informações do Storage:</h3>
+            <pre id="storage-info">Clique em "Mostrar Informações" para ver os dados armazenados</pre>
+        </div>
+    </div>
+
+    <script>
+        function clearQACache() {
+            const keys = ['qa_recent_run_ids', 'qa_current_executions', 'qa_expanded_runs'];
+            keys.forEach(key => {
+                localStorage.removeItem(key);
+            });
+            
+            document.getElementById('result').innerHTML = '<p class="success">✅ Cache QA limpo com sucesso!</p>';
+            showStorageInfo();
+        }
+        
+        function clearAllLocalStorage() {
+            if (confirm('Tem certeza que deseja limpar TODO o localStorage?')) {
+                localStorage.clear();
+                document.getElementById('result').innerHTML = '<p class="success">✅ Todo localStorage foi limpo!</p>';
+                showStorageInfo();
+            }
+        }
+        
+        function showStorageInfo() {
+            const info = {
+                'qa_recent_run_ids': localStorage.getItem('qa_recent_run_ids'),
+                'Total de itens': localStorage.length,
+                'Chaves': Object.keys(localStorage).join(', ')
+            };
+            
+            document.getElementById('storage-info').textContent = JSON.stringify(info, null, 2);
+        }
+        
+        // Mostrar informações ao carregar
+        window.onload = showStorageInfo;
+    </script>
+</body>
+</html>

@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste Direto da API</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+        }
+        .input-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        textarea {
+            min-height: 60px;
+            resize: vertical;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-right: 10px;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .results {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f9f9f9;
+            border-radius: 4px;
+            border: 1px solid #e0e0e0;
+        }
+        .success {
+            color: green;
+            font-weight: bold;
+        }
+        .error {
+            color: red;
+            font-weight: bold;
+        }
+        .info {
+            color: blue;
+        }
+        pre {
+            background: #f4f4f4;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        .test-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+        .test-button {
+            background: #2196F3;
+            font-size: 14px;
+            padding: 8px 16px;
+        }
+        .metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .metric {
+            background: white;
+            padding: 10px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+        .metric-label {
+            font-size: 12px;
+            color: #666;
+        }
+        .metric-value {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Teste Direto da API - Chat PD POA</h1>
+        
+        <div class="input-group">
+            <label for="supabaseUrl">Supabase URL:</label>
+            <input type="text" id="supabaseUrl" placeholder="https://...supabase.co">
+        </div>
+        
+        <div class="input-group">
+            <label for="supabaseKey">Supabase Anon Key:</label>
+            <input type="password" id="supabaseKey" placeholder="eyJhbGc...">
+        </div>
+        
+        <div class="input-group">
+            <label for="query">Query:</label>
+            <textarea id="query" placeholder="Digite sua pergunta aqui...">Qual é a altura máxima permitida no bairro Petrópolis?</textarea>
+        </div>
+        
+        <div class="test-buttons">
+            <button class="test-button" onclick="setQuery('Qual é a altura máxima permitida no bairro Petrópolis?')">
+                Altura Petrópolis
+            </button>
+            <button class="test-button" onclick="setQuery('Qual é a altura máxima mais alta no novo Plano Diretor?')">
+                Altura Máxima Cidade
+            </button>
+            <button class="test-button" onclick="setQuery('Quais são os principais índices urbanísticos do bairro Petrópolis?')">
+                Índices Petrópolis
+            </button>
+            <button class="test-button" onclick="setQuery('Principais índices do bairro Centro Histórico?')">
+                Centro Histórico
+            </button>
+            <button class="test-button" onclick="setQuery('Quais bairros têm altura máxima acima de 60 metros?')">
+                Bairros > 60m
+            </button>
+        </div>
+        
+        <button onclick="testAPI()" id="testBtn">🚀 Testar API</button>
+        <button onclick="clearResults()">🗑️ Limpar</button>
+        <button onclick="testSQLGenerator()" id="sqlBtn">🔧 Testar SQL Generator</button>
+        
+        <div id="results" class="results" style="display: none;">
+            <h3>Resultados:</h3>
+            <div id="resultContent"></div>
+        </div>
+    </div>
+
+    <script>
+        // Carregar valores do localStorage se existirem
+        window.onload = () => {
+            const savedUrl = localStorage.getItem('supabaseUrl');
+            const savedKey = localStorage.getItem('supabaseKey');
+            if (savedUrl) document.getElementById('supabaseUrl').value = savedUrl;
+            if (savedKey) document.getElementById('supabaseKey').value = savedKey;
+        };
+        
+        function setQuery(query) {
+            document.getElementById('query').value = query;
+        }
+        
+        function clearResults() {
+            document.getElementById('results').style.display = 'none';
+            document.getElementById('resultContent').innerHTML = '';
+        }
+        
+        async function testAPI() {
+            const url = document.getElementById('supabaseUrl').value;
+            const key = document.getElementById('supabaseKey').value;
+            const query = document.getElementById('query').value;
+            
+            if (!url || !key || !query) {
+                alert('Por favor, preencha todos os campos!');
+                return;
+            }
+            
+            // Salvar no localStorage
+            localStorage.setItem('supabaseUrl', url);
+            localStorage.setItem('supabaseKey', key);
+            
+            const resultDiv = document.getElementById('resultContent');
+            const resultsContainer = document.getElementById('results');
+            resultsContainer.style.display = 'block';
+            
+            const testBtn = document.getElementById('testBtn');
+            testBtn.disabled = true;
+            testBtn.textContent = '⏳ Processando...';
+            
+            resultDiv.innerHTML = '<p class="info">🔄 Enviando requisição para agentic-rag...</p>';
+            
+            const startTime = Date.now();
+            
+            try {
+                const response = await fetch(`${url}/functions/v1/agentic-rag`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${key}`,
+                    },
+                    body: JSON.stringify({
+                        query: query,
+                        message: query,
+                        bypassCache: true,
+                        model: 'openai/gpt-3.5-turbo'
+                    }),
+                });
+                
+                const duration = Date.now() - startTime;
+                const result = await response.json();
+                
+                if (response.ok && result.response) {
+                    // Verificar se tem dados específicos
+                    const hasSpecificData = 
+                        result.response.includes('60') ||
+                        result.response.includes('90') ||
+                        result.response.includes('metros') ||
+                        result.response.includes('ZOT');
+                    
+                    let statusHtml = `
+                        <p class="success">✅ Sucesso! (${duration}ms)</p>
+                        <div class="metrics">
+                            <div class="metric">
+                                <div class="metric-label">Confiança</div>
+                                <div class="metric-value">${(result.confidence * 100).toFixed(1)}%</div>
+                            </div>
+                            <div class="metric">
+                                <div class="metric-label">Tempo de Execução</div>
+                                <div class="metric-value">${result.executionTime || duration}ms</div>
+                            </div>
+                            <div class="metric">
+                                <div class="metric-label">Dados Estruturados</div>
+                                <div class="metric-value">${hasSpecificData ? '✅ Sim' : '❌ Não'}</div>
+                            </div>
+                            <div class="metric">
+                                <div class="metric-label">Modelo</div>
+                                <div class="metric-value">${result.model || 'N/A'}</div>
+                            </div>
+                        </div>
+                    `;
+                    
+                    if (!hasSpecificData) {
+                        statusHtml += '<p class="error">⚠️ AVISO: Resposta parece genérica (sem dados específicos)</p>';
+                    }
+                    
+                    statusHtml += `
+                        <h4>Resposta:</h4>
+                        <pre>${result.response}</pre>
+                    `;
+                    
+                    if (result.sources) {
+                        statusHtml += `
+                            <h4>Fontes:</h4>
+                            <pre>${JSON.stringify(result.sources, null, 2)}</pre>
+                        `;
+                    }
+                    
+                    if (result.agentTrace) {
+                        const sqlStep = result.agentTrace.find(s => s.step === 'sql_generation_complete');
+                        if (sqlStep) {
+                            statusHtml += `
+                                <h4>SQL Generation:</h4>
+                                <p>${sqlStep.hasResults ? '✅ Com resultados' : '❌ Sem resultados'}</p>
+                            `;
+                        }
+                        
+                        statusHtml += `
+                            <h4>Agent Trace:</h4>
+                            <details>
+                                <summary>Clique para expandir</summary>
+                                <pre>${JSON.stringify(result.agentTrace, null, 2)}</pre>
+                            </details>
+                        `;
+                    }
+                    
+                    resultDiv.innerHTML = statusHtml;
+                } else {
+                    resultDiv.innerHTML = `
+                        <p class="error">❌ Erro: ${result.error || 'Resposta inválida'}</p>
+                        <pre>${JSON.stringify(result, null, 2)}</pre>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <p class="error">❌ Erro de rede: ${error.message}</p>
+                    <pre>${error.stack}</pre>
+                `;
+            } finally {
+                testBtn.disabled = false;
+                testBtn.textContent = '🚀 Testar API';
+            }
+        }
+        
+        async function testSQLGenerator() {
+            const url = document.getElementById('supabaseUrl').value;
+            const key = document.getElementById('supabaseKey').value;
+            
+            if (!url || !key) {
+                alert('Por favor, preencha URL e Key!');
+                return;
+            }
+            
+            const resultDiv = document.getElementById('resultContent');
+            const resultsContainer = document.getElementById('results');
+            resultsContainer.style.display = 'block';
+            
+            const sqlBtn = document.getElementById('sqlBtn');
+            sqlBtn.disabled = true;
+            sqlBtn.textContent = '⏳ Testando SQL...';
+            
+            resultDiv.innerHTML = '<p class="info">🔄 Testando SQL Generator diretamente...</p>';
+            
+            try {
+                const response = await fetch(`${url}/functions/v1/sql-generator`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${key}`,
+                    },
+                    body: JSON.stringify({
+                        query: "altura máxima Petrópolis",
+                        analysisResult: {
+                            strategy: 'structured_only',
+                            entities: {
+                                bairros: ['Petrópolis'],
+                                parameters: ['altura_maxima']
+                            }
+                        },
+                        hints: { needsMax: true, useRegimeTable: true }
+                    }),
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok && result.executionResults) {
+                    let html = '<p class="success">✅ SQL Generator funcionando!</p>';
+                    html += `<p>Queries geradas: ${result.sqlQueries?.length || 0}</p>`;
+                    
+                    for (const execResult of result.executionResults || []) {
+                        if (execResult.data && execResult.data.length > 0) {
+                            html += `
+                                <h4>✅ Dados encontrados (${execResult.data.length} registros):</h4>
+                                <pre>${JSON.stringify(execResult.data, null, 2)}</pre>
+                            `;
+                        } else if (execResult.error) {
+                            html += `<p class="error">⚠️ Erro na query: ${execResult.error}</p>`;
+                        }
+                    }
+                    
+                    html += `
+                        <h4>SQL Queries:</h4>
+                        <pre>${JSON.stringify(result.sqlQueries, null, 2)}</pre>
+                    `;
+                    
+                    resultDiv.innerHTML = html;
+                } else {
+                    resultDiv.innerHTML = `
+                        <p class="error">❌ SQL Generator com problema: ${result.error}</p>
+                        <pre>${JSON.stringify(result, null, 2)}</pre>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <p class="error">❌ Erro: ${error.message}</p>
+                `;
+            } finally {
+                sqlBtn.disabled = false;
+                sqlBtn.textContent = '🔧 Testar SQL Generator';
+            }
+        }
+    </script>
+</body>
+</html>

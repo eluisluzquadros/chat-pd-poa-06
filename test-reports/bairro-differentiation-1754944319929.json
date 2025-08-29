@@ -1,0 +1,70 @@
+{
+  "timestamp": "2025-08-11T20:31:59.928Z",
+  "totalTests": 6,
+  "passed": 2,
+  "failed": 4,
+  "successRate": 33,
+  "avgScore": 58,
+  "totalBairros": 94,
+  "similarPairs": 108,
+  "results": [
+    {
+      "id": 1,
+      "description": "Diferenciação: Boa Vista vs Boa Vista do Sul",
+      "passed": false,
+      "score": 50,
+      "bairrosMentioned": [
+        "BOA VISTA",
+        "BOA VISTA DO SUL"
+      ],
+      "wrongBairro": "BOA VISTA DO SUL"
+    },
+    {
+      "id": 2,
+      "description": "Diferenciação: Boa Vista do Sul vs Boa Vista",
+      "passed": false,
+      "score": 50,
+      "bairrosMentioned": [
+        "BOA VISTA",
+        "BOA VISTA DO SUL"
+      ],
+      "wrongBairro": "BOA VISTA"
+    },
+    {
+      "id": 3,
+      "description": "Diferenciação: Vila Nova vs Vila Nova do Sul",
+      "passed": true,
+      "score": 100,
+      "bairrosMentioned": [
+        "VILA NOVA"
+      ],
+      "wrongBairro": ""
+    },
+    {
+      "id": 4,
+      "description": "Diferenciação: Vila Nova do Sul vs Vila Nova",
+      "passed": false,
+      "score": 0
+    },
+    {
+      "id": 5,
+      "description": "Diferenciação: Centro vs Centro Histórico",
+      "passed": false,
+      "score": 50,
+      "bairrosMentioned": [
+        "CENTRO HISTÓRICO"
+      ],
+      "wrongBairro": "CENTRO HISTÓRICO"
+    },
+    {
+      "id": 6,
+      "description": "Diferenciação: Centro Histórico vs Centro",
+      "passed": true,
+      "score": 100,
+      "bairrosMentioned": [
+        "CENTRO HISTÓRICO"
+      ],
+      "wrongBairro": ""
+    }
+  ]
+}

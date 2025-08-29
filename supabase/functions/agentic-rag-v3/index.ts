@@ -1470,6 +1470,16 @@ class AgenticRAGOrchestrator {
   }
   
   private async generateResponse(results: any[], query: string, metadata: any, context: any[]) {
+    // Try to use enhanced response synthesizer first
+    try {
+      const enhancedResponse = await this.callEnhancedSynthesizer(query, results, metadata);
+      if (enhancedResponse) {
+        return enhancedResponse;
+      }
+    } catch (error) {
+      console.log('⚠️ Enhanced synthesizer unavailable, using fallback:', error.message);
+    }
+    
     if (results.length === 0) {
       return `Desculpe, não encontrei informações específicas sobre "${query}" na base de conhecimento. Você poderia reformular sua pergunta ou ser mais específico sobre o artigo ou tema de interesse?`;
     }
@@ -1645,6 +1655,38 @@ INSTRUÇÕES:
     }
     
     return priority;
+  }
+  
+  private async callEnhancedSynthesizer(query: string, results: any[], metadata: any) {
+    try {
+      const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+      const response = await fetch(`${supabaseUrl}/functions/v1/response-synthesizer-enhanced`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          originalQuery: query,
+          agentResults: results.map(r => ({
+            agent: r.type || 'search',
+            data: r.data || r,
+            metadata: r.metadata || {}
+          })),
+          metadata
+        }),
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Enhanced synthesizer returned ${response.status}`);
+      }
+      
+      const data = await response.json();
+      return data.response;
+    } catch (error) {
+      console.error('Enhanced synthesizer call error:', error);
+      return null;
+    }
   }
   
   private async callLLM(systemPrompt: string, userQuery: string) {

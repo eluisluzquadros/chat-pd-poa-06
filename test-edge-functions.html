@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste de Edge Functions</title>
+    <style>
+        body {
+            font-family: monospace;
+            padding: 20px;
+            background: #1a1a1a;
+            color: #fff;
+        }
+        .test {
+            margin: 10px 0;
+            padding: 10px;
+            border: 1px solid #333;
+            border-radius: 5px;
+        }
+        .success { border-color: #0f0; }
+        .error { border-color: #f00; }
+        .pending { border-color: #ff0; }
+        button { 
+            padding: 10px 20px;
+            margin: 5px;
+            cursor: pointer;
+        }
+        pre {
+            background: #000;
+            padding: 10px;
+            overflow: auto;
+            max-height: 200px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Teste de Edge Functions - Chat PD POA</h1>
+    
+    <div id="config">
+        <h2>Configuração</h2>
+        <label>Supabase URL: <input type="text" id="supabaseUrl" value="https://ngrqwmvuhvjkeohesbxs.supabase.co" style="width: 400px"></label><br>
+        <label>Anon Key: <input type="text" id="anonKey" value="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5ncnF3bXZ1aHZqa2VvaGVzYnhzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM2MDkwMTcsImV4cCI6MjA2OTE4NTAxN30.K3uyyzjyAQ17ohQGCUFx_RiMufblLyQzvxEZHakqKrg" style="width: 600px"></label>
+    </div>
+
+    <h2>Testes</h2>
+    <button onclick="runAllTests()">Executar Todos os Testes</button>
+    <button onclick="clearResults()">Limpar Resultados</button>
+
+    <div id="tests"></div>
+
+    <script>
+        const tests = [
+            {
+                name: "1. Teste Direto - agentic-rag",
+                function: "agentic-rag",
+                body: {
+                    message: "Olá",
+                    query: "Olá",
+                    model: "openai/gpt-3.5-turbo",
+                    sessionId: "test-session",
+                    userId: "test-user"
+                }
+            },
+            {
+                name: "2. Teste query-analyzer",
+                function: "query-analyzer",
+                body: {
+                    query: "Qual a altura máxima no Centro Histórico?",
+                    sessionId: "test-session"
+                }
+            },
+            {
+                name: "3. Teste response-synthesizer com OpenAI",
+                function: "response-synthesizer",
+                body: {
+                    originalQuery: "Teste simples",
+                    analysisResult: { strategy: "conceptual" },
+                    model: "openai/gpt-3.5-turbo"
+                }
+            },
+            {
+                name: "4. Teste response-synthesizer com Anthropic",
+                function: "response-synthesizer",
+                body: {
+                    originalQuery: "Teste simples",
+                    analysisResult: { strategy: "conceptual" },
+                    model: "anthropic/claude-3-5-sonnet-20241022"
+                }
+            },
+            {
+                name: "5. Teste response-synthesizer com Google",
+                function: "response-synthesizer",
+                body: {
+                    originalQuery: "Teste simples",
+                    analysisResult: { strategy: "conceptual" },
+                    model: "google/gemini-1.5-flash"
+                }
+            }
+        ];
+
+        async function runTest(test) {
+            const testDiv = document.getElementById(`test-${test.name}`);
+            const resultDiv = testDiv.querySelector('.result');
+            
+            testDiv.className = 'test pending';
+            resultDiv.innerHTML = '<pre>Executando...</pre>';
+
+            try {
+                const url = document.getElementById('supabaseUrl').value;
+                const key = document.getElementById('anonKey').value;
+
+                const response = await fetch(`${url}/functions/v1/${test.function}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${key}`
+                    },
+                    body: JSON.stringify(test.body)
+                });
+
+                const data = await response.json();
+                
+                if (response.ok && data && !data.error) {
+                    testDiv.className = 'test success';
+                    resultDiv.innerHTML = `<pre>✅ SUCESSO\nStatus: ${response.status}\nResposta:\n${JSON.stringify(data, null, 2)}</pre>`;
+                } else {
+                    testDiv.className = 'test error';
+                    resultDiv.innerHTML = `<pre>❌ ERRO\nStatus: ${response.status}\nErro:\n${JSON.stringify(data, null, 2)}</pre>`;
+                }
+            } catch (error) {
+                testDiv.className = 'test error';
+                resultDiv.innerHTML = `<pre>❌ ERRO DE REDE\n${error.message}</pre>`;
+            }
+        }
+
+        async function runAllTests() {
+            for (const test of tests) {
+                await runTest(test);
+                // Aguardar 1 segundo entre testes
+                await new Promise(resolve => setTimeout(resolve, 1000));
+            }
+        }
+
+        function clearResults() {
+            document.getElementById('tests').innerHTML = '';
+            initTests();
+        }
+
+        function initTests() {
+            const testsDiv = document.getElementById('tests');
+            tests.forEach(test => {
+                const testDiv = document.createElement('div');
+                testDiv.id = `test-${test.name}`;
+                testDiv.className = 'test';
+                testDiv.innerHTML = `
+                    <h3>${test.name}</h3>
+                    <button onclick='runTest(${JSON.stringify(test)})'>Executar</button>
+                    <div class="result"></div>
+                `;
+                testsDiv.appendChild(testDiv);
+            });
+        }
+
+        // Inicializar
+        initTests();
+    </script>
+</body>
+</html>

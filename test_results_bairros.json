@@ -1,0 +1,234 @@
+{
+  "totalTests": 10,
+  "successful": 9,
+  "failed": 1,
+  "failedBairros": {},
+  "failedQueries": [
+    {
+      "bairro": "CIDADE BAIXA",
+      "query": "cidade baixa",
+      "reason": "Resposta Beta",
+      "details": {
+        "success": false,
+        "hasTable": false,
+        "hasZOT": null,
+        "hasAltura": false,
+        "hasCoeficiente": false,
+        "hasBetaError": true,
+        "confidence": 0.1,
+        "responseLength": 442,
+        "response": "Desculpe, sou uma versão Beta e ainda não consigo responder a essa pergunta.\n\n📍 **Explore mais:**\n- [Mapa com Regras Construtivas](https://bit.ly/3ILdXRA)\n- [Contribua com sugestões](https://bit.ly/4oefZKm)\n- [Participe da Audiência Pública](https://bit.ly/4o7AWqb)\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br\n\n💬 **Sua pergunta é importante!** Considere enviá-la pelos canais oficiais para contribuir com o aperfeiçoamento do plano."
+      }
+    }
+  ],
+  "summary": {
+    "TRÊS FIGUEIRAS": {
+      "total": 1,
+      "success": 1,
+      "failed": 0,
+      "details": [
+        {
+          "query": "três figueiras",
+          "success": true,
+          "hasTable": true,
+          "hasZOT": [
+            "ZOT 04"
+          ],
+          "hasAltura": true,
+          "hasCoeficiente": true,
+          "hasBetaError": false,
+          "confidence": 0.8,
+          "responseLength": 1389,
+          "response": "### Informações sobre Construção no Bairro Três Figueiras\n\nAbaixo estão os dados relevantes sobre as Zonas de Ordenamento Territorial (ZOT) do bairro Três Figueiras, incluindo a altura máxima de edificação e os coeficientes de aproveitamento. \n\n| ZOT       | Altura Máxima (m) | Coef. Básico | Coef. Máximo |\n|-----------|--------------------|---------------|---------------|\n| ZOT 04    | 18.0               | 2.0           | 4.0           |\n| ZOT 07    | 60.0               | 3.6           | 6.5           |\n| ZOT 08.3-C| 90.0               | 3.6           | 7.5           |\n\n### Observações Importantes:\n- **ZOT 08.3-C** permite a maior altura e coeficientes de aproveitamento, sendo uma opção mais permissiva para construções no bairro.\n- Os dados foram extraídos com precisão e refletem as regras de aproveitamento definidas no Plano Diretor Urbano Sustentável (PDUS 2025) de Porto Alegre.\n\nPara mais informações sobre as regras construtivas e participação no processo de planejamento urbano, consulte os links abaixo.\n\n📍 **Explore mais:**\n- [Mapa com Regras Construtivas](https://bit.ly/3ILdXRA)\n- [Contribua com sugestões](https://bit.ly/4oefZKm)\n- [Participe da Audiência Pública](https://bit.ly/4o7AWqb)\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br\n\n💬 **Sua pergunta é importante!** Considere enviá-la pelos canais oficiais para contribuir com o aperfeiçoamento do plano."
+        }
+      ]
+    },
+    "CAVALHADA": {
+      "total": 1,
+      "success": 1,
+      "failed": 0,
+      "details": [
+        {
+          "query": "cavalhada",
+          "success": true,
+          "hasTable": true,
+          "hasZOT": [
+            "ZOT 01"
+          ],
+          "hasAltura": true,
+          "hasCoeficiente": true,
+          "hasBetaError": false,
+          "confidence": 0.8,
+          "responseLength": 1680,
+          "response": "O bairro Cavalhada possui as seguintes Zonas de Ordenamento Territorial (ZOT) com os parâmetros construtivos correspondentes:\n\n| ZOT   | Altura Máxima (m) | Coef. Básico | Coef. Máximo |\n|-------|-------------------|---------------|---------------|\n| ZOT 01| 9.0               | 1.5           | 2.5           |\n| ZOT 03| 12.5              | 2.0           | 3.0           |\n| ZOT 09| 18.0              | 2.0           | 4.0           |\n| ZOT 10| 33.0              | 2.5           | 4.0           |\n| ZOT 11| 42.0              | 2.5           | 5.0           |\n| ZOT 15| 9.0               | 0.3           | 0.0           |\n\n### Análise dos Dados\n- **ZOT 01**: Permite construções até 9 metros de altura, com coeficientes de aproveitamento básico de 1.5 e máximo de 2.5.\n- **ZOT 03**: Altura máxima de 12.5 metros, com coeficientes de 2.0 e 3.0.\n- **ZOT 09**: Permite até 18 metros, com coeficientes de 2.0 e 4.0.\n- **ZOT 10**: Altura de 33 metros, coeficientes de 2.5 e 4.0.\n- **ZOT 11**: Permite até 42 metros, com coeficientes de 2.5 e 5.0.\n- **ZOT 15**: Altura de 9 metros, com coeficiente de 0.3, mas sem coeficiente máximo.\n\n### Conclusão\nEsses parâmetros são essenciais para o planejamento de edificações no bairro Cavalhada, possibilitando uma melhor compreensão das limitações e possibilidades de construção.\n\n📍 **Explore mais:**\n- [Mapa com Regras Construtivas](https://bit.ly/3ILdXRA)\n- [Contribua com sugestões](https://bit.ly/4oefZKm)\n- [Participe da Audiência Pública](https://bit.ly/4o7AWqb)\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br\n\n💬 **Sua pergunta é importante!** Considere enviá-la pelos canais oficiais para contribuir com o aperfeiçoamento do plano."
+        }
+      ]
+    },
+    "PETRÓPOLIS": {
+      "total": 1,
+      "success": 1,
+      "failed": 0,
+      "details": [
+        {
+          "query": "petrópolis",
+          "success": true,
+          "hasTable": true,
+          "hasZOT": [
+            "ZOT 07"
+          ],
+          "hasAltura": true,
+          "hasCoeficiente": true,
+          "hasBetaError": false,
+          "confidence": 0.8,
+          "responseLength": 1043,
+          "response": "### Informações sobre Construção no Bairro Petrópolis\n\nPara o bairro **Petrópolis**, as informações disponíveis sobre as Zonas de Ordenamento Territorial (ZOTs) são as seguintes:\n\n| ZOT   | Altura Máxima (m) | Coef. Básico | Coef. Máximo |\n|-------|------------------|--------------|--------------|\n| ZOT 07 | 60.0            | 3.6          | 6.5          |\n\n#### Detalhes:\n- **ZOT 07**: Permite uma altura máxima de 60 metros, com um coeficiente de aproveitamento básico de 3,6 e um coeficiente de aproveitamento máximo de 6,5.\n\nEsses parâmetros são fundamentais para orientar o que pode ser construído no bairro, promovendo um desenvolvimento urbano organizado e sustentável.\n\n📍 **Explore mais:**\n- [Mapa com Regras Construtivas](https://bit.ly/3ILdXRA)\n- [Contribua com sugestões](https://bit.ly/4oefZKm)\n- [Participe da Audiência Pública](https://bit.ly/4o7AWqb)\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br\n\n💬 **Sua pergunta é importante!** Considere enviá-la pelos canais oficiais para contribuir com o aperfeiçoamento do plano."
+        }
+      ]
+    },
+    "CRISTAL": {
+      "total": 1,
+      "success": 1,
+      "failed": 0,
+      "details": [
+        {
+          "query": "cristal",
+          "success": true,
+          "hasTable": true,
+          "hasZOT": [
+            "ZOT 02"
+          ],
+          "hasAltura": true,
+          "hasCoeficiente": true,
+          "hasBetaError": false,
+          "confidence": 0.8,
+          "responseLength": 1641,
+          "response": "O bairro Cristal possui diversas Zonas de Ordenamento Territorial (ZOT) com parâmetros construtivos específicos. Abaixo, apresento uma tabela com as informações relevantes para construção em cada ZOT do bairro:\n\n| ZOT           | Altura Máxima (m) | Coef. Básico | Coef. Máximo |\n|---------------|-------------------|---------------|---------------|\n| ZOT 02        | 9.0               | 2.0           | 3.0           |\n| ZOT 03        | 12.5              | 2.0           | 3.0           |\n| ZOT 05        | 33.0              | 2.5           | 4.0           |\n| ZOT 06        | 42.0              | 2.5           | 5.0           |\n| ZOT 08.3 - A  | 130.0             | 3.6           | 7.5           |\n| ZOT 11        | 42.0              | 2.5           | 5.0           |\n| ZOT 12        | 60.0              | 3.6           | 6.5           |\n| ZOT 15        | 9.0               | 0.3           | 0.0           |\n\n### Observações:\n- A ZOT 08.3 - A é a que permite a maior altura de edificação, com 130 metros e um coeficiente de aproveitamento máximo de 7.5.\n- O coeficiente de aproveitamento básico varia entre 0.3 e 3.6, dependendo da ZOT.\n\nEssas informações são essenciais para planejar construções de acordo com as normas do Plano Diretor Urbano Sustentável de Porto Alegre.\n\n📍 **Explore mais:**\n- [Mapa com Regras Construtivas](https://bit.ly/3ILdXRA)\n- [Contribua com sugestões](https://bit.ly/4oefZKm)\n- [Participe da Audiência Pública](https://bit.ly/4o7AWqb)\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br\n\n💬 **Sua pergunta é importante!** Considere enviá-la pelos canais oficiais para contribuir com o aperfeiçoamento do plano."
+        }
+      ]
+    },
+    "BOA VISTA": {
+      "total": 1,
+      "success": 1,
+      "failed": 0,
+      "details": [
+        {
+          "query": "boa vista",
+          "success": true,
+          "hasTable": true,
+          "hasZOT": [
+            "ZOT 04"
+          ],
+          "hasAltura": true,
+          "hasCoeficiente": true,
+          "hasBetaError": false,
+          "confidence": 0.8,
+          "responseLength": 1417,
+          "response": "O bairro **Boa Vista** possui as seguintes Zonas de Ordenamento Territorial (ZOTs) com seus respectivos parâmetros de construção:\n\n| ZOT        | Altura Máxima (m) | Coef. Básico | Coef. Máximo |\n|------------|------------------|--------------|--------------|\n| ZOT 04     | 18.0             | 2.0          | 4.0          |\n| ZOT 07     | 60.0             | 3.6          | 6.5          |\n| ZOT 08.3 - C | 90.0          | 3.6          | 7.5          |\n| ESPECIAL   | 0.0              | 0.0          | 0.0          |\n\n### Observações:\n- A ZOT **ZOT 08.3 - C** permite uma altura máxima de 90 metros e um coeficiente de aproveitamento máximo de 7.5, sendo a mais permissiva entre as ZOTs listadas para o bairro.\n- A ZOT **ZOT 07** também apresenta um coeficiente de aproveitamento básico de 3.6, permitindo construções de até 60 metros de altura.\n- A ZOT **ESPECIAL** não possui parâmetros válidos para construção.\n\nPara informações mais detalhadas sobre as regras construtivas e para visualizar a localização das ZOTs, recomendo acessar os links abaixo.\n\n📍 **Explore mais:**\n- [Mapa com Regras Construtivas](https://bit.ly/3ILdXRA)\n- [Contribua com sugestões](https://bit.ly/4oefZKm)\n- [Participe da Audiência Pública](https://bit.ly/4o7AWqb)\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br\n\n💬 **Sua pergunta é importante!** Considere enviá-la pelos canais oficiais para contribuir com o aperfeiçoamento do plano."
+        }
+      ]
+    },
+    "CENTRO HISTÓRICO": {
+      "total": 1,
+      "success": 1,
+      "failed": 0,
+      "details": [
+        {
+          "query": "centro histórico",
+          "success": true,
+          "hasTable": true,
+          "hasZOT": [
+            "ZOT 08"
+          ],
+          "hasAltura": true,
+          "hasCoeficiente": true,
+          "hasBetaError": false,
+          "confidence": 0.8,
+          "responseLength": 1778,
+          "response": "Abaixo estão as informações sobre as Zonas de Ordenamento Territorial (ZOT) do bairro Centro Histórico de Porto Alegre, contendo os parâmetros de construção, como altura máxima de edificação e coeficientes de aproveitamento. \n\nInfelizmente, não consegui localizar dados válidos sobre as ZOTs do Centro Histórico, pois todos os registros disponíveis não possuem informações concretas para os parâmetros de construção. \n\nPorém, seguem as ZOTs encontradas, mesmo que os dados estejam marcados como inválidos:\n\n| ZOT          | Altura Máxima (m) | Coef. Básico | Coef. Máximo |\n|--------------|------------------|--------------|--------------|\n| ZOT 08.1 - A | 60.0            | 3.6          | 6.5          |\n| ZOT 08.1 - B | 75.0            | 3.6          | 7.0          |\n| ZOT 08.1 - C | 90.0            | 3.6          | 7.5          |\n| ZOT 08.1 - D | 100.0           | 3.6          | 11.5         |\n| ZOT 08.1 - E | 130.0           | 3.6          | 11.5         |\n| ZOT 08.1 - F | 6.7             | 1.15         | 0.0          |\n| ZOT 08.1 - G | 0.0             | 3.6          | 6.0          |\n| ZOT 08.1 - H | 0.0             | 0.0          | 0.0          |\n\n### Observações\n- As ZOTs listadas têm dados consistentes, mas não estão válidos para construção conforme indicado.\n- Recomenda-se consultar o mapa interativo do planejamento urbano para mais detalhes sobre o uso do solo e regulamentações específicas.\n\n📍 **Explore mais:**\n- [Mapa com Regras Construtivas](https://bit.ly/3ILdXRA)\n- [Contribua com sugestões](https://bit.ly/4oefZKm)\n- [Participe da Audiência Pública](https://bit.ly/4o7AWqb)\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br\n\n💬 **Sua pergunta é importante!** Considere enviá-la pelos canais oficiais para contribuir com o aperfeiçoamento do plano."
+        }
+      ]
+    },
+    "CIDADE BAIXA": {
+      "total": 1,
+      "success": 0,
+      "failed": 1,
+      "details": [
+        {
+          "query": "cidade baixa",
+          "success": false,
+          "hasTable": false,
+          "hasZOT": null,
+          "hasAltura": false,
+          "hasCoeficiente": false,
+          "hasBetaError": true,
+          "confidence": 0.1,
+          "responseLength": 442,
+          "response": "Desculpe, sou uma versão Beta e ainda não consigo responder a essa pergunta.\n\n📍 **Explore mais:**\n- [Mapa com Regras Construtivas](https://bit.ly/3ILdXRA)\n- [Contribua com sugestões](https://bit.ly/4oefZKm)\n- [Participe da Audiência Pública](https://bit.ly/4o7AWqb)\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br\n\n💬 **Sua pergunta é importante!** Considere enviá-la pelos canais oficiais para contribuir com o aperfeiçoamento do plano."
+        }
+      ]
+    },
+    "MOINHOS DE VENTO": {
+      "total": 1,
+      "success": 1,
+      "failed": 0,
+      "details": [
+        {
+          "query": "moinhos de vento",
+          "success": true,
+          "hasTable": true,
+          "hasZOT": [
+            "ZOT 07"
+          ],
+          "hasAltura": true,
+          "hasCoeficiente": true,
+          "hasBetaError": false,
+          "confidence": 0.8,
+          "responseLength": 1578,
+          "response": "Em relação ao bairro Moinhos de Vento, abaixo estão as informações sobre as zonas de ordenamento territorial (ZOTs) disponíveis, incluindo os parâmetros de construção:\n\n| ZOT       | Altura Máxima (m) | Coef. Básico | Coef. Máximo |\n|-----------|------------------|--------------|--------------|\n| ZOT 07    | 60.0             | 3.6          | 6.5          |\n| ZOT 08.3 - C | 90.0         | 3.6          | 7.5          |\n| ZOT 08.2 - A | 130.0        | 3.6          | 7.5          |\n| ESPECIAL  | 0.0              | 0.0          | 0.0          |\n\n### Observações:\n- **ZOT 07** permite uma altura máxima de 60 metros, com um coeficiente de aproveitamento básico de 3.6 e máximo de 6.5.\n- **ZOT 08.3 - C** possibilita uma altura de até 90 metros, mantendo os mesmos coeficientes de aproveitamento básico e máximo de 3.6 e 7.5, respectivamente.\n- **ZOT 08.2 - A** é a mais permissiva, permitindo até 130 metros de altura com os mesmos coeficientes de aproveitamento.\n- A zona **ESPECIAL** não possui valores válidos para altura ou coeficientes de aproveitamento.\n\nEssas informações são essenciais para entender o potencial construtivo no bairro Moinhos de Vento e auxiliar no planejamento de projetos de construção.\n\n📍 **Explore mais:**\n- [Mapa com Regras Construtivas](https://bit.ly/3ILdXRA)\n- [Contribua com sugestões](https://bit.ly/4oefZKm)\n- [Participe da Audiência Pública](https://bit.ly/4o7AWqb)\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br\n\n💬 **Sua pergunta é importante!** Considere enviá-la pelos canais oficiais para contribuir com o aperfeiçoamento do plano."
+        }
+      ]
+    },
+    "JARDIM BOTÂNICO": {
+      "total": 1,
+      "success": 1,
+      "failed": 0,
+      "details": [
+        {
+          "query": "jardim botânico",
+          "success": true,
+          "hasTable": true,
+          "hasZOT": [
+            "ZOT 07"
+          ],
+          "hasAltura": true,
+          "hasCoeficiente": true,
+          "hasBetaError": false,
+          "confidence": 0.8,
+          "responseLength": 1597,
+          "response": "Para o bairro **Jardim Botânico**, as seguintes zonas de ordenamento territorial (ZOTs) estão disponíveis, com seus respectivos parâmetros de construção:\n\n| ZOT       | Altura Máxima (m) | Coef. Básico | Coef. Máximo |\n|-----------|-------------------|---------------|---------------|\n| ZOT 07    | 60                | 3.6           | 6.5           |\n| ZOT 08.3-B| 90                | 3.6           | 7.5           |\n| ZOT 08.3-C| 90                | 3.6           | 7.5           |\n| ZOT 15    | 9                 | 0.3           | 0.0           |\n\n### Análise das ZOTs:\n- **ZOT 07**: Permite uma altura máxima de 60 metros, com coeficiente de aproveitamento básico de 3.6 e máximo de 6.5.\n- **ZOT 08.3-B** e **ZOT 08.3-C**: Ambas permitem uma altura de até 90 metros e têm coeficientes de aproveitamento básico e máximo iguais (3.6 e 7.5, respectivamente).\n- **ZOT 15**: Esta zona tem uma altura máxima de 9 metros, com coeficiente básico de 0.3 e coeficiente máximo de 0.0, que indica restrições significativas para construções nesta área.\n\nEsses dados permitem que você compreenda as possibilidades de construção no Jardim Botânico, conforme as regras estabelecidas pelo Plano Diretor Urbano Sustentável (PDUS) de Porto Alegre.\n\n📍 **Explore mais:**\n- [Mapa com Regras Construtivas](https://bit.ly/3ILdXRA)\n- [Contribua com sugestões](https://bit.ly/4oefZKm)\n- [Participe da Audiência Pública](https://bit.ly/4o7AWqb)\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br\n\n💬 **Sua pergunta é importante!** Considere enviá-la pelos canais oficiais para contribuir com o aperfeiçoamento do plano."
+        }
+      ]
+    },
+    "VILA NOVA": {
+      "total": 1,
+      "success": 1,
+      "failed": 0,
+      "details": [
+        {
+          "query": "vila nova",
+          "success": true,
+          "hasTable": true,
+          "hasZOT": [
+            "ZOT 01"
+          ],
+          "hasAltura": true,
+          "hasCoeficiente": true,
+          "hasBetaError": false,
+          "confidence": 0.8,
+          "responseLength": 1352,
+          "response": "Abaixo estão as informações sobre as zonas de ordenamento territorial (ZOTs) disponíveis para construção no bairro **Vila Nova**. Para cada ZOT, apresento a altura máxima de edificação e os coeficientes de aproveitamento básico e máximo.\n\n| ZOT   | Altura Máxima (m) | Coef. Básico | Coef. Máximo |\n|-------|------------------|--------------|--------------|\n| ZOT 01 | 9.0              | 1.5          | 2.5          |\n| ZOT 03 | 12.5             | 2.0          | 3.0          |\n| ZOT 09 | 18.0             | 2.0          | 4.0          |\n| ZOT 10 | 33.0             | 2.5          | 4.0          |\n| ZOT 14 | 9.0              | 0.5          | 0.0          |\n| ZOT 15 | 9.0              | 0.3          | 0.0          |\n\nEssas informações são fundamentais para entender o potencial construtivo no bairro Vila Nova. A ZOT 10, por exemplo, permite uma altura máxima de 33 metros, com um coeficiente de aproveitamento básico de 2,5 e máximo de 4,0, tornando-a uma das zonas mais permissivas.\n\n📍 **Explore mais:**\n- [Mapa com Regras Construtivas](https://bit.ly/3ILdXRA)\n- [Contribua com sugestões](https://bit.ly/4oefZKm)\n- [Participe da Audiência Pública](https://bit.ly/4o7AWqb)\n\n💬 **Dúvidas?** planodiretor@portoalegre.rs.gov.br\n\n💬 **Sua pergunta é importante!** Considere enviá-la pelos canais oficiais para contribuir com o aperfeiçoamento do plano."
+        }
+      ]
+    }
+  }
+}

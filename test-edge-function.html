@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Edge Functions</title>
+</head>
+<body>
+    <h1>Test Edge Functions Directly</h1>
+    <button onclick="testQueryAnalyzer()">Test Query Analyzer</button>
+    <button onclick="testSQLGenerator()">Test SQL Generator</button>
+    <button onclick="testAgenticRAG()">Test Agentic RAG</button>
+    <pre id="result"></pre>
+
+    <script>
+        const SUPABASE_URL = 'https://ngrqwmvuhvjkeohesbxs.supabase.co';
+        const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5ncnF3bXZ1aHZqa2VvaGVzYnhzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM2MDkwMTcsImV4cCI6MjA2OTE4NTAxN30.K3uyyzjyAQ17ohQGCUFx_RiMufblLyQzvxEZHakqKrg';
+        
+        const resultDiv = document.getElementById('result');
+        
+        async function testQueryAnalyzer() {
+            resultDiv.textContent = 'Testing Query Analyzer...';
+            
+            try {
+                const response = await fetch(`${SUPABASE_URL}/functions/v1/query-analyzer`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${ANON_KEY}`
+                    },
+                    body: JSON.stringify({
+                        query: 'Qual é o índice de aproveitamento médio do bairro Cristal?'
+                    })
+                });
+                
+                const data = await response.json();
+                resultDiv.textContent = 'Query Analyzer Result:\n' + JSON.stringify(data, null, 2);
+            } catch (error) {
+                resultDiv.textContent = 'Error: ' + error.message;
+            }
+        }
+        
+        async function testSQLGenerator() {
+            resultDiv.textContent = 'Testing SQL Generator...';
+            
+            try {
+                const response = await fetch(`${SUPABASE_URL}/functions/v1/sql-generator`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${ANON_KEY}`
+                    },
+                    body: JSON.stringify({
+                        query: 'Qual é o índice de aproveitamento médio do bairro Cristal?',
+                        analysisResult: {
+                            intent: 'tabular',
+                            entities: { bairros: ['CRISTAL'] },
+                            requiredDatasets: ['17_GMWnJC1sKff-YS0wesgxsvo3tnZdgSSb4JZ0ZjpCk'],
+                            strategy: 'structured_only'
+                        }
+                    })
+                });
+                
+                const data = await response.json();
+                resultDiv.textContent = 'SQL Generator Result:\n' + JSON.stringify(data, null, 2);
+            } catch (error) {
+                resultDiv.textContent = 'Error: ' + error.message;
+            }
+        }
+        
+        async function testAgenticRAG() {
+            resultDiv.textContent = 'Testing Agentic RAG...';
+            
+            try {
+                const response = await fetch(`${SUPABASE_URL}/functions/v1/agentic-rag`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${ANON_KEY}`
+                    },
+                    body: JSON.stringify({
+                        message: 'Qual é o índice de aproveitamento médio do bairro Cristal?',
+                        userRole: 'user',
+                        sessionId: 'test-' + Date.now()
+                    })
+                });
+                
+                const data = await response.json();
+                resultDiv.textContent = 'Agentic RAG Result:\n' + JSON.stringify(data, null, 2);
+            } catch (error) {
+                resultDiv.textContent = 'Error: ' + error.message;
+            }
+        }
+    </script>
+</body>
+</html>
