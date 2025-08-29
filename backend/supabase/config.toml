@@ -1,0 +1,69 @@
+project_id = "ngrqwmvuhvjkeohesbxs"
+
+[api]
+enabled = true
+port = 54321
+
+[db]
+port = 54322
+
+[studio]
+enabled = true
+port = 54323
+
+[functions.agentic-rag]
+verify_jwt = true
+
+[functions.query-analyzer]
+verify_jwt = true
+
+[functions.sql-generator]
+verify_jwt = true
+
+[functions.enhanced-vector-search]
+verify_jwt = true
+
+[functions.response-synthesizer]
+verify_jwt = true
+
+[functions.match-documents]
+verify_jwt = true
+
+[functions.generate-text-embedding]
+verify_jwt = true
+
+[functions.qa-validator]
+verify_jwt = true
+
+[functions.predefined-responses]
+verify_jwt = true
+
+[functions.qa-cleanup-runs]
+verify_jwt = true
+
+[functions.qa-batch-execution]
+verify_jwt = true
+
+[functions.qa-ingest-kb]
+verify_jwt = true
+
+[functions.run-benchmark]
+verify_jwt = false
+
+[functions.qa-execute-validation-v2]
+verify_jwt = true
+
+[functions.cross-validation-v2]
+verify_jwt = true
+
+[functions.rag-neighborhood-sweep]
+verify_jwt = false
+
+[functions.test-qa-cases]
+verify_jwt = true
+
+[functions.agentic-rag-v2]
+verify_jwt = true
+
+[functions.agentic-rag-v3]
+verify_jwt = true

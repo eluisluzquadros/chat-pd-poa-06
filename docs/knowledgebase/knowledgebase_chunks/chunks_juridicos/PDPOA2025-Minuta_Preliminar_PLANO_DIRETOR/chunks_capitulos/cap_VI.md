@@ -1,0 +1,33 @@
+
+### Capítulo VI
+
+###### Art. 136
+Toda política pública e projeto setorial com impacto territorial deverá considerar o ordenamento do território municipal como diretriz estratégica.
+
+#### Seção I -  Da Extrafiscalidade Urbanística
+
+###### Art. 137
+No cumprimento dos objetivos e estratégias deste Plano Diretor, os instrumentos tributários poderão ser utilizados com finalidade extrafiscal, voltada à indução do desenvolvimento urbano e à promoção da função social da propriedade.
+
+– o Imposto Predial e Territorial Urbano (IPTU) progressivo no tempo;
+– a contribuição de melhoria;
+– a contribuição para custeio, expansão e manutenção de logradouros públicos, nos termos do art. 149-A da Constituição Federal;
+– os incentivos e benefícios fiscais destinados à promoção do desenvolvimento urbano.
+
+**Parágrafo único** São instrumentos extrafiscais de política urbana, sujeitos a regulamentação por lei específica:
+
+**Parágrafo único** São instrumentos extrafiscais de política urbana, sujeitos a regulamentação por lei específica:
+
+###### Art. 138
+A arrecadação da contribuição prevista no inc. III do parágrafo único do art.
+
+137 poderá ser vinculada à preservação e qualificação da área diretamente afetada, conforme perímetro definido em lei.
+
+#### Seção II -  Da Cooperação Metropolitana
+
+###### Art. 139
+O Município buscará articular-se com a estrutura de governança metropolitana e com os demais municípios da Região Metropolitana de Porto Alegre, com vistas à uniformização ou compatibilização de normas urbanísticas e territoriais em situações de impacto intermunicipal.
+
+**Parágrafo único** A articulação intermunicipal poderá resultar na celebração de compromissos formais, convênios, cooperações ou consórcios públicos, com efeitos vinculantes para os entes participantes.
+
+**Parágrafo único** A articulação intermunicipal poderá resultar na celebração de compromissos formais, convênios, cooperações ou consórcios públicos, com efeitos vinculantes para os entes participantes.

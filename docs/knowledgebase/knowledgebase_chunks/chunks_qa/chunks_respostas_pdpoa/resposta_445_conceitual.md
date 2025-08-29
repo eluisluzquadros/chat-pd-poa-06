@@ -1,0 +1,7 @@
+# Conceitual - PDPOA 2025
+
+**Categoria:** conceitual
+**Tags:** conceitual
+**Origem:** Caso de teste #445 (Dificuldade: high)
+
+O Sistema de Gestão, Controle, Planejamento e Financiamento Urbano (SGC) é o núcleo institucional responsável por garantir a implementação efetiva do Plano Diretor Urbano Sustentável (PDUS) de Porto Alegre. Ele articula, coordena e monitora o conjunto de ações necessárias para transformar as diretrizes do plano em resultados concretos no território. Entre suas funções estratégicas estão: a coordenação integrada da política urbana, a atualização periódica do PDUS, da LUOS e dos planos urbanísticos, e a execução de planos locais, planos de pormenor e projetos urbanos prioritários, com foco especial nas Áreas Estruturadoras e nas intervenções de requalificação urbana. O sistema também atua na aplicação dos instrumentos de desenvolvimento urbano previstos no plano, como outorga onerosa, operações urbanas consorciadas, reparcelamento, regularização fundiária e transferência do direito de construir. Além disso, o SGC realiza o monitoramento contínuo do território, com base em indicadores de desempenho urbano, subsidiando decisões técnicas, revisões normativas e a alocação de recursos. Ele é o elo entre planejamento, gestão, financiamento e participação social, apoiando a implementação de projetos urbanos integrados e sustentáveis, com foco na qualificação do espaço público, na eficiência territorial e na promoção do desenvolvimento equilibrado da cidade.

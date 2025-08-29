@@ -1,0 +1,13 @@
+
+#### Seção VI -  Do Direito de Superfície
+
+###### Art. 186
+O Município poderá instituir o direito de superfície sobre imóveis públicos como instrumento para autorizar a utilização, por terceiros, do solo, do subsolo ou do espaço aéreo, desde que compatível com os objetivos da política urbana municipal.
+
+**§ 1** O direito de superfície integra os instrumentos disponíveis para a implementação da política habitacional e da regularização fundiária, podendo ser utilizado também para outras finalidades compatíveis com a política urbana.
+
+**§ 1** O direito de superfície integra os instrumentos disponíveis para a implementação da política habitacional e da regularização fundiária, podendo ser utilizado também para outras finalidades compatíveis com a política urbana.
+
+**§ 2** A aplicação do direito de superfície observará as disposições dos arts. 21 a 24 do Estatuto da Cidade.
+
+**§ 2** A aplicação do direito de superfície observará as disposições dos arts. 21 a 24 do Estatuto da Cidade.

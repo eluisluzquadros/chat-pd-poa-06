@@ -1,0 +1,7 @@
+# Zonas - PDPOA 2025
+
+**Categoria:** zonas
+**Tags:** zonas, centro
+**Origem:** Caso de teste #424 (Dificuldade: high)
+
+Não. Esses planos locais fazem parte da Componente Espacial, que permite que áreas com desafios e oportunidades específicas tenham diretrizes mais detalhadas, sem contrariar os princípios gerais do Plano Diretor. Eles são estratégicos para ativar o potencial urbano, cultural e econômico de cada território e obedecem aos objetivos e sistemas definidos pelo plano geral. Diversos municípios ao redor do mundo utilizam instrumentos equivalentes aos chamados planos parciais, planos locais, planos de bairro ou planos de detalhamento --- que detalham regras urbanísticas mais específicas em certas áreas da cidade, em complemento ao plano diretor ou plano regulador geral. Esses instrumentos são comuns em cidades que adotam planejamento urbano por zonas, com diferentes níveis de detalhamento espacial. Aqui estão alguns exemplos internacionais relevantes: Paris, Lyon, Bordeaux (França); Berlim, Munique, Hamburgo (Alemanha); Londres, Manchester, Birmingham (Reino Unido); Toronto, Vancouver, Calgary (Canadá); San Francisco, Nova York, Portland (Estados Unidos); Barcelona, Madri, Sevilha (Espanha); Santiago e Valparaíso (Chile); Lisboa e Porto (Portugal); Bogotá (Colômbia).

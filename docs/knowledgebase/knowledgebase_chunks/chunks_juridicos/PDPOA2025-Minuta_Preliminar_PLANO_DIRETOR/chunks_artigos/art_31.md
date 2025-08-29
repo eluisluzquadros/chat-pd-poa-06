@@ -1,0 +1,13 @@
+
+###### Art. 31
+A Estrutura de Mobilidade é formada pelos elementos físicos e sistemas funcionais destinados à circulação e ao transporte urbano, abrangendo diferentes modais, e deverá ser planejada de forma integrada para garantir a eficiência dos deslocamentos, a
+
+– a estrutura viária e os equipamentos de mobilidade urbana;
+– a estrutura férrea;
+– a estrutura hidroviária;
+– a estrutura aeroviária;
+– os sistemas de transporte urbano e de transporte ativo.
+
+**Parágrafo único** Integram a Estrutura de Mobilidade:
+
+**Parágrafo único** Integram a Estrutura de Mobilidade:

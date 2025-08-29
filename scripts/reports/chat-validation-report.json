@@ -1,0 +1,417 @@
+{
+  "timestamp": "2025-08-25T17:27:37.774Z",
+  "summary": {
+    "total": 15,
+    "passed": 12,
+    "failed": 3,
+    "successRate": 80,
+    "avgScore": 75.3,
+    "avgTime": 9398.533333333333
+  },
+  "results": [
+    {
+      "id": 1,
+      "question": "escreva um resumo de até 25 palavras sobre a lei do plano diretor de porto alegre",
+      "expectedKeywords": [
+        "plano",
+        "diretor",
+        "porto alegre",
+        "urbano",
+        "sustentável"
+      ],
+      "maxWords": 25,
+      "description": "Resumo conciso do plano diretor",
+      "success": true,
+      "score": 100,
+      "issues": [],
+      "response": "O Plano Diretor Urbano Sustentável de Porto Alegre orienta o desenvolvimento sustentável da cidade, focando em políticas urbanas e preservação do patrimônio natural.",
+      "confidence": 0.9,
+      "responseTime": 7568,
+      "sources": {
+        "legal_articles": 12,
+        "hierarchy_elements": 3,
+        "regime_urbanistico": 0,
+        "total": 10
+      }
+    },
+    {
+      "id": 2,
+      "question": "qual é a altura máxima do aberta dos morros",
+      "expectedKeywords": [
+        "metros",
+        "altura",
+        "ZOT"
+      ],
+      "expectedValues": [
+        {}
+      ],
+      "description": "Altura máxima de Aberta dos Morros",
+      "success": false,
+      "score": 20,
+      "issues": [
+        "Não encontrou valores numéricos esperados",
+        "Resposta indica falta de dados"
+      ],
+      "response": "O contexto fornecido não inclui informações específicas sobre a altura máxima permitida para a região de Aberta dos Morros em Porto Alegre. Para obter detalhes sobre parâmetros de construção, como a altura máxima permitida, é necessário consultar diretamente os documentos legais relevantes, como o Plano Diretor Urbano Sustentável (PDUS), a Lei de Uso e Ocupação do Solo (LUOS) ou o Código de Edificações (COE), especificamente nas seções que tratam dos regimes urbanísticos e parâmetros de construção por zona.",
+      "confidence": 0.9,
+      "responseTime": 9255,
+      "sources": {
+        "legal_articles": 7,
+        "hierarchy_elements": 8,
+        "regime_urbanistico": 0,
+        "total": 10
+      }
+    },
+    {
+      "id": 3,
+      "question": "quantos bairros estão \"Protegidos pelo Sistema Atual\" para proteção contra enchentes?",
+      "expectedKeywords": [
+        "bairros",
+        "proteção",
+        "enchente"
+      ],
+      "expectedValues": [
+        {}
+      ],
+      "description": "Quantidade de bairros protegidos",
+      "success": true,
+      "score": 70,
+      "issues": [
+        "Não encontrou valores numéricos esperados"
+      ],
+      "response": "O contexto fornecido não especifica o número de bairros \"Protegidos pelo Sistema Atual\" para proteção contra enchentes em Porto Alegre. A informação sobre a proteção contra enchentes mencionada nos documentos legais disponíveis refere-se a componentes do Sistema Ecológico, como a faixa de passagem de inundação, que são estruturas ecológicas planejadas para mitigar os efeitos das enchentes, mas não detalha a quantidade de bairros protegidos especificamente.",
+      "confidence": 0.9,
+      "responseTime": 5647,
+      "sources": {
+        "legal_articles": 14,
+        "hierarchy_elements": 1,
+        "regime_urbanistico": 0,
+        "total": 10
+      }
+    },
+    {
+      "id": 4,
+      "question": "qual artigo da LUOS trata da Certificação em Sustentabilidade Ambiental?",
+      "expectedKeywords": [
+        "artigo",
+        "LUOS",
+        "sustentabilidade"
+      ],
+      "expectedValues": [
+        {}
+      ],
+      "description": "Artigo sobre sustentabilidade",
+      "success": true,
+      "score": 70,
+      "issues": [
+        "Não encontrou valores numéricos esperados"
+      ],
+      "response": "Não há informações sobre a Certificação em Sustentabilidade Ambiental nos artigos fornecidos da LUOS (Lei de Uso e Ocupação do Solo) no contexto disponibilizado. Se precisar de informações sobre outros aspectos da LUOS ou de legislações urbanísticas de Porto Alegre, por favor, forneça mais detalhes ou pergunte sobre outro tópico.",
+      "confidence": 0.9,
+      "responseTime": 5620,
+      "sources": {
+        "legal_articles": 13,
+        "hierarchy_elements": 2,
+        "regime_urbanistico": 0,
+        "total": 10
+      }
+    },
+    {
+      "id": 5,
+      "question": "como o Regime Volumétrico é tratado na LUOS?",
+      "expectedKeywords": [
+        "regime",
+        "volumétrico",
+        "LUOS",
+        "altura",
+        "coeficiente"
+      ],
+      "description": "Regime volumétrico na LUOS",
+      "success": true,
+      "score": 100,
+      "issues": [],
+      "response": "Na LUOS, o Regime Volumétrico é abordado como parte do regime urbanístico aplicável a cada Zona de Ordenamento Territorial (ZOT), que define os parâmetros de natureza urbanística e edilícia, incluindo o uso, a ocupação e o parcelamento do solo. No entanto, o contexto fornecido não detalha especificamente os artigos que tratam exclusivamente do Regime Volumétrico. O regime urbanístico, incluindo o Regime Volumétrico, é determinado conforme as normas e parâmetros estabelecidos para cada ZOT, como mencionado no Art. 3 da LUOS e em suas disposições sobre as características específicas de cada ZOT, como nos Art. 17 e Art. 12, que descrevem as características urbanísticas e os objetivos de desenvolvimento para a ZOT 12 e ZOT 7, respectivamente.\n\nPara informações detalhadas sobre o Regime Volumétrico, seria necessário consultar os anexos da LUOS que definem os parâmetros específicos para cada ZOT, mencionados nos artigos que tratam das características e finalidades de cada zona.",
+      "confidence": 0.9,
+      "responseTime": 11452,
+      "sources": {
+        "legal_articles": 9,
+        "hierarchy_elements": 6,
+        "regime_urbanistico": 0,
+        "total": 10
+      }
+    },
+    {
+      "id": 6,
+      "question": "o que afirma literalmente o Art 1º da LUOS?",
+      "expectedKeywords": [
+        "art",
+        "1",
+        "LUOS",
+        "lei"
+      ],
+      "mustContain": [
+        "institui",
+        "uso",
+        "ocupação",
+        "solo"
+      ],
+      "description": "Conteúdo literal do Art. 1º LUOS",
+      "success": true,
+      "score": 100,
+      "issues": [],
+      "response": "O Art. 1º da LUOS afirma literalmente:\n\n###### Art. 1\nFica instituída a Lei de Uso e Ocupação do Solo de Porto Alegre (LUOS), que regulamenta o uso, a ocupação e o parcelamento do solo no território municipal, estabelecendo o zoneamento da cidade, os parâmetros urbanísticos que orientam a distribuição das atividades urbanas e as normas gerais para o licenciamento urbanístico e edilício, em conformidade com as diretrizes e objetivos do Plano Diretor.",
+      "confidence": 0.9,
+      "responseTime": 6162,
+      "sources": {
+        "legal_articles": 3,
+        "hierarchy_elements": 0,
+        "regime_urbanistico": 0,
+        "total": 3
+      }
+    },
+    {
+      "id": 7,
+      "question": "do que se trata o Art. 119 da LUOS?",
+      "expectedKeywords": [
+        "art",
+        "119",
+        "LUOS"
+      ],
+      "description": "Conteúdo do Art. 119 LUOS",
+      "success": true,
+      "score": 100,
+      "issues": [],
+      "response": "O Art. 119 da LUOS trata do procedimento para análise, processamento e execução de projetos de parcelamento do solo, projetos de edificação, projetos especiais de impacto urbano e demais requerimentos de licenciamento edilício que foram protocolados antes da entrada em vigor da Lei Complementar. Especifica que tais projetos serão analisados conforme a legislação vigente na época de seu protocolo. Além disso, detalha que o requerente com alvará de construção válido na data de publicação desta Lei Complementar pode optar, de maneira expressa e irretratável, pela aplicação desta Lei às modificações de projeto submetidas após sua entrada em vigor. Também estabelece que, uma vez iniciadas as obras conforme o descrito, o prazo para sua conclusão é de até cinco anos, com possibilidade de prorrogação mediante avaliação técnica do órgão licenciador, e considera as obras iniciadas quando a conclusão das fundações é formalmente comunicada ao órgão licenciador.",
+      "confidence": 0.9,
+      "responseTime": 7963,
+      "sources": {
+        "legal_articles": 3,
+        "hierarchy_elements": 0,
+        "regime_urbanistico": 0,
+        "total": 3
+      }
+    },
+    {
+      "id": 8,
+      "question": "o Art. 3º O Plano Diretor Urbano Sustentável de Porto Alegre será regido por princípios fundamentais. quais são eles?",
+      "expectedKeywords": [
+        "princípios",
+        "fundamentais",
+        "plano diretor"
+      ],
+      "mustContain": [
+        "sustentabilidade",
+        "participação",
+        "equidade"
+      ],
+      "description": "Princípios do Art. 3º",
+      "success": true,
+      "score": 60,
+      "issues": [
+        "Falta conteúdo essencial: sustentabilidade, equidade"
+      ],
+      "response": "PDUS - Art. 3º:\nO Plano Diretor Urbano Sustentável de Porto Alegre será regido pelos seguintes princípios fundamentais, que orientarão o crescimento sustentável da cidade e a interpretação de suas normas:\n\n– solidariedade intergeracional, de modo a garantir que a satisfação das necessidades do presente não comprometa a das gerações futuras;\n– coordenação entre políticas públicas com incidência territorial, de modo a evitar que a busca de objetivos setoriais prejudique interesses gerais abrangentes;\n– concertação entre interesses públicos e privados na elaboração e implementação de planos urbanísticos;\n– diálogo entre escalas de planejamento e entre plano e projeto, de modo a garantir a coesão dinâmica das regulações e intervenções no território;\n– proteção da confiança, de modo a proteger as legítimas expectativas dos particulares baseadas nos planos, normas, interpretações e atos de licenciamento regularmente editados;\n– proteção do existente, de modo a permitir que obras de reforma ou reconstrução de edificações regulares existentes sejam realizadas sem incidência de normas posteriores à sua construção, desde que não sejam substancialmente agravadas eventuais desconformidades;\n– resiliência urbana e climática, de modo a preparar a cidade para enfrentar os impactos das mudanças climáticas e eventos adversos, promovendo a adaptação e a mitigação de riscos;\n– planejamento baseado em evidências, assegurando a contínua coleta e análise de dados, tais como preços de terra, tempos de deslocamento e acessibilidade habitacional, a fim de embasar decisões urbanísticas de forma precisa e atualizada;\n– dinamismo econômico, de modo a reconhecer e incentivar o papel das forças de mercado como fator propulsor do desenvolvimento urbano, promovendo investimentos privados que resultem em benefícios coletivos para a cidade;\n– integração espacial, com vistas à utilização eficiente do solo e à articulação entre habitação, trabalho e transporte, visando à redução de deslocamentos e ao incremento da produtividade econômica;\n– valorização e qualificação dos espaços públicos, assegurando sua função social e ambiental, de modo a incentivar a interação comunitária, o bem-estar e a inclusão social;\n– promoção da justiça espacial, garantindo o acesso equitativo aos bens, serviços e infraestrutura urbana, com especial atenção às áreas de vulnerabilidade social;\n– adaptabilidade urbana, mediante a adoção de práticas urbanísticas ajustáveis e embasadas em dados, capazes de proporcionar respostas ágeis e eficazes às mudanças econômicas, climáticas e sociais;\n– participação social e comunitária na formulação e implementação das políticas urbanas, por meio de consultas públicas, audiências e demais instrumentos de participação, incluindo a atuação no Conselho Municipal de Desenvolvimento Urbano Ambiental.",
+      "confidence": 0.9,
+      "responseTime": 21144,
+      "sources": {
+        "legal_articles": 4,
+        "hierarchy_elements": 0,
+        "regime_urbanistico": 0,
+        "total": 4
+      }
+    },
+    {
+      "id": 9,
+      "question": "o que posso construir no bairro Petrópolis",
+      "expectedKeywords": [
+        "Petrópolis",
+        "altura",
+        "coeficiente",
+        "metros"
+      ],
+      "expectedValues": [
+        {},
+        {}
+      ],
+      "description": "Parâmetros construtivos de Petrópolis",
+      "success": false,
+      "score": 47.5,
+      "issues": [
+        "Faltam palavras-chave: altura, coeficiente, metros",
+        "Não encontrou valores numéricos esperados"
+      ],
+      "response": "Desculpe, encontrei um problema ao processar sua pergunta sobre \"o que posso construir no bairro Petrópolis...\". \n      \nPor favor, tente:\n- Reformular sua pergunta de forma mais específica\n- Dividir perguntas complexas em partes menores\n- Verificar se está perguntando sobre PDUS ou LUOS especificamente\n\nSe o problema persistir, o sistema pode estar temporariamente sobrecarregado. Tente novamente em alguns instantes.",
+      "confidence": 0.9,
+      "responseTime": 18488,
+      "sources": {
+        "legal_articles": 11,
+        "hierarchy_elements": 4,
+        "regime_urbanistico": 3,
+        "total": 10
+      }
+    },
+    {
+      "id": 10,
+      "question": "qual a altura máxima da construção dos prédios em Porto Alegre?",
+      "expectedKeywords": [
+        "altura",
+        "máxima",
+        "metros",
+        "porto alegre"
+      ],
+      "expectedValues": [
+        {}
+      ],
+      "description": "Altura máxima geral em POA",
+      "success": true,
+      "score": 70,
+      "issues": [
+        "Não encontrou valores numéricos esperados"
+      ],
+      "response": "Para determinar a altura máxima de construção dos prédios em Porto Alegre, é necessário consultar o Regime Urbanístico específico para a zona em questão, pois a altura permitida pode variar significativamente dependendo da localização do imóvel dentro do município. As informações sobre altura máxima estão detalhadas na Lei de Uso e Ocupação do Solo (LUOS) e no Plano Diretor Urbano Sustentável (PDUS), que estabelecem parâmetros de construção por zona, incluindo limites de altura, taxa de ocupação, coeficiente de aproveitamento, entre outros aspectos. \n\nInfelizmente, sem informações mais específicas sobre a zona ou área de interesse, não é possível fornecer um valor exato para a altura máxima permitida para construção de prédios em Porto Alegre. Recomenda-se consultar a LUOS e o PDUS com base na localização específica do imóvel para obter detalhes precisos sobre os parâmetros de construção aplicáveis.",
+      "confidence": 0.9,
+      "responseTime": 10203,
+      "sources": {
+        "legal_articles": 12,
+        "hierarchy_elements": 3,
+        "regime_urbanistico": 0,
+        "total": 10
+      }
+    },
+    {
+      "id": 11,
+      "question": "o que diz o artigo 38 da luos?",
+      "expectedKeywords": [
+        "artigo",
+        "38",
+        "LUOS"
+      ],
+      "description": "Conteúdo do Art. 38 LUOS",
+      "success": true,
+      "score": 100,
+      "issues": [],
+      "response": "[LUOS - Art. 38º]\n\n###### Art. 38\nQuando a incidência do traçado do Plano Diretor ou de outras áreas não edificáveis sobre a área objeto do parcelamento do solo resultar em destinação pública\n\n– as áreas destinadas à malha viária que excederem os gabaritos de 17,50m (dezessete metros e cinquenta centímetros);\n– as áreas destinadas a equipamentos públicos urbanos e comunitários que ultrapassarem os limites estabelecidos para a ZOT correspondente;\n– as áreas de relevante interesse ambiental que excederem os limites previstos para a ZOT correspondente, desde que haja interesse público no seu recebimento.\n\n**Parágrafo único** Poderão ser objeto de compensação por meio da TDC, para aplicação na área objeto do parcelamento do solo:",
+      "confidence": 0.9,
+      "responseTime": 6853,
+      "sources": {
+        "legal_articles": 3,
+        "hierarchy_elements": 0,
+        "regime_urbanistico": 0,
+        "total": 3
+      }
+    },
+    {
+      "id": 12,
+      "question": "o que diz o artigo 5?",
+      "expectedKeywords": [
+        "artigo",
+        "5",
+        "lei"
+      ],
+      "mustContain": [
+        "LUOS",
+        "PDUS"
+      ],
+      "description": "Art. 5 contextualizando diferentes leis",
+      "success": true,
+      "score": 100,
+      "issues": [],
+      "response": "Aqui estão as versões do Artigo 5º conforme solicitado, de duas leis diferentes:\n\n**LUOS - Art. 5º:**\nO zoneamento municipal é composto por 16 (dezesseis) Zonas de Ordenamento Territorial (ZOT), definidas de acordo com suas características e diretrizes de desenvolvimento urbano para distintas regiões da cidade, conforme demonstrado nos Anexos 1 e 2 desta Lei Complementar.\n\n**Parágrafo único** A cada ZOT são atribuídos padrões urbanísticos específicos, adequados às suas características e funções no território municipal.\n\n**PDUS - Art. 5º:**\nA provisão de infraestrutura pelo Município observará os princípios da sustentabilidade econômica, social e ambiental, bem como critérios objetivos de eficiência, assegurando a viabilidade financeira, técnica e ambiental das soluções implantadas.\n\n**Parágrafo único** A infraestrutura deverá garantir a manutenção, conservação e operação adequada dos serviços públicos de uso coletivo, tais como o sistema viário, os espaços públicos, a drenagem urbana, as unidades de conservação da natureza e os equipamentos urbanos e comunitários, em níveis de serviço compatíveis com as demandas da população.",
+      "confidence": 0.9,
+      "responseTime": 11306,
+      "sources": {
+        "legal_articles": 4,
+        "hierarchy_elements": 0,
+        "regime_urbanistico": 0,
+        "total": 4
+      }
+    },
+    {
+      "id": 13,
+      "question": "resuma a parte I do plano diretor",
+      "expectedKeywords": [
+        "parte",
+        "I",
+        "plano diretor",
+        "título",
+        "capítulo"
+      ],
+      "description": "Resumo da Parte I com estrutura hierárquica",
+      "success": false,
+      "score": 50,
+      "issues": [
+        "Resposta indica falta de dados"
+      ],
+      "response": "O contexto fornecido não inclui detalhes específicos sobre a Parte I do Plano Diretor Urbano Sustentável de Porto Alegre (PDUS), como títulos, capítulos ou seções, portanto, não posso fornecer um resumo direto dessa parte. Para assistência detalhada sobre partes específicas do PDUS, seria necessário ter acesso ao texto integral ou a uma descrição detalhada dessa seção.",
+      "confidence": 0.9,
+      "responseTime": 5522,
+      "sources": {
+        "legal_articles": 11,
+        "hierarchy_elements": 4,
+        "regime_urbanistico": 0,
+        "total": 10
+      }
+    },
+    {
+      "id": 14,
+      "question": "resuma o conteúdo do título 1 do pdus",
+      "expectedKeywords": [
+        "título",
+        "1",
+        "PDUS",
+        "disposições",
+        "preliminares"
+      ],
+      "description": "Resumo do Título 1 do PDUS",
+      "success": true,
+      "score": 82,
+      "issues": [
+        "Faltam palavras-chave: 1, disposições, preliminares"
+      ],
+      "response": "O conteúdo específico do TÍTULO I do PDUS (Plano Diretor Urbano Sustentável) não é fornecido diretamente no contexto disponibilizado. Portanto, não posso oferecer um resumo ou detalhes sobre o seu conteúdo sem as informações específicas desse título.",
+      "confidence": 0.9,
+      "responseTime": 5142,
+      "sources": {
+        "legal_articles": 3,
+        "hierarchy_elements": 12,
+        "regime_urbanistico": 0,
+        "total": 10
+      }
+    },
+    {
+      "id": 15,
+      "question": "o que diz o artigo 1 do pdus",
+      "expectedKeywords": [
+        "artigo",
+        "1",
+        "PDUS",
+        "plano diretor"
+      ],
+      "mustContain": [
+        "institui",
+        "Porto Alegre"
+      ],
+      "description": "Conteúdo do Art. 1 do PDUS",
+      "success": true,
+      "score": 60,
+      "issues": [
+        "Falta conteúdo essencial: institui, Porto Alegre"
+      ],
+      "response": "O Art. 1º do PDUS (Plano Diretor Urbano Sustentável) estabelece:\n\n###### Art. 1\nO Plano Diretor Urbano Sustentável (PDUS) é o instrumento básico da política urbana municipal e integra um processo contínuo de planejamento, execução e gestão.\n\n**§ 1** O PDUS abrange a totalidade do território do município.\n\n**§ 2** O PDUS destina-se a orientar o ordenamento, o uso e a ocupação do solo urbano, a elaboração dos demais planos urbanísticos, as políticas públicas e as prioridades para a aplicação de recursos orçamentários com impacto territorial.\n\n**§ 3** No desenvolvimento da política urbana, dos planos, programas e projetos urbanísticos, na aplicação, na alteração e na interpretação desta Lei Complementar, levar-se-ão em conta os seus objetivos, estratégias e diretrizes.",
+      "confidence": 0.9,
+      "responseTime": 8653,
+      "sources": {
+        "legal_articles": 2,
+        "hierarchy_elements": 0,
+        "regime_urbanistico": 0,
+        "total": 2
+      }
+    }
+  ],
+  "issues": {
+    "Não encontrou valores numéricos esperados": 5,
+    "Resposta indica falta de dados": 2,
+    "Falta conteúdo essencial": 2,
+    "Faltam palavras-chave": 2
+  }
+}

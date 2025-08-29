@@ -1,229 +1,322 @@
-# CLAUDE.md
+﻿# CLAUDE.md
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## Project Overview
 
-Chat PD POA is an AI-powered virtual assistant for Porto Alegre's Urban Development Plan (PDUS 2025). It uses RAG (Retrieval-Augmented Generation) architecture with Supabase Edge Functions and PostgreSQL + pgvector for semantic search. The system processes queries about urban regulations, construction parameters, disaster risks, and zoning information.
+Chat PD POA is a legal consultation system for Porto Alegre's urban planning regulations (PDPOA 2025). It provides AI-powered assistance for understanding urban planning laws, zoning regulations, and construction parameters.
 
-## Key Architecture Components
+### Core Features
+- **Agentic RAG System**: Multi-stage retrieval with 86.7% accuracy (target: >95%)
+- **Multi-LLM Support**: Intelligent routing between OpenAI, Claude, Gemini, DeepSeek, ZhipuAI.
+- **Dual Data Architecture**: Semantic search (chunks) + Structured SQL (tables)
+- **QA Validation System**: 125 test cases for continuous accuracy monitoring
+- **Real-time Chat**: Context-aware conversations with legal citations
+- **Administrative Dashboard**: Performance metrics and quality control
 
-### 1. Frontend (React + Vite + TypeScript)
-- **Entry**: `src/App.tsx` - Main application router
-- **Pages**: `src/pages/` - Route components (Auth, Chat, Admin dashboards)
-- **Components**: `src/components/` - Reusable UI components
-- **Services**: `src/services/` - API integrations (multiLLMService, chatService)
-- **Hooks**: `src/hooks/` - Custom React hooks for state management
-- **UI Library**: shadcn/ui components in `src/components/ui/`
+## Tech Stack
 
-### 2. Backend (Supabase Edge Functions)
-The RAG pipeline consists of 5 main Edge Functions that work in sequence:
-1. **agentic-rag**: Main orchestrator that coordinates the entire query processing
-2. **query-analyzer**: Analyzes user intent and determines search strategy
-3. **sql-generator**: Converts natural language to SQL for structured data queries
-4. **enhanced-vector-search**: Performs semantic search on document embeddings
-5. **response-synthesizer**: Combines results into coherent Portuguese responses
+- **Frontend**: React + Vite + TypeScript + Tailwind CSS + shadcn/ui
+- **Backend**: Supabase (PostgreSQL + Edge Functions)
+- **Edge Functions**: Deno runtime with TypeScript
+- **AI/LLM**: OpenAI, Claude (Anthropic), Google Gemini, DeepSeek, Groq
+- **Database**: PostgreSQL with pgvector extension for embeddings
 
-### 3. Database Structure
-- **document_rows**: Tabular data (zones, neighborhoods, parameters)
-- **document_sections**: Document chunks with embeddings for semantic search
-- **query_cache**: Performance optimization cache
-- **qa_test_cases**: Quality assurance test scenarios
-- **regime_urbanistico_***: Urban planning regulation tables
+## Key Commands
 
-## Development Commands
-
+### Development
 ```bash
-# Install dependencies
-npm install
+# Install all dependencies
+npm run install:all
 
-# Run development server
-npm run dev
+# Run frontend development server
+npm run dev:frontend  # or just npm run dev
 
-# Build for production
+# Run both frontend and backend
+npm run dev:all
+
+# Type checking
+cd frontend && npm run type-check
+
+# Linting
+cd frontend && npm run lint
+```
+
+### Building & Deployment
+```bash
+# Build frontend
 npm run build
 
-# Run linter
-npm run lint
+# Deploy all edge functions
+npm run deploy:functions
+cd scripts && npm run deploy-functions  # Alternative method
 
-# Run type checking
-npm run type-check
+# Complete deployment
+npm run deploy:all
+```
 
-# Run tests
-npm run test
-npm run test:watch
-npm run test:coverage
+### Testing
+```bash
+# Run frontend tests
+cd frontend && npm test
 
-# Run integration tests
-npm run test:integration
+# Run test with coverage
+cd frontend && npm run test:coverage
 
-# Test LLM connections
-npm run test-llm-connections
+# Run RAG system tests
+cd scripts && npm run test:qa
 
 # Validate API keys
-npm run validate-keys
+cd frontend && npm run validate-keys
+
+# Test LLM connections
+cd frontend && npm run test-llm-connections
 ```
 
-## Supabase Edge Functions Deployment
-
+### Database & Knowledge Base
 ```bash
-# Deploy a specific function
-npx supabase functions deploy [function-name] --project-ref ngrqwmvuhvjkeohesbxs
+# Process knowledge base locally
+cd frontend && npm run kb:process
 
-# Deploy main RAG functions
-npx supabase functions deploy agentic-rag --project-ref ngrqwmvuhvjkeohesbxs
-npx supabase functions deploy query-analyzer --project-ref ngrqwmvuhvjkeohesbxs
-npx supabase functions deploy sql-generator --project-ref ngrqwmvuhvjkeohesbxs
-npx supabase functions deploy enhanced-vector-search --project-ref ngrqwmvuhvjkeohesbxs
-npx supabase functions deploy response-synthesizer --project-ref ngrqwmvuhvjkeohesbxs
+# Import knowledge base to Supabase
+cd frontend && npm run kb:import-full  # Full import with clear
+cd frontend && npm run kb:import      # Regular import
 
-# Deploy all functions using the script
-npm run deploy-functions
+# Generate embeddings
+cd frontend && npm run kb:embeddings
+cd frontend && npm run kb:embeddings-batch  # Batch processing
+
+# Regime Urbanístico CLI
+cd frontend && npm run regime:status   # Check status
+cd frontend && npm run regime:setup    # Setup tables
+cd frontend && npm run regime:import   # Import data
+cd frontend && npm run regime:test     # Test queries
 ```
 
-## Database Operations
+## Knowledge Base Architecture
 
-```bash
-# Import regime urbanístico data
-npm run regime:import
+### Available Data Sources - ALL DATA IS IN DATABASE ✅
+The `legal_articles` table contains **1,998 records** with 4 document types:
 
-# Check regime status
-npm run regime:status
+1. **Legal Documents (✅ Active in RAG)**
+   - LUOS: 398 records (19.9%)
+   - PDUS: 720 records (36.0%)
+   - **Status**: Being queried by agentic-rag
 
-# Test regime queries
-npm run regime:test
+2. **Regime Urbanístico Data (❌ NOT QUERIED)**
+   - REGIME_FALLBACK: 864 records (43.2%)
+   - Contains all neighborhood/zone data
+   - **PROBLEM**: agentic-rag doesn't query this type!
 
-# Run QA validation tests
-npm run test:qa
+3. **QA Knowledge Base (❌ NOT QUERIED)**
+   - QA_CATEGORY: 16 records (0.8%)
+   - Validated Q&A responses
+   - **PROBLEM**: agentic-rag doesn't query this type!
 
-# Clear query cache
-node scripts/clear-cache-and-fix.ts
-```
+4. **Structured Regime Table (✅ Active)**
+   - `regime_urbanistico_consolidado`: 385 records
+   - SQL queries for specific parameters
 
-## Environment Setup
+5. **Test Cases (⚠️ Partial Use)**
+   - `qa_test_cases` table: 125 test cases
+   - Used for validation only
 
-1. Copy `.env.example` to `.env.local`
-2. Required environment variables:
-   - `NEXT_PUBLIC_SUPABASE_URL`: Supabase project URL
-   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`: Public anon key
-   - `SUPABASE_SERVICE_ROLE_KEY`: Service role key (for backend operations)
-   - `OPENAI_API_KEY`: OpenAI API key
-   - Additional LLM API keys as needed (Claude, Gemini, Groq, etc.)
+### Critical Discovery
+- **Data in database**: 100% ✅ (All 1,998 records present)
+- **Data being queried**: Only 56% (LUOS + PDUS)
+- **Data IGNORED**: 44% (REGIME_FALLBACK + QA_CATEGORY)
+- **Content field**: Data is in `full_content`, not `content`!
 
-3. Deploy environment variables to Supabase:
-   ```bash
-   npm run deploy-env
-   ```
+### Current System Performance
+- **Accuracy**: 86.7% on 125 test cases
+- **Response Time**: ~3-5 seconds average
+- **Cache Hit Rate**: ~30% (24-hour TTL)
+- **Knowledge Base Usage**: Only 56% of available data being queried
+
+### RAG Pipeline Versions
+- **agentic-rag** (Main - Currently Active): Integrated V3 features, handles all /chat requests
+- **agentic-rag-v2**: Referenced but never implemented
+- **agentic-rag-v3**: Exists separately but not used in production
+
+## Architecture
+
+### Directory Structure
+- `frontend/` - React application
+  - `components/` - Reusable UI components organized by feature
+  - `pages/` - Route pages (Index, Chat, Explorer, etc.)
+  - `services/` - API services and business logic
+  - `hooks/` - Custom React hooks
+  - `lib/` - Utility functions and helpers
+  - `types/` - TypeScript type definitions
+
+- `backend/supabase/` - Supabase configuration and functions
+  - `functions/` - Edge Functions (40+ specialized functions)
+    - `agentic-rag-v3/` - Main RAG orchestrator
+    - `query-analyzer/` - Query understanding
+    - `sql-generator/` - SQL query generation
+    - `response-synthesizer/` - Response formatting
+  - `migrations/` - Database migrations
+
+- `scripts/` - Utility scripts and tools
+  - `deploy/` - Deployment scripts
+  - `import/` - Data import utilities
+  - `tests/` - Test suites
+  - `utils/` - Helper utilities
+  - `sql/` - SQL scripts for manual execution
+
+### Core Systems
+
+1. **Agentic RAG Pipeline**
+   - V3 implementation with improved accuracy
+   - Hierarchical document chunking
+   - Multi-stage retrieval with fallback mechanisms
+   - Intelligent caching system
+
+2. **Multi-LLM Router**
+   - Automatic model selection based on query complexity
+   - Fallback chains for reliability
+   - Cost optimization logic
+
+3. **QA Validation System**
+   - 125 test cases covering legal queries
+   - Automated accuracy benchmarking
+   - Cross-validation capabilities
+
+4. **Knowledge Base**
+   - Legal articles from LUOS and PDUS
+   - Regime Urbanístico data (zoning regulations)
+   - Disaster risk information
+   - Vector embeddings for semantic search
+
+## Environment Variables
+
+Required in `.env` or Supabase secrets:
+- `OPENAI_API_KEY` - OpenAI API key
+- `ANTHROPIC_API_KEY` - Claude API key  
+- `GOOGLE_GENERATIVE_AI_API_KEY` - Gemini API key
+- `GROQ_API_KEY` - Groq API key
+- `DEEPSEEK_API_KEY` - DeepSeek API key
+- `NEXT_PUBLIC_SUPABASE_URL` - Supabase project URL
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY` - Supabase anonymous key
+- `SUPABASE_SERVICE_ROLE_KEY` - Service role key (for admin operations)
+
+## Database Tables
+
+Key tables to understand:
+- `legal_articles` - Legal document chunks with embeddings
+- `qa_test_cases` - Test cases for validation
+- `qa_runs` - Validation run history
+- `regime_urbanistico_consolidado` - Zoning regulations data
+- `query_cache` - Response caching
+- `message_feedback` - User feedback tracking
 
 ## Testing Strategy
 
-### Unit Tests
-- Located in `tests/` directory
-- Test individual Edge Functions and services
-- Run with `npm run test`
+1. **Unit Tests**: Component and function level tests
+2. **Integration Tests**: RAG pipeline and database operations
+3. **E2E Tests**: Full user workflows
+4. **QA Validation**: Accuracy benchmarking against ground truth
 
-### Integration Tests
-- Test full RAG pipeline end-to-end
-- Located in `scripts/test-*.mjs` files
-- Run with `npm run test:integration`
-
-### QA Validation
-- Automated quality checks against predefined test cases
-- Run with `npm run test:qa`
-- Monitor results in Admin Dashboard at `/admin/quality`
-
-## RAG Pipeline Flow
-
-```
-User Query → agentic-rag (orchestrator)
-                ↓
-         query-analyzer (intent analysis)
-                ↓
-    ┌───────────┴───────────┐
-    ↓                       ↓
-sql-generator        enhanced-vector-search
-(structured data)    (document embeddings)
-    ↓                       ↓
-    └───────────┬───────────┘
-                ↓
-       response-synthesizer
-         (final answer)
+Run specific test suites:
+```bash
+cd scripts/tests
+npm test query-analyzer.test.ts
+npm test response-synthesizer.test.ts
+npm test rag-system.test.ts
 ```
 
-## Key Data Sources
+## Common Development Tasks
 
-1. **Structured Data** (PostgreSQL tables):
-   - Zoning information (ZOTs)
-   - Neighborhood parameters
-   - Construction height limits
-   - Risk areas
+### Adding a New Edge Function
+1. Create folder in `backend/supabase/functions/function-name/`
+2. Add `index.ts` with Deno-compatible code
+3. Update `backend/supabase/config.toml` if JWT verification needed
+4. Deploy with `npx supabase functions deploy function-name`
 
-2. **Document Embeddings** (pgvector):
-   - PDUS 2025 documents
-   - Urban planning regulations (LUOS)
-   - Q&A knowledge base
+### Updating the Knowledge Base
+1. Place documents in `docs/knowledgebase/`
+2. Run `npm run kb:process` to process locally
+3. Run `npm run kb:import-full` to import to database
+4. Run `npm run kb:embeddings-batch` to generate embeddings
 
-## Multi-LLM Support
+### Running QA Validation
+1. Ensure test cases are loaded: `SELECT COUNT(*) FROM qa_test_cases;`
+2. Run validation from admin dashboard or via script
+3. Check results in `qa_runs` and `qa_run_details` tables
 
-The system supports multiple LLM providers through `multiLLMService`:
-- OpenAI (GPT-4, GPT-3.5)
-- Anthropic (Claude 3 Opus, Sonnet, Haiku)
-- Google (Gemini Pro, Flash)
-- Groq (Mixtral, Llama)
-- DeepSeek (Coder, Chat)
+## Important Patterns
 
-Model selection can be configured per query or globally in the admin dashboard.
+- **Error Handling**: All Edge Functions return standardized error responses
+- **Rate Limiting**: Implemented at Edge Function level
+- **Caching**: Query results cached for 24 hours by default
+- **Logging**: Metrics tracked in `llm_metrics` table
+- **Security**: RLS (Row Level Security) enabled on sensitive tables
 
-## Debugging Tips
+## Debugging
 
-1. **Check Edge Function Logs**:
-   - Supabase Dashboard → Edge Functions → Select function → Logs tab
+- Edge Functions logs: `npx supabase functions serve` locally
+- Frontend logs: Browser DevTools console
+- Database queries: Supabase Studio SQL editor
+- Test failures: Check `test-reports/` directory
 
-2. **Test Individual Functions**:
-   ```bash
-   # Test query analyzer
-   node test-query-analyzer.mjs
-   
-   # Test SQL generator
-   node test-sql-generator-direct.mjs
-   ```
+## Known Issues & Improvement Opportunities
 
-3. **Clear Cache for Fresh Results**:
-   ```bash
-   node scripts/clear-cache-and-fix.ts
-   ```
+### ⚠️ CRITICAL BUG: 44% of Data Being Ignored!
+The data is 100% present in the database, but agentic-rag only queries 56% of it!
 
-4. **Monitor Performance**:
-   - Admin Dashboard → Benchmark tab
-   - Check token usage and response times
+### The Real Problem
+```typescript
+// CURRENT (WRONG) - Only searches 2 of 4 document types
+.or('document_type.eq.LUOS,document_type.eq.PDUS')  // ❌ Missing 880 records!
 
-## Common Issues and Solutions
+// SHOULD BE - Search all document types
+.in('document_type', ['LUOS', 'PDUS', 'REGIME_FALLBACK', 'QA_CATEGORY'])  // ✅
+```
 
-1. **"Bairro not found" errors**: Usually a cache issue. Clear cache and retry.
-2. **Slow responses**: Check if query cache is working properly.
-3. **Wrong LLM model**: Verify API keys in Supabase secrets.
-4. **Deployment failures**: Ensure you're using `--project-ref ngrqwmvuhvjkeohesbxs`
+### Quick Fix (Can improve accuracy to >95% in minutes!)
+```typescript
+// File: backend/supabase/functions/agentic-rag/index.ts
+// Line ~568-582
 
-## Security Considerations
+// CHANGE FROM:
+const { data: legalResults } = await supabase
+  .from('legal_articles')
+  .select('*')
+  .or('document_type.eq.LUOS,document_type.eq.PDUS')
 
-- All Edge Functions require JWT authentication
-- Service role key should only be used server-side
-- API keys are stored as Supabase secrets
-- Row-level security (RLS) is enabled on sensitive tables
+// CHANGE TO:
+const { data: legalResults } = await supabase
+  .from('legal_articles')
+  .select('*')
+  .in('document_type', ['LUOS', 'PDUS', 'REGIME_FALLBACK', 'QA_CATEGORY'])
+```
 
-## Performance Optimization
+### Other Issues
+1. **Wrong field name**: Using `content` instead of `full_content`
+2. **No fallback to qa_test_cases**: Missing opportunity for validated answers
+3. **Limited context window**: Only 3 messages of history
 
-1. **Query Cache**: Automatic caching of common queries
-2. **Hierarchical Chunking**: Optimized document splitting
-3. **Composite Indexes**: Database indexes for fast lookups
-4. **Token Tracking**: Monitor and optimize LLM token usage
+## Performance Considerations
 
-## Admin Features
+- Vector search uses pgvector with HNSW indexes
+- Composite indexes on frequently queried columns
+- Query cache reduces redundant LLM calls (24h TTL)
+- Batch processing for embeddings generation
+- Connection pooling for database operations
+- Token limit: 3000 tokens per context window
 
-Access admin panel at `/admin` (requires admin role):
-- User management
-- Quality assurance testing
-- Benchmark comparisons
-- Feedback analysis
-- Knowledge gap detection
-- System monitoring
+## Critical Files to Understand
+
+### RAG Pipeline
+- `backend/supabase/functions/agentic-rag/index.ts` - Main orchestrator
+- `frontend/lib/unifiedRAGService.ts` - Frontend integration
+- `frontend/services/chatService.ts` - Chat service layer
+
+### Knowledge Base
+- `docs/knowledgebase/PDPOA2025-Regime_Urbanistico_Consolidado.csv` - Source data
+- `scripts/import-regime-from-csv-complete.mjs` - Regime importer
+- `scripts/process-knowledge-base-local.mjs` - KB processor
+
+### Testing & Validation
+- `scripts/run-qa-tests.ts` - QA test runner
+- `frontend/components/admin/QADashboard.tsx` - Admin interface
