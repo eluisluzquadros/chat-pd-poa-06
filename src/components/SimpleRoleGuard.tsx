@@ -145,7 +145,7 @@ export const SimpleRoleGuard = ({
     // Verificação inicial
     checkAccess();
     
-    // Timeout de fallback - após 2 segundos, negar acesso se não conseguiu verificar
+    // Timeout de fallback aumentado - após 5 segundos, negar acesso se não conseguiu verificar
     const fallbackTimeout = setTimeout(() => {
       if (isActive && isInitializing) {
         console.log("⏰ Timeout de fallback - negando acesso por segurança");
@@ -153,7 +153,7 @@ export const SimpleRoleGuard = ({
         setHasAccess(false);
         setIsInitializing(false);
       }
-    }, 2000);
+    }, 5000);
     
     return () => {
       isActive = false;

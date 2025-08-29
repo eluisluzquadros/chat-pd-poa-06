@@ -83,7 +83,15 @@ function App() {
                   </SimpleRoleGuard>
                 </SimpleAuthGuard>
               } />
-              <Route path="/admin/quality" element={<QualityV2 />} />
+              <Route path="/admin/quality" element={
+                <SimpleAuthGuard>
+                  <SimpleRoleGuard adminOnly={true}>
+                    <AdminErrorBoundary>
+                      <QualityV2 />
+                    </AdminErrorBoundary>
+                  </SimpleRoleGuard>
+                </SimpleAuthGuard>
+              } />
               <Route path="/admin/quality-test" element={
                 <SimpleAuthGuard>
                   <SimpleRoleGuard adminOnly={true}>
@@ -119,7 +127,15 @@ function App() {
                   </SimpleRoleGuard>
                 </SimpleAuthGuard>
               } />
-              <Route path="/admin/benchmark" element={<BenchmarkV2 />} />
+              <Route path="/admin/benchmark" element={
+                <SimpleAuthGuard>
+                  <SimpleRoleGuard adminOnly={true}>
+                    <AdminErrorBoundary>
+                      <BenchmarkV2 />
+                    </AdminErrorBoundary>
+                  </SimpleRoleGuard>
+                </SimpleAuthGuard>
+              } />
               <Route path="/admin/metrics" element={
                 <SimpleAuthGuard>
                   <SimpleRoleGuard adminOnly={true}>
@@ -127,7 +143,15 @@ function App() {
                   </SimpleRoleGuard>
                 </SimpleAuthGuard>
               } />
-              <Route path="/admin/settings" element={<PlatformSettings />} />
+              <Route path="/admin/settings" element={
+                <SimpleAuthGuard>
+                  <SimpleRoleGuard adminOnly={true}>
+                    <AdminErrorBoundary>
+                      <PlatformSettings />
+                    </AdminErrorBoundary>
+                  </SimpleRoleGuard>
+                </SimpleAuthGuard>
+              } />
               <Route path="/admin/monitoring" element={
                 <SimpleAuthGuard>
                   <SimpleRoleGuard adminOnly={true}>

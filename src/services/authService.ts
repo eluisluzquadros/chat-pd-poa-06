@@ -13,9 +13,9 @@ const ROLE_CACHE_TTL = 30 * 60 * 1000; // 30 minutos
 const sessionCache = new Map<string, { session: any; timestamp: number }>();
 const SESSION_CACHE_TTL = 15 * 60 * 1000; // 15 minutos
 
-// Throttling para operações de auth - reduzido para evitar race conditions
+// Throttling para operações de auth - otimizado para balance entre performance e confiabilidade
 const authCallsThrottle = new Map<string, number>();
-const AUTH_THROTTLE_DELAY = 10; // 10ms entre chamadas do mesmo tipo - reduzido de 100ms
+const AUTH_THROTTLE_DELAY = 50; // 50ms entre chamadas do mesmo tipo - balanceado para evitar race conditions
 
 // Controle de refresh token removido para evitar bloqueios desnecessários
 
@@ -82,10 +82,13 @@ export const AuthService = {
       if (now - lastCall < AUTH_THROTTLE_DELAY) {
         console.log("getCurrentSession throttled - usando cache se disponível");
         // Se temos cache válido, usar, senão permitir chamada
-        if (cached && (now - cached.timestamp) < SESSION_CACHE_TTL / 2) {
+        if (cached && (now - cached.timestamp) < SESSION_CACHE_TTL) {
           return cached.session;
         }
-        // Cache muito antigo ou inexistente - permitir chamada mesmo com throttle
+        // Cache antigo mas ainda válido - usar para evitar chamadas desnecessárias
+        if (cached && (now - cached.timestamp) < SESSION_CACHE_TTL * 1.5) {
+          return cached.session;
+        }
       }
       
       authCallsThrottle.set(throttleKey, now);
