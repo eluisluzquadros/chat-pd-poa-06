@@ -37,6 +37,10 @@ export function useQAValidator() {
       console.log('[useQAValidator] Validation started with run ID:', runId);
       setCurrentRunId(runId);
       
+      if (!runId) {
+        throw new Error('No runId returned from validation');
+      }
+      
       // Monitor progress with improved polling
       const maxPollingTime = 30 * 60 * 1000; // 30 minutes for full runs
       const pollInterval = 2000; // 2 seconds
@@ -44,11 +48,21 @@ export function useQAValidator() {
 
       const poll = async () => {
         try {
-          const { data: run } = await supabase
+          console.log('[useQAValidator] Polling validation run:', runId);
+          
+          const { data: run, error: runError } = await supabase
             .from('qa_validation_runs')
             .select('status, total_tests, passed_tests, error_message, last_heartbeat')
             .eq('id', runId)
             .single();
+
+          if (runError) {
+            console.error('[useQAValidator] Error fetching run:', runError);
+            setIsRunning(false);
+            setProgress(null);
+            setCurrentRunId(null);
+            return;
+          }
 
           if (!run) {
             console.warn('[useQAValidator] Run not found, stopping polling');
@@ -65,12 +79,17 @@ export function useQAValidator() {
             .eq('id', runId);
 
           // Count completed tests
-          const { count } = await supabase
+          const { count, error: countError } = await supabase
             .from('qa_validation_results')
             .select('*', { count: 'exact', head: true })
             .eq('validation_run_id', runId);
 
+          if (countError) {
+            console.error('[useQAValidator] Error counting results:', countError);
+          }
+
           const completed = count || 0;
+          console.log(`[useQAValidator] Progress: ${completed}/${run.total_tests} tests completed`);
           
           setProgress({
             current: completed,

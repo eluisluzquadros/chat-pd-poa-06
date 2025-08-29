@@ -76,13 +76,22 @@ export class SmartQAValidator {
       throw new Error(`Validation failed: ${error.message}`);
     }
 
+    console.log('[SmartQAValidator] Raw response from qa-execute-validation-v2:', JSON.stringify(data, null, 2));
+    
     const results = data?.results || [];
     if (results.length === 0) {
+      console.error('[SmartQAValidator] No results in response data:', data);
       throw new Error('No validation results returned');
     }
 
     // Return the first run ID (for single model) or create a summary for multiple models
     const firstResult = results[0];
+    
+    if (!firstResult?.runId) {
+      console.error('[SmartQAValidator] No runId in first result:', firstResult);
+      throw new Error('Invalid validation result - missing runId');
+    }
+    
     console.log(`[SmartQAValidator] Validation started with run ID: ${firstResult.runId}`);
     
     return firstResult.runId;
