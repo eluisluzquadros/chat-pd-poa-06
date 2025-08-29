@@ -13,13 +13,11 @@ const ROLE_CACHE_TTL = 30 * 60 * 1000; // 30 minutos
 const sessionCache = new Map<string, { session: any; timestamp: number }>();
 const SESSION_CACHE_TTL = 15 * 60 * 1000; // 15 minutos
 
-// Throttling para operações de auth
+// Throttling para operações de auth - reduzido para evitar race conditions
 const authCallsThrottle = new Map<string, number>();
-const AUTH_THROTTLE_DELAY = 100; // 100ms entre chamadas do mesmo tipo
+const AUTH_THROTTLE_DELAY = 10; // 10ms entre chamadas do mesmo tipo - reduzido de 100ms
 
-// Controle de refresh token para evitar rate limiting
-let lastTokenRefresh = 0;
-const TOKEN_REFRESH_COOLDOWN = 30 * 1000; // 30 segundos entre refreshes
+// Controle de refresh token removido para evitar bloqueios desnecessários
 
 // Função utilitária para limpeza completa de estado de autenticação
 const cleanupCompleteAuthState = () => {
@@ -30,8 +28,7 @@ const cleanupCompleteAuthState = () => {
   sessionCache.clear();
   authCallsThrottle.clear();
   
-  // Resetar timestamps
-  lastTokenRefresh = 0;
+  // Reset de caches realizado
   
   console.log("Caches de autenticação limpos");
   
@@ -78,19 +75,17 @@ export const AuthService = {
         return cached.session;
       }
       
-      // Throttling para getCurrentSession
+      // Throttling otimizado para getCurrentSession
       const throttleKey = 'getCurrentSession';
       const lastCall = authCallsThrottle.get(throttleKey) || 0;
       
       if (now - lastCall < AUTH_THROTTLE_DELAY) {
-        console.log("getCurrentSession throttled, retornando cache ou null");
-        return cached?.session || null;
-      }
-      
-      // Verificar se não estamos em cooldown de refresh
-      if (now - lastTokenRefresh < TOKEN_REFRESH_COOLDOWN) {
-        console.log("Token refresh em cooldown, usando cache");
-        return cached?.session || null;
+        console.log("getCurrentSession throttled - usando cache se disponível");
+        // Se temos cache válido, usar, senão permitir chamada
+        if (cached && (now - cached.timestamp) < SESSION_CACHE_TTL / 2) {
+          return cached.session;
+        }
+        // Cache muito antigo ou inexistente - permitir chamada mesmo com throttle
       }
       
       authCallsThrottle.set(throttleKey, now);
@@ -107,10 +102,7 @@ export const AuthService = {
       // Atualizar cache apenas se bem-sucedido
       sessionCache.set(cacheKey, { session: data.session, timestamp: now });
       
-      // Marcar timestamp de refresh se a sessão foi atualizada
-      if (data.session) {
-        lastTokenRefresh = now;
-      }
+      // Cache atualizado com sucesso
       
       return data.session;
     } catch (error) {
@@ -454,7 +446,6 @@ export const AuthService = {
     userRoleCache.clear();
     sessionCache.clear();
     authCallsThrottle.clear();
-    lastTokenRefresh = 0;
     console.log("Caches limpos");
   },
 
@@ -465,8 +456,6 @@ export const AuthService = {
       sessionCacheSize: sessionCache.size,
       roleCacheSize: userRoleCache.size,
       throttleMapSize: authCallsThrottle.size,
-      timeSinceLastRefresh: now - lastTokenRefresh,
-      isInRefreshCooldown: (now - lastTokenRefresh) < TOKEN_REFRESH_COOLDOWN,
       caches: {
         session: Array.from(sessionCache.entries()).map(([key, value]) => ({
           key,
@@ -523,22 +512,13 @@ export const AuthService = {
   }
 };
 
-// Função para refresh seguro com retry
+// Função para refresh seguro com retry - simplificada
 const safeTokenRefresh = async (retryCount = 0): Promise<any> => {
   const maxRetries = 3;
   const baseDelay = 1000; // 1 segundo
   
   try {
-    const now = Date.now();
-    
-    // Verificar cooldown
-    if (now - lastTokenRefresh < TOKEN_REFRESH_COOLDOWN) {
-      console.log("Token refresh em cooldown, aguardando...");
-      await new Promise(resolve => setTimeout(resolve, TOKEN_REFRESH_COOLDOWN));
-    }
-    
     console.log(`Tentativa ${retryCount + 1} de refresh token`);
-    lastTokenRefresh = now;
     
     const { data, error } = await supabase.auth.refreshSession();
     

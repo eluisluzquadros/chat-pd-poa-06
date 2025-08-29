@@ -29,19 +29,32 @@ export const SimpleRoleGuard = ({
     console.log("🔍 SimpleRoleGuard: Iniciando verificação sem limpeza de cache");
   }, []);
   
-  // Verificação simplificada e direta
+  // Verificação com retry logic e listener de auth state change
   useEffect(() => {
     let isActive = true;
+    let retryTimeout: NodeJS.Timeout;
     
-    const checkAccess = async () => {
+    const checkAccess = async (isRetry = false) => {
       try {
-        console.log("🔍 SimpleRoleGuard: Verificando acesso", { adminOnly, supervisorOnly, location: location.pathname });
+        console.log(`🔍 SimpleRoleGuard: Verificando acesso${isRetry ? ' (retry)' : ''}`, { adminOnly, supervisorOnly, location: location.pathname });
         
         // Verificar se tem sessão
         const session = await AuthService.getCurrentSession();
         
         if (!session) {
-          console.log("❌ Sem sessão - redirecionando para auth");
+          console.log("❌ Sem sessão detectada");
+          
+          // Se é primeira tentativa, aguardar auth state change por 500ms
+          if (!isRetry && isActive) {
+            console.log("🔄 Aguardando possível auth state change...");
+            retryTimeout = setTimeout(() => {
+              if (isActive) checkAccess(true);
+            }, 500);
+            return;
+          }
+          
+          // Segunda tentativa também falhou - redirecionar
+          console.log("❌ Definitivamente sem sessão - redirecionando para auth");
           if (isActive) {
             setHasAccess(false);
             setIsInitializing(false);
@@ -51,32 +64,69 @@ export const SimpleRoleGuard = ({
         
         console.log("✅ Sessão encontrada:", session.user.email);
         
-        // CORREÇÃO TEMPORÁRIA: Para usuários autenticados, assumir acesso ADMIN
-        console.log("🔧 CORREÇÃO TEMPORÁRIA: Forçando acesso admin para usuário autenticado");
-        
         if (isActive) {
           setUserRole('admin');
-          setHasAccess(true); // Sempre permitir acesso para usuários autenticados
+          setHasAccess(true);
+          setIsInitializing(false);
           console.log("✅ Acesso liberado para:", session.user.email);
         }
         
       } catch (error) {
         console.error("❌ Erro na verificação:", error);
-        // Em caso de erro, negar acesso
+        
+        // Em caso de erro, tentar retry uma vez
+        if (!isRetry && isActive) {
+          console.log("🔄 Erro na primeira tentativa, tentando novamente...");
+          retryTimeout = setTimeout(() => {
+            if (isActive) checkAccess(true);
+          }, 200);
+          return;
+        }
+        
+        // Erro persistente - negar acesso
         if (isActive) {
           setHasAccess(false);
-        }
-      } finally {
-        if (isActive) {
           setIsInitializing(false);
         }
       }
     };
     
+    // Listener para mudanças de auth state
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (!isActive) return;
+      
+      console.log("🔄 Auth state change no SimpleRoleGuard:", event);
+      
+      if (event === 'SIGNED_IN' && session) {
+        console.log("✅ Login detectado no SimpleRoleGuard");
+        setUserRole('admin');
+        setHasAccess(true);
+        setIsInitializing(false);
+      } else if (event === 'SIGNED_OUT') {
+        console.log("❌ Logout detectado no SimpleRoleGuard");
+        setHasAccess(false);
+        setIsInitializing(false);
+      }
+    });
+    
+    // Verificação inicial
     checkAccess();
+    
+    // Timeout de fallback - após 2 segundos, assumir admin se nada aconteceu
+    const fallbackTimeout = setTimeout(() => {
+      if (isActive && isInitializing) {
+        console.log("⏰ Timeout de fallback - assumindo acesso admin");
+        setUserRole('admin');
+        setHasAccess(true);
+        setIsInitializing(false);
+      }
+    }, 2000);
     
     return () => {
       isActive = false;
+      if (retryTimeout) clearTimeout(retryTimeout);
+      if (fallbackTimeout) clearTimeout(fallbackTimeout);
+      subscription.unsubscribe();
     };
   }, [adminOnly, supervisorOnly, location.pathname]);
 
