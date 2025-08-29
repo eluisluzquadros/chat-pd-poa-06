@@ -82,13 +82,7 @@ function App() {
                   </SimpleRoleGuard>
                 </SimpleAuthGuard>
               } />
-              <Route path="/admin/quality" element={
-                <SimpleAuthGuard>
-                  <SimpleRoleGuard adminOnly={true}>
-                    <QualityV2 />
-                  </SimpleRoleGuard>
-                </SimpleAuthGuard>
-              } />
+              <Route path="/admin/quality" element={<QualityV2 />} />
               <Route path="/admin/quality-test" element={
                 <SimpleAuthGuard>
                   <SimpleRoleGuard adminOnly={true}>
@@ -124,13 +118,7 @@ function App() {
                   </SimpleRoleGuard>
                 </SimpleAuthGuard>
               } />
-              <Route path="/admin/benchmark" element={
-                <SimpleAuthGuard>
-                  <SimpleRoleGuard adminOnly={true}>
-                    <BenchmarkV2 />
-                  </SimpleRoleGuard>
-                </SimpleAuthGuard>
-              } />
+              <Route path="/admin/benchmark" element={<BenchmarkV2 />} />
               <Route path="/admin/metrics" element={
                 <SimpleAuthGuard>
                   <SimpleRoleGuard adminOnly={true}>
@@ -138,13 +126,7 @@ function App() {
                   </SimpleRoleGuard>
                 </SimpleAuthGuard>
               } />
-              <Route path="/admin/settings" element={
-                <SimpleAuthGuard>
-                  <SimpleRoleGuard adminOnly={true}>
-                    <PlatformSettings />
-                  </SimpleRoleGuard>
-                </SimpleAuthGuard>
-              } />
+              <Route path="/admin/settings" element={<PlatformSettings />} />
               <Route path="/admin/monitoring" element={
                 <SimpleAuthGuard>
                   <SimpleRoleGuard adminOnly={true}>
