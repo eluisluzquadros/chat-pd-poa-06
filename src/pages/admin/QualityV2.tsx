@@ -13,7 +13,7 @@ import {
 } from 'lucide-react';
 import { SystemVersionIndicator } from '@/components/admin/SystemVersionIndicator';
 import { toast } from 'sonner';
-import { SimpleRoleGuard } from '@/components/SimpleRoleGuard';
+
 import { Header } from '@/components/Header';
 import { useQAValidator } from '@/hooks/useQAValidator';
 import { useQAHistoryReset } from '@/hooks/useQAHistoryReset';
@@ -240,8 +240,7 @@ function QualityV2() {
   }, []);
 
   return (
-    <SimpleRoleGuard adminOnly={true}>
-      <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background">
         <Header />
         <main className="container mx-auto px-6 py-8 max-w-7xl">
           <div className="space-y-6">
@@ -578,7 +577,6 @@ function QualityV2() {
           </div>
         </main>
       </div>
-    </SimpleRoleGuard>
   );
 }
 
