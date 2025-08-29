@@ -79,22 +79,34 @@ export class SmartQAValidator {
     console.log('[SmartQAValidator] Raw response from qa-execute-validation-v2:', JSON.stringify(data, null, 2));
     
     const results = data?.results || [];
-    if (results.length === 0) {
-      console.error('[SmartQAValidator] No results in response data:', data);
-      throw new Error('No validation results returned');
+    
+    // Try to find any valid runId from the results
+    const validResult = results.find(result => result?.runId);
+    
+    if (!validResult?.runId) {
+      console.error('[SmartQAValidator] No valid runId found in results:', results);
+      console.error('[SmartQAValidator] Full response data:', data);
+      
+      // Check if there are any existing runs from the models we requested
+      const { data: existingRuns } = await supabase
+        .from('qa_validation_runs')
+        .select('id, model, status, started_at')
+        .in('model', options.models || [])
+        .eq('status', 'running')
+        .order('started_at', { ascending: false })
+        .limit(1);
+        
+      if (existingRuns && existingRuns.length > 0) {
+        console.log('[SmartQAValidator] Found existing running validation:', existingRuns[0]);
+        return existingRuns[0].id;
+      }
+      
+      throw new Error('No validation results returned and no existing runs found');
     }
-
-    // Return the first run ID (for single model) or create a summary for multiple models
-    const firstResult = results[0];
     
-    if (!firstResult?.runId) {
-      console.error('[SmartQAValidator] No runId in first result:', firstResult);
-      throw new Error('Invalid validation result - missing runId');
-    }
+    console.log(`[SmartQAValidator] Validation started with run ID: ${validResult.runId}`);
     
-    console.log(`[SmartQAValidator] Validation started with run ID: ${firstResult.runId}`);
-    
-    return firstResult.runId;
+    return validResult.runId;
   }
 
   private async getTestCases(options: QAValidationOptions): Promise<TestCase[]> {

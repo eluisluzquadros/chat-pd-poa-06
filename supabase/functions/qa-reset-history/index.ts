@@ -7,7 +7,7 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
-  // Handle CORS
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
   }
@@ -20,32 +20,32 @@ serve(async (req) => {
     console.log('🧹 Starting QA history reset...');
 
     // Get current statistics before deletion
-    const { data: statsRuns } = await supabase
+    const { data: statsRuns, count: runsCount } = await supabase
       .from('qa_validation_runs')
-      .select('id', { count: 'exact' });
+      .select('id', { count: 'exact', head: true });
 
-    const { data: statsResults } = await supabase
+    const { data: statsResults, count: resultsCount } = await supabase
       .from('qa_validation_results')
-      .select('id', { count: 'exact' });
+      .select('id', { count: 'exact', head: true });
 
-    const { data: statsTokens } = await supabase
+    const { data: statsTokens, count: tokensCount } = await supabase
       .from('qa_token_usage')
-      .select('id', { count: 'exact' });
+      .select('id', { count: 'exact', head: true });
 
-    const { data: statsReports } = await supabase
+    const { data: statsReports, count: reportsCount } = await supabase
       .from('qa_automated_reports')
-      .select('id', { count: 'exact' });
+      .select('id', { count: 'exact', head: true });
 
-    const { data: statsInsights } = await supabase
+    const { data: statsInsights, count: insightsCount } = await supabase
       .from('qa_learning_insights')
-      .select('id', { count: 'exact' });
+      .select('id', { count: 'exact', head: true });
 
     const initialStats = {
-      runs: statsRuns?.length || 0,
-      results: statsResults?.length || 0,
-      tokens: statsTokens?.length || 0,
-      reports: statsReports?.length || 0,
-      insights: statsInsights?.length || 0
+      runs: runsCount || 0,
+      results: resultsCount || 0,
+      tokens: tokensCount || 0,
+      reports: reportsCount || 0,
+      insights: insightsCount || 0
     };
 
     console.log('📊 Initial statistics:', initialStats);
@@ -107,17 +107,17 @@ serve(async (req) => {
     }
 
     // Verify deletion
-    const { data: finalRuns } = await supabase
+    const { count: finalRunsCount } = await supabase
       .from('qa_validation_runs')
-      .select('id', { count: 'exact' });
+      .select('id', { count: 'exact', head: true });
 
-    const { data: finalResults } = await supabase
+    const { count: finalResultsCount } = await supabase
       .from('qa_validation_results')
-      .select('id', { count: 'exact' });
+      .select('id', { count: 'exact', head: true });
 
     const finalStats = {
-      runs: finalRuns?.length || 0,
-      results: finalResults?.length || 0,
+      runs: finalRunsCount || 0,
+      results: finalResultsCount || 0,
       tokens: 0,
       reports: 0,
       insights: 0
