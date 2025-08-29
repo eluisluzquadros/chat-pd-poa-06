@@ -31,7 +31,8 @@ const KnowledgeBaseAdminLazy = React.lazy(() => import("./pages/admin/KnowledgeB
 import { SimpleAuthGuard } from "./components/SimpleAuthGuard";
 import { SimpleRoleGuard } from "./components/SimpleRoleGuard";
 import ChatHistorySync from "./components/ChatHistorySync";
-import { AuthSyncComponent } from "./components/AuthSyncComponent";
+import { AdminErrorBoundary } from "./components/admin/AdminErrorBoundary";
+
 
 // Create a new query client instance
 const queryClient = new QueryClient();
@@ -42,9 +43,6 @@ function App() {
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
           <BrowserRouter>
-            {/* Componente para sincronizar a autenticação */}
-            <AuthSyncComponent />
-            
             {/* Componente para sincronizar o histórico de chat */}
             <ChatHistorySync />
             
@@ -73,7 +71,9 @@ function App() {
               <Route path="/admin/dashboard" element={
                 <SimpleAuthGuard>
                   <SimpleRoleGuard adminOnly={true}>
-                    <AdminDashboard />
+                    <AdminErrorBoundary>
+                      <AdminDashboard />
+                    </AdminErrorBoundary>
                   </SimpleRoleGuard>
                 </SimpleAuthGuard>
               } />
