@@ -7,15 +7,15 @@ let isAuthOperationInProgress = false;
 
 // Cache para roles de usuário para evitar múltiplas consultas
 const userRoleCache = new Map<string, { role: string; timestamp: number }>();
-const ROLE_CACHE_TTL = 5 * 60 * 1000; // 5 minutos
+const ROLE_CACHE_TTL = 30 * 60 * 1000; // 30 minutos
 
 // Cache para sessões para evitar múltiplas consultas
 const sessionCache = new Map<string, { session: any; timestamp: number }>();
-const SESSION_CACHE_TTL = 2 * 60 * 1000; // 2 minutos
+const SESSION_CACHE_TTL = 15 * 60 * 1000; // 15 minutos
 
 // Throttling para operações de auth
 const authCallsThrottle = new Map<string, number>();
-const AUTH_THROTTLE_DELAY = 2000; // 2 segundos entre chamadas do mesmo tipo
+const AUTH_THROTTLE_DELAY = 300; // 300ms entre chamadas do mesmo tipo
 
 // Controle de refresh token para evitar rate limiting
 let lastTokenRefresh = 0;

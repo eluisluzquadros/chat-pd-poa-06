@@ -23,6 +23,7 @@ import UserSettings from "./pages/UserSettings";
 import Reports from "./pages/Reports";
 import BenchmarkV2 from "./pages/admin/BenchmarkV2";
 import Metrics from "./pages/admin/Metrics";
+import PlatformSettings from "./pages/admin/PlatformSettings";
 import AgenticRAGDashboard from "./components/admin/AgenticRAGDashboard";
 const KnowledgeBaseAdminLazy = React.lazy(() => import("./pages/admin/KnowledgeBaseAdmin"));
 
@@ -136,6 +137,13 @@ function App() {
                 <SimpleAuthGuard>
                   <SimpleRoleGuard adminOnly={true}>
                     <Metrics />
+                  </SimpleRoleGuard>
+                </SimpleAuthGuard>
+              } />
+              <Route path="/admin/settings" element={
+                <SimpleAuthGuard>
+                  <SimpleRoleGuard adminOnly={true}>
+                    <PlatformSettings />
                   </SimpleRoleGuard>
                 </SimpleAuthGuard>
               } />

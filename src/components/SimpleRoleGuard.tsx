@@ -23,11 +23,30 @@ export const SimpleRoleGuard = ({
   const [hasAccess, setHasAccess] = useState(false);
   const location = useLocation();
   
-  // Efeito para verificar papel
+  // Cache persistente no sessionStorage
+  const getCachedRole = (userId: string) => {
+    const cacheKey = `user-role-${userId}`;
+    const cached = sessionStorage.getItem(cacheKey);
+    if (cached) {
+      const { role, timestamp } = JSON.parse(cached);
+      if (Date.now() - timestamp < 3600000) { // 1 hora
+        return role;
+      }
+    }
+    return null;
+  };
+  
+  const setCachedRole = (userId: string, role: string) => {
+    const cacheKey = `user-role-${userId}`;
+    sessionStorage.setItem(cacheKey, JSON.stringify({
+      role,
+      timestamp: Date.now()
+    }));
+  };
+  
+  // Efeito para verificar papel com debounce
   useEffect(() => {
-    console.log("SimpleRoleGuard: Verificando permissões");
-    console.log("adminOnly:", adminOnly);
-    console.log("supervisorOnly:", supervisorOnly);
+    let timeoutId: NodeJS.Timeout;
     
     const checkRole = async () => {
       try {
@@ -35,18 +54,23 @@ export const SimpleRoleGuard = ({
         const session = await AuthService.getCurrentSession();
         
         if (!session) {
-          console.log("SimpleRoleGuard: Usuário não está autenticado");
           setHasAccess(false);
           setIsInitializing(false);
           return;
         }
         
         const userId = session.user.id;
-        console.log("SimpleRoleGuard: ID do usuário:", userId);
         
-        // Buscar papel do usuário
-        const role = await AuthService.getUserRole(userId);
-        console.log("SimpleRoleGuard: Papel do usuário:", role);
+        // Tentar cache primeiro
+        let role = getCachedRole(userId);
+        
+        if (!role) {
+          // Buscar papel do usuário se não estiver em cache
+          role = await AuthService.getUserRole(userId);
+          if (role) {
+            setCachedRole(userId, role);
+          }
+        }
         
         // Verificar papel explicitamente
         const isAdmin = role === 'admin';
@@ -57,9 +81,7 @@ export const SimpleRoleGuard = ({
                        (supervisorOnly && (isSupervisor || isAdmin)) || 
                        (!adminOnly && !supervisorOnly);
         
-        console.log("SimpleRoleGuard: Acesso concedido:", access);
-        
-        // Mostrar mensagem de erro se não tiver acesso
+        // Mostrar mensagem de erro apenas uma vez se não tiver acesso
         if (!access) {
           if (adminOnly) {
             toast.error("Você não tem permissão de administrador para acessar esta página.");
@@ -77,16 +99,17 @@ export const SimpleRoleGuard = ({
       }
     };
     
-    // Verificar imediatamente
-    checkRole();
+    // Debounce para evitar múltiplas chamadas
+    timeoutId = setTimeout(checkRole, 100);
     
     // Verificar novamente quando a sessão mudar
     const { data } = supabase.auth.onAuthStateChange(() => {
-      console.log("SimpleRoleGuard: Estado de autenticação alterado, verificando papel novamente");
-      checkRole();
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(checkRole, 200);
     });
     
     return () => {
+      clearTimeout(timeoutId);
       data.subscription.unsubscribe();
     };
   }, [adminOnly, supervisorOnly]);
