@@ -1,6 +1,6 @@
 
 import { useChat } from "@/hooks/useChat";
-import { AuthGuard } from "@/components/layout/AuthGuard";
+import { SimpleAuthGuard } from "@/components/SimpleAuthGuard";
 import { Header } from "@/components/Header";
 import { ThemeToggle } from "@/components/home/hero/ThemeToggle";
 import { AppSidebar } from "@/components/chat/AppSidebar";
@@ -24,7 +24,7 @@ export default function Chat() {
   } = useChat();
 
   return (
-    <AuthGuard>
+    <SimpleAuthGuard>
       <div className="min-h-screen flex flex-col bg-background">
         <Header />
         
@@ -60,6 +60,6 @@ export default function Chat() {
           <ThemeToggle />
         </div>
       </div>
-    </AuthGuard>
+    </SimpleAuthGuard>
   );
 }

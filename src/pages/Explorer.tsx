@@ -11,7 +11,7 @@ import { FilterSidebar } from "@/components/explorer/FilterSidebar";
 import { DocumentList } from "@/components/explorer/DocumentList";
 import { ViewControls } from "@/components/explorer/ViewControls";
 import { UploadDocumentDialog } from "@/components/documents/UploadDocumentDialog";
-import { AuthGuard } from "@/components/layout/AuthGuard";
+import { SimpleAuthGuard } from "@/components/SimpleAuthGuard";
 import { Loader2, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -99,7 +99,7 @@ export default function Explorer() {
   });
 
   return (
-    <AuthGuard>
+    <SimpleAuthGuard>
       <div className="min-h-screen bg-background dark:bg-gray-900 text-foreground dark:text-gray-100">
         <Header />
         <main className="container mx-auto px-4 py-20">
@@ -173,6 +173,6 @@ export default function Explorer() {
         </main>
         
       </div>
-    </AuthGuard>
+    </SimpleAuthGuard>
   );
 }

@@ -43,8 +43,6 @@ function App() {
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
           <BrowserRouter>
-            {/* Componente para sincronizar o histórico de chat */}
-            <ChatHistorySync />
             
             <Routes>
               {/* Redirecionar a rota inicial para a autenticação */}
@@ -59,9 +57,9 @@ function App() {
               {/* Página de callback para OAuth */}
               <Route path="/auth/callback" element={<AuthCallback />} />
               
-              {/* Rotas desabilitadas - redirecionam para autenticação */}
-              <Route path="/explorer" element={<Navigate to="/auth" replace />} />
-              <Route path="/insights" element={<Navigate to="/auth" replace />} />
+              {/* Explorer and Insights routes */}
+              <Route path="/explorer" element={<SimpleAuthGuard><React.Suspense fallback={null}>{React.createElement(React.lazy(() => import('./pages/Explorer')))}</React.Suspense></SimpleAuthGuard>} />
+              <Route path="/insights" element={<SimpleAuthGuard><React.Suspense fallback={null}>{React.createElement(React.lazy(() => import('./pages/Insights')))}</React.Suspense></SimpleAuthGuard>} />
               
               {/* Basic authenticated routes */}
               <Route path="/chat" element={<SimpleAuthGuard><Chat /></SimpleAuthGuard>} />
