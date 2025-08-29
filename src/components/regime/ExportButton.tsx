@@ -33,11 +33,11 @@ export function ExportButton({ data, filters, isDisabled }: ExportButtonProps) {
         );
       }
 
-      if (filters.bairro) {
+      if (filters.bairro && filters.bairro !== 'todos') {
         query = query.eq('Bairro', filters.bairro);
       }
 
-      if (filters.zona) {
+      if (filters.zona && filters.zona !== 'todos') {
         query = query.eq('Zona', filters.zona);
       }
 

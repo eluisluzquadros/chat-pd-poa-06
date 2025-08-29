@@ -78,11 +78,11 @@ export function useRegimeData({
           );
         }
 
-        if (bairro) {
+        if (bairro && bairro !== 'todos') {
           query = query.eq('Bairro', bairro);
         }
 
-        if (zona) {
+        if (zona && zona !== 'todos') {
           query = query.eq('Zona', zona);
         }
 
@@ -98,11 +98,11 @@ export function useRegimeData({
           );
         }
 
-        if (bairro) {
+        if (bairro && bairro !== 'todos') {
           countQuery = countQuery.eq('Bairro', bairro);
         }
 
-        if (zona) {
+        if (zona && zona !== 'todos') {
           countQuery = countQuery.eq('Zona', zona);
         }
 

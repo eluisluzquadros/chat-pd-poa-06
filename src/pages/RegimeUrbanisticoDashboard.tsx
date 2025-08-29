@@ -11,8 +11,8 @@ import { Button } from '@/components/ui/button';
 
 export default function RegimeUrbanisticoDashboard() {
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedBairro, setSelectedBairro] = useState<string>('');
-  const [selectedZona, setSelectedZona] = useState<string>('');
+  const [selectedBairro, setSelectedBairro] = useState<string>('todos');
+  const [selectedZona, setSelectedZona] = useState<string>('todos');
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 20;
 
@@ -34,12 +34,12 @@ export default function RegimeUrbanisticoDashboard() {
 
   const handleClearFilters = () => {
     setSearchTerm('');
-    setSelectedBairro('');
-    setSelectedZona('');
+    setSelectedBairro('todos');
+    setSelectedZona('todos');
     setCurrentPage(1);
   };
 
-  const hasActiveFilters = searchTerm || selectedBairro || selectedZona;
+  const hasActiveFilters = searchTerm || (selectedBairro !== 'todos') || (selectedZona !== 'todos');
 
   const totalPages = Math.ceil(filteredCount / itemsPerPage);
 

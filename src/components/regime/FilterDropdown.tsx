@@ -30,7 +30,7 @@ export function FilterDropdown({
           <SelectValue placeholder={placeholder} />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="">Todos</SelectItem>
+          <SelectItem value="todos">Todos</SelectItem>
           {options.map((option) => (
             <SelectItem key={option} value={option}>
               {option}
