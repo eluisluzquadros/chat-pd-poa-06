@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug App Issues</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; max-width: 800px; margin: 0 auto; }
+        button { padding: 10px 20px; margin: 10px 0; background: #0066cc; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #0052cc; }
+        .result { margin: 20px 0; padding: 15px; background: #f5f5f5; border-radius: 4px; }
+        .error { background: #fee; color: #c00; }
+        .success { background: #efe; color: #080; }
+        pre { white-space: pre-wrap; word-wrap: break-word; }
+        .info { background: #e6f3ff; color: #0066cc; padding: 10px; border-radius: 4px; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <h1>Debug da Aplicação</h1>
+    
+    <div class="info">
+        <h3>Instruções:</h3>
+        <ol>
+            <li>Abra o console do navegador (F12)</li>
+            <li>Acesse http://localhost:8081 em outra aba</li>
+            <li>Tente enviar uma mensagem no chat</li>
+            <li>Volte aqui e clique em "Verificar Logs do Console"</li>
+        </ol>
+    </div>
+
+    <button onclick="checkAuth()">1. Verificar Autenticação</button>
+    <button onclick="testAgenticRAG()">2. Testar Agentic RAG</button>
+    <button onclick="checkConsole()">3. Verificar Logs do Console</button>
+    
+    <div id="result" class="result"></div>
+
+    <script type="module">
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+        
+        const SUPABASE_URL = 'https://ngrqwmvuhvjkeohesbxs.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5ncnF3bXZ1aHZqa2VvaGVzYnhzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM2MDkwMTcsImV4cCI6MjA2OTE4NTAxN30.K3uyyzjyAQ17ohQGCUFx_RiMufblLyQzvxEZHakqKrg';
+        
+        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        window.supabase = supabase;
+        
+        window.checkAuth = async function() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '<h3>Verificando autenticação...</h3>';
+            
+            try {
+                const { data: { session }, error } = await supabase.auth.getSession();
+                
+                if (error) {
+                    resultDiv.className = 'result error';
+                    resultDiv.innerHTML = '<h3>❌ Erro ao verificar sessão:</h3><pre>' + JSON.stringify(error, null, 2) + '</pre>';
+                    return;
+                }
+                
+                if (!session) {
+                    resultDiv.className = 'result error';
+                    resultDiv.innerHTML = '<h3>⚠️ Nenhuma sessão ativa</h3>' +
+                                        '<p>Você precisa estar logado para usar o chat.</p>' +
+                                        '<p>Acesse http://localhost:8081 e faça login primeiro.</p>';
+                    return;
+                }
+                
+                resultDiv.className = 'result success';
+                resultDiv.innerHTML = '<h3>✅ Sessão ativa!</h3>' +
+                                    '<pre>User ID: ' + session.user.id + '\n' +
+                                    'Email: ' + session.user.email + '\n' +
+                                    'Provider: ' + session.user.app_metadata.provider + '</pre>';
+                
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = '<h3>❌ Erro:</h3><pre>' + error.message + '</pre>';
+            }
+        }
+        
+        window.testAgenticRAG = async function() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '<h3>Testando Agentic RAG...</h3>';
+            
+            try {
+                const { data: { session } } = await supabase.auth.getSession();
+                
+                if (!session) {
+                    resultDiv.className = 'result error';
+                    resultDiv.innerHTML = '<h3>⚠️ Faça login primeiro!</h3>';
+                    return;
+                }
+                
+                const response = await supabase.functions.invoke('agentic-rag', {
+                    body: {
+                        message: "Quantos bairros tem Porto Alegre?",
+                        userRole: 'citizen',
+                        sessionId: 'test-' + Date.now(),
+                        userId: session.user.id
+                    }
+                });
+                
+                if (response.error) {
+                    resultDiv.className = 'result error';
+                    resultDiv.innerHTML = '<h3>❌ Erro:</h3><pre>' + JSON.stringify(response.error, null, 2) + '</pre>';
+                    return;
+                }
+                
+                resultDiv.className = 'result success';
+                resultDiv.innerHTML = '<h3>✅ Sucesso!</h3>' +
+                                    '<div style="background: white; padding: 15px; border-radius: 4px; margin: 10px 0;">' +
+                                    response.data.response.replace(/\n/g, '<br>') +
+                                    '</div>' +
+                                    '<pre>Confiança: ' + response.data.confidence + '</pre>';
+                
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = '<h3>❌ Erro:</h3><pre>' + error.message + '</pre>';
+            }
+        }
+        
+        window.checkConsole = function() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '<h3>📋 Checklist de Debug:</h3>' +
+                                '<ol>' +
+                                '<li>Abra o console (F12) e procure por erros em vermelho</li>' +
+                                '<li>Procure por mensagens que começam com "🚀" ou "❌"</li>' +
+                                '<li>Se houver erro de CORS, verifique se as Edge Functions têm os headers corretos</li>' +
+                                '<li>Se houver erro 401, o problema é de autenticação</li>' +
+                                '<li>Se houver erro 404, a função não foi encontrada</li>' +
+                                '<li>Se houver erro 500, verifique os logs no Supabase Dashboard</li>' +
+                                '</ol>' +
+                                '<h4>Copie qualquer erro do console e cole abaixo:</h4>' +
+                                '<textarea style="width: 100%; height: 200px; margin: 10px 0;"></textarea>';
+        }
+    </script>
+</body>
+</html>

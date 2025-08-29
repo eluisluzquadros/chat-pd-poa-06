@@ -16,7 +16,6 @@ import {
   Trophy, Target, Activity
 } from 'lucide-react';
 import { SystemVersionIndicator } from '@/components/admin/SystemVersionIndicator';
-import { AgenticRAGBenchmark } from '@/components/admin/AgenticRAGBenchmark';
 import { toast } from 'sonner';
 import { unifiedRAGService } from '@/lib/unifiedRAGService';
 import { UPDATED_MODEL_CONFIGS } from '@/config/llm-models-2025';
@@ -82,7 +81,7 @@ export default function BenchmarkV2() {
   });
 
   const [showConfigDialog, setShowConfigDialog] = useState(false);
-  const [selectedTab, setSelectedTab] = useState('agentic-rag');
+  const [selectedTab, setSelectedTab] = useState('overview');
   const [benchmarkHistory, setBenchmarkHistory] = useState<any[]>([]);
 
   // Benchmark configuration
@@ -108,30 +107,20 @@ export default function BenchmarkV2() {
     try {
       setIsLoading(true);
 
-      // Get validation runs for benchmark data with error handling
-      const { data: runs, error: runsError } = await supabase
+      // Get validation runs for benchmark data
+      const { data: runs } = await supabase
         .from('qa_validation_runs')
         .select('*')
         .eq('status', 'completed')
         .order('started_at', { ascending: false })
         .limit(100);
 
-      if (runsError) {
-        console.error('Error fetching validation runs:', runsError);
-        toast.error('Erro ao carregar execuções de validação');
-      }
-
-      // Get benchmark history with error handling
-      const { data: benchmarks, error: benchmarksError } = await supabase
+      // Get benchmark history
+      const { data: benchmarks } = await supabase
         .from('qa_benchmarks')
         .select('*')
         .order('timestamp', { ascending: false })
         .limit(10);
-
-      if (benchmarksError) {
-        console.error('Error fetching benchmarks:', benchmarksError);
-        toast.error('Erro ao carregar histórico de benchmarks');
-      }
 
       setBenchmarkHistory(benchmarks || []);
 
@@ -242,19 +231,7 @@ export default function BenchmarkV2() {
 
     } catch (error) {
       console.error('Error fetching benchmark data:', error);
-      toast.error('Erro crítico ao carregar dados de benchmark. Verifique sua conexão e tente novamente.');
-      
-      // Set fallback data para prevenir crashes
-      setModelPerformance([]);
-      setBenchmarkHistory([]);
-      setMetrics({
-        totalBenchmarks: 0,
-        bestQualityModel: { model: 'N/A', score: 0 },
-        fastestModel: { model: 'N/A', time: 0 },
-        mostEconomicalModel: { model: 'N/A', cost: 0 },
-        overallSuccessRate: 0,
-        totalModels: 0
-      });
+      toast.error('Erro ao carregar dados de benchmark');
     } finally {
       setIsLoading(false);
     }
@@ -594,17 +571,12 @@ export default function BenchmarkV2() {
 
       {/* Main Content Tabs */}
       <Tabs value={selectedTab} onValueChange={setSelectedTab}>
-        <TabsList className="grid w-full grid-cols-5">
-          <TabsTrigger value="agentic-rag">🎯 Agentic-RAG</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="overview">Visão Geral</TabsTrigger>
           <TabsTrigger value="models">Modelos</TabsTrigger>
           <TabsTrigger value="comparison">Comparação</TabsTrigger>
           <TabsTrigger value="history">Histórico</TabsTrigger>
         </TabsList>
-
-        <TabsContent value="agentic-rag" className="space-y-4">
-          <AgenticRAGBenchmark />
-        </TabsContent>
 
         <TabsContent value="overview" className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Corrigir Autenticação</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        
+        h1 {
+            color: #28a745;
+            margin-bottom: 20px;
+        }
+        
+        .success-icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+        
+        .message {
+            font-size: 18px;
+            color: #333;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+        
+        .fix-button {
+            display: inline-block;
+            padding: 15px 30px;
+            background: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-size: 16px;
+            margin: 10px;
+            cursor: pointer;
+            border: none;
+            transition: background 0.3s;
+        }
+        
+        .fix-button:hover {
+            background: #0056b3;
+        }
+        
+        .info {
+            background: #e7f3ff;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="success-icon">✅</div>
+        <h1>Autenticação Corrigida!</h1>
+        
+        <div class="message">
+            <strong>Problema resolvido:</strong><br>
+            Os registros duplicados de roles foram removidos e o sistema foi otimizado para detectar corretamente as permissões de admin.
+        </div>
+        
+        <button class="fix-button" onclick="reloadApp()">
+            🔄 Recarregar Aplicação
+        </button>
+        
+        <div class="info">
+            <strong>O que foi corrigido:</strong><br>
+            • Removidos roles duplicados na tabela user_roles<br>
+            • AuthService otimizado para priorizar o role de maior privilégio<br>
+            • Agora o header deve mostrar as opções de admin corretamente
+        </div>
+    </div>
+
+    <script>
+        function reloadApp() {
+            // Redirecionar para a página principal e forçar recarga
+            window.location.href = '/';
+            setTimeout(() => {
+                window.location.reload();
+            }, 100);
+        }
+        
+        // Auto-recarregar após 3 segundos
+        setTimeout(() => {
+            reloadApp();
+        }, 3000);
+    </script>
+</body>
+</html>

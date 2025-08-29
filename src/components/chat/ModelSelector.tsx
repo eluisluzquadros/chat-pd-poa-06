@@ -7,15 +7,11 @@ import {
   SelectValue 
 } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
-import { Lock } from 'lucide-react';
 import { UPDATED_MODEL_CONFIGS } from '@/config/llm-models-2025';
-import { useAuth } from '@/context/AuthContext';
 
 interface ModelSelectorProps {
   selectedModel?: string;
   onModelSelect?: (model: string) => void;
-  adminOnly?: boolean;
 }
 
 // Generate available models from the updated config
@@ -37,21 +33,13 @@ const groupedModels = AVAILABLE_MODELS.reduce((acc, model) => {
   return acc;
 }, {} as Record<string, typeof AVAILABLE_MODELS>);
 
-export function ModelSelector({ selectedModel = 'anthropic/claude-3-5-sonnet-20241022', onModelSelect, adminOnly = true }: ModelSelectorProps) {
-  const { isAdmin } = useAuth();
+export function ModelSelector({ selectedModel = 'anthropic/claude-3-5-sonnet-20241022', onModelSelect }: ModelSelectorProps) {
   const selectedModelInfo = AVAILABLE_MODELS.find(m => m.value === selectedModel);
-  
-  // Se adminOnly está ativado e o usuário não é admin, NÃO RENDERIZA NADA
-  // O modelo deve ser completamente invisível e transparente para usuários não-admin
-  if (adminOnly && !isAdmin) {
-    return null;
-  }
   
   return (
     <div className="space-y-2">
-      <Label htmlFor="model-select" className="text-sm font-medium flex items-center gap-2">
+      <Label htmlFor="model-select" className="text-sm font-medium">
         Modelo de IA ({AVAILABLE_MODELS.length} disponíveis)
-        {isAdmin && <Badge variant="outline" className="text-xs">Admin</Badge>}
       </Label>
       <Select value={selectedModel} onValueChange={onModelSelect}>
         <SelectTrigger id="model-select" className="w-full">

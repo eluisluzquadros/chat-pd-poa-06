@@ -5,35 +5,9 @@ import { toast } from 'sonner';
 // Flag para evitar múltiplas operações simultâneas
 let isAuthOperationInProgress = false;
 
-// Cache para roles de usuário para evitar múltiplas consultas
-const userRoleCache = new Map<string, { role: string; timestamp: number }>();
-const ROLE_CACHE_TTL = 5 * 60 * 1000; // 5 minutos
-
-// Cache para sessões para evitar múltiplas consultas
-const sessionCache = new Map<string, { session: any; timestamp: number }>();
-const SESSION_CACHE_TTL = 2 * 60 * 1000; // 2 minutos
-
-// Throttling para operações de auth
-const authCallsThrottle = new Map<string, number>();
-const AUTH_THROTTLE_DELAY = 2000; // 2 segundos entre chamadas do mesmo tipo
-
-// Controle de refresh token para evitar rate limiting
-let lastTokenRefresh = 0;
-const TOKEN_REFRESH_COOLDOWN = 30 * 1000; // 30 segundos entre refreshes
-
 // Função utilitária para limpeza completa de estado de autenticação
 const cleanupCompleteAuthState = () => {
   console.log("=== LIMPEZA COMPLETA DE ESTADO DE AUTENTICAÇÃO ===");
-  
-  // Limpar todos os caches de auth
-  userRoleCache.clear();
-  sessionCache.clear();
-  authCallsThrottle.clear();
-  
-  // Resetar timestamps
-  lastTokenRefresh = 0;
-  
-  console.log("Caches de autenticação limpos");
   
   // Limpar localStorage
   const localKeys = Object.keys(localStorage);
@@ -58,7 +32,7 @@ const cleanupCompleteAuthState = () => {
 
 // Funções de autenticação centralizadas
 export const AuthService = {
-  // Obter a sessão atual com cache agressivo e throttling
+  // Obter a sessão atual
   getCurrentSession: async () => {
     try {
       // Verificar se está em modo demo
@@ -68,56 +42,12 @@ export const AuthService = {
         return demoSessionStr ? JSON.parse(demoSessionStr) : null;
       }
       
-      const cacheKey = 'current_session';
-      const now = Date.now();
-      
-      // Verificar cache primeiro
-      const cached = sessionCache.get(cacheKey);
-      if (cached && (now - cached.timestamp) < SESSION_CACHE_TTL) {
-        console.log("Sessão retornada do cache");
-        return cached.session;
-      }
-      
-      // Throttling para getCurrentSession
-      const throttleKey = 'getCurrentSession';
-      const lastCall = authCallsThrottle.get(throttleKey) || 0;
-      
-      if (now - lastCall < AUTH_THROTTLE_DELAY) {
-        console.log("getCurrentSession throttled, retornando cache ou null");
-        return cached?.session || null;
-      }
-      
-      // Verificar se não estamos em cooldown de refresh
-      if (now - lastTokenRefresh < TOKEN_REFRESH_COOLDOWN) {
-        console.log("Token refresh em cooldown, usando cache");
-        return cached?.session || null;
-      }
-      
-      authCallsThrottle.set(throttleKey, now);
-      
-      console.log("Fazendo chamada real para getSession");
       const { data, error } = await supabase.auth.getSession();
-      
-      if (error) {
-        console.error("Erro ao obter sessão:", error);
-        // Retornar cache em caso de erro se disponível
-        return cached?.session || null;
-      }
-      
-      // Atualizar cache apenas se bem-sucedido
-      sessionCache.set(cacheKey, { session: data.session, timestamp: now });
-      
-      // Marcar timestamp de refresh se a sessão foi atualizada
-      if (data.session) {
-        lastTokenRefresh = now;
-      }
-      
+      if (error) throw error;
       return data.session;
     } catch (error) {
       console.error("Erro ao obter sessão:", error);
-      // Retornar cache em caso de erro
-      const cached = sessionCache.get('current_session');
-      return cached?.session || null;
+      return null;
     }
   },
 
@@ -167,9 +97,6 @@ export const AuthService = {
       
       if (data.user && data.session) {
         console.log("Login bem-sucedido para usuário:", data.user.id);
-        
-        // Atualizar cache de sessão imediatamente
-        sessionCache.set('current_session', { session: data.session, timestamp: Date.now() });
         
         // Armazenar informações básicas
         sessionStorage.setItem('lastAuthenticatedUserId', data.user.id);
@@ -256,7 +183,7 @@ export const AuthService = {
     }
   },
 
-  // Obter papel do usuário com cache e throttling
+  // Obter papel do usuário
   getUserRole: async (userId: string) => {
     try {
       // Se for usuário demo, retornar supervisor
@@ -265,57 +192,7 @@ export const AuthService = {
         return 'supervisor';
       }
       
-      // Verificar cache primeiro
-      const cached = userRoleCache.get(userId);
-      if (cached && (Date.now() - cached.timestamp) < ROLE_CACHE_TTL) {
-        console.log("Role retornado do cache:", cached.role);
-        return cached.role;
-      }
-      
-      // Throttling para evitar múltiplas chamadas rápidas
-      const throttleKey = `getUserRole_${userId}`;
-      const lastCall = authCallsThrottle.get(throttleKey) || 0;
-      const now = Date.now();
-      
-      if (now - lastCall < AUTH_THROTTLE_DELAY) {
-        console.log("getUserRole throttled, usando cache");
-        const cachedRole = cached?.role || sessionStorage.getItem('urbanista-user-role');
-        if (cachedRole) {
-          console.log("Usando role do cache/sessionStorage:", cachedRole);
-          return cachedRole;
-        }
-        // Fallback mais inteligente baseado no email
-        const session = await this.getCurrentSession();
-        if (session?.user?.email === 'admin@example.com') {
-          console.log("Fallback: Admin detectado pelo email");
-          return 'admin';
-        }
-        return 'user'; // Fallback seguro em vez de admin
-      }
-      
-      authCallsThrottle.set(throttleKey, now);
-      
-      // Primeiro, verificar metadados do usuário atual
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user?.id === userId) {
-        // Check app_metadata first (more reliable)
-        if (user.app_metadata?.role) {
-          const role = user.app_metadata.role;
-          console.log("Role from app_metadata:", role);
-          userRoleCache.set(userId, { role, timestamp: now });
-          return role;
-        }
-        // Then check user_metadata
-        if (user.user_metadata?.role) {
-          const role = user.user_metadata.role;
-          console.log("Role from user_metadata:", role);
-          userRoleCache.set(userId, { role, timestamp: now });
-          return role;
-        }
-      }
-      
-      // Buscar todos os roles do usuário (PRIORITÁRIO - mais confiável)
-      console.log(`Buscando roles para usuário ${userId} na tabela user_roles...`);
+      // Buscar todos os roles do usuário e pegar o de maior privilégio
       const { data: roleData, error: roleError } = await supabase
         .from('user_roles')
         .select('role')
@@ -323,28 +200,20 @@ export const AuthService = {
       
       if (roleError) {
         console.error("Erro ao buscar roles:", roleError);
-      } else {
-        console.log("Roles encontrados na user_roles:", roleData);
       }
       
-      // Se tiver roles na user_roles, pegar o de maior privilégio (SEMPRE PRIORITÁRIO)
+      // Se tiver roles, pegar o de maior privilégio
       if (roleData && roleData.length > 0) {
         const roles = roleData.map(r => r.role);
         
         // Ordem de prioridade: admin > supervisor > analyst > user
-        let finalRole = 'citizen';
-        if (roles.includes('admin')) finalRole = 'admin';
-        else if (roles.includes('supervisor')) finalRole = 'supervisor';  
-        else if (roles.includes('analyst')) finalRole = 'analyst';
-        else if (roles.includes('user')) finalRole = 'user';
-        
-        console.log(`Role final determinado na user_roles: ${finalRole}`);
-        userRoleCache.set(userId, { role: finalRole, timestamp: now });
-        return finalRole;
+        if (roles.includes('admin')) return 'admin';
+        if (roles.includes('supervisor')) return 'supervisor';  
+        if (roles.includes('analyst')) return 'analyst';
+        if (roles.includes('user')) return 'user';
       }
       
-      // FALLBACK: Caso não encontre na user_roles, tentar na user_accounts
-      console.log(`Nenhum role encontrado em user_roles, verificando user_accounts...`);
+      // Caso não encontre na user_roles, tentar na user_accounts
       const { data: accountData, error: accountError } = await supabase
         .from('user_accounts')
         .select('role')
@@ -353,29 +222,12 @@ export const AuthService = {
       
       if (accountError) {
         console.error("Erro ao buscar account:", accountError);
-      } else {
-        console.log("Role encontrado na user_accounts:", accountData?.role);
       }
       
-      // Se encontrar em user_accounts, usar esse role
-      if (accountData?.role) {
-        const finalRole = accountData.role;
-        console.log(`Role final determinado na user_accounts: ${finalRole}`);
-        userRoleCache.set(userId, { role: finalRole, timestamp: now });
-        return finalRole;
-      }
-      
-      // FALLBACK FINAL: Default para citizen se não encontrar nada (por segurança)
-      console.log("Nenhum role encontrado em ambas as tabelas, usando fallback: citizen");
-      const fallbackRole = 'citizen';
-      userRoleCache.set(userId, { role: fallbackRole, timestamp: now });
-      return fallbackRole;
+      return accountData?.role || 'citizen';
     } catch (error) {
       console.error("Erro ao obter papel do usuário:", error);
-      // Em caso de erro, assumir citizen para segurança
-      const fallbackRole = 'citizen';
-      userRoleCache.set(userId, { role: fallbackRole, timestamp: Date.now() });
-      return fallbackRole;
+      return 'citizen';
     }
   },
 
@@ -476,41 +328,6 @@ export const AuthService = {
   // Limpeza completa de estado (função pública)
   cleanupAuthState: cleanupCompleteAuthState,
 
-  // Limpar apenas caches sem afetar localStorage/sessionStorage
-  clearAuthCache: () => {
-    console.log("Limpando caches de autenticação...");
-    userRoleCache.clear();
-    sessionCache.clear();
-    authCallsThrottle.clear();
-    lastTokenRefresh = 0;
-    console.log("Caches limpos");
-  },
-
-  // Verificar estado de saúde da autenticação
-  getAuthHealth: () => {
-    const now = Date.now();
-    return {
-      sessionCacheSize: sessionCache.size,
-      roleCacheSize: userRoleCache.size,
-      throttleMapSize: authCallsThrottle.size,
-      timeSinceLastRefresh: now - lastTokenRefresh,
-      isInRefreshCooldown: (now - lastTokenRefresh) < TOKEN_REFRESH_COOLDOWN,
-      caches: {
-        session: Array.from(sessionCache.entries()).map(([key, value]) => ({
-          key,
-          age: now - value.timestamp,
-          valid: (now - value.timestamp) < SESSION_CACHE_TTL
-        })),
-        roles: Array.from(userRoleCache.entries()).map(([key, value]) => ({
-          key,
-          role: value.role,
-          age: now - value.timestamp,
-          valid: (now - value.timestamp) < ROLE_CACHE_TTL
-        }))
-      }
-    };
-  },
-
   // Logout
   signOut: async () => {
     if (isAuthOperationInProgress) {
@@ -551,68 +368,9 @@ export const AuthService = {
   }
 };
 
-// Função para refresh seguro com retry
-const safeTokenRefresh = async (retryCount = 0): Promise<any> => {
-  const maxRetries = 3;
-  const baseDelay = 1000; // 1 segundo
-  
-  try {
-    const now = Date.now();
-    
-    // Verificar cooldown
-    if (now - lastTokenRefresh < TOKEN_REFRESH_COOLDOWN) {
-      console.log("Token refresh em cooldown, aguardando...");
-      await new Promise(resolve => setTimeout(resolve, TOKEN_REFRESH_COOLDOWN));
-    }
-    
-    console.log(`Tentativa ${retryCount + 1} de refresh token`);
-    lastTokenRefresh = now;
-    
-    const { data, error } = await supabase.auth.refreshSession();
-    
-    if (error) {
-      if (error.message?.includes('429') || error.message?.includes('Too Many Requests')) {
-        if (retryCount < maxRetries) {
-          const delay = baseDelay * Math.pow(2, retryCount); // Backoff exponencial
-          console.log(`Rate limit atingido, aguardando ${delay}ms antes de retry...`);
-          await new Promise(resolve => setTimeout(resolve, delay));
-          return safeTokenRefresh(retryCount + 1);
-        } else {
-          console.error("Max retries atingido para refresh token");
-          throw error;
-        }
-      }
-      throw error;
-    }
-    
-    // Atualizar cache com nova sessão
-    if (data.session) {
-      sessionCache.set('current_session', { session: data.session, timestamp: Date.now() });
-    }
-    
-    return data;
-  } catch (error) {
-    console.error("Erro no refresh token:", error);
-    throw error;
-  }
-};
-
-// Configurar listener de mudanças de autenticação com controle de rate limiting
+// Configurar listener de mudanças de autenticação
 export const setupAuthListener = (callback: (session: any) => void) => {
-  let lastEventTime = 0;
-  const EVENT_THROTTLE_DELAY = 1000; // 1 segundo entre eventos
-  
-  return supabase.auth.onAuthStateChange(async (event, session) => {
-    const now = Date.now();
-    
-    // Throttling de eventos
-    if (now - lastEventTime < EVENT_THROTTLE_DELAY && event !== 'SIGNED_OUT') {
-      console.log("Auth event throttled:", event);
-      return;
-    }
-    
-    lastEventTime = now;
-    
+  return supabase.auth.onAuthStateChange((event, session) => {
     console.log("=== AUTH STATE CHANGE EVENT ===");
     console.log("Evento:", event);
     console.log("Session válida:", !!session);
@@ -620,25 +378,10 @@ export const setupAuthListener = (callback: (session: any) => void) => {
     console.log("User ID:", session?.user?.id);
     console.log("Email:", session?.user?.email);
     
-    // Processar eventos específicos
+    // Processar sessão OAuth especialmente
     if (event === 'SIGNED_IN' && session?.user?.app_metadata?.provider === 'google') {
       console.log("Google OAuth login detectado!");
       toast.success("Login com Google realizado com sucesso!");
-    }
-    
-    // Para TOKEN_REFRESHED, tentar fazer refresh seguro se necessário
-    if (event === 'TOKEN_REFRESHED' && !session) {
-      console.log("Token refresh falhou, tentando refresh seguro...");
-      try {
-        const refreshResult = await safeTokenRefresh();
-        if (refreshResult.session) {
-          session = refreshResult.session;
-          console.log("Refresh seguro bem-sucedido");
-        }
-      } catch (error) {
-        console.error("Refresh seguro falhou:", error);
-        // Não interromper o fluxo, deixar callback decidir
-      }
     }
     
     callback(session);

@@ -89,9 +89,14 @@ export function useMessageSubmit({
 
       if (userMessageError) throw userMessageError;
 
-      // Get user role for context using AuthService cache
-      const { AuthService } = await import("@/services/authService");
-      const userRole = await AuthService.getUserRole(session.user.id);
+      // Get user role for context
+      const { data: roleData } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', session.user.id)
+        .maybeSingle();
+
+      const userRole = roleData?.role || 'citizen';
 
       console.log(`🚀 Processing message via ${selectedModel}...`);
       console.log('📝 Message details:', {

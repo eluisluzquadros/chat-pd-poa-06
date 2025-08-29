@@ -1,5 +1,5 @@
 
-import { useState, useCallback, useEffect, useRef } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { User, Session } from "@supabase/supabase-js";
 import { AppRole } from "@/types/app";
 import { AuthService, setupAuthListener } from "@/services/authService";
@@ -17,29 +17,10 @@ export const useAuthContext = () => {
   const [isSupervisor, setIsSupervisor] = useState(false);
   const [isAnalyst, setIsAnalyst] = useState(false);
   
-  // Refs para controle de rate limiting
-  const lastRefreshRef = useRef<number>(0);
-  const refreshInProgressRef = useRef<boolean>(false);
-  
-  // Função para atualizar o estado de autenticação com throttling
+  // Função para atualizar o estado de autenticação
   const refreshAuthState = useCallback(async () => {
-    // Evitar múltiplas chamadas simultâneas
-    if (refreshInProgressRef.current) {
-      console.log("RefreshAuthState já em progresso, ignorando...");
-      return;
-    }
-    
-    // Rate limiting - mínimo 1 segundo entre chamadas
-    const now = Date.now();
-    if (now - lastRefreshRef.current < 1000) {
-      console.log("RefreshAuthState com rate limit, aguardando...");
-      return;
-    }
-    
-    refreshInProgressRef.current = true;
-    lastRefreshRef.current = now;
-    
     try {
+      setIsLoading(true);
       console.log("Atualizando estado de autenticação...");
       
       // Verificar se está em modo demo primeiro
@@ -57,7 +38,6 @@ export const useAuthContext = () => {
           setIsAdmin(false);
           setIsSupervisor(true);
           setIsAnalyst(true);
-          setIsLoading(false);
           return;
         }
       }
@@ -73,27 +53,16 @@ export const useAuthContext = () => {
         setUserId(currentUser.id);
         setIsAuthenticated(true);
         
-        // Obter papel do usuário com delay para evitar rate limiting
-        setTimeout(async () => {
-          try {
-            const role = await AuthService.getUserRole(currentUser.id);
-            
-            // Atualizar estados baseados no papel
-            setUserRole(role as AppRole);
-            setIsAdmin(role === 'admin');
-            setIsSupervisor(role === 'supervisor' || role === 'admin');
-            setIsAnalyst(role === 'analyst' || role === 'supervisor' || role === 'admin');
-            
-            console.log("Usuário autenticado:", currentUser.id, "Papel:", role);
-          } catch (roleError) {
-            console.error("Erro ao obter papel do usuário:", roleError);
-            // Por segurança, não assumir nenhum role privilegiado em caso de erro
-            setUserRole(null);
-            setIsAdmin(false);
-            setIsSupervisor(false);
-            setIsAnalyst(false);
-          }
-        }, 100);
+        // Obter papel do usuário
+        const role = await AuthService.getUserRole(currentUser.id);
+        
+        // Atualizar estados baseados no papel
+        setUserRole(role as AppRole);
+        setIsAdmin(role === 'admin');
+        setIsSupervisor(role === 'supervisor' || role === 'admin');
+        setIsAnalyst(role === 'analyst' || role === 'supervisor' || role === 'admin');
+        
+        console.log("Usuário autenticado:", currentUser.id, "Papel:", role);
       } else {
         // Não autenticado - reseta estados
         setUser(null);
@@ -106,8 +75,6 @@ export const useAuthContext = () => {
         
         console.log("Usuário não autenticado");
       }
-      
-      setIsLoading(false);
     } catch (error) {
       console.error("Erro ao atualizar estado de autenticação:", error);
       // Reseta estados em caso de erro
@@ -118,9 +85,8 @@ export const useAuthContext = () => {
       setIsAdmin(false);
       setIsSupervisor(false);
       setIsAnalyst(false);
-      setIsLoading(false);
     } finally {
-      refreshInProgressRef.current = false;
+      setIsLoading(false);
     }
   }, []);
   

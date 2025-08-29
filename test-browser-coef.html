@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste de Coeficientes - Chat PD POA</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 10px;
+        }
+        .test-case {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 4px;
+            border-left: 4px solid #007bff;
+        }
+        .query {
+            font-weight: bold;
+            color: #495057;
+            margin-bottom: 10px;
+        }
+        .response {
+            background: white;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+            border: 1px solid #dee2e6;
+        }
+        .success {
+            color: #28a745;
+            font-weight: bold;
+        }
+        .error {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        .warning {
+            color: #ffc107;
+            font-weight: bold;
+        }
+        .check-item {
+            margin: 5px 0;
+            padding: 5px;
+            background: white;
+            border-radius: 3px;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .summary {
+            margin-top: 20px;
+            padding: 15px;
+            background: #e7f3ff;
+            border-radius: 4px;
+            border: 1px solid #007bff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Teste de Coeficientes de Aproveitamento</h1>
+        
+        <p>Este teste verifica se os coeficientes de aproveitamento estão sendo exibidos corretamente no navegador.</p>
+        
+        <button onclick="runTests()">🚀 Executar Testes</button>
+        
+        <div id="results"></div>
+        
+        <div id="summary" class="summary" style="display:none;">
+            <h3>📊 Resumo dos Testes</h3>
+            <div id="summaryContent"></div>
+        </div>
+    </div>
+
+    <script>
+        const SUPABASE_URL = 'https://ngrqwmvuhvjkeohesbxs.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5ncnF3bXZ1aHZqa2VvaGVzYnhzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzM5NjIzMzgsImV4cCI6MjA0OTUzODMzOH0.uJSt-whxQADgyDCt_wz5-ZqtJJwqZmZgLgoo-SrPuBo';
+        
+        const testCases = [
+            {
+                query: "Qual o coeficiente de aproveitamento do bairro Três Figueiras na ZOT 04?",
+                expectedValues: {
+                    caBasico: "2",
+                    caMaximo: "4",
+                    altura: "18"
+                }
+            },
+            {
+                query: "Três Figueiras",
+                expectedValues: {
+                    caBasico: "2",
+                    caMaximo: "4",
+                    altura: ["18", "60", "90"]
+                }
+            },
+            {
+                query: "ZOT 04",
+                expectedValues: {
+                    caBasico: "2",
+                    caMaximo: "4"
+                }
+            },
+            {
+                query: "CA básico e CA máximo da ZOT 04",
+                expectedValues: {
+                    caBasico: "2",
+                    caMaximo: "4"
+                }
+            }
+        ];
+        
+        async function testQuery(testCase) {
+            try {
+                const response = await fetch(`${SUPABASE_URL}/functions/v1/agentic-rag`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+                    },
+                    body: JSON.stringify({
+                        message: testCase.query,
+                        bypassCache: true,
+                        model: 'openai/gpt-3.5-turbo'
+                    }),
+                });
+                
+                const result = await response.json();
+                
+                if (!response.ok) {
+                    return {
+                        query: testCase.query,
+                        success: false,
+                        error: result.error || 'Request failed'
+                    };
+                }
+                
+                const responseText = result.response || '';
+                const checks = {};
+                
+                // Verificar CA básico
+                if (testCase.expectedValues.caBasico) {
+                    checks.caBasico = responseText.includes(testCase.expectedValues.caBasico);
+                }
+                
+                // Verificar CA máximo
+                if (testCase.expectedValues.caMaximo) {
+                    checks.caMaximo = responseText.includes(testCase.expectedValues.caMaximo);
+                }
+                
+                // Verificar altura
+                if (testCase.expectedValues.altura) {
+                    if (Array.isArray(testCase.expectedValues.altura)) {
+                        checks.altura = testCase.expectedValues.altura.every(h => responseText.includes(h));
+                    } else {
+                        checks.altura = responseText.includes(testCase.expectedValues.altura);
+                    }
+                }
+                
+                // Verificar "Não disponível"
+                checks.naoDisponivel = responseText.includes('Não disponível');
+                
+                const success = Object.entries(checks)
+                    .filter(([key]) => key !== 'naoDisponivel')
+                    .every(([_, value]) => value === true);
+                
+                return {
+                    query: testCase.query,
+                    success,
+                    checks,
+                    response: responseText
+                };
+                
+            } catch (error) {
+                return {
+                    query: testCase.query,
+                    success: false,
+                    error: error.message
+                };
+            }
+        }
+        
+        async function runTests() {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '<h2>🔄 Executando testes...</h2>';
+            
+            const results = [];
+            
+            for (const testCase of testCases) {
+                const result = await testQuery(testCase);
+                results.push(result);
+                
+                // Adicionar resultado na tela
+                const testDiv = document.createElement('div');
+                testDiv.className = 'test-case';
+                
+                let html = `<div class="query">Query: "${testCase.query}"</div>`;
+                
+                if (result.error) {
+                    html += `<div class="error">❌ Erro: ${result.error}</div>`;
+                } else {
+                    html += '<div class="check-item">Verificações:</div>';
+                    
+                    if (result.checks.caBasico !== undefined) {
+                        const icon = result.checks.caBasico ? '✅' : '❌';
+                        const cls = result.checks.caBasico ? 'success' : 'error';
+                        html += `<div class="check-item ${cls}">${icon} CA Básico = 2</div>`;
+                    }
+                    
+                    if (result.checks.caMaximo !== undefined) {
+                        const icon = result.checks.caMaximo ? '✅' : '❌';
+                        const cls = result.checks.caMaximo ? 'success' : 'error';
+                        html += `<div class="check-item ${cls}">${icon} CA Máximo = 4</div>`;
+                    }
+                    
+                    if (result.checks.altura !== undefined) {
+                        const icon = result.checks.altura ? '✅' : '❌';
+                        const cls = result.checks.altura ? 'success' : 'error';
+                        html += `<div class="check-item ${cls}">${icon} Altura(s) correta(s)</div>`;
+                    }
+                    
+                    // Verificação especial para "Não disponível"
+                    if (testCase.query.includes('ZOT 04')) {
+                        const icon = !result.checks.naoDisponivel ? '✅' : '⚠️';
+                        const cls = !result.checks.naoDisponivel ? 'success' : 'warning';
+                        html += `<div class="check-item ${cls}">${icon} Sem "Não disponível" para ZOT 04</div>`;
+                    }
+                    
+                    // Mostrar trecho da resposta
+                    const relevantLines = result.response
+                        .split('\n')
+                        .filter(line => 
+                            line.toLowerCase().includes('coeficiente') || 
+                            line.toLowerCase().includes('ca ') ||
+                            line.toLowerCase().includes('altura')
+                        )
+                        .slice(0, 5)
+                        .join('<br>');
+                    
+                    if (relevantLines) {
+                        html += `<div class="response">Resposta:<br>${relevantLines}</div>`;
+                    }
+                }
+                
+                testDiv.innerHTML = html;
+                resultsDiv.appendChild(testDiv);
+                
+                // Pequeno delay entre testes
+                await new Promise(resolve => setTimeout(resolve, 1000));
+            }
+            
+            // Mostrar resumo
+            const passed = results.filter(r => r.success).length;
+            const total = results.length;
+            const percentage = ((passed / total) * 100).toFixed(0);
+            
+            const summaryDiv = document.getElementById('summary');
+            const summaryContent = document.getElementById('summaryContent');
+            
+            summaryContent.innerHTML = `
+                <div class="${passed === total ? 'success' : 'warning'}">
+                    ${passed === total ? '🎉' : '⚠️'} ${passed}/${total} testes passaram (${percentage}%)
+                </div>
+                ${passed === total ? 
+                    '<div class="success">✅ Todos os coeficientes estão sendo exibidos corretamente!</div>' :
+                    '<div class="warning">⚠️ Alguns testes falharam. Verifique os detalhes acima.</div>'
+                }
+            `;
+            
+            summaryDiv.style.display = 'block';
+        }
+    </script>
+</body>
+</html>

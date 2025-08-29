@@ -17,7 +17,7 @@ export const SimpleRoleGuard = ({
   children, 
   adminOnly = false,
   supervisorOnly = false,
-  redirectTo = "/chat" 
+  redirectTo = "/" 
 }: SimpleRoleGuardProps) => {
   const [isInitializing, setIsInitializing] = useState(true);
   const [hasAccess, setHasAccess] = useState(false);
@@ -25,10 +25,9 @@ export const SimpleRoleGuard = ({
   
   // Efeito para verificar papel
   useEffect(() => {
-    console.log(`=== SimpleRoleGuard: Verificando permissões para ${location.pathname} ===`);
+    console.log("SimpleRoleGuard: Verificando permissões");
     console.log("adminOnly:", adminOnly);
     console.log("supervisorOnly:", supervisorOnly);
-    console.log("redirectTo:", redirectTo);
     
     const checkRole = async () => {
       try {
@@ -54,32 +53,19 @@ export const SimpleRoleGuard = ({
         const isSupervisor = role === 'supervisor' || isAdmin;
         
         // Determinar acesso baseado nos requisitos da rota
-        let access = false;
-        
-        if (!adminOnly && !supervisorOnly) {
-          // Rota sem restrições especiais - qualquer usuário autenticado pode acessar
-          access = true;
-        } else if (adminOnly) {
-          // Apenas admin pode acessar
-          access = isAdmin;
-        } else if (supervisorOnly) {
-          // Admin ou supervisor podem acessar
-          access = isSupervisor || isAdmin;
-        }
+        const access = (adminOnly && isAdmin) || 
+                       (supervisorOnly && (isSupervisor || isAdmin)) || 
+                       (!adminOnly && !supervisorOnly);
         
         console.log("SimpleRoleGuard: Acesso concedido:", access);
-        console.log("SimpleRoleGuard: adminOnly:", adminOnly, "supervisorOnly:", supervisorOnly);
         
         // Mostrar mensagem de erro se não tiver acesso
         if (!access) {
-          console.log(`SimpleRoleGuard: ACESSO NEGADO - Usuário com role '${role}' tentou acessar ${location.pathname}`);
           if (adminOnly) {
             toast.error("Você não tem permissão de administrador para acessar esta página.");
           } else if (supervisorOnly) {
             toast.error("Você não tem permissão de supervisor para acessar esta página.");
           }
-        } else {
-          console.log(`SimpleRoleGuard: ACESSO PERMITIDO - Usuário com role '${role}' pode acessar ${location.pathname}`);
         }
         
         setHasAccess(access);

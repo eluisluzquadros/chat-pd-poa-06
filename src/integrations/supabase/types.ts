@@ -64,170 +64,6 @@ export type Database = {
           },
         ]
       }
-      agent_performance_metrics: {
-        Row: {
-          agent_type: string
-          confidence: number | null
-          created_at: string | null
-          data_sources_used: string[] | null
-          error_message: string | null
-          execution_time: number | null
-          id: number
-          query_context: Json | null
-          records_processed: number | null
-          success: boolean | null
-        }
-        Insert: {
-          agent_type: string
-          confidence?: number | null
-          created_at?: string | null
-          data_sources_used?: string[] | null
-          error_message?: string | null
-          execution_time?: number | null
-          id?: number
-          query_context?: Json | null
-          records_processed?: number | null
-          success?: boolean | null
-        }
-        Update: {
-          agent_type?: string
-          confidence?: number | null
-          created_at?: string | null
-          data_sources_used?: string[] | null
-          error_message?: string | null
-          execution_time?: number | null
-          id?: number
-          query_context?: Json | null
-          records_processed?: number | null
-          success?: boolean | null
-        }
-        Relationships: []
-      }
-      agentic_query_cache: {
-        Row: {
-          agent_results: Json | null
-          confidence: number | null
-          created_at: string | null
-          execution_time: number | null
-          expires_at: string | null
-          final_response: string | null
-          hit_count: number | null
-          id: number
-          original_query: string
-          query_context: Json | null
-          query_hash: string
-          sources: Json | null
-          updated_at: string | null
-        }
-        Insert: {
-          agent_results?: Json | null
-          confidence?: number | null
-          created_at?: string | null
-          execution_time?: number | null
-          expires_at?: string | null
-          final_response?: string | null
-          hit_count?: number | null
-          id?: number
-          original_query: string
-          query_context?: Json | null
-          query_hash: string
-          sources?: Json | null
-          updated_at?: string | null
-        }
-        Update: {
-          agent_results?: Json | null
-          confidence?: number | null
-          created_at?: string | null
-          execution_time?: number | null
-          expires_at?: string | null
-          final_response?: string | null
-          hit_count?: number | null
-          id?: number
-          original_query?: string
-          query_context?: Json | null
-          query_hash?: string
-          sources?: Json | null
-          updated_at?: string | null
-        }
-        Relationships: []
-      }
-      article_anexo_references: {
-        Row: {
-          anexo_id: number | null
-          article_number: number
-          created_at: string | null
-          document_type: string
-          id: number
-          reference_type: string | null
-        }
-        Insert: {
-          anexo_id?: number | null
-          article_number: number
-          created_at?: string | null
-          document_type: string
-          id?: number
-          reference_type?: string | null
-        }
-        Update: {
-          anexo_id?: number | null
-          article_number?: number
-          created_at?: string | null
-          document_type?: string
-          id?: number
-          reference_type?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "article_anexo_references_anexo_id_fkey"
-            columns: ["anexo_id"]
-            isOneToOne: false
-            referencedRelation: "legal_anexos"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      article_metadata: {
-        Row: {
-          alinea_count: number | null
-          article_number: number
-          created_at: string | null
-          document_type: string
-          has_alineas: boolean | null
-          has_incisos: boolean | null
-          has_paragraphs: boolean | null
-          id: number
-          inciso_count: number | null
-          metadata: Json | null
-          paragraph_count: number | null
-        }
-        Insert: {
-          alinea_count?: number | null
-          article_number: number
-          created_at?: string | null
-          document_type: string
-          has_alineas?: boolean | null
-          has_incisos?: boolean | null
-          has_paragraphs?: boolean | null
-          id?: number
-          inciso_count?: number | null
-          metadata?: Json | null
-          paragraph_count?: number | null
-        }
-        Update: {
-          alinea_count?: number | null
-          article_number?: number
-          created_at?: string | null
-          document_type?: string
-          has_alineas?: boolean | null
-          has_incisos?: boolean | null
-          has_paragraphs?: boolean | null
-          id?: number
-          inciso_count?: number | null
-          metadata?: Json | null
-          paragraph_count?: number | null
-        }
-        Relationships: []
-      }
       audit_log: {
         Row: {
           action: string
@@ -291,6 +127,66 @@ export type Database = {
         }
         Relationships: []
       }
+      bairros_risco_desastre: {
+        Row: {
+          areas_criticas: string | null
+          bairro_nome: string
+          bairro_nome_normalizado: string | null
+          created_at: string | null
+          frequencia_anual: number | null
+          id: number
+          nivel_risco_deslizamento: number | null
+          nivel_risco_geral: number | null
+          nivel_risco_inundacao: number | null
+          observacoes: string | null
+          risco_alagamento: boolean | null
+          risco_deslizamento: boolean | null
+          risco_granizo: boolean | null
+          risco_inundacao: boolean | null
+          risco_vendaval: boolean | null
+          ultima_ocorrencia: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          areas_criticas?: string | null
+          bairro_nome: string
+          bairro_nome_normalizado?: string | null
+          created_at?: string | null
+          frequencia_anual?: number | null
+          id?: number
+          nivel_risco_deslizamento?: number | null
+          nivel_risco_geral?: number | null
+          nivel_risco_inundacao?: number | null
+          observacoes?: string | null
+          risco_alagamento?: boolean | null
+          risco_deslizamento?: boolean | null
+          risco_granizo?: boolean | null
+          risco_inundacao?: boolean | null
+          risco_vendaval?: boolean | null
+          ultima_ocorrencia?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          areas_criticas?: string | null
+          bairro_nome?: string
+          bairro_nome_normalizado?: string | null
+          created_at?: string | null
+          frequencia_anual?: number | null
+          id?: number
+          nivel_risco_deslizamento?: number | null
+          nivel_risco_geral?: number | null
+          nivel_risco_inundacao?: number | null
+          observacoes?: string | null
+          risco_alagamento?: boolean | null
+          risco_deslizamento?: boolean | null
+          risco_granizo?: boolean | null
+          risco_inundacao?: boolean | null
+          risco_vendaval?: boolean | null
+          ultima_ocorrencia?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       chat_history: {
         Row: {
           created_at: string
@@ -323,36 +219,6 @@ export type Database = {
           },
         ]
       }
-      chat_memory: {
-        Row: {
-          assistant_response: string
-          created_at: string | null
-          id: number
-          metadata: Json | null
-          session_id: string
-          timestamp: string | null
-          user_message: string
-        }
-        Insert: {
-          assistant_response: string
-          created_at?: string | null
-          id?: number
-          metadata?: Json | null
-          session_id: string
-          timestamp?: string | null
-          user_message: string
-        }
-        Update: {
-          assistant_response?: string
-          created_at?: string | null
-          id?: number
-          metadata?: Json | null
-          session_id?: string
-          timestamp?: string | null
-          user_message?: string
-        }
-        Relationships: []
-      }
       chat_sessions: {
         Row: {
           created_at: string
@@ -380,6 +246,220 @@ export type Database = {
           title?: string
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      chunk_cross_references: {
+        Row: {
+          confidence: number | null
+          created_at: string | null
+          id: string
+          reference_text: string | null
+          reference_type: string
+          source_chunk_id: string
+          target_chunk_id: string
+        }
+        Insert: {
+          confidence?: number | null
+          created_at?: string | null
+          id?: string
+          reference_text?: string | null
+          reference_type: string
+          source_chunk_id: string
+          target_chunk_id: string
+        }
+        Update: {
+          confidence?: number | null
+          created_at?: string | null
+          id?: string
+          reference_text?: string | null
+          reference_type?: string
+          source_chunk_id?: string
+          target_chunk_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chunk_cross_references_source_chunk_id_fkey"
+            columns: ["source_chunk_id"]
+            isOneToOne: false
+            referencedRelation: "legal_document_chunks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chunk_cross_references_target_chunk_id_fkey"
+            columns: ["target_chunk_id"]
+            isOneToOne: false
+            referencedRelation: "legal_document_chunks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      document_chunks: {
+        Row: {
+          chunk_index: number
+          content: string
+          created_at: string | null
+          document_id: number | null
+          embedding: string | null
+          id: number
+          metadata: Json | null
+        }
+        Insert: {
+          chunk_index: number
+          content: string
+          created_at?: string | null
+          document_id?: number | null
+          embedding?: string | null
+          id?: number
+          metadata?: Json | null
+        }
+        Update: {
+          chunk_index?: number
+          content?: string
+          created_at?: string | null
+          document_id?: number | null
+          embedding?: string | null
+          id?: number
+          metadata?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "document_chunks_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "documents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      document_embeddings: {
+        Row: {
+          chunk_metadata: Json | null
+          content_chunk: string
+          created_at: string | null
+          document_id: number | null
+          embedding: string | null
+          id: number
+        }
+        Insert: {
+          chunk_metadata?: Json | null
+          content_chunk: string
+          created_at?: string | null
+          document_id?: number | null
+          embedding?: string | null
+          id?: number
+        }
+        Update: {
+          chunk_metadata?: Json | null
+          content_chunk?: string
+          created_at?: string | null
+          document_id?: number | null
+          embedding?: string | null
+          id?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "document_embeddings_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "documents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      document_metadata: {
+        Row: {
+          created_at: string | null
+          id: string
+          schema: string | null
+          title: string | null
+          url: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id: string
+          schema?: string | null
+          title?: string | null
+          url?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          schema?: string | null
+          title?: string | null
+          url?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      document_sections: {
+        Row: {
+          content: string
+          created_at: string | null
+          embedding: string | null
+          id: string
+          metadata: Json | null
+          updated_at: string | null
+        }
+        Insert: {
+          content: string
+          created_at?: string | null
+          embedding?: string | null
+          id?: string
+          metadata?: Json | null
+          updated_at?: string | null
+        }
+        Update: {
+          content?: string
+          created_at?: string | null
+          embedding?: string | null
+          id?: string
+          metadata?: Json | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      documents: {
+        Row: {
+          content: string | null
+          embedding: string | null
+          file_name: string | null
+          file_path: string | null
+          id: number
+          is_processed: boolean | null
+          is_public: boolean | null
+          metadata: Json | null
+          title: string | null
+          type: string | null
+          user_id: string | null
+        }
+        Insert: {
+          content?: string | null
+          embedding?: string | null
+          file_name?: string | null
+          file_path?: string | null
+          id?: number
+          is_processed?: boolean | null
+          is_public?: boolean | null
+          metadata?: Json | null
+          title?: string | null
+          type?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          content?: string | null
+          embedding?: string | null
+          file_name?: string | null
+          file_path?: string | null
+          id?: number
+          is_processed?: boolean | null
+          is_public?: boolean | null
+          metadata?: Json | null
+          title?: string | null
+          type?: string | null
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -491,136 +571,53 @@ export type Database = {
         }
         Relationships: []
       }
-      legal_anexos: {
+      legal_document_chunks: {
         Row: {
-          anexo_name: string
-          anexo_number: string
-          anexo_type: string | null
-          content_text: string | null
+          content: string
           created_at: string | null
-          description: string | null
-          document_type: string
-          file_path: string | null
-          id: number
-          is_processed: boolean | null
-          metadata: Json | null
-          updated_at: string | null
-        }
-        Insert: {
-          anexo_name: string
-          anexo_number: string
-          anexo_type?: string | null
-          content_text?: string | null
-          created_at?: string | null
-          description?: string | null
-          document_type: string
-          file_path?: string | null
-          id?: number
-          is_processed?: boolean | null
-          metadata?: Json | null
-          updated_at?: string | null
-        }
-        Update: {
-          anexo_name?: string
-          anexo_number?: string
-          anexo_type?: string | null
-          content_text?: string | null
-          created_at?: string | null
-          description?: string | null
-          document_type?: string
-          file_path?: string | null
-          id?: number
-          is_processed?: boolean | null
-          metadata?: Json | null
-          updated_at?: string | null
-        }
-        Relationships: []
-      }
-      legal_articles: {
-        Row: {
-          article_number: number
-          article_text: string | null
-          created_at: string | null
-          document_type: string
+          document_id: string
           embedding: string | null
-          full_content: string
-          id: number
-          keywords: string[] | null
-          updated_at: string | null
+          full_path: string | null
+          id: string
+          level: number
+          level_type: string
+          metadata: Json | null
+          numero_artigo: number | null
+          parent_chunk_id: string | null
+          sequence_number: number
+          title: string
         }
         Insert: {
-          article_number: number
-          article_text?: string | null
+          content: string
           created_at?: string | null
-          document_type: string
+          document_id: string
           embedding?: string | null
-          full_content: string
-          id?: number
-          keywords?: string[] | null
-          updated_at?: string | null
+          full_path?: string | null
+          id?: string
+          level: number
+          level_type: string
+          metadata?: Json | null
+          numero_artigo?: number | null
+          parent_chunk_id?: string | null
+          sequence_number: number
+          title: string
         }
         Update: {
-          article_number?: number
-          article_text?: string | null
+          content?: string
           created_at?: string | null
-          document_type?: string
+          document_id?: string
           embedding?: string | null
-          full_content?: string
-          id?: number
-          keywords?: string[] | null
-          updated_at?: string | null
+          full_path?: string | null
+          id?: string
+          level?: number
+          level_type?: string
+          metadata?: Json | null
+          numero_artigo?: number | null
+          parent_chunk_id?: string | null
+          sequence_number?: number
+          title?: string
         }
         Relationships: []
-      }
-      legal_hierarchy: {
-        Row: {
-          article_end: number | null
-          article_start: number | null
-          created_at: string | null
-          document_type: string
-          full_path: string | null
-          hierarchy_name: string
-          hierarchy_number: string
-          hierarchy_type: string
-          id: number
-          order_index: number | null
-          parent_id: number | null
-        }
-        Insert: {
-          article_end?: number | null
-          article_start?: number | null
-          created_at?: string | null
-          document_type: string
-          full_path?: string | null
-          hierarchy_name: string
-          hierarchy_number: string
-          hierarchy_type: string
-          id?: number
-          order_index?: number | null
-          parent_id?: number | null
-        }
-        Update: {
-          article_end?: number | null
-          article_start?: number | null
-          created_at?: string | null
-          document_type?: string
-          full_path?: string | null
-          hierarchy_name?: string
-          hierarchy_number?: string
-          hierarchy_type?: string
-          id?: number
-          order_index?: number | null
-          parent_id?: number | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "legal_hierarchy_parent_id_fkey"
-            columns: ["parent_id"]
-            isOneToOne: false
-            referencedRelation: "legal_hierarchy"
-            referencedColumns: ["id"]
-          },
-        ]
       }
       llm_metrics: {
         Row: {
@@ -842,6 +839,27 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      n8n_chat_histories: {
+        Row: {
+          id: number
+          message: Json
+          session_id: string
+          user_id: string | null
+        }
+        Insert: {
+          id?: number
+          message: Json
+          session_id: string
+          user_id?: string | null
+        }
+        Update: {
+          id?: number
+          message?: Json
+          session_id?: string
+          user_id?: string | null
+        }
+        Relationships: []
       }
       profiles: {
         Row: {
@@ -1383,182 +1401,249 @@ export type Database = {
         }
         Relationships: []
       }
-      regime_urbanistico_consolidado: {
+      regime_urbanistico: {
         Row: {
-          Afastamentos___Frente: string | null
-          Afastamentos___Fundos: string | null
-          Afastamentos___Laterais: string | null
-          Altura_Maxima___Edificacao_Isolada: number | null
-          Área_de_Destinacao_Publica___Equipamentos_Fracionamento: string | null
-          Área_de_Destinacao_Publica___Malha_Viaria_Fracionamento: string | null
-          Área_Maxima_do_Quarteirao: number | null
-          Área_Minima_do_Lote: number | null
-          Área_Minima_do_Quarteirao: string | null
-          Área_Publica___Equipamentos_Desmembramento_Tipo_1: string | null
-          Área_Publica___Equipamentos_Desmembramento_Tipo_2: string | null
-          Área_Publica___Equipamentos_Desmembramento_Tipo_3: string | null
-          Área_Publica___Equipamentos_Loteamento: number | null
-          Área_Publica___Malha_Viaria_Desmembramento_Tipo_1: number | null
-          Área_Publica___Malha_Viaria_Desmembramento_Tipo_2: number | null
-          Área_Publica___Malha_Viaria_Desmembramento_Tipo_3: number | null
-          Área_Publica___Malha_Viaria_Loteamento: number | null
-          Bairro: string
-          Categoria_Risco: string | null
-          Coeficiente_de_Aproveitamento___Basico: string | null
-          Coeficiente_de_Aproveitamento___Maximo: string | null
-          "Coeficiente_de_Aproveitamento_Basico_+4D": string | null
-          "Coeficiente_de_Aproveitamento_Maximo_+4D": string | null
-          "Comercio_Atacadista_IA1___Restricao_/_Porte": string | null
-          "Comercio_Atacadista_IA2___Restricao_/_Porte": string | null
-          "Comercio_Atacadista_IA3___Restricao_/_Porte": string | null
-          "Comercio_Varejista_IA1___Restricao_/_Porte": string | null
-          "Comercio_Varejista_IA2___Restricao_/_Porte": string | null
-          "Comercio_Varejista_Inocuo___Restricao_/_Porte": string | null
-          Enquadramento_Desmembramento_Tipo_1: string | null
-          Enquadramento_Desmembramento_Tipo_2: string | null
-          Enquadramento_Desmembramento_Tipo_3: string | null
-          Enquadramento_Fracionamento: number | null
-          Enquadramento_Loteamento: string | null
-          Face_Maxima_do_Quarteirao: number | null
-          Fator_de_Conversao_da_Taxa_de_Permeabilidade: string | null
+          afastamento_frente: string | null
+          afastamento_fundos: string | null
+          afastamento_lateral: string | null
+          afastamentos__frente: string | null
+          afastamentos__fundos: string | null
+          afastamentos__lateral: string | null
+          afastamentos_frente: string | null
+          afastamentos_fundos: string | null
+          afastamentos_lateral: string | null
+          altura_maxima: number | null
+          altura_maxima_edificacao_isolada: string | null
+          altura_mxima__edificao_isolada: string | null
+          area_maxima_quarteirao: string | null
+          area_minima_do_lote: string | null
+          area_minima_lote: number | null
+          area_minima_quarteirao: string | null
+          area_publica_equip_desmembramento_t1: string | null
+          area_publica_equip_desmembramento_t2: string | null
+          area_publica_equip_desmembramento_t3: string | null
+          area_publica_equip_fracionamento: string | null
+          area_publica_equip_loteamento: string | null
+          area_publica_viaria_desmembramento_t1: string | null
+          area_publica_viaria_desmembramento_t2: string | null
+          area_publica_viaria_desmembramento_t3: string | null
+          area_publica_viaria_fracionamento: string | null
+          area_publica_viaria_loteamento: string | null
+          bairro: string
+          coef_aproveitamento_basico: number | null
+          coef_aproveitamento_maximo: number | null
+          coef_basico_4d: string | null
+          coef_maximo_4d: string | null
+          coeficiente_de_aproveitamento__bsico: string | null
+          coeficiente_de_aproveitamento__mximo: string | null
+          coeficiente_de_aproveitamento_basico: string | null
+          coeficiente_de_aproveitamento_maximo: string | null
+          comercio_atacadista_ia1: string | null
+          comercio_atacadista_ia2: string | null
+          comercio_atacadista_ia3: string | null
+          comercio_varejista_ia1: string | null
+          comercio_varejista_ia2: string | null
+          comercio_varejista_inocuo: string | null
+          created_at: string | null
+          densidade_habitacional: string | null
+          enquadramento_desmembramento_t1: string | null
+          enquadramento_desmembramento_t2: string | null
+          enquadramento_desmembramento_t3: string | null
+          enquadramento_fracionamento: string | null
+          enquadramento_loteamento: string | null
+          face_maxima_de_quarteirao: string | null
+          face_maxima_quarteirao: string | null
+          face_mxima_de_quarteiro: string | null
+          fator_conversao_permeabilidade: string | null
+          gabarito__n_de_pavimentos: string | null
+          gabarito_n_de_pavimentos: string | null
           id: number
-          "Industria_com_Interferência_Ambiental___Restricao_/_Porte":
-            | string
-            | null
-          "Industria_Inocua___Restricao_/_Porte": number | null
-          Modulo_de_Fracionamento: number | null
-          Nivel_de_Controle_de_Polarizacao_de_Entretenimento_Noturno:
-            | string
-            | null
-          Recuo_de_Jardim: number | null
-          "Servico_IA1___Restricao_/_Porte": string | null
-          "Servico_IA2___Restricao_/_Porte": string | null
-          "Servico_IA3___Restricao_/_Porte": string | null
-          "Servico_Inocuo___Restricao_/_Porte": string | null
-          "Taxa_de_Permeabilidade_acima_de_1,500_m2": number | null
-          "Taxa_de_Permeabilidade_ate_1,500_m2": number | null
-          Testada_Minima_do_Lote: number | null
-          Zona: string | null
+          industria_inocua: string | null
+          industria_interferencia_ambiental: string | null
+          mdulo_de_fracionamento: string | null
+          modulo_de_fracionamento: string | null
+          modulo_fracionamento: string | null
+          nivel_controle_entretenimento: string | null
+          observacoes: string | null
+          rea_mnima_do_lote: string | null
+          recuo_jardim: string | null
+          regime_de_atividades: string | null
+          regime_volumetrico: string | null
+          servico_ia1: string | null
+          servico_ia2: string | null
+          servico_ia3: string | null
+          servico_inocuo: string | null
+          taxa_de_ocupacao: string | null
+          taxa_de_ocupao: string | null
+          taxa_permeabilidade_acima_1500: string | null
+          taxa_permeabilidade_ate_1500: string | null
+          testada_minima_do_lote: string | null
+          testada_minima_lote: number | null
+          testada_mnima_do_lote: string | null
+          updated_at: string | null
+          zona: string
         }
         Insert: {
-          Afastamentos___Frente?: string | null
-          Afastamentos___Fundos?: string | null
-          Afastamentos___Laterais?: string | null
-          Altura_Maxima___Edificacao_Isolada?: number | null
-          Área_de_Destinacao_Publica___Equipamentos_Fracionamento?:
-            | string
-            | null
-          Área_de_Destinacao_Publica___Malha_Viaria_Fracionamento?:
-            | string
-            | null
-          Área_Maxima_do_Quarteirao?: number | null
-          Área_Minima_do_Lote?: number | null
-          Área_Minima_do_Quarteirao?: string | null
-          Área_Publica___Equipamentos_Desmembramento_Tipo_1?: string | null
-          Área_Publica___Equipamentos_Desmembramento_Tipo_2?: string | null
-          Área_Publica___Equipamentos_Desmembramento_Tipo_3?: string | null
-          Área_Publica___Equipamentos_Loteamento?: number | null
-          Área_Publica___Malha_Viaria_Desmembramento_Tipo_1?: number | null
-          Área_Publica___Malha_Viaria_Desmembramento_Tipo_2?: number | null
-          Área_Publica___Malha_Viaria_Desmembramento_Tipo_3?: number | null
-          Área_Publica___Malha_Viaria_Loteamento?: number | null
-          Bairro: string
-          Categoria_Risco?: string | null
-          Coeficiente_de_Aproveitamento___Basico?: string | null
-          Coeficiente_de_Aproveitamento___Maximo?: string | null
-          "Coeficiente_de_Aproveitamento_Basico_+4D"?: string | null
-          "Coeficiente_de_Aproveitamento_Maximo_+4D"?: string | null
-          "Comercio_Atacadista_IA1___Restricao_/_Porte"?: string | null
-          "Comercio_Atacadista_IA2___Restricao_/_Porte"?: string | null
-          "Comercio_Atacadista_IA3___Restricao_/_Porte"?: string | null
-          "Comercio_Varejista_IA1___Restricao_/_Porte"?: string | null
-          "Comercio_Varejista_IA2___Restricao_/_Porte"?: string | null
-          "Comercio_Varejista_Inocuo___Restricao_/_Porte"?: string | null
-          Enquadramento_Desmembramento_Tipo_1?: string | null
-          Enquadramento_Desmembramento_Tipo_2?: string | null
-          Enquadramento_Desmembramento_Tipo_3?: string | null
-          Enquadramento_Fracionamento?: number | null
-          Enquadramento_Loteamento?: string | null
-          Face_Maxima_do_Quarteirao?: number | null
-          Fator_de_Conversao_da_Taxa_de_Permeabilidade?: string | null
-          id: number
-          "Industria_com_Interferência_Ambiental___Restricao_/_Porte"?:
-            | string
-            | null
-          "Industria_Inocua___Restricao_/_Porte"?: number | null
-          Modulo_de_Fracionamento?: number | null
-          Nivel_de_Controle_de_Polarizacao_de_Entretenimento_Noturno?:
-            | string
-            | null
-          Recuo_de_Jardim?: number | null
-          "Servico_IA1___Restricao_/_Porte"?: string | null
-          "Servico_IA2___Restricao_/_Porte"?: string | null
-          "Servico_IA3___Restricao_/_Porte"?: string | null
-          "Servico_Inocuo___Restricao_/_Porte"?: string | null
-          "Taxa_de_Permeabilidade_acima_de_1,500_m2"?: number | null
-          "Taxa_de_Permeabilidade_ate_1,500_m2"?: number | null
-          Testada_Minima_do_Lote?: number | null
-          Zona?: string | null
+          afastamento_frente?: string | null
+          afastamento_fundos?: string | null
+          afastamento_lateral?: string | null
+          afastamentos__frente?: string | null
+          afastamentos__fundos?: string | null
+          afastamentos__lateral?: string | null
+          afastamentos_frente?: string | null
+          afastamentos_fundos?: string | null
+          afastamentos_lateral?: string | null
+          altura_maxima?: number | null
+          altura_maxima_edificacao_isolada?: string | null
+          altura_mxima__edificao_isolada?: string | null
+          area_maxima_quarteirao?: string | null
+          area_minima_do_lote?: string | null
+          area_minima_lote?: number | null
+          area_minima_quarteirao?: string | null
+          area_publica_equip_desmembramento_t1?: string | null
+          area_publica_equip_desmembramento_t2?: string | null
+          area_publica_equip_desmembramento_t3?: string | null
+          area_publica_equip_fracionamento?: string | null
+          area_publica_equip_loteamento?: string | null
+          area_publica_viaria_desmembramento_t1?: string | null
+          area_publica_viaria_desmembramento_t2?: string | null
+          area_publica_viaria_desmembramento_t3?: string | null
+          area_publica_viaria_fracionamento?: string | null
+          area_publica_viaria_loteamento?: string | null
+          bairro: string
+          coef_aproveitamento_basico?: number | null
+          coef_aproveitamento_maximo?: number | null
+          coef_basico_4d?: string | null
+          coef_maximo_4d?: string | null
+          coeficiente_de_aproveitamento__bsico?: string | null
+          coeficiente_de_aproveitamento__mximo?: string | null
+          coeficiente_de_aproveitamento_basico?: string | null
+          coeficiente_de_aproveitamento_maximo?: string | null
+          comercio_atacadista_ia1?: string | null
+          comercio_atacadista_ia2?: string | null
+          comercio_atacadista_ia3?: string | null
+          comercio_varejista_ia1?: string | null
+          comercio_varejista_ia2?: string | null
+          comercio_varejista_inocuo?: string | null
+          created_at?: string | null
+          densidade_habitacional?: string | null
+          enquadramento_desmembramento_t1?: string | null
+          enquadramento_desmembramento_t2?: string | null
+          enquadramento_desmembramento_t3?: string | null
+          enquadramento_fracionamento?: string | null
+          enquadramento_loteamento?: string | null
+          face_maxima_de_quarteirao?: string | null
+          face_maxima_quarteirao?: string | null
+          face_mxima_de_quarteiro?: string | null
+          fator_conversao_permeabilidade?: string | null
+          gabarito__n_de_pavimentos?: string | null
+          gabarito_n_de_pavimentos?: string | null
+          id?: number
+          industria_inocua?: string | null
+          industria_interferencia_ambiental?: string | null
+          mdulo_de_fracionamento?: string | null
+          modulo_de_fracionamento?: string | null
+          modulo_fracionamento?: string | null
+          nivel_controle_entretenimento?: string | null
+          observacoes?: string | null
+          rea_mnima_do_lote?: string | null
+          recuo_jardim?: string | null
+          regime_de_atividades?: string | null
+          regime_volumetrico?: string | null
+          servico_ia1?: string | null
+          servico_ia2?: string | null
+          servico_ia3?: string | null
+          servico_inocuo?: string | null
+          taxa_de_ocupacao?: string | null
+          taxa_de_ocupao?: string | null
+          taxa_permeabilidade_acima_1500?: string | null
+          taxa_permeabilidade_ate_1500?: string | null
+          testada_minima_do_lote?: string | null
+          testada_minima_lote?: number | null
+          testada_mnima_do_lote?: string | null
+          updated_at?: string | null
+          zona: string
         }
         Update: {
-          Afastamentos___Frente?: string | null
-          Afastamentos___Fundos?: string | null
-          Afastamentos___Laterais?: string | null
-          Altura_Maxima___Edificacao_Isolada?: number | null
-          Área_de_Destinacao_Publica___Equipamentos_Fracionamento?:
-            | string
-            | null
-          Área_de_Destinacao_Publica___Malha_Viaria_Fracionamento?:
-            | string
-            | null
-          Área_Maxima_do_Quarteirao?: number | null
-          Área_Minima_do_Lote?: number | null
-          Área_Minima_do_Quarteirao?: string | null
-          Área_Publica___Equipamentos_Desmembramento_Tipo_1?: string | null
-          Área_Publica___Equipamentos_Desmembramento_Tipo_2?: string | null
-          Área_Publica___Equipamentos_Desmembramento_Tipo_3?: string | null
-          Área_Publica___Equipamentos_Loteamento?: number | null
-          Área_Publica___Malha_Viaria_Desmembramento_Tipo_1?: number | null
-          Área_Publica___Malha_Viaria_Desmembramento_Tipo_2?: number | null
-          Área_Publica___Malha_Viaria_Desmembramento_Tipo_3?: number | null
-          Área_Publica___Malha_Viaria_Loteamento?: number | null
-          Bairro?: string
-          Categoria_Risco?: string | null
-          Coeficiente_de_Aproveitamento___Basico?: string | null
-          Coeficiente_de_Aproveitamento___Maximo?: string | null
-          "Coeficiente_de_Aproveitamento_Basico_+4D"?: string | null
-          "Coeficiente_de_Aproveitamento_Maximo_+4D"?: string | null
-          "Comercio_Atacadista_IA1___Restricao_/_Porte"?: string | null
-          "Comercio_Atacadista_IA2___Restricao_/_Porte"?: string | null
-          "Comercio_Atacadista_IA3___Restricao_/_Porte"?: string | null
-          "Comercio_Varejista_IA1___Restricao_/_Porte"?: string | null
-          "Comercio_Varejista_IA2___Restricao_/_Porte"?: string | null
-          "Comercio_Varejista_Inocuo___Restricao_/_Porte"?: string | null
-          Enquadramento_Desmembramento_Tipo_1?: string | null
-          Enquadramento_Desmembramento_Tipo_2?: string | null
-          Enquadramento_Desmembramento_Tipo_3?: string | null
-          Enquadramento_Fracionamento?: number | null
-          Enquadramento_Loteamento?: string | null
-          Face_Maxima_do_Quarteirao?: number | null
-          Fator_de_Conversao_da_Taxa_de_Permeabilidade?: string | null
+          afastamento_frente?: string | null
+          afastamento_fundos?: string | null
+          afastamento_lateral?: string | null
+          afastamentos__frente?: string | null
+          afastamentos__fundos?: string | null
+          afastamentos__lateral?: string | null
+          afastamentos_frente?: string | null
+          afastamentos_fundos?: string | null
+          afastamentos_lateral?: string | null
+          altura_maxima?: number | null
+          altura_maxima_edificacao_isolada?: string | null
+          altura_mxima__edificao_isolada?: string | null
+          area_maxima_quarteirao?: string | null
+          area_minima_do_lote?: string | null
+          area_minima_lote?: number | null
+          area_minima_quarteirao?: string | null
+          area_publica_equip_desmembramento_t1?: string | null
+          area_publica_equip_desmembramento_t2?: string | null
+          area_publica_equip_desmembramento_t3?: string | null
+          area_publica_equip_fracionamento?: string | null
+          area_publica_equip_loteamento?: string | null
+          area_publica_viaria_desmembramento_t1?: string | null
+          area_publica_viaria_desmembramento_t2?: string | null
+          area_publica_viaria_desmembramento_t3?: string | null
+          area_publica_viaria_fracionamento?: string | null
+          area_publica_viaria_loteamento?: string | null
+          bairro?: string
+          coef_aproveitamento_basico?: number | null
+          coef_aproveitamento_maximo?: number | null
+          coef_basico_4d?: string | null
+          coef_maximo_4d?: string | null
+          coeficiente_de_aproveitamento__bsico?: string | null
+          coeficiente_de_aproveitamento__mximo?: string | null
+          coeficiente_de_aproveitamento_basico?: string | null
+          coeficiente_de_aproveitamento_maximo?: string | null
+          comercio_atacadista_ia1?: string | null
+          comercio_atacadista_ia2?: string | null
+          comercio_atacadista_ia3?: string | null
+          comercio_varejista_ia1?: string | null
+          comercio_varejista_ia2?: string | null
+          comercio_varejista_inocuo?: string | null
+          created_at?: string | null
+          densidade_habitacional?: string | null
+          enquadramento_desmembramento_t1?: string | null
+          enquadramento_desmembramento_t2?: string | null
+          enquadramento_desmembramento_t3?: string | null
+          enquadramento_fracionamento?: string | null
+          enquadramento_loteamento?: string | null
+          face_maxima_de_quarteirao?: string | null
+          face_maxima_quarteirao?: string | null
+          face_mxima_de_quarteiro?: string | null
+          fator_conversao_permeabilidade?: string | null
+          gabarito__n_de_pavimentos?: string | null
+          gabarito_n_de_pavimentos?: string | null
           id?: number
-          "Industria_com_Interferência_Ambiental___Restricao_/_Porte"?:
-            | string
-            | null
-          "Industria_Inocua___Restricao_/_Porte"?: number | null
-          Modulo_de_Fracionamento?: number | null
-          Nivel_de_Controle_de_Polarizacao_de_Entretenimento_Noturno?:
-            | string
-            | null
-          Recuo_de_Jardim?: number | null
-          "Servico_IA1___Restricao_/_Porte"?: string | null
-          "Servico_IA2___Restricao_/_Porte"?: string | null
-          "Servico_IA3___Restricao_/_Porte"?: string | null
-          "Servico_Inocuo___Restricao_/_Porte"?: string | null
-          "Taxa_de_Permeabilidade_acima_de_1,500_m2"?: number | null
-          "Taxa_de_Permeabilidade_ate_1,500_m2"?: number | null
-          Testada_Minima_do_Lote?: number | null
-          Zona?: string | null
+          industria_inocua?: string | null
+          industria_interferencia_ambiental?: string | null
+          mdulo_de_fracionamento?: string | null
+          modulo_de_fracionamento?: string | null
+          modulo_fracionamento?: string | null
+          nivel_controle_entretenimento?: string | null
+          observacoes?: string | null
+          rea_mnima_do_lote?: string | null
+          recuo_jardim?: string | null
+          regime_de_atividades?: string | null
+          regime_volumetrico?: string | null
+          servico_ia1?: string | null
+          servico_ia2?: string | null
+          servico_ia3?: string | null
+          servico_inocuo?: string | null
+          taxa_de_ocupacao?: string | null
+          taxa_de_ocupao?: string | null
+          taxa_permeabilidade_acima_1500?: string | null
+          taxa_permeabilidade_ate_1500?: string | null
+          testada_minima_do_lote?: string | null
+          testada_minima_lote?: number | null
+          testada_mnima_do_lote?: string | null
+          updated_at?: string | null
+          zona?: string
         }
         Relationships: []
       }
@@ -1938,31 +2023,38 @@ export type Database = {
         }
         Relationships: []
       }
+      zots_bairros: {
+        Row: {
+          bairro: string
+          created_at: string | null
+          id: number
+          tem_zona_especial: string | null
+          total_zonas_no_bairro: number | null
+          updated_at: string | null
+          zona: string
+        }
+        Insert: {
+          bairro: string
+          created_at?: string | null
+          id?: number
+          tem_zona_especial?: string | null
+          total_zonas_no_bairro?: number | null
+          updated_at?: string | null
+          zona: string
+        }
+        Update: {
+          bairro?: string
+          created_at?: string | null
+          id?: number
+          tem_zona_especial?: string | null
+          total_zonas_no_bairro?: number | null
+          updated_at?: string | null
+          zona?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
-      agent_performance_stats: {
-        Row: {
-          agent_type: string | null
-          avg_confidence: number | null
-          avg_execution_time: number | null
-          avg_records_processed: number | null
-          execution_date: string | null
-          success_rate: number | null
-          total_executions: number | null
-        }
-        Relationships: []
-      }
-      anexos_summary: {
-        Row: {
-          anexo_type: string | null
-          document_type: string | null
-          pending: number | null
-          percent_complete: number | null
-          processed: number | null
-          total: number | null
-        }
-        Relationships: []
-      }
       benchmark_analysis: {
         Row: {
           avg_cost_per_query: number | null
@@ -2126,25 +2218,97 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: number
       }
-      cleanup_old_data: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
       convert_string_to_vector: {
         Args: Record<PropertyKey, never>
         Returns: undefined
-      }
-      execute_dynamic_sql: {
-        Args: { sql_query: string }
-        Returns: Json
       }
       execute_sql_query: {
         Args: { query_text: string }
         Returns: Json
       }
-      get_article_context: {
-        Args: { art_num: number; doc_type: string }
-        Returns: string
+      fast_regime_lookup_simple: {
+        Args: { p_bairro?: string; p_zona?: string }
+        Returns: {
+          afastamento_frente: string | null
+          afastamento_fundos: string | null
+          afastamento_lateral: string | null
+          afastamentos__frente: string | null
+          afastamentos__fundos: string | null
+          afastamentos__lateral: string | null
+          afastamentos_frente: string | null
+          afastamentos_fundos: string | null
+          afastamentos_lateral: string | null
+          altura_maxima: number | null
+          altura_maxima_edificacao_isolada: string | null
+          altura_mxima__edificao_isolada: string | null
+          area_maxima_quarteirao: string | null
+          area_minima_do_lote: string | null
+          area_minima_lote: number | null
+          area_minima_quarteirao: string | null
+          area_publica_equip_desmembramento_t1: string | null
+          area_publica_equip_desmembramento_t2: string | null
+          area_publica_equip_desmembramento_t3: string | null
+          area_publica_equip_fracionamento: string | null
+          area_publica_equip_loteamento: string | null
+          area_publica_viaria_desmembramento_t1: string | null
+          area_publica_viaria_desmembramento_t2: string | null
+          area_publica_viaria_desmembramento_t3: string | null
+          area_publica_viaria_fracionamento: string | null
+          area_publica_viaria_loteamento: string | null
+          bairro: string
+          coef_aproveitamento_basico: number | null
+          coef_aproveitamento_maximo: number | null
+          coef_basico_4d: string | null
+          coef_maximo_4d: string | null
+          coeficiente_de_aproveitamento__bsico: string | null
+          coeficiente_de_aproveitamento__mximo: string | null
+          coeficiente_de_aproveitamento_basico: string | null
+          coeficiente_de_aproveitamento_maximo: string | null
+          comercio_atacadista_ia1: string | null
+          comercio_atacadista_ia2: string | null
+          comercio_atacadista_ia3: string | null
+          comercio_varejista_ia1: string | null
+          comercio_varejista_ia2: string | null
+          comercio_varejista_inocuo: string | null
+          created_at: string | null
+          densidade_habitacional: string | null
+          enquadramento_desmembramento_t1: string | null
+          enquadramento_desmembramento_t2: string | null
+          enquadramento_desmembramento_t3: string | null
+          enquadramento_fracionamento: string | null
+          enquadramento_loteamento: string | null
+          face_maxima_de_quarteirao: string | null
+          face_maxima_quarteirao: string | null
+          face_mxima_de_quarteiro: string | null
+          fator_conversao_permeabilidade: string | null
+          gabarito__n_de_pavimentos: string | null
+          gabarito_n_de_pavimentos: string | null
+          id: number
+          industria_inocua: string | null
+          industria_interferencia_ambiental: string | null
+          mdulo_de_fracionamento: string | null
+          modulo_de_fracionamento: string | null
+          modulo_fracionamento: string | null
+          nivel_controle_entretenimento: string | null
+          observacoes: string | null
+          rea_mnima_do_lote: string | null
+          recuo_jardim: string | null
+          regime_de_atividades: string | null
+          regime_volumetrico: string | null
+          servico_ia1: string | null
+          servico_ia2: string | null
+          servico_ia3: string | null
+          servico_inocuo: string | null
+          taxa_de_ocupacao: string | null
+          taxa_de_ocupao: string | null
+          taxa_permeabilidade_acima_1500: string | null
+          taxa_permeabilidade_ate_1500: string | null
+          testada_minima_do_lote: string | null
+          testada_minima_lote: number | null
+          testada_mnima_do_lote: string | null
+          updated_at: string | null
+          zona: string
+        }[]
       }
       get_best_model_for_query: {
         Args: { priority?: string; query_type: string }
@@ -2153,20 +2317,6 @@ export type Database = {
           provider: string
           score: number
         }[]
-      }
-      get_cached_response: {
-        Args: { p_query_hash: string }
-        Returns: {
-          confidence: number
-          final_response: string
-          hit_count: number
-          original_query: string
-          sources: Json
-        }[]
-      }
-      get_complete_hierarchy: {
-        Args: { art_num: number; doc_type: string }
-        Returns: string
       }
       get_current_user_role: {
         Args: Record<PropertyKey, never>
@@ -2248,19 +2398,12 @@ export type Database = {
         Returns: unknown
       }
       hybrid_search: {
-        Args:
-          | {
-              doc_type?: string
-              embedding_vector?: string
-              limit_results?: number
-              search_query: string
-            }
-          | {
-              match_count?: number
-              match_threshold?: number
-              query_embedding: string
-              query_text: string
-            }
+        Args: {
+          match_count?: number
+          match_threshold?: number
+          query_embedding: string
+          query_text: string
+        }
         Returns: {
           content: string
           id: string
@@ -2296,19 +2439,6 @@ export type Database = {
       l2_normalize: {
         Args: { "": string } | { "": unknown } | { "": unknown }
         Returns: unknown
-      }
-      log_agent_performance: {
-        Args: {
-          p_agent_type: string
-          p_confidence: number
-          p_data_sources_used?: string[]
-          p_error_message?: string
-          p_execution_time: number
-          p_query_context: Json
-          p_records_processed?: number
-          p_success: boolean
-        }
-        Returns: undefined
       }
       log_user_action: {
         Args: {
@@ -2362,28 +2492,6 @@ export type Database = {
           similarity: number
         }[]
       }
-      match_enhanced_documents: {
-        Args: {
-          article_filter?: number
-          document_type_filter?: string
-          hierarchy_filter?: number
-          match_count?: number
-          match_threshold?: number
-          query_embedding: string
-          tags_filter?: string[]
-        }
-        Returns: {
-          article_number: number
-          chunk_metadata: Json
-          content_chunk: string
-          document_type: string
-          hierarchy_level: number
-          id: string
-          similarity: number
-          tags: string[]
-          title: string
-        }[]
-      }
       match_hierarchical_documents: {
         Args: {
           match_count: number
@@ -2398,97 +2506,9 @@ export type Database = {
           similarity: number
         }[]
       }
-      match_legal_articles: {
-        Args: {
-          match_count?: number
-          match_threshold?: number
-          query_embedding: string
-        }
-        Returns: {
-          article_number: number
-          article_text: string
-          document_type: string
-          full_content: string
-          id: number
-          keywords: string[]
-          similarity: number
-        }[]
-      }
-      match_legal_articles_only: {
-        Args: {
-          match_count?: number
-          match_threshold?: number
-          query_embedding: string
-        }
-        Returns: {
-          article_number: number
-          article_text: string
-          document_type: string
-          full_content: string
-          id: number
-          keywords: string[]
-          similarity: number
-        }[]
-      }
-      match_legal_by_document: {
-        Args: {
-          doc_type: string
-          match_count?: number
-          match_threshold?: number
-          query_embedding: string
-        }
-        Returns: {
-          article_number: number
-          article_text: string
-          document_type: string
-          full_content: string
-          id: number
-          keywords: string[]
-          similarity: number
-        }[]
-      }
-      match_legal_hierarchy: {
-        Args: {
-          match_count?: number
-          match_threshold?: number
-          query_embedding: string
-        }
-        Returns: {
-          article_number: number
-          article_text: string
-          document_type: string
-          full_content: string
-          id: number
-          keywords: string[]
-          similarity: number
-        }[]
-      }
       run_comprehensive_qa_test: {
         Args: Record<PropertyKey, never>
         Returns: Json
-      }
-      save_to_cache: {
-        Args: {
-          p_agent_results: Json
-          p_confidence: number
-          p_execution_time: number
-          p_final_response: string
-          p_original_query: string
-          p_query_context: Json
-          p_query_hash: string
-          p_sources: Json
-        }
-        Returns: undefined
-      }
-      search_articles_simple: {
-        Args: { doc_type?: string; search_term: string }
-        Returns: {
-          article_number: number
-          article_text: string
-          content: string
-          document_type: string
-          hierarchy: string
-        }[]
       }
       search_content_by_similarity: {
         Args: { match_count?: number; search_query: string }
@@ -2509,17 +2529,6 @@ export type Database = {
           id: number
           testada_minima_lote: number
           zona: string
-        }[]
-      }
-      search_zots: {
-        Args: { bairro_query?: string; zot_query?: string }
-        Returns: {
-          altura_max: number
-          bairro: string
-          ca_basico: string
-          ca_max: string
-          taxa_permeabilidade_ate: number
-          zoneamento: string
         }[]
       }
       search_zots_by_bairro: {

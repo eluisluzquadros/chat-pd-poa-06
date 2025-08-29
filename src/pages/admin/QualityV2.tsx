@@ -69,39 +69,24 @@ export default function QualityV2() {
     try {
       setIsLoading(true);
       
-      // Get validation runs with error handling
-      const { data: runs, error: runsError } = await supabase
+      // Get validation runs
+      const { data: runs } = await supabase
         .from('qa_validation_runs')
         .select('*')
         .order('started_at', { ascending: false })
         .limit(50);
 
-      if (runsError) {
-        console.error('Error fetching validation runs:', runsError);
-        toast.error('Erro ao carregar execuções de validação');
-      }
-
-      // Get test cases count with error handling
-      const { count: testCaseCount, error: testCasesError } = await supabase
+      // Get test cases count
+      const { count: testCaseCount } = await supabase
         .from('qa_test_cases')
         .select('*', { count: 'exact', head: true })
         .eq('is_active', true);
 
-      if (testCasesError) {
-        console.error('Error fetching test cases:', testCasesError);
-        toast.error('Erro ao carregar casos de teste');
-      }
-
-      // Get unique models tested with error handling
-      const { data: models, error: modelsError } = await supabase
+      // Get unique models tested
+      const { data: models } = await supabase
         .from('qa_validation_runs')
         .select('model')
         .not('model', 'is', null);
-
-      if (modelsError) {
-        console.error('Error fetching models:', modelsError);
-        toast.error('Erro ao carregar modelos testados');
-      }
 
       const uniqueModels = new Set(models?.map(m => m.model) || []);
 
@@ -153,22 +138,10 @@ export default function QualityV2() {
         })).sort((a, b) => b.accuracy - a.accuracy);
 
         setModelPerformance(performanceData);
-      } else {
-        // Fallback quando não há dados
-        setMetrics({
-          totalValidationRuns: 0,
-          avgAccuracy: 0,
-          totalTestCases: testCaseCount || 0,
-          avgResponseTime: 0,
-          successRate: 0,
-          activeModels: 0,
-          lastRunDate: null
-        });
-        setModelPerformance([]);
       }
 
-      // Get recent test results with error handling
-      const { data: results, error: resultsError } = await supabase
+      // Get recent test results
+      const { data: results } = await supabase
         .from('qa_validation_results')
         .select(`
           *,
@@ -182,29 +155,11 @@ export default function QualityV2() {
         .order('created_at', { ascending: false })
         .limit(100);
 
-      if (resultsError) {
-        console.error('Error fetching test results:', resultsError);
-        toast.error('Erro ao carregar resultados de teste');
-      }
-
       setTestResults(results || []);
 
     } catch (error) {
       console.error('Error fetching metrics:', error);
-      toast.error('Erro crítico ao carregar dados do dashboard. Verifique sua conexão e tente novamente.');
-      
-      // Set fallback data para prevenir crashes
-      setMetrics({
-        totalValidationRuns: 0,
-        avgAccuracy: 0,
-        totalTestCases: 0,
-        avgResponseTime: 0,
-        successRate: 0,
-        activeModels: 0,
-        lastRunDate: null
-      });
-      setModelPerformance([]);
-      setTestResults([]);
+      toast.error('Erro ao carregar métricas');
     } finally {
       setIsLoading(false);
     }

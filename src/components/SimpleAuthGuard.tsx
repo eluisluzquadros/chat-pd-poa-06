@@ -55,10 +55,12 @@ export const SimpleAuthGuard = ({
         console.error("SimpleAuthGuard: Erro na verificação:", error);
         setIsAuthenticated(false);
         setHasPermission(false);
-        // Não mostrar toast para evitar spam de erros
+        toast.error("Erro ao verificar suas credenciais. Por favor, faça login novamente.");
       } finally {
-        // Definir imediatamente para evitar travamento
-        setIsInitializing(false);
+        // Pequeno atraso para evitar flash de conteúdo
+        setTimeout(() => {
+          setIsInitializing(false);
+        }, 300);
       }
     };
     

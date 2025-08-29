@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste Direto das Functions</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; max-width: 800px; margin: 0 auto; }
+        button { padding: 10px 20px; margin: 10px 0; background: #0066cc; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #0052cc; }
+        .result { margin: 20px 0; padding: 15px; background: #f5f5f5; border-radius: 4px; }
+        .error { background: #fee; color: #c00; }
+        .success { background: #efe; color: #080; }
+        pre { white-space: pre-wrap; word-wrap: break-word; }
+    </style>
+</head>
+<body>
+    <h1>Teste Direto das Edge Functions</h1>
+    
+    <div>
+        <h2>Teste Completo do Chat</h2>
+        <input type="text" id="question" value="Quantos bairros tem Porto Alegre?" style="width: 100%; padding: 10px; margin: 10px 0;">
+        <button onclick="testFullChat()">Testar Chat Completo</button>
+        <div id="result" class="result"></div>
+    </div>
+
+    <script>
+        const SUPABASE_URL = 'https://ngrqwmvuhvjkeohesbxs.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5ncnF3bXZ1aHZqa2VvaGVzYnhzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM2MDkwMTcsImV4cCI6MjA2OTE4NTAxN30.K3uyyzjyAQ17ohQGCUFx_RiMufblLyQzvxEZHakqKrg';
+
+        async function testFullChat() {
+            const resultDiv = document.getElementById('result');
+            const question = document.getElementById('question').value;
+            
+            resultDiv.innerHTML = '<h3>Testando...</h3>';
+            
+            try {
+                // 1. Query Analyzer
+                resultDiv.innerHTML += '<p>1. Analisando query...</p>';
+                const analysisResponse = await fetch(`${SUPABASE_URL}/functions/v1/query-analyzer`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+                        'apikey': SUPABASE_ANON_KEY
+                    },
+                    body: JSON.stringify({ query: question })
+                });
+                
+                if (!analysisResponse.ok) {
+                    throw new Error(`Query Analyzer error: ${analysisResponse.status}`);
+                }
+                
+                const analysisResult = await analysisResponse.json();
+                resultDiv.innerHTML += '<pre>✅ Análise: ' + JSON.stringify(analysisResult, null, 2) + '</pre>';
+                
+                // 2. SQL Generator
+                resultDiv.innerHTML += '<p>2. Gerando SQL...</p>';
+                const sqlResponse = await fetch(`${SUPABASE_URL}/functions/v1/sql-generator`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+                        'apikey': SUPABASE_ANON_KEY
+                    },
+                    body: JSON.stringify({ 
+                        query: question,
+                        analysisResult: analysisResult
+                    })
+                });
+                
+                if (!sqlResponse.ok) {
+                    throw new Error(`SQL Generator error: ${sqlResponse.status}`);
+                }
+                
+                const sqlResult = await sqlResponse.json();
+                resultDiv.innerHTML += '<pre>✅ SQL: ' + JSON.stringify(sqlResult, null, 2) + '</pre>';
+                
+                // 3. Response Synthesizer
+                resultDiv.innerHTML += '<p>3. Sintetizando resposta...</p>';
+                const synthResponse = await fetch(`${SUPABASE_URL}/functions/v1/response-synthesizer`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+                        'apikey': SUPABASE_ANON_KEY
+                    },
+                    body: JSON.stringify({ 
+                        originalQuery: question,
+                        analysisResult: analysisResult,
+                        sqlResults: sqlResult,
+                        vectorResults: null
+                    })
+                });
+                
+                if (!synthResponse.ok) {
+                    throw new Error(`Response Synthesizer error: ${synthResponse.status}`);
+                }
+                
+                const synthResult = await synthResponse.json();
+                
+                resultDiv.className = 'result success';
+                resultDiv.innerHTML = '<h3>✅ Resposta Final:</h3>' + 
+                                     '<div style="background: white; padding: 15px; border-radius: 4px; margin-top: 10px;">' + 
+                                     synthResult.response.replace(/\n/g, '<br>') + 
+                                     '</div>' +
+                                     '<pre style="margin-top: 20px;">Confiança: ' + synthResult.confidence + 
+                                     '\nFontes: ' + JSON.stringify(synthResult.sources) + '</pre>';
+                
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = '<h3>❌ Erro:</h3><pre>' + error.message + '</pre>';
+                console.error('Error:', error);
+            }
+        }
+        
+        // Teste automático ao carregar
+        window.onload = () => {
+            console.log('Página carregada. Clique no botão para testar.');
+        };
+    </script>
+</body>
+</html>
