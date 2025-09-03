@@ -2182,6 +2182,16 @@ export type Database = {
         Args: { query_text: string }
         Returns: Json
       }
+      fix_content_duplications_v2: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          duplications_removed: number
+          id: number
+          new_length: number
+          original_length: number
+          patterns_found: string[]
+        }[]
+      }
       get_article_context: {
         Args: { art_num: number; doc_type: string }
         Returns: string
