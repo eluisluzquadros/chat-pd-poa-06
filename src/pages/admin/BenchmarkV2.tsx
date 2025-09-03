@@ -354,7 +354,7 @@ function BenchmarkV2() {
             await supabase
               .from('qa_validation_results')
               .insert({
-                test_case_id: testCase.id.toString(),
+                test_case_id: testCase.id,
                 validation_run_id: run.id,
                 model,
                 actual_answer: result.response?.substring(0, 2000),

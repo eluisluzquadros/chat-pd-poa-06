@@ -1214,7 +1214,7 @@ export type Database = {
           sql_executed: boolean | null
           sql_result_match: boolean | null
           sql_syntax_valid: boolean | null
-          test_case_id: string
+          test_case_id: number
           validation_run_id: string
         }
         Insert: {
@@ -1233,7 +1233,7 @@ export type Database = {
           sql_executed?: boolean | null
           sql_result_match?: boolean | null
           sql_syntax_valid?: boolean | null
-          test_case_id: string
+          test_case_id: number
           validation_run_id: string
         }
         Update: {
@@ -1252,10 +1252,18 @@ export type Database = {
           sql_executed?: boolean | null
           sql_result_match?: boolean | null
           sql_syntax_valid?: boolean | null
-          test_case_id?: string
+          test_case_id?: number
           validation_run_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "fk_validation_results_test_case"
+            columns: ["test_case_id"]
+            isOneToOne: false
+            referencedRelation: "qa_test_cases"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       qa_validation_runs: {
         Row: {

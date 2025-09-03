@@ -81,8 +81,8 @@ export function CognitiveAnalysisPanel({ runId, autoAnalyze = false }: Cognitive
           .filter(result => result.evaluation_reasoning)
           .map(result => ({
             id: result.id,
-            testCaseId: result.test_case_id,
-            question: `Teste ${result.test_case_id}`,
+            testCaseId: result.test_case_id?.toString() || '',
+            question: `Teste ${result.test_case_id || 'N/A'}`,
             expectedAnswer: 'Resposta esperada não disponível',
             actualAnswer: result.actual_answer,
             accuracyScore: result.accuracy_score,

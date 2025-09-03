@@ -155,22 +155,46 @@ function QualityV2() {
         setModelPerformance(performanceData);
       }
 
-      // Get recent test results
-      const { data: results } = await supabase
-        .from('qa_validation_results')
-        .select(`
-          *,
-          qa_test_cases (
-            query,
-            category,
-            difficulty,
-            expected_keywords
-          )
-        `)
-        .order('created_at', { ascending: false })
-        .limit(100);
+      // Get recent test results with LEFT JOIN manual
+      try {
+        const { data: results, error: resultsError } = await supabase
+          .from('qa_validation_results')
+          .select(`
+            *,
+            qa_test_cases (
+              query,
+              category,
+              difficulty,
+              expected_keywords
+            )
+          `)
+          .order('created_at', { ascending: false })
+          .limit(100);
 
-      setTestResults(results || []);
+        if (resultsError) {
+          console.error('Error fetching results with JOIN:', resultsError);
+          // Fallback: fetch results without JOIN
+          const { data: fallbackResults } = await supabase
+            .from('qa_validation_results')
+            .select('*')
+            .order('created_at', { ascending: false })
+            .limit(100);
+          
+          setTestResults(fallbackResults || []);
+        } else {
+          setTestResults(results || []);
+        }
+      } catch (error) {
+        console.error('Error in test results fetch:', error);
+        // Fallback: fetch basic results only
+        const { data: fallbackResults } = await supabase
+          .from('qa_validation_results')
+          .select('*')
+          .order('created_at', { ascending: false })
+          .limit(100);
+        
+        setTestResults(fallbackResults || []);
+      }
       
       // Set the most recent run ID for cognitive analysis
       if (runs && runs.length > 0) {

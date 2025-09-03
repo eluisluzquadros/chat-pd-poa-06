@@ -167,15 +167,35 @@ export const SimpleRoleGuard = ({
     // Verificação inicial
     checkAccess();
     
-    // Timeout de fallback aumentado - após 5 segundos, negar acesso se não conseguiu verificar
+    // Timeout de fallback mais longo - 10 segundos para evitar negação prematura
     const fallbackTimeout = setTimeout(() => {
       if (isActive && isInitializing) {
-        console.log("⏰ Timeout de fallback - negando acesso por segurança");
-        setUserRole(null);
-        setHasAccess(false);
-        setIsInitializing(false);
+        console.log("⏰ Timeout de fallback após 10s - verificando estado final");
+        
+        // Se já conseguiu verificar algum role, usar esse role
+        if (userRole) {
+          console.log("✅ Role já verificado durante timeout:", userRole);
+          let finalAccess = false;
+          
+          if (adminOnly && userRole === 'admin') {
+            finalAccess = true;
+          } else if (supervisorOnly && (userRole === 'supervisor' || userRole === 'admin')) {
+            finalAccess = true;
+          } else if (!adminOnly && !supervisorOnly) {
+            finalAccess = true;
+          }
+          
+          setHasAccess(finalAccess);
+          setIsInitializing(false);
+          console.log("✅ Acesso baseado em role já verificado:", finalAccess);
+        } else {
+          console.log("❌ Timeout final sem role - negando acesso");
+          setUserRole(null);
+          setHasAccess(false);
+          setIsInitializing(false);
+        }
       }
-    }, 5000);
+    }, 10000);
     
     return () => {
       isActive = false;
