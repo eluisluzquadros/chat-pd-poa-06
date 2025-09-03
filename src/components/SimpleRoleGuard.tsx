@@ -64,9 +64,21 @@ export const SimpleRoleGuard = ({
         
         console.log("✅ Sessão encontrada:", session.user.email);
         
-        // Buscar role real do usuário
-        const realRole = await AuthService.getUserRole(session.user.id);
+        // Buscar role real do usuário com retry em caso de inconsistência
+        let realRole = await AuthService.getUserRole(session.user.id);
         console.log("🔍 Role real do usuário:", realRole);
+        
+        // Se role é 'user' ou 'citizen' mas usuário é admin conhecido, fazer retry
+        if ((realRole === 'user' || realRole === 'citizen') && 
+            session.user.email === 'admin@chat-pd-poa.org') {
+          console.log("🔄 Inconsistência detectada para admin - limpando cache e tentando novamente");
+          AuthService.clearAuthCache();
+          
+          // Aguardar um pouco e tentar novamente
+          await new Promise(resolve => setTimeout(resolve, 100));
+          realRole = await AuthService.getUserRole(session.user.id);
+          console.log("🔍 Role após retry:", realRole);
+        }
         
         // Verificar se tem acesso baseado no role real
         let hasAccess = false;
@@ -119,8 +131,18 @@ export const SimpleRoleGuard = ({
         setTimeout(async () => {
           if (!isActive) return;
           
-          const realRole = await AuthService.getUserRole(session.user.id);
+          let realRole = await AuthService.getUserRole(session.user.id);
           console.log("🔍 Role real no auth change:", realRole);
+          
+          // Retry logic para admin conhecido
+          if ((realRole === 'user' || realRole === 'citizen') && 
+              session.user.email === 'admin@chat-pd-poa.org') {
+            console.log("🔄 Retry para admin no auth change");
+            AuthService.clearAuthCache();
+            await new Promise(resolve => setTimeout(resolve, 100));
+            realRole = await AuthService.getUserRole(session.user.id);
+            console.log("🔍 Role após retry no auth change:", realRole);
+          }
           
           let hasAccess = false;
           if (adminOnly && realRole === 'admin') {

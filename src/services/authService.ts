@@ -273,8 +273,14 @@ export const AuthService = {
       const now = Date.now();
       
       if (now - lastCall < AUTH_THROTTLE_DELAY) {
-        console.log("⚡ getUserRole throttled, usando cache ou user fallback");
-        return cached?.role || 'user'; // Fallback para user se throttled
+        console.log("⚡ getUserRole throttled - verificando cache válido");
+        // Se tem cache válido, usar, senão prosseguir com busca real
+        if (cached && (Date.now() - cached.timestamp) < ROLE_CACHE_TTL) {
+          console.log("Cache válido encontrado:", cached.role);
+          return cached.role;
+        }
+        // Cache inválido ou ausente - prosseguir com busca real apesar do throttle
+        console.log("Cache inválido/ausente - fazendo busca real mesmo com throttle");
       }
       
       authCallsThrottle.set(throttleKey, now);
@@ -334,13 +340,19 @@ export const AuthService = {
         console.error("Erro ao buscar account:", accountError);
       }
       
-      const finalRole = accountData?.role || 'user'; // Default para user
+      const finalRole = accountData?.role || 'citizen'; // Default para citizen
       userRoleCache.set(userId, { role: finalRole, timestamp: now });
       return finalRole;
     } catch (error) {
       console.error("Erro ao obter papel do usuário:", error);
-      // Em caso de erro, assumir user (role mais restrito)
-      const fallbackRole = 'user';
+      // Em caso de erro, verificar se tem cache válido antes de fazer fallback
+      const cached = userRoleCache.get(userId);
+      if (cached && (Date.now() - cached.timestamp) < ROLE_CACHE_TTL) {
+        console.log("Usando cache válido em caso de erro:", cached.role);
+        return cached.role;
+      }
+      // Sem cache válido - assumir citizen (role mais restrito) 
+      const fallbackRole = 'citizen';
       userRoleCache.set(userId, { role: fallbackRole, timestamp: Date.now() });
       return fallbackRole;
     }
