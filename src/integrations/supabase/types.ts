@@ -572,6 +572,42 @@ export type Database = {
         }
         Relationships: []
       }
+      legal_articles_backup_content: {
+        Row: {
+          article_number: number | null
+          article_text: string | null
+          created_at: string | null
+          document_type: string | null
+          embedding: string | null
+          full_content: string | null
+          id: number | null
+          keywords: string[] | null
+          updated_at: string | null
+        }
+        Insert: {
+          article_number?: number | null
+          article_text?: string | null
+          created_at?: string | null
+          document_type?: string | null
+          embedding?: string | null
+          full_content?: string | null
+          id?: number | null
+          keywords?: string[] | null
+          updated_at?: string | null
+        }
+        Update: {
+          article_number?: number | null
+          article_text?: string | null
+          created_at?: string | null
+          document_type?: string | null
+          embedding?: string | null
+          full_content?: string | null
+          id?: number | null
+          keywords?: string[] | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       legal_hierarchy: {
         Row: {
           article_end: number | null
@@ -2465,6 +2501,15 @@ export type Database = {
           id: number
           keywords: string[]
           similarity: number
+        }[]
+      }
+      remove_content_duplications: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          duplications_removed: number
+          id: number
+          new_length: number
+          original_length: number
         }[]
       }
       run_comprehensive_qa_test: {
