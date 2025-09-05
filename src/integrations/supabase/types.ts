@@ -491,6 +491,60 @@ export type Database = {
         }
         Relationships: []
       }
+      knowledgebase: {
+        Row: {
+          arquivo_origem: string | null
+          capitulo: string | null
+          categoria_qa: string | null
+          embedding: string | null
+          id: string | null
+          numero_qa: string | null
+          parte: string | null
+          pergunta: string | null
+          resposta: string | null
+          secao: string | null
+          subsecao: string | null
+          tamanho_texto: number | null
+          texto: string | null
+          tipo_documento: string | null
+          titulo: string | null
+        }
+        Insert: {
+          arquivo_origem?: string | null
+          capitulo?: string | null
+          categoria_qa?: string | null
+          embedding?: string | null
+          id?: string | null
+          numero_qa?: string | null
+          parte?: string | null
+          pergunta?: string | null
+          resposta?: string | null
+          secao?: string | null
+          subsecao?: string | null
+          tamanho_texto?: number | null
+          texto?: string | null
+          tipo_documento?: string | null
+          titulo?: string | null
+        }
+        Update: {
+          arquivo_origem?: string | null
+          capitulo?: string | null
+          categoria_qa?: string | null
+          embedding?: string | null
+          id?: string | null
+          numero_qa?: string | null
+          parte?: string | null
+          pergunta?: string | null
+          resposta?: string | null
+          secao?: string | null
+          subsecao?: string | null
+          tamanho_texto?: number | null
+          texto?: string | null
+          tipo_documento?: string | null
+          titulo?: string | null
+        }
+        Relationships: []
+      }
       legal_anexos: {
         Row: {
           anexo_name: string
@@ -2456,6 +2510,27 @@ export type Database = {
           similarity: number
         }[]
       }
+      match_knowledgebase: {
+        Args: {
+          match_count?: number
+          match_threshold?: number
+          query_embedding: string
+          tipo_documento_filter?: string
+        }
+        Returns: {
+          capitulo: string
+          id: string
+          parte: string
+          pergunta: string
+          resposta: string
+          secao: string
+          similarity: number
+          subsecao: string
+          texto: string
+          tipo_documento: string
+          titulo: string
+        }[]
+      }
       match_legal_articles: {
         Args: {
           match_count?: number
@@ -2547,6 +2622,16 @@ export type Database = {
         }
         Returns: undefined
       }
+      search_articles_knowledgebase: {
+        Args: { article_number_search: string; document_type_filter?: string }
+        Returns: {
+          article_number_extracted: number
+          id: string
+          texto: string
+          tipo_documento: string
+          titulo: string
+        }[]
+      }
       search_articles_simple: {
         Args: { doc_type?: string; search_term: string }
         Returns: {
@@ -2563,6 +2648,26 @@ export type Database = {
           content: string
           document_id: number
           similarity: number
+        }[]
+      }
+      search_knowledgebase_by_content: {
+        Args: {
+          match_count?: number
+          search_text: string
+          tipo_documento_filter?: string
+        }
+        Returns: {
+          capitulo: string
+          id: string
+          parte: string
+          pergunta: string
+          relevance_score: number
+          resposta: string
+          secao: string
+          subsecao: string
+          texto: string
+          tipo_documento: string
+          titulo: string
         }[]
       }
       search_regime_urbanistico: {
