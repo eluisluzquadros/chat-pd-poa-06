@@ -130,12 +130,8 @@ function formatMultiFieldData(
     
     const bairrosList = zotData.map(item => item.bairro).join(', ');
     const zotName = zotData[0]?.zona || 'zona especificada';
-    
-    return `A ${zotName} compreende ${zotData.length} bairros:
 
-${bairrosList}
-
-${FOOTER_TEMPLATE}`;
+    return `A ${zotName} compreende ${zotData.length} bairros:\n\n${bairrosList}\n\n${FOOTER_TEMPLATE}`;
   }
 
   // 🏘️ Risk Data Queries - ONLY if no urban data and query is explicitly about risks
@@ -175,9 +171,7 @@ ${FOOTER_TEMPLATE}`;
 
   // No data found
   console.log('❌ NO DATA FOUND - RETURNING NO DATA MESSAGE');
-  return `Não foram encontrados dados específicos para esta consulta na base de dados oficial.
-
-${FOOTER_TEMPLATE}`;
+  return `Não foram encontrados dados específicos para esta consulta na base de dados oficial.\n\n${FOOTER_TEMPLATE}`;
 }
 
 // 🎯 SPECIFIC FIELDS FORMATTER - Campos específicos solicitados
@@ -326,24 +320,7 @@ async function synthesizeSemanticResponse(
     }
 
     // Prompt para síntese híbrida
-    const prompt = `Você é um assistente especializado em legislação urbana de Porto Alegre. 
-
-DADOS OFICIAIS PRECISOS (100% corretos):
-${tabularData}
-
-CONTEXTO LEGAL ADICIONAL:
-${contextText}
-
-PERGUNTA ORIGINAL: ${originalQuery}
-
-INSTRUÇÕES:
-1. SEMPRE mantenha os dados numéricos oficiais EXATAMENTE como fornecidos
-2. Use o contexto legal apenas para EXPLICAR e CONTEXTUALIZAR os dados
-3. NÃO invente ou modifique nenhum número ou valor
-4. Mantenha o rodapé com os links oficiais
-5. Seja conciso e direto
-
-Forneça uma resposta que combine os dados precisos com explicações contextuais relevantes:`;
+    const prompt = `Você é um assistente especializado em legislação urbana de Porto Alegre. \n\nDADOS OFICIAIS PRECISOS (100% corretos):\n${tabularData}\n\nCONTEXTO LEGAL ADICIONAL:\n${contextText}\n\nPERGUNTA ORIGINAL: ${originalQuery}\n\nINSTRUÇÕES:\n1. SEMPRE mantenha os dados numéricos oficiais EXATAMENTE como fornecidos\n2. Use o contexto legal apenas para EXPLICAR e CONTEXTUALIZAR os dados\n3. NÃO invente ou modifique nenhum número ou valor\n4. Mantenha o rodapé com os links oficiais\n5. Seja conciso e direto\n\nForneça uma resposta que combine os dados precisos com explicações contextuais relevantes:`;
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -468,68 +445,38 @@ serve(async (req) => {
       console.log('🧠 ATTEMPTING SEMANTIC SYNTHESIS');
       
       try {
-        const semanticResponse = await synthesizeSemanticResponse(
+        finalResponse = await synthesizeSemanticResponse(
           tabularResponse,
           semanticAgents,
           originalQuery,
           confidence
         );
         
-        if (semanticResponse !== tabularResponse) {
-          finalResponse = semanticResponse;
-          sources.conceptual = semanticAgents.length;
-          console.log('✅ SEMANTIC SYNTHESIS APPLIED');
-        } else {
-          console.log('📋 KEEPING TABULAR-ONLY RESPONSE');
-        }
+        sources.conceptual = semanticAgents.length;
+        console.log('✅ SEMANTIC SYNTHESIS COMPLETE');
       } catch (error) {
-        console.error('❌ Semantic synthesis failed, keeping tabular:', error);
+        console.error('❌ Semantic synthesis failed:', error);
+        // Keep tabular response as fallback
       }
     }
 
-    // 🛡️ CONFIDENCE ADJUSTMENT based on data quality
-    if (allRegimeData.length === 0 && allZotData.length === 0 && allRiskData.length === 0) {
-      confidence = 0.1; // No tabular data found
-    } else if (parsedIntent.requestedFields.length > 0) {
-      confidence = 0.95; // Specific fields requested and found
-    }
+    console.log('✅ RESPONSE-SYNTHESIZER COMPLETE');
 
-    console.log('✅ FINAL HYBRID RESPONSE READY');
-
-    return new Response(JSON.stringify({
+    return new Response(JSON.stringify({ 
       response: finalResponse,
-      confidence: confidence,
-      sources: {
-        ...sources,
-        dataSource: sources.conceptual > 0 ? 'hybrid_tabular_semantic' : 'direct_tabular',
-        method: 'agentic_rag_with_anti_fabrication',
-        fieldsRequested: parsedIntent.requestedFields.length,
-        categoriesDetected: parsedIntent.fieldCategories
-      },
-      metadata: {
-        queryType: parsedIntent.isTabularQuery ? 'tabular' : 'semantic',
-        requestedFields: parsedIntent.requestedFields,
-        fieldCategories: parsedIntent.fieldCategories,
-        antiFabrication: true,
-        pipeline: 'agentic-rag-hybrid'
-      }
+      confidence,
+      sources,
+      model: 'response-synthesizer-hybrid',
+      provider: 'supabase'
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
 
   } catch (error) {
     console.error('🔥 Error in response-synthesizer:', error);
-    return new Response(JSON.stringify({
-      response: `Erro interno no processamento. Por favor, tente novamente.
-
-${FOOTER_TEMPLATE}`,
-      confidence: 0.0,
-      sources: { tabular: 0, conceptual: 0 },
-      error: error.message,
-      metadata: {
-        pipeline: 'agentic-rag-hybrid',
-        error: true
-      }
+    return new Response(JSON.stringify({ 
+      error: `Response synthesis failed: ${error.message}`,
+      response: `Desculpe, ocorreu um erro interno no sistema. Por favor, tente novamente.\n\n${FOOTER_TEMPLATE}`
     }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
