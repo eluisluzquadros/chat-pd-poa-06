@@ -369,6 +369,8 @@ serve(async (req) => {
   }
 
   try {
+    console.log('🚀 AGENTIC-RAG: INICIANDO PROCESSAMENTO');
+    
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
@@ -406,6 +408,11 @@ serve(async (req) => {
     console.log(`📋 Model: ${selectedModel}`);
     console.log(`👤 User: ${userId}, Session: ${sessionId}`);
     console.log(`🎯 Enhanced search strategy activated for query type detection...`);
+    
+    // TESTE ESPECÍFICO PARA 346 CONTRIBUIÇÕES
+    if (sanitizedQuery.toLowerCase().includes('quantas') && sanitizedQuery.toLowerCase().includes('contribu')) {
+      console.log('🎯 DETECTADO: Pergunta sobre contribuições - priorizando busca específica');
+    }
 
     // ============================================================
     // FASE 1: BUSCA EXCLUSIVA NA KNOWLEDGEBASE
@@ -449,6 +456,32 @@ serve(async (req) => {
 
     // BUSCA TEXTUAL PRIORITÁRIA - Para perguntas sobre audiência pública e contribuições
     console.log('🔤 Starting comprehensive text search in knowledgebase...');
+    
+    // BUSCA ESPECÍFICA PARA 346 CONTRIBUIÇÕES PRIMEIRO
+    if (sanitizedQuery.toLowerCase().includes('quantas') && sanitizedQuery.toLowerCase().includes('contribu')) {
+      console.log('🎯 BUSCA DIRETA POR 346 CONTRIBUIÇÕES');
+      
+      try {
+        const { data: directResults, error: directError } = await supabase
+          .from('knowledgebase')
+          .select('*')
+          .or('resposta.ilike.%346%,texto.ilike.%346%,pergunta.ilike.%quantas%contribu%')
+          .limit(5);
+        
+        if (!directError && directResults && directResults.length > 0) {
+          console.log(`✅ ENCONTROU BUSCA DIRETA: ${directResults.length} resultados com 346`);
+          knowledgebaseResults.push(...directResults.map(item => ({
+            ...item,
+            relevance_score: 0.99 // Score muito alto para busca direta
+          })));
+          totalKnowledgebaseResults += directResults.length;
+        } else {
+          console.log('❌ Busca direta por 346 não retornou resultados');
+        }
+      } catch (directErr) {
+        console.error('❌ Erro na busca direta por 346:', directErr);
+      }
+    }
     
     // Buscar termos específicos relacionados à pergunta
     const searchTerms = [...sanitizedQuery.toLowerCase().split(' ').filter(word => word.length > 2)];

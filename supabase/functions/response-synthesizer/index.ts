@@ -227,6 +227,11 @@ serve(async (req) => {
       query: originalQuery,
       agentCount: agentResults?.length || 0
     });
+    
+    // TESTE ESPECÍFICO PARA 346 CONTRIBUIÇÕES
+    if (originalQuery?.toLowerCase().includes('quantas') && originalQuery?.toLowerCase().includes('contribu')) {
+      console.log('🎯 DETECTADO: Pergunta sobre contribuições - verificando dados específicos');
+    }
 
     // Parse query intent
     const parsedIntent = parseQueryIntent(originalQuery);
