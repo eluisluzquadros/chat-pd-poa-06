@@ -401,6 +401,7 @@ serve(async (req) => {
     console.log(`🔍 Query: "${sanitizedQuery}"`);
     console.log(`📋 Model: ${selectedModel}`);
     console.log(`👤 User: ${userId}, Session: ${sessionId}`);
+    console.log(`🎯 Enhanced search strategy activated for query type detection...`);
 
     // ============================================================
     // FASE 1: BUSCA UNIFICADA NA KNOWLEDGEBASE
@@ -434,17 +435,21 @@ serve(async (req) => {
         const embeddingData = await embeddingResponse.json();
         const queryEmbedding = embeddingData.data[0].embedding;
 
-        // Busca geral na knowledgebase
+        // Busca geral na knowledgebase com thresholds mais amplos
         const { data: generalResults, error: generalError } = await supabase.rpc('match_knowledgebase', {
           query_embedding: queryEmbedding,
-          match_threshold: 0.6,
-          match_count: 15
+          match_threshold: 0.4, // Reduzido para capturar mais resultados
+          match_count: 20 // Aumentado para mais resultados
         });
 
         if (!generalError && generalResults) {
           knowledgebaseResults.push(...generalResults);
           totalKnowledgebaseResults += generalResults.length;
           console.log(`📚 Found ${generalResults.length} general knowledgebase results`);
+          console.log(`📊 Score range: ${generalResults[0]?.similarity?.toFixed(3)} - ${generalResults[generalResults.length-1]?.similarity?.toFixed(3)}`);
+          console.log(`📋 Document types found:`, generalResults.map(r => r.tipo_documento));
+        } else if (generalError) {
+          console.error(`❌ General search error:`, generalError);
         }
 
         // Busca específica por tipo de documento se relevante
@@ -456,8 +461,8 @@ serve(async (req) => {
           console.log(`🏘️ Searching regime urbanístico for: ${neighborhood || ''} ${zot || ''}`);
           const { data: regimeResults, error: regimeError } = await supabase.rpc('match_knowledgebase', {
             query_embedding: queryEmbedding,
-            match_threshold: 0.5,
-            match_count: 10,
+            match_threshold: 0.3, // Reduzido para capturar mais resultados
+            match_count: 15, // Aumentado
             tipo_documento_filter: 'regime_urbanistico'
           });
 
@@ -487,23 +492,42 @@ serve(async (req) => {
       console.error('❌ Embedding search failed:', embeddingError.message);
     }
 
-    // Segundo: Busca textual como fallback
-    if (knowledgebaseResults.length === 0) {
-      console.log('🔤 Fallback to text search in knowledgebase...');
-      
-      const searchTerms = sanitizedQuery.toLowerCase().split(' ').filter(word => word.length > 2);
-      for (const term of searchTerms.slice(0, 3)) { // Limit to 3 terms
-        const { data: textResults, error: textError } = await supabase.rpc('search_knowledgebase_by_content', {
-          search_text: term,
-          match_count: 5
-        });
+    // Segundo: Busca textual SEMPRE como complemento (não apenas fallback)
+    console.log('🔤 Adding text search results to enhance coverage...');
+    
+    const searchTerms = sanitizedQuery.toLowerCase().split(' ').filter(word => word.length > 2);
+    
+    // Busca por termos específicos que podem não ter boa similaridade vetorial
+    const enhancedTerms = [...searchTerms];
+    if (sanitizedQuery.includes('audiência')) enhancedTerms.push('audiência', 'contribuições', 'participação');
+    if (sanitizedQuery.includes('público')) enhancedTerms.push('pública', 'público');
+    if (sanitizedQuery.includes('contribu')) enhancedTerms.push('contribuições', 'contribuição');
+    
+    for (const term of enhancedTerms.slice(0, 5)) { // Aumentado para 5 termos
+      const { data: textResults, error: textError } = await supabase.rpc('search_knowledgebase_by_content', {
+        search_text: term,
+        match_count: 10 // Aumentado
+      });
 
-        if (!textError && textResults) {
-          knowledgebaseResults.push(...textResults);
-          totalKnowledgebaseResults += textResults.length;
-        }
+      if (!textError && textResults) {
+        knowledgebaseResults.push(...textResults);
+        totalKnowledgebaseResults += textResults.length;
       }
-      console.log(`📝 Text search found ${knowledgebaseResults.length} results`);
+    }
+    console.log(`📝 Text search found ${knowledgebaseResults.length} total results`);
+    
+    // Busca adicional específica para Q&A
+    const { data: qaResults, error: qaError } = await supabase.rpc('match_knowledgebase', {
+      query_embedding: queryEmbedding,
+      match_threshold: 0.3,
+      match_count: 15,
+      tipo_documento_filter: 'qa_plano_diretor'
+    });
+    
+    if (!qaError && qaResults) {
+      knowledgebaseResults.push(...qaResults);
+      totalKnowledgebaseResults += qaResults.length;
+      console.log(`❓ Q&A search found ${qaResults.length} additional results`);
     }
 
     // ============================================================
@@ -518,6 +542,11 @@ serve(async (req) => {
     const rerankedResults = ResultReranker.rerank(uniqueResults, sanitizedQuery, 8);
     
     console.log(`🎯 After reranking: ${rerankedResults.length} results`);
+    console.log(`📊 Final results breakdown:`, rerankedResults.map(r => ({ 
+      tipo: r.tipo_documento, 
+      score: r.finalScore?.toFixed(3),
+      preview: (r.texto || r.pergunta || r.titulo || '').substring(0, 80) + '...'
+    })));
 
     // Preparar contexto para o LLM
     const contextParts: string[] = [];
@@ -550,20 +579,29 @@ serve(async (req) => {
     const systemPrompt = `Você é um assistente especializado em legislação urbanística de Porto Alegre, com foco no PDUS (Plano Diretor de Desenvolvimento Urbano Sustentável), LUOS (Lei de Uso e Ocupação do Solo) e COE (Código de Obras e Edificações).
 
 INSTRUÇÕES CRÍTICAS:
-1. Use EXCLUSIVAMENTE o contexto fornecido para responder
-2. Se a informação não estiver no contexto, diga claramente que não encontrou
-3. Ao citar artigos, SEMPRE identifique a lei de origem (LUOS, PDUS, COE)
-4. Para regime urbanístico, apresente dados de forma organizada (altura, coeficientes, etc.)
-5. Se houver múltiplas versões de um artigo, apresente TODAS
-6. Considere sempre o contexto de conversas anteriores quando disponível
+1. Use EXCLUSIVAMENTE o contexto fornecido para responder - examine TODA a base de conhecimento disponível
+2. NUNCA diga que não tem informação se ela estiver presente no contexto fornecido
+3. Procure cuidadosamente por informações em TODOS os tipos de documento: regime_urbanistico, plano_diretor, luos, qa_plano_diretor
+4. Para perguntas sobre processos participativos, audiências públicas ou dados estatísticos, examine especialmente os documentos Q&A
+5. Ao citar artigos, SEMPRE identifique a lei de origem (LUOS, PDUS, COE)
+6. Para regime urbanístico, apresente dados de forma organizada (altura, coeficientes, etc.)
+7. Se houver múltiplas versões de um artigo, apresente TODAS
+8. Considere sempre o contexto de conversas anteriores quando disponível
 
-FORMATAÇÃO OBRIGATÓRIA para artigos:
-- **Art. X da LUOS/PDUS/COE**: [conteúdo completo]
+FORMATAÇÃO OBRIGATÓRIA:
+- Para artigos: **Art. X da LUOS/PDUS/COE**: [conteúdo completo]
+- Para dados estatísticos: apresente números exatos quando disponíveis
 - Para regime urbanístico: organize em tópicos claros
 - Use markdown para melhor legibilidade
 - Inclua sempre a fonte da informação
 
-Lembre-se: você deve ser preciso, completo e sempre identificar a origem legal das informações.`;
+CONTEXTO DISPONÍVEL: O sistema tem acesso a uma base completa incluindo:
+- 385 registros de regime urbanístico
+- 223 registros do plano diretor
+- 162 registros de Q&A do plano diretor
+- 121 registros da LUOS
+
+Lembre-se: seja preciso, completo e SEMPRE examine todo o contexto antes de concluir que não há informação.`;
 
     const llmConfig = LLM_PROVIDERS[selectedModel] || LLM_PROVIDERS['openai/gpt-4'];
     
