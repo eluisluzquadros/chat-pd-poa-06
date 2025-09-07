@@ -25,167 +25,114 @@ serve(async (req) => {
   try {
     const { articleNumbers, searchText, documentType = 'LUOS' }: FindArticleRequest = await req.json();
     
-    console.log('Buscando artigos:', { articleNumbers, searchText, documentType });
+    console.log('🔍 Legal Article Finder - Searching in knowledgebase:', { articleNumbers, searchText, documentType });
     
     const results = [];
     
-    // Busca por números específicos de artigos
+    // Busca por números específicos de artigos na knowledgebase
     if (articleNumbers && articleNumbers.length > 0) {
       for (const num of articleNumbers) {
-        // Primeiro tentar na tabela legal_articles
-        let { data: article } = await supabase
-          .from('legal_articles')
-          .select('*')
-          .eq('document_type', documentType)
-          .eq('article_number', num)
-          .single();
+        console.log(`📄 Searching for article ${num} in knowledgebase...`);
         
-        if (article) {
+        // Buscar na knowledgebase por artigos específicos
+        const { data: articles } = await supabase.rpc('search_articles_knowledgebase', {
+          article_number_search: num.toString(),
+          document_type_filter: documentType.toLowerCase()
+        });
+        
+        if (articles && articles.length > 0) {
+          const article = articles[0]; // Get the best match
           results.push({
             found: true,
             article_number: num,
-            content: article.full_content || article.article_text,
+            content: article.texto || article.resposta || '',
+            title: article.titulo || `Artigo ${num}`,
             confidence: 1.0,
-            source: 'legal_articles'
+            source: 'knowledgebase',
+            tipo_documento: article.tipo_documento
           });
+          console.log(`✅ Found article ${num} in knowledgebase`);
         } else {
-          // Buscar em document_sections
-          const { data: sections } = await supabase
-            .from('document_sections')
-            .select('content')
-            .or(`content.ilike.%Art. ${num}%,content.ilike.%Artigo ${num}%`)
-            .limit(3);
-          
-          if (sections && sections.length > 0) {
-            for (const section of sections) {
-              const articleMatch = extractArticle(section.content, num);
-              if (articleMatch) {
-                results.push({
-                  found: true,
-                  article_number: num,
-                  content: articleMatch,
-                  confidence: 0.9,
-                  source: 'document_sections'
-                });
-                break;
-              }
-            }
-          }
-        }
-        
-        // Se ainda não encontrou, adicionar dado hardcoded se disponível
-        if (!results.find(r => r.article_number === num)) {
-          const hardcoded = getHardcodedArticle(num, documentType);
-          if (hardcoded) {
-            results.push(hardcoded);
-          } else {
-            results.push({
-              found: false,
-              article_number: num,
-              content: null,
-              confidence: 0,
-              source: 'not_found'
-            });
-          }
+          console.log(`❌ Article ${num} not found in knowledgebase`);
+          results.push({
+            found: false,
+            article_number: num,
+            error: `Artigo ${num} não encontrado na base de conhecimento`,
+            confidence: 0,
+            source: 'knowledgebase'
+          });
         }
       }
     }
     
-    // Busca por texto
+    // Busca textual na knowledgebase
     if (searchText) {
-      const { data: textResults } = await supabase
-        .from('document_sections')
-        .select('content')
-        .textSearch('content', searchText)
-        .limit(5);
+      console.log(`🔤 Text search for: "${searchText}" in knowledgebase...`);
       
-      if (textResults) {
-        textResults.forEach(result => {
+      const { data: searchResults } = await supabase.rpc('search_knowledgebase_by_content', {
+        search_text: searchText,
+        tipo_documento_filter: documentType.toLowerCase(),
+        match_count: 10
+      });
+      
+      if (searchResults && searchResults.length > 0) {
+        searchResults.forEach((result: any, index: number) => {
           results.push({
             found: true,
-            content: result.content.substring(0, 500),
-            confidence: 0.7,
-            source: 'text_search'
+            searchText: searchText,
+            content: result.texto || result.resposta || '',
+            title: result.titulo || result.pergunta || `Resultado ${index + 1}`,
+            confidence: result.relevance_score || 0.8,
+            source: 'knowledgebase',
+            tipo_documento: result.tipo_documento,
+            metadata: {
+              parte: result.parte,
+              capitulo: result.capitulo,
+              secao: result.secao,
+              subsecao: result.subsecao
+            }
           });
+        });
+        console.log(`✅ Found ${searchResults.length} text search results in knowledgebase`);
+      } else {
+        console.log(`❌ No text search results found for "${searchText}"`);
+        results.push({
+          found: false,
+          searchText: searchText,
+          error: `Nenhum resultado encontrado para "${searchText}" na base de conhecimento`,
+          confidence: 0,
+          source: 'knowledgebase'
         });
       }
     }
-    
+
+    // Log do resultado final
+    console.log(`📊 Legal Article Finder Results: ${results.length} total results`);
+    console.log(`✅ Found: ${results.filter(r => r.found).length}, ❌ Not found: ${results.filter(r => !r.found).length}`);
+
     return new Response(JSON.stringify({
       success: true,
       results,
-      total: results.length
+      source: 'knowledgebase',
+      timestamp: new Date().toISOString(),
+      total: results.length,
+      found: results.filter(r => r.found).length
     }), {
+      status: 200,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
 
   } catch (error) {
-    console.error('Erro ao buscar artigos:', error);
-    return new Response(JSON.stringify({ 
-      error: error.message,
-      success: false 
+    console.error('❌ Legal Article Finder Error:', error);
+    
+    return new Response(JSON.stringify({
+      success: false,
+      error: `Erro na busca: ${error.message}`,
+      source: 'knowledgebase',
+      timestamp: new Date().toISOString()
     }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }
 });
-
-function extractArticle(text: string, articleNumber: number): string | null {
-  const patterns = [
-    new RegExp(`Art\\.\\s*${articleNumber}[º°]?\\s*[-–.]?\\s*(.*?)(?=Art\\.\\s*\\d+|$)`, 'is'),
-    new RegExp(`Artigo\\s*${articleNumber}[º°]?\\s*[-–.]?\\s*(.*?)(?=Artigo\\s*\\d+|$)`, 'is')
-  ];
-  
-  for (const pattern of patterns) {
-    const match = pattern.exec(text);
-    if (match) {
-      return match[0].trim();
-    }
-  }
-  
-  return null;
-}
-
-function getHardcodedArticle(articleNumber: number, documentType: string) {
-  const hardcodedArticles: Record<string, any> = {
-    'LUOS-1': {
-      found: true,
-      article_number: 1,
-      content: 'Art. 1º Esta Lei estabelece as normas de uso e ocupação do solo no território do Município de Porto Alegre, disciplinando o parcelamento, o uso e a ocupação do solo urbano.',
-      confidence: 1.0,
-      source: 'hardcoded'
-    },
-    'LUOS-3': {
-      found: true,
-      article_number: 3,
-      content: 'Art. 3º O Plano Diretor Urbano Sustentável de Porto Alegre será regido pelos seguintes princípios fundamentais:\nI - Função social da cidade;\nII - Função social da propriedade;\nIII - Sustentabilidade urbana e ambiental;\nIV - Gestão democrática e participativa;\nV - Equidade e justiça social;\nVI - Direito à cidade.',
-      confidence: 1.0,
-      source: 'hardcoded'
-    },
-    'LUOS-81': {
-      found: true,
-      article_number: 81,
-      content: 'Art. 81 - Das certificações urbanísticas e ambientais.\nI - Certificação de potencial construtivo;\nII - Certificação de diretrizes urbanísticas;\nIII - Certificação em Sustentabilidade Ambiental para empreendimentos que adotem práticas sustentáveis comprovadas.',
-      confidence: 1.0,
-      source: 'hardcoded'
-    },
-    'LUOS-119': {
-      found: true,
-      article_number: 119,
-      content: 'Art. 119 - O Sistema de Gestão e Controle (SGC) realizará análise dos impactos financeiros da ação urbanística sobre a arrecadação municipal, garantindo sua destinação à qualificação dos espaços públicos urbanos e ao financiamento da política urbana.',
-      confidence: 1.0,
-      source: 'hardcoded'
-    },
-    'PDUS-192': {
-      found: true,
-      article_number: 192,
-      content: 'Art. 192 - Concessão urbanística é o instrumento por meio do qual o Município delega a ente privado a execução de obras de urbanização, podendo ser utilizada como objeto principal ou como atividade vinculada a projetos de transformação urbana.',
-      confidence: 1.0,
-      source: 'hardcoded'
-    }
-  };
-  
-  const key = `${documentType}-${articleNumber}`;
-  return hardcodedArticles[key] || null;
-}

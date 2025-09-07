@@ -35,7 +35,7 @@ function normalizeArticleNumber(articleNumber: string | number): string[] {
 }
 
 /**
- * Search for articles with multiple strategies
+ * UPDATED: Search for articles in knowledgebase (migrated from legal_articles)
  */
 export async function searchArticle(
   supabase: any,
@@ -43,48 +43,71 @@ export async function searchArticle(
 ): Promise<any[]> {
   const { articleNumber, documentType, fuzzy = true } = options;
   
-  // Get all variants of the article number
-  const variants = normalizeArticleNumber(articleNumber);
+  console.log(`📄 Searching for article ${articleNumber} in knowledgebase`);
   
-  // Strategy 1: Try exact matches with all variants
-  const exactSearches = variants.map(variant => 
-    supabase
-      .from('legal_articles')
-      .select('*')
-      .eq('article_number', variant)
-      .eq(documentType ? 'document_type' : '', documentType || '')
-  );
-  
-  const exactResults = await Promise.all(exactSearches);
-  const exactMatches = exactResults.flatMap(r => r.data || []);
-  
-  if (exactMatches.length > 0) {
-    return exactMatches;
-  }
-  
-  // Strategy 2: Text search in full_content
-  if (fuzzy) {
-    const textSearch = await supabase
-      .from('legal_articles')
-      .select('*')
-      .or(`full_content.ilike.%art. ${articleNumber}%,full_content.ilike.%artigo ${articleNumber}%`)
-      .eq(documentType ? 'document_type' : '', documentType || '')
-      .limit(5);
+  try {
+    // Use the knowledgebase RPC function for article search
+    const { data: articles, error } = await supabase.rpc('search_articles_knowledgebase', {
+      article_number_search: articleNumber.toString(),
+      document_type_filter: documentType?.toLowerCase()
+    });
     
-    if (textSearch.data && textSearch.data.length > 0) {
-      return textSearch.data;
+    if (!error && articles && articles.length > 0) {
+      console.log(`✅ Found ${articles.length} articles for ${articleNumber}`);
+      return articles.map((article: any) => ({
+        id: article.id,
+        article_number: articleNumber,
+        document_type: documentType,
+        full_content: article.texto || article.resposta || '',
+        article_text: article.texto || article.resposta || '',
+        title: article.titulo,
+        source: 'knowledgebase',
+        metadata: {
+          tipo_documento: article.tipo_documento,
+          parte: article.parte,
+          capitulo: article.capitulo,
+          secao: article.secao,
+          subsecao: article.subsecao
+        }
+      }));
     }
+    
+    // If no exact match and fuzzy search enabled, try text search
+    if (fuzzy) {
+      console.log(`🔤 Trying fuzzy search for article ${articleNumber}`);
+      
+      const { data: fuzzyResults, error: fuzzyError } = await supabase.rpc('search_knowledgebase_by_content', {
+        search_text: `artigo ${articleNumber}`,
+        match_count: 5
+      });
+      
+      if (!fuzzyError && fuzzyResults && fuzzyResults.length > 0) {
+        console.log(`✅ Found ${fuzzyResults.length} fuzzy results for ${articleNumber}`);
+        return fuzzyResults.map((result: any) => ({
+          id: result.id,
+          article_number: articleNumber,
+          document_type: documentType,
+          full_content: result.texto || result.resposta || '',
+          article_text: result.texto || result.resposta || '',
+          title: result.titulo || result.pergunta,
+          source: 'knowledgebase',
+          relevance_score: result.relevance_score,
+          metadata: {
+            tipo_documento: result.tipo_documento,
+            parte: result.parte,
+            capitulo: result.capitulo
+          }
+        }));
+      }
+    }
+    
+    console.log(`❌ No results found for article ${articleNumber}`);
+    return [];
+    
+  } catch (error) {
+    console.error(`❌ Error searching for article ${articleNumber}:`, error);
+    return [];
   }
-  
-  // Strategy 3: Pattern matching
-  const patternSearch = await supabase
-    .from('legal_articles')
-    .select('*')
-    .or(variants.map(v => `article_number.ilike.%${v}%`).join(','))
-    .eq(documentType ? 'document_type' : '', documentType || '')
-    .limit(5);
-  
-  return patternSearch.data || [];
 }
 
 /**
@@ -100,16 +123,15 @@ export function extractArticleReferences(query: string): ArticleSearchOptions[] 
   while ((match = withLawPattern.exec(query)) !== null) {
     references.push({
       articleNumber: match[1],
-      documentType: match[2].toUpperCase() as 'PDUS' | 'LUOS' | 'COE'
+      documentType: match[2] as 'PDUS' | 'LUOS' | 'COE'
     });
   }
   
-  // Pattern: artigo X (without law)
+  // Pattern: just artigo X
   const simplePattern = /art(?:igo)?\.?\s*(\d+)/gi;
-  
   while ((match = simplePattern.exec(query)) !== null) {
-    // Check if not already captured with law
-    if (!references.some(r => r.articleNumber === match[1])) {
+    // Only add if not already captured by the previous pattern
+    if (!references.some(ref => ref.articleNumber === match[1])) {
       references.push({
         articleNumber: match[1]
       });
@@ -117,4 +139,3 @@ export function extractArticleReferences(query: string): ArticleSearchOptions[] 
   }
   
   return references;
-}
