@@ -497,7 +497,6 @@ export type Database = {
           capitulo: string | null
           categoria_qa: string | null
           embedding: string | null
-          embedding_json: string | null
           id: string | null
           numero_qa: string | null
           parte: string | null
@@ -515,7 +514,6 @@ export type Database = {
           capitulo?: string | null
           categoria_qa?: string | null
           embedding?: string | null
-          embedding_json?: string | null
           id?: string | null
           numero_qa?: string | null
           parte?: string | null
@@ -533,7 +531,6 @@ export type Database = {
           capitulo?: string | null
           categoria_qa?: string | null
           embedding?: string | null
-          embedding_json?: string | null
           id?: string | null
           numero_qa?: string | null
           parte?: string | null
