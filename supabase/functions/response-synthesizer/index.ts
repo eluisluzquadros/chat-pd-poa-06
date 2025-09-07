@@ -21,306 +21,164 @@ Contribua com sugestões: https://bit.ly/4o7AWqb ↗ ↗
 Participe da Audiência Pública: https://bit.ly/4oefZKm ↗ ↗
 💬 Dúvidas? planodiretor@portoalegre.rs.gov.br`;
 
-// 🎯 MULTI-FIELD PARSER - Detecta campos específicos solicitados
+// 🎯 QUERY INTENT PARSER
 function parseQueryIntent(query: string): { 
-  requestedFields: string[], 
-  fieldCategories: string[], 
-  isTabularQuery: boolean,
-  isSemanticQuery: boolean 
+  isQuestionAnswer: boolean,
+  isDataQuery: boolean,
+  isConceptualQuery: boolean 
 } {
   const queryLower = query.toLowerCase();
   
-  const fieldMapping = {
-    // Área e dimensões
-    'area_minima_lote': ['área mínima', 'área do lote', 'lote mínimo'],
-    'testada_minima_lote': ['testada mínima', 'testada do lote', 'frente mínima'],
-    
-    // Altura e volumetria
-    'altura_maxima': ['altura máxima', 'altura máx', 'gabarito'],
-    'coef_aproveitamento_basico': ['coeficiente básico', 'ca básico', 'aproveitamento básico'],
-    'coef_aproveitamento_maximo': ['coeficiente máximo', 'ca máximo', 'aproveitamento máximo'],
-    
-    // Afastamentos
-    'afastamento_frente': ['afastamento frente', 'recuo frontal', 'afastamento frontal'],
-    'afastamento_lateral': ['afastamento lateral', 'recuo lateral'],
-    'afastamento_fundos': ['afastamento fundos', 'recuo fundos', 'afastamento fundo'],
-    
-    // Atividades comerciais
-    'comercio_varejista_inocuo': ['comércio varejista', 'varejo inocuo'],
-    'comercio_atacadista_ia1': ['comércio atacadista', 'atacado'],
-    'servico_inocuo': ['serviços inocuos', 'serviços'],
-    'industria_inocua': ['indústria inocua', 'indústria'],
-    
-    // Parcelamento
-    'modulo_fracionamento': ['módulo fracionamento', 'fracionamento'],
-    'enquadramento_loteamento': ['loteamento', 'parcelamento'],
-    'area_publica_viaria_loteamento': ['área viária', 'sistema viário'],
-    
-    // Permeabilidade
-    'fator_conversao_permeabilidade': ['permeabilidade', 'taxa permeável'],
-    'recuo_jardim': ['recuo jardim', 'jardim frontal']
-  };
+  // Detectar perguntas específicas que esperamos encontrar na knowledgebase como Q&A
+  const qaIndicators = [
+    'quantas contribuições',
+    'quantas audiências',
+    'quando foi',
+    'quem pode',
+    'onde aconteceu',
+    'como participar',
+    'o que aconteceu',
+    'qual o resultado'
+  ];
   
-  const requestedFields = [];
-  const fieldCategories = [];
+  const isQuestionAnswer = qaIndicators.some(indicator => queryLower.includes(indicator));
   
-  // Detectar campos específicos
-  for (const [field, keywords] of Object.entries(fieldMapping)) {
-    if (keywords.some(keyword => queryLower.includes(keyword))) {
-      requestedFields.push(field);
-      
-      // Categorizar
-      if (field.includes('afastamento') || field.includes('recuo')) {
-        if (!fieldCategories.includes('afastamentos')) fieldCategories.push('afastamentos');
-      } else if (field.includes('comercio') || field.includes('servico') || field.includes('industria')) {
-        if (!fieldCategories.includes('atividades')) fieldCategories.push('atividades');
-      } else if (field.includes('loteamento') || field.includes('fracionamento')) {
-        if (!fieldCategories.includes('parcelamento')) fieldCategories.push('parcelamento');
-      } else if (field.includes('area') || field.includes('testada')) {
-        if (!fieldCategories.includes('dimensoes')) fieldCategories.push('dimensoes');
-      } else if (field.includes('altura') || field.includes('coef')) {
-        if (!fieldCategories.includes('volumetria')) fieldCategories.push('volumetria');
-      }
-    }
-  }
-  
-  // Determinar tipo de query
-  const isTabularQuery = requestedFields.length > 0 || 
-    queryLower.includes('bairro') || 
-    queryLower.includes('zona') || 
-    queryLower.includes('zot') ||
-    queryLower.includes('regime');
+  const isDataQuery = queryLower.includes('bairro') || 
+                     queryLower.includes('zona') || 
+                     queryLower.includes('zot') ||
+                     queryLower.includes('altura') ||
+                     queryLower.includes('coeficiente');
     
-  const isSemanticQuery = !isTabularQuery || 
-    queryLower.includes('o que') || 
-    queryLower.includes('como') || 
-    queryLower.includes('por que') ||
-    queryLower.includes('conceito') ||
-    queryLower.includes('explicar');
+  const isConceptualQuery = queryLower.includes('o que é') || 
+                           queryLower.includes('como funciona') || 
+                           queryLower.includes('explicar') ||
+                           queryLower.includes('conceito');
   
   return { 
-    requestedFields, 
-    fieldCategories, 
-    isTabularQuery, 
-    isSemanticQuery 
+    isQuestionAnswer, 
+    isDataQuery, 
+    isConceptualQuery 
   };
 }
 
-// 🏗️ MULTI-FIELD DATA FORMATTER - Formata dados específicos
-function formatMultiFieldData(
-  regimeData: any[], 
-  zotData: any[], 
-  riskData: any[],
+// 🏗️ DATA FORMATTER - Only knowledgebase data
+function formatKnowledgebaseResponse(
+  knowledgebaseData: any[], 
   parsedIntent: any, 
   originalQuery: string
 ): string {
-  console.log('🎯 MULTI-FIELD FORMATTER:', {
-    regimeRecords: regimeData.length,
-    zotRecords: zotData.length,
-    riskRecords: riskData.length,
-    requestedFields: parsedIntent.requestedFields,
-    categories: parsedIntent.fieldCategories
+  console.log('📚 FORMATTING KNOWLEDGEBASE RESPONSE:', {
+    records: knowledgebaseData.length,
+    isQuestionAnswer: parsedIntent.isQuestionAnswer,
+    isDataQuery: parsedIntent.isDataQuery
   });
 
-  const queryLower = originalQuery.toLowerCase();
-
-  // 🗺️ ZOT Queries - All zones
-  if (zotData.length > 0) {
-    console.log('🗺️ BUILDING ZOT RESPONSE FROM REAL DATA');
-    
-    const bairrosList = zotData.map(item => item.bairro).join(', ');
-    const zotName = zotData[0]?.zona || 'zona especificada';
-
-    return `A ${zotName} compreende ${zotData.length} bairros:\n\n${bairrosList}\n\n${FOOTER_TEMPLATE}`;
+  if (!knowledgebaseData || knowledgebaseData.length === 0) {
+    return `Não foram encontrados dados específicos para esta consulta na base de conhecimento.\n\n${FOOTER_TEMPLATE}`;
   }
 
-  // 🏘️ Risk Data Queries - ONLY if no urban data and query is explicitly about risks
-  const isRiskQuery = queryLower.includes('risco') || queryLower.includes('inundação') || 
-                      queryLower.includes('deslizamento') || queryLower.includes('desastre') ||
-                      queryLower.includes('alagamento') || queryLower.includes('vendaval');
-  
-  if (riskData.length > 0 && regimeData.length === 0 && isRiskQuery) {
-    console.log('⚠️ BUILDING RISK RESPONSE FROM REAL DATA');
+  // Para perguntas específicas (Q&A), usar a resposta direta
+  if (parsedIntent.isQuestionAnswer) {
+    console.log('🎯 BUILDING Q&A RESPONSE');
     
-    const risk = riskData[0];
-    let response = `Informações de risco para o bairro:\n\n`;
+    // Buscar uma resposta direta
+    const directAnswer = knowledgebaseData.find(item => 
+      item.resposta && item.resposta.trim().length > 10
+    );
     
-    if (risk.riscos_ativos && risk.riscos_ativos.length > 0) {
-      response += `🚨 Riscos identificados: ${risk.riscos_ativos.join(', ')}\n`;
-      response += `📊 Nível de risco: ${risk.descricao_riscos}\n`;
-    } else {
-      response += `✅ Sem riscos específicos identificados\n`;
+    if (directAnswer) {
+      console.log('✅ FOUND DIRECT ANSWER:', directAnswer.resposta.substring(0, 100));
+      return `${directAnswer.resposta}\n\n${FOOTER_TEMPLATE}`;
     }
     
-    response += `\n${FOOTER_TEMPLATE}`;
-    return response;
-  }
-
-  // 🏗️ REGIME QUERIES - MULTI-FIELD INTELLIGENCE
-  if (regimeData.length > 0) {
-    console.log('📊 BUILDING MULTI-FIELD REGIME RESPONSE');
-    
-    // 🎯 FIELD-SPECIFIC RESPONSE
-    if (parsedIntent.requestedFields.length > 0) {
-      return formatSpecificFieldsResponse(regimeData, parsedIntent, originalQuery);
+    // Se não tem resposta direta, usar o texto mais relevante
+    const bestMatch = knowledgebaseData[0];
+    if (bestMatch.texto) {
+      console.log('📝 USING BEST TEXT MATCH');
+      return `${bestMatch.texto}\n\n${FOOTER_TEMPLATE}`;
     }
-    
-    // 📋 DEFAULT COMPREHENSIVE RESPONSE
-    return formatComprehensiveResponse(regimeData, originalQuery);
   }
 
-  // No data found
-  console.log('❌ NO DATA FOUND - RETURNING NO DATA MESSAGE');
-  return `Não foram encontrados dados específicos para esta consulta na base de dados oficial.\n\n${FOOTER_TEMPLATE}`;
-}
-
-// 🎯 SPECIFIC FIELDS FORMATTER - Campos específicos solicitados
-function formatSpecificFieldsResponse(regimeData: any[], parsedIntent: any, originalQuery: string): string {
+  // Para consultas de dados ou conceituais, construir resposta contextual
   let response = '';
   
-  // Detectar se pergunta específica sobre área mínima
-  const queryLower = originalQuery.toLowerCase();
-  if (queryLower.includes('área mínima')) {
-    response = `**Área Mínima do Lote:**\n\n`;
-    
-    for (const record of regimeData) {
-      const areaMinima = record.area_minima_lote || 'Não definida';
-      const testadaMinima = record.testada_minima_lote || 'Não definida';
-      
-      response += `📍 **${record.zona || 'Zona'}:** `;
-      response += `${areaMinima !== 'Não definida' ? areaMinima + ' m²' : areaMinima}`;
-      
-      if (testadaMinima !== 'Não definida') {
-        response += ` (testada mínima: ${testadaMinima} m)`;
-      }
-      response += '\n';
-      
-      console.log(`📝 FIELD: ${record.zona} | Área: ${areaMinima} m² | Testada: ${testadaMinima} m`);
-    }
+  // Adicionar títulos/contexto se disponível
+  const uniqueTitles = [...new Set(knowledgebaseData.map(item => item.titulo).filter(Boolean))];
+  if (uniqueTitles.length > 0 && uniqueTitles.length <= 3) {
+    response += `**Baseado em:** ${uniqueTitles.join(', ')}\n\n`;
   }
   
-  // Afastamentos
-  else if (parsedIntent.fieldCategories.includes('afastamentos')) {
-    response = `**Afastamentos Obrigatórios:**\n\n`;
-    
-    for (const record of regimeData) {
-      response += `📍 **${record.zona || 'Zona'}:**\n`;
-      response += `• Frente: ${record.afastamento_frente || 'Não definido'}\n`;
-      response += `• Lateral: ${record.afastamento_lateral || 'Não definido'}\n`;
-      response += `• Fundos: ${record.afastamento_fundos || 'Não definido'}\n\n`;
-    }
+  // Compilar textos mais relevantes
+  const relevantTexts = knowledgebaseData
+    .filter(item => item.texto && item.texto.length > 50)
+    .slice(0, 3)
+    .map(item => item.texto);
+  
+  if (relevantTexts.length > 0) {
+    response += relevantTexts.join('\n\n');
+  } else {
+    response += 'Informação encontrada na base de conhecimento mas requer análise mais detalhada.';
   }
   
-  // Atividades
-  else if (parsedIntent.fieldCategories.includes('atividades')) {
-    response = `**Atividades Permitidas:**\n\n`;
-    
-    for (const record of regimeData) {
-      response += `📍 **${record.zona || 'Zona'}:**\n`;
-      response += `• Comércio Varejista: ${record.comercio_varejista_inocuo || 'Não definido'}\n`;
-      response += `• Comércio Atacadista: ${record.comercio_atacadista_ia1 || 'Não definido'}\n`;
-      response += `• Serviços: ${record.servico_inocuo || 'Não definido'}\n`;
-      response += `• Indústria: ${record.industria_inocua || 'Não definido'}\n\n`;
-    }
-  }
-  
-  // Default multi-field
-  else {
-    response = `**Dados Solicitados:**\n\n`;
-    
-    for (const record of regimeData) {
-      response += `📍 **${record.zona || 'Zona'}:**\n`;
-      
-      for (const field of parsedIntent.requestedFields) {
-        const value = record[field];
-        const displayName = field.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-        response += `• ${displayName}: ${value || 'Não definido'}\n`;
-      }
-      response += '\n';
-    }
-  }
-  
-  response += `${FOOTER_TEMPLATE}`;
+  response += `\n\n${FOOTER_TEMPLATE}`;
   return response;
 }
 
-// 📋 COMPREHENSIVE RESPONSE - Resposta completa padrão
-function formatComprehensiveResponse(regimeData: any[], originalQuery: string): string {
-  let response = `Para este bairro, os dados oficiais são:\n\n`;
-
-  // Tabela principal otimizada
-  response += `| Zona | Altura Máx | CA Básico | CA Máximo | Área Mín. Lote | Testada Mín. |\n`;
-  response += `|------|------------|-----------|-----------|----------------|---------------|\n`;
-  
-  for (const record of regimeData) {
-    const zona = record.zona || 'N/A';
-    const altura = record.altura_maxima ? `${record.altura_maxima}m` : 'N/A';
-    const caBasico = record.coef_aproveitamento_basico !== null ? String(record.coef_aproveitamento_basico) : 'N/A';
-    const caMaximo = record.coef_aproveitamento_maximo !== null ? String(record.coef_aproveitamento_maximo) : 'N/A';
-    const areaMinima = record.area_minima_lote ? `${record.area_minima_lote}m²` : 'N/A';
-    const testadaMinima = record.testada_minima_lote ? `${record.testada_minima_lote}m` : 'N/A';
-    
-    response += `| ${zona} | ${altura} | ${caBasico} | ${caMaximo} | ${areaMinima} | ${testadaMinima} |\n`;
-    
-    console.log(`📝 ROW: ${zona} | ${altura} | ${caBasico} | ${caMaximo} | ${areaMinima} | ${testadaMinima}`);
-  }
-
-  // Glossário de siglas
-  response += `\n📖 **Significado das Siglas:**\n`;
-  response += `• **CA** = Coeficiente de Aproveitamento (indica quantas vezes a área do terreno pode ser construída)\n`;
-  response += `• **ZOT** = Zona de Ordenamento Territorial (áreas com regras específicas de ocupação)\n`;
-  
-  // Detectar outras siglas nas zonas
-  const hasZOU = regimeData.some(record => record.zona?.includes('ZOU'));
-  const hasZCP = regimeData.some(record => record.zona?.includes('ZCP'));
-  const hasZEIS = regimeData.some(record => record.zona?.includes('ZEIS'));
-  
-  if (hasZOU) {
-    response += `• **ZOU** = Zona de Ocupação Urbana (área consolidada da cidade)\n`;
-  }
-  if (hasZCP) {
-    response += `• **ZCP** = Zona do Centro Principal (área central histórica)\n`;
-  }
-  if (hasZEIS) {
-    response += `• **ZEIS** = Zona Especial de Interesse Social (habitação popular)\n`;
-  }
-
-  response += `\n${FOOTER_TEMPLATE}`;
-  return response;
-}
-
-// 🧠 SEMANTIC SYNTHESIS - Combina dados reais com contexto semântico
-async function synthesizeSemanticResponse(
-  tabularData: string,
-  semanticContext: any[],
+// 🧠 SEMANTIC SYNTHESIS usando OpenAI
+async function synthesizeResponse(
+  knowledgebaseData: any[],
   originalQuery: string,
   confidence: number
 ): Promise<string> {
-  console.log('🧠 SYNTHESIZING SEMANTIC RESPONSE');
+  console.log('🧠 SYNTHESIZING RESPONSE WITH AI');
   
-  if (!openaiApiKey || semanticContext.length === 0) {
-    console.log('📋 RETURNING TABULAR-ONLY RESPONSE');
-    return tabularData;
+  if (!openaiApiKey || !knowledgebaseData || knowledgebaseData.length === 0) {
+    console.log('❌ NO AI KEY OR DATA - USING BASIC FORMATTING');
+    return formatKnowledgebaseResponse(knowledgebaseData, parseQueryIntent(originalQuery), originalQuery);
   }
   
   try {
-    // Preparar contexto semântico
-    const contextText = semanticContext
-      .filter(item => item.confidence > 0.7)
-      .map(item => item.data?.legal_documents || item.data?.content)
-      .filter(Boolean)
-      .flat()
-      .map(doc => doc.content_chunk || doc.content || '')
-      .join('\n\n')
-      .slice(0, 2000); // Limitar tamanho
+    // Preparar contexto da knowledgebase
+    const contextText = knowledgebaseData
+      .map(item => {
+        const parts = [];
+        if (item.titulo) parts.push(`TÍTULO: ${item.titulo}`);
+        if (item.texto) parts.push(`TEXTO: ${item.texto}`);
+        if (item.resposta) parts.push(`RESPOSTA: ${item.resposta}`);
+        if (item.pergunta) parts.push(`PERGUNTA: ${item.pergunta}`);
+        return parts.join('\n');
+      })
+      .join('\n\n---\n\n')
+      .slice(0, 3000); // Limitar tamanho
 
     if (!contextText) {
-      console.log('📋 NO SEMANTIC CONTEXT - RETURNING TABULAR DATA');
-      return tabularData;
+      console.log('❌ NO CONTEXT TEXT');
+      return formatKnowledgebaseResponse(knowledgebaseData, parseQueryIntent(originalQuery), originalQuery);
     }
 
-    // Prompt para síntese híbrida
-    const prompt = `Você é um assistente especializado em legislação urbana de Porto Alegre. \n\nDADOS OFICIAIS PRECISOS (100% corretos):\n${tabularData}\n\nCONTEXTO LEGAL ADICIONAL:\n${contextText}\n\nPERGUNTA ORIGINAL: ${originalQuery}\n\nINSTRUÇÕES:\n1. SEMPRE mantenha os dados numéricos oficiais EXATAMENTE como fornecidos\n2. Use o contexto legal apenas para EXPLICAR e CONTEXTUALIZAR os dados\n3. NÃO invente ou modifique nenhum número ou valor\n4. Mantenha o rodapé com os links oficiais\n5. Seja conciso e direto\n\nForneça uma resposta que combine os dados precisos com explicações contextuais relevantes:`;
+    const prompt = `Você é um assistente especializado em legislação urbana de Porto Alegre, baseado no Plano Diretor de Urbanização e no LUOS.
+
+CONTEXTO DA BASE DE CONHECIMENTO:
+${contextText}
+
+PERGUNTA DO USUÁRIO: ${originalQuery}
+
+INSTRUÇÕES:
+1. Use EXCLUSIVAMENTE as informações fornecidas no contexto
+2. Se a pergunta for específica (ex: "Quantas contribuições..."), forneça a resposta exata
+3. Para perguntas conceituais, explique baseado nos documentos
+4. Seja preciso e direto
+5. SEMPRE termine com os links do rodapé
+6. NÃO invente informações não presentes no contexto
+
+RODAPÉ OBRIGATÓRIO:
+📍 Explore mais:
+Mapa com Regras Construtivas: https://bit.ly/3ILdXRA ↗ ↗
+Contribua com sugestões: https://bit.ly/4o7AWqb ↗ ↗
+Participe da Audiência Pública: https://bit.ly/4oefZKm ↗ ↗
+💬 Dúvidas? planodiretor@portoalegre.rs.gov.br
+
+Forneça uma resposta clara e baseada no contexto:`;
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -341,16 +199,18 @@ async function synthesizeSemanticResponse(
       const synthesizedResponse = data.choices[0]?.message?.content;
       
       if (synthesizedResponse) {
-        console.log('✅ SEMANTIC SYNTHESIS SUCCESSFUL');
+        console.log('✅ AI SYNTHESIS SUCCESSFUL');
         return synthesizedResponse;
       }
+    } else {
+      console.error('❌ OpenAI API error:', response.status);
     }
   } catch (error) {
-    console.error('❌ Semantic synthesis error:', error);
+    console.error('❌ Synthesis error:', error);
   }
   
-  console.log('📋 FALLBACK TO TABULAR DATA');
-  return tabularData;
+  console.log('🔄 FALLBACK TO BASIC FORMATTING');
+  return formatKnowledgebaseResponse(knowledgebaseData, parseQueryIntent(originalQuery), originalQuery);
 }
 
 serve(async (req) => {
@@ -359,7 +219,7 @@ serve(async (req) => {
   }
 
   try {
-    console.log('🎯 RESPONSE-SYNTHESIZER: AGENTIC-RAG HÍBRIDO COM ANTI-FABRICAÇÃO');
+    console.log('🎯 RESPONSE-SYNTHESIZER: KNOWLEDGEBASE ONLY');
     
     const { originalQuery, agentResults } = await req.json();
     
@@ -368,115 +228,74 @@ serve(async (req) => {
       agentCount: agentResults?.length || 0
     });
 
-    // 🎯 PARSE QUERY INTENT - Detectar campos específicos
+    // Parse query intent
     const parsedIntent = parseQueryIntent(originalQuery);
     console.log('🧠 Query Intent:', parsedIntent);
 
-    // 📊 EXTRACT ALL DATA from agent results
-    let allRegimeData = [];
-    let allZotData = [];
-    let allRiskData = [];
-    let semanticAgents = [];
+    // Extract knowledgebase data from agent results
+    let allKnowledgebaseData = [];
     
     if (agentResults && Array.isArray(agentResults)) {
       agentResults.forEach((agent, index) => {
         console.log(`🤖 Agent ${index} - Type: ${agent.type}`, {
-          hasRegimeData: !!agent.data?.regime_data,
-          hasZotData: !!agent.data?.zot_data,
-          hasRiskData: !!agent.data?.risk_data,
-          hasLegalData: !!agent.data?.legal_documents,
+          hasKnowledgebaseData: !!agent.data?.knowledgebase_data,
           confidence: agent.confidence
         });
         
-        // Extract tabular data
-        if (agent.data?.regime_data && Array.isArray(agent.data.regime_data)) {
-          console.log(`📊 Found ${agent.data.regime_data.length} regime records from agent ${index}`);
-          allRegimeData.push(...agent.data.regime_data);
-        }
-        
-        if (agent.data?.zot_data && Array.isArray(agent.data.zot_data)) {
-          console.log(`🗺️ Found ${agent.data.zot_data.length} ZOT records from agent ${index}`);
-          allZotData.push(...agent.data.zot_data);
-        }
-
-        if (agent.data?.risk_data && Array.isArray(agent.data.risk_data)) {
-          console.log(`⚠️ Found ${agent.data.risk_data.length} risk records from agent ${index}`);
-          allRiskData.push(...agent.data.risk_data);
-        }
-        
-        // Extract semantic context for legal/conceptual queries
-        if (agent.type === 'legal' && agent.confidence > 0.7) {
-          semanticAgents.push(agent);
+        // Extract knowledgebase data
+        if (agent.data?.knowledgebase_data && Array.isArray(agent.data.knowledgebase_data)) {
+          console.log(`📚 Found ${agent.data.knowledgebase_data.length} knowledgebase records from agent ${index}`);
+          allKnowledgebaseData.push(...agent.data.knowledgebase_data);
         }
       });
     }
 
     console.log(`✅ EXTRACTED DATA:`, {
-      regimeRecords: allRegimeData.length,
-      zotRecords: allZotData.length,
-      riskRecords: allRiskData.length,
-      semanticAgents: semanticAgents.length
+      knowledgebaseRecords: allKnowledgebaseData.length
     });
 
-    // 🎯 MULTI-FIELD TABULAR RESPONSE
-    const tabularResponse = formatMultiFieldData(
-      allRegimeData, 
-      allZotData, 
-      allRiskData,
-      parsedIntent, 
-      originalQuery
-    );
-    
-    console.log('📋 TABULAR RESPONSE GENERATED');
-
-    // 🧠 SEMANTIC ENHANCEMENT (if needed and available)
-    let finalResponse = tabularResponse;
-    let confidence = 0.99; // High confidence for tabular data
+    // Generate response based on knowledgebase data
+    let finalResponse: string;
+    let confidence = 0.85;
     let sources = { 
-      tabular: allRegimeData.length + allZotData.length + allRiskData.length,
-      conceptual: 0
+      knowledgebase: allKnowledgebaseData.length
     };
 
-    // Only use semantic synthesis if:
-    // 1. Query has semantic intent AND
-    // 2. We have semantic context AND 
-    // 3. We have tabular data to validate against
-    if (parsedIntent.isSemanticQuery && semanticAgents.length > 0 && (allRegimeData.length > 0 || allZotData.length > 0)) {
-      console.log('🧠 ATTEMPTING SEMANTIC SYNTHESIS');
-      
-      try {
-        finalResponse = await synthesizeSemanticResponse(
-          tabularResponse,
-          semanticAgents,
-          originalQuery,
-          confidence
-        );
-        
-        sources.conceptual = semanticAgents.length;
-        console.log('✅ SEMANTIC SYNTHESIS COMPLETE');
-      } catch (error) {
-        console.error('❌ Semantic synthesis failed:', error);
-        // Keep tabular response as fallback
-      }
+    if (allKnowledgebaseData.length > 0) {
+      // Use AI synthesis for better responses
+      finalResponse = await synthesizeResponse(
+        allKnowledgebaseData,
+        originalQuery,
+        confidence
+      );
+      confidence = 0.95; // High confidence when we have data
+    } else {
+      console.log('❌ NO KNOWLEDGEBASE DATA FOUND');
+      finalResponse = `Não foram encontradas informações específicas para esta consulta na base de conhecimento.\n\n${FOOTER_TEMPLATE}`;
+      confidence = 0.1;
     }
 
-    console.log('✅ RESPONSE-SYNTHESIZER COMPLETE');
+    console.log('✅ FINAL RESPONSE GENERATED');
 
-    return new Response(JSON.stringify({ 
+    return new Response(JSON.stringify({
       response: finalResponse,
-      confidence,
-      sources,
-      model: 'response-synthesizer-hybrid',
-      provider: 'supabase'
+      confidence: confidence,
+      sources: sources,
+      metadata: {
+        queryIntent: parsedIntent,
+        dataFound: allKnowledgebaseData.length > 0,
+        responseType: 'knowledgebase_synthesis'
+      }
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
 
   } catch (error) {
     console.error('🔥 Error in response-synthesizer:', error);
-    return new Response(JSON.stringify({ 
-      error: `Response synthesis failed: ${error.message}`,
-      response: `Desculpe, ocorreu um erro interno no sistema. Por favor, tente novamente.\n\n${FOOTER_TEMPLATE}`
+    return new Response(JSON.stringify({
+      error: error.message,
+      response: `Erro interno do sistema. Por favor, tente novamente.\n\n${FOOTER_TEMPLATE}`,
+      confidence: 0.0
     }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
