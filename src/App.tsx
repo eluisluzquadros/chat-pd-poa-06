@@ -40,7 +40,7 @@ const queryClient = new QueryClient();
 
 function App() {
   return (
-    <ThemeProvider defaultTheme="dark" attribute="class" enableSystem={false} storageKey="urbanista-theme">
+    <ThemeProvider defaultTheme="light" attribute="class" enableSystem={false} storageKey="urbanista-theme">
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
           <BrowserRouter>
