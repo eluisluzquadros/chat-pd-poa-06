@@ -13,7 +13,7 @@ serve(async (req) => {
   }
 
   try {
-    console.log('🚀 Dify RAG Proxy - Processing request');
+    console.log('🚀 Agentic RAG v2 Proxy - Processing request');
     
     const { originalQuery, user_role = 'citizen' } = await req.json();
     
@@ -23,10 +23,10 @@ serve(async (req) => {
     const difyAppToken = Deno.env.get('DIFY_APP_TOKEN');
     
     if (!difyApiKey || !difyAppToken) {
-      throw new Error('Dify credentials not configured');
+      throw new Error('External Agent credentials not configured');
     }
     
-    console.log('📡 Calling Dify API with query:', originalQuery);
+    console.log('📡 Calling External Agent API with query:', originalQuery);
     
     // Map to Dify Chat Completion format
     const difyPayload = {
@@ -51,32 +51,32 @@ serve(async (req) => {
     
     if (!difyResponse.ok) {
       const errorText = await difyResponse.text();
-      console.error('❌ Dify API error:', errorText);
-      throw new Error(`Dify API error: ${difyResponse.status} - ${errorText}`);
+      console.error('❌ External Agent API error:', errorText);
+      throw new Error(`External Agent API error: ${difyResponse.status} - ${errorText}`);
     }
     
     const difyData = await difyResponse.json();
-    console.log('✅ Dify response received:', JSON.stringify(difyData, null, 2));
+    console.log('✅ External Agent response received:', JSON.stringify(difyData, null, 2));
     
     const executionTime = Date.now() - startTime;
     
-    // Map Dify response to expected format - PRESERVE ORIGINAL RESPONSE
-    const originalResponse = difyData.answer || difyData.message || 'No response from Dify';
+    // Map External Agent response to expected format - PRESERVE ORIGINAL RESPONSE
+    const originalResponse = difyData.answer || difyData.message || 'No response from External Agent';
     
     const mappedResponse = {
       response: originalResponse, // DO NOT MODIFY - Return exactly as received from Dify
-      confidence: 0.85, // Default confidence for Dify responses
+      confidence: 0.85, // Default confidence for agentic-rag-v2 responses
       sources: { 
         external: 1,
-        dify: true 
+        agenticV2: true 
       },
       executionTime,
       metadata: {
-        provider: 'dify',
+        provider: 'agentic-rag-v2',
         conversationId: difyData.conversation_id,
         messageId: difyData.id,
         external: true,
-        model: difyData.metadata?.model || 'dify-agent'
+        model: 'agentic-rag-v2'
       }
     };
     
@@ -91,8 +91,8 @@ serve(async (req) => {
     
     return new Response(JSON.stringify({ 
       error: error.message,
-      provider: 'dify',
-      fallback_suggestion: 'Consider using local RAG endpoint'
+      provider: 'agentic-rag-v2',
+      fallback_suggestion: 'Consider using agentic-rag-v1 endpoint'
     }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

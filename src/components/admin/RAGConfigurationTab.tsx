@@ -62,7 +62,7 @@ const RAGConfigurationTab = () => {
                 <AlertCircle className="h-4 w-4 text-yellow-600 mt-0.5" />
                 <div className="text-sm text-yellow-800">
                   <p className="font-medium">Configuração Incompleta</p>
-                  <p>Para usar o modo Dify, configure os secrets necessários.</p>
+                  <p>Para usar o agentic-rag-v2, configure os secrets necessários.</p>
                 </div>
               </div>
             )}
@@ -78,7 +78,7 @@ const RAGConfigurationTab = () => {
               <div className="space-y-1">
                 <StatusIndicator 
                   isActive={status.currentMode === 'local'} 
-                  label="RAG Supabase" 
+                  label="agentic-rag-v1" 
                 />
                 <p className="text-sm text-muted-foreground ml-6">
                   Sistema RAG interno via edge functions Supabase
@@ -96,10 +96,10 @@ const RAGConfigurationTab = () => {
               <div className="space-y-1">
                 <StatusIndicator 
                   isActive={status.currentMode === 'dify'} 
-                  label="Dify RAG" 
+                  label="agentic-rag-v2" 
                 />
                 <p className="text-sm text-muted-foreground mr-6">
-                  Sistema RAG via plataforma Dify
+                  Sistema RAG avançado (versão 2)
                 </p>
               </div>
             </div>
@@ -111,7 +111,7 @@ const RAGConfigurationTab = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Card className={status.currentMode === 'local' ? 'ring-2 ring-primary' : ''}>
               <CardHeader className="pb-3">
-                <CardTitle className="text-base">RAG Supabase</CardTitle>
+                <CardTitle className="text-base">agentic-rag-v1</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
                 <div className="flex items-center gap-2">
@@ -131,7 +131,7 @@ const RAGConfigurationTab = () => {
 
             <Card className={status.currentMode === 'dify' ? 'ring-2 ring-primary' : ''}>
               <CardHeader className="pb-3">
-                <CardTitle className="text-base">Dify RAG</CardTitle>
+                <CardTitle className="text-base">agentic-rag-v2</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
                 <div className="flex items-center gap-2">

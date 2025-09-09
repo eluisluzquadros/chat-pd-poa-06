@@ -39,7 +39,7 @@ export function ModelSelector({ selectedModel = 'anthropic/claude-3-5-sonnet-202
   const { ragMode, loading } = useRAGMode();
   const selectedModelInfo = AVAILABLE_MODELS.find(m => m.value === selectedModel);
   
-  // Quando Dify estiver ativo, mostrar apenas indicador do agente
+  // Quando agentic-v2 estiver ativo, mostrar apenas indicador do agente
   if (!loading && ragMode === 'dify') {
     return (
       <div className="space-y-2">
@@ -48,11 +48,11 @@ export function ModelSelector({ selectedModel = 'anthropic/claude-3-5-sonnet-202
         </Label>
         <div className="flex items-center gap-2 p-2 rounded-lg border bg-background">
           <Badge variant="default" className="bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300">
-            Agente: Dify
+            agentic-rag-v2
           </Badge>
         </div>
         <p className="text-xs text-muted-foreground">
-          Sistema RAG externo ativo via plataforma Dify
+          Sistema RAG avançado ativo (versão 2)
         </p>
       </div>
     );

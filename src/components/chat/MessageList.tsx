@@ -5,7 +5,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useEffect, useRef, memo } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { MessageContent } from "./MessageContent";
-import { DifyResponseRenderer } from "./DifyResponseRenderer";
+import { AgenticV2ResponseRenderer } from "./AgenticV2ResponseRenderer";
 import { cn } from "@/lib/utils";
 import { useRAGMode } from "@/hooks/useRAGMode";
 interface MessageListProps {
@@ -103,11 +103,11 @@ export const MessageList = memo(function MessageList({
 
                    {/* Conteúdo da mensagem */}
                    <div className="pr-8">
-                     {message.role === "assistant" && ragMode === 'dify' ? (
-                       <DifyResponseRenderer 
-                         content={message.content} 
-                         isDify={true}
-                       />
+                      {message.role === "assistant" && ragMode === 'dify' ? (
+                        <AgenticV2ResponseRenderer 
+                          content={message.content} 
+                          isAgenticV2={true}
+                        />
                      ) : (
                        <MessageContent 
                          content={message.content} 

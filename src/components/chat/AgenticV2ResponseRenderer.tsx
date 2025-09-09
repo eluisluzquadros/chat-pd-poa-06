@@ -1,14 +1,14 @@
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
 
-interface DifyResponseRendererProps {
+interface AgenticV2ResponseRendererProps {
   content: string;
-  isDify?: boolean;
+  isAgenticV2?: boolean;
 }
 
-export function DifyResponseRenderer({ content, isDify = false }: DifyResponseRendererProps) {
-  if (!isDify) {
-    // For non-Dify responses, apply normal markdown processing
+export function AgenticV2ResponseRenderer({ content, isAgenticV2 = false }: AgenticV2ResponseRendererProps) {
+  if (!isAgenticV2) {
+    // For non-agentic-v2 responses, apply normal markdown processing
     return (
       <div className="prose prose-sm max-w-none dark:prose-invert">
         <div 
@@ -19,12 +19,12 @@ export function DifyResponseRenderer({ content, isDify = false }: DifyResponseRe
     );
   }
 
-  // For Dify responses, preserve exactly as received
+  // For agentic-v2 responses, preserve exactly as received
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-2 mb-3">
         <Badge variant="outline" className="bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300">
-          Powered by Dify
+          agentic-rag-v2
         </Badge>
       </div>
       

@@ -73,7 +73,7 @@ export class UnifiedRAGService {
         metadata: {
           sessionId: options.sessionId || `session-${Date.now()}`,
           userId: options.userId || 'anonymous',
-          model: options.model || 'dify-agent',
+          model: options.model || 'agentic-rag-v2',
           originalUserRole: options.userRole || 'user',
           adminContext: options.userRole && ['tester', 'qa-validator', 'admin'].includes(options.userRole)
         }
