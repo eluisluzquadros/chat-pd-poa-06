@@ -7,7 +7,9 @@ import {
   SelectValue 
 } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
 import { UPDATED_MODEL_CONFIGS } from '@/config/llm-models-2025';
+import { useRAGMode } from '@/hooks/useRAGMode';
 
 interface ModelSelectorProps {
   selectedModel?: string;
@@ -34,8 +36,29 @@ const groupedModels = AVAILABLE_MODELS.reduce((acc, model) => {
 }, {} as Record<string, typeof AVAILABLE_MODELS>);
 
 export function ModelSelector({ selectedModel = 'anthropic/claude-3-5-sonnet-20241022', onModelSelect }: ModelSelectorProps) {
+  const { ragMode, loading } = useRAGMode();
   const selectedModelInfo = AVAILABLE_MODELS.find(m => m.value === selectedModel);
   
+  // Quando Dify estiver ativo, mostrar apenas indicador do agente
+  if (!loading && ragMode === 'dify') {
+    return (
+      <div className="space-y-2">
+        <Label className="text-sm font-medium">
+          Sistema de IA
+        </Label>
+        <div className="flex items-center gap-2 p-2 rounded-lg border bg-background">
+          <Badge variant="default" className="bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300">
+            Agente: Dify
+          </Badge>
+        </div>
+        <p className="text-xs text-muted-foreground">
+          Sistema RAG externo ativo via plataforma Dify
+        </p>
+      </div>
+    );
+  }
+
+  // Modo normal - mostrar seletor de modelos
   return (
     <div className="space-y-2">
       <Label htmlFor="model-select" className="text-sm font-medium">

@@ -5,7 +5,9 @@ import { useToast } from "@/hooks/use-toast";
 import { useEffect, useRef, memo } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { MessageContent } from "./MessageContent";
+import { DifyResponseRenderer } from "./DifyResponseRenderer";
 import { cn } from "@/lib/utils";
+import { useRAGMode } from "@/hooks/useRAGMode";
 interface MessageListProps {
   messages: Message[];
   isLoading: boolean;
@@ -20,6 +22,7 @@ export const MessageList = memo(function MessageList({
   selectedModel
 }: MessageListProps) {
   const { toast } = useToast();
+  const { ragMode } = useRAGMode();
   const scrollRef = useRef<HTMLDivElement>(null);
   const isAutoScrollEnabled = useRef(true);
 
@@ -100,13 +103,20 @@ export const MessageList = memo(function MessageList({
 
                    {/* Conteúdo da mensagem */}
                    <div className="pr-8">
-                     <MessageContent 
-                       content={message.content} 
-                       role={message.role}
-                       messageId={message.role === "assistant" ? message.id : undefined}
-                       sessionId={message.role === "assistant" && currentSessionId ? currentSessionId : undefined}
-                       model={message.role === "assistant" ? (message.model || selectedModel) : undefined}
-                     />
+                     {message.role === "assistant" && ragMode === 'dify' ? (
+                       <DifyResponseRenderer 
+                         content={message.content} 
+                         isDify={true}
+                       />
+                     ) : (
+                       <MessageContent 
+                         content={message.content} 
+                         role={message.role}
+                         messageId={message.role === "assistant" ? message.id : undefined}
+                         sessionId={message.role === "assistant" && currentSessionId ? currentSessionId : undefined}
+                         model={message.role === "assistant" ? (message.model || selectedModel) : undefined}
+                       />
+                     )}
                    </div>
 
                   {/* Timestamp */}

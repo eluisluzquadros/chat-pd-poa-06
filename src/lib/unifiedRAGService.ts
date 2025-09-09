@@ -126,8 +126,11 @@ export class UnifiedRAGService {
       }
 
       // Ensure consistent response format
+      // CRITICAL: For Dify responses, DO NOT apply templateFilter
+      const rawResponse = data.response || data.content || '';
+      
       return {
-        response: data.response || data.content || '',
+        response: rawResponse, // Return exactly as received - NO FILTERING for Dify
         confidence: data.confidence || 0,
         sources: data.sources || { tabular: 0, conceptual: 0 },
         executionTime: data.executionTime || responseTime,
@@ -136,7 +139,8 @@ export class UnifiedRAGService {
           ...data.metadata,
           endpoint,
           model: options.model,
-          responseTime
+          responseTime,
+          isDify: endpoint === 'agentic-rag-dify'
         }
       };
       

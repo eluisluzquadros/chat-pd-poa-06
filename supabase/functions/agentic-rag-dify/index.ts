@@ -60,9 +60,11 @@ serve(async (req) => {
     
     const executionTime = Date.now() - startTime;
     
-    // Map Dify response to expected format
+    // Map Dify response to expected format - PRESERVE ORIGINAL RESPONSE
+    const originalResponse = difyData.answer || difyData.message || 'No response from Dify';
+    
     const mappedResponse = {
-      response: difyData.answer || difyData.message || 'No response from Dify',
+      response: originalResponse, // DO NOT MODIFY - Return exactly as received from Dify
       confidence: 0.85, // Default confidence for Dify responses
       sources: { 
         external: 1,

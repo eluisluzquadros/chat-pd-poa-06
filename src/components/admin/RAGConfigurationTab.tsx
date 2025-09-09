@@ -78,10 +78,10 @@ const RAGConfigurationTab = () => {
               <div className="space-y-1">
                 <StatusIndicator 
                   isActive={status.currentMode === 'local'} 
-                  label="RAG Local" 
+                  label="RAG Supabase" 
                 />
                 <p className="text-sm text-muted-foreground ml-6">
-                  Sistema RAG interno com processamento local
+                  Sistema RAG interno via edge functions Supabase
                 </p>
               </div>
               
@@ -111,7 +111,7 @@ const RAGConfigurationTab = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Card className={status.currentMode === 'local' ? 'ring-2 ring-primary' : ''}>
               <CardHeader className="pb-3">
-                <CardTitle className="text-base">RAG Local</CardTitle>
+                <CardTitle className="text-base">RAG Supabase</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
                 <div className="flex items-center gap-2">
@@ -120,11 +120,11 @@ const RAGConfigurationTab = () => {
                 </div>
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="h-4 w-4 text-green-500" />
-                  <span className="text-sm">Processamento interno</span>
+                  <span className="text-sm">Edge functions nativas</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="h-4 w-4 text-green-500" />
-                  <span className="text-sm">Sem dependências externas</span>
+                  <span className="text-sm">Sistema integrado</span>
                 </div>
               </CardContent>
             </Card>
