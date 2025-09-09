@@ -5,10 +5,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { RefetchFunction } from "./types";
 import { getCurrentAuthenticatedSession } from "@/utils/authUtils";
+import { useQueryClient } from "@tanstack/react-query";
+import { ChatSession } from "@/types/chat";
 
 export function useSessionManagement(refetchSessions: RefetchFunction) {
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const createSession = useCallback(async (userId: string, title: string, model: string, message: string) => {
     const session = await getCurrentAuthenticatedSession();
@@ -51,8 +54,15 @@ export function useSessionManagement(refetchSessions: RefetchFunction) {
 
       console.log('[DELETE SESSION] Success:', data);
       
-      // Only refetch sessions after confirmed successful deletion
-      await refetchSessions();
+      // Clear current session if it was deleted
+      if (currentSessionId === sessionId) {
+        setCurrentSessionId(null);
+      }
+
+      // Proactive cleanup: Remove from cache immediately
+      const cachedSessions = queryClient.getQueryData(['chatSessions']) as ChatSession[] || [];
+      const updatedSessions = cachedSessions.filter(session => session.id !== sessionId);
+      queryClient.setQueryData(['chatSessions'], updatedSessions);
 
       if (showToast) {
         toast({
@@ -76,7 +86,7 @@ export function useSessionManagement(refetchSessions: RefetchFunction) {
       }
       throw error;
     }
-  }, [toast, refetchSessions]);
+  }, [toast, currentSessionId, queryClient]);
 
   const deleteSessions = useCallback(async (sessionIds: string[]) => {
     console.log(`[DELETE SESSIONS] Starting batch deletion for ${sessionIds.length} sessions:`, sessionIds);
@@ -114,8 +124,18 @@ export function useSessionManagement(refetchSessions: RefetchFunction) {
 
     await Promise.all(deletePromises);
 
-    // Single refetch after all operations
-    await refetchSessions();
+    // Proactive cleanup: Remove successfully deleted sessions from cache immediately
+    const successfulIds = sessionIds.filter(id => !failedDeletions.includes(id));
+    if (successfulIds.length > 0) {
+      // Clear current session if it was among the deleted ones
+      if (currentSessionId && successfulIds.includes(currentSessionId)) {
+        setCurrentSessionId(null);
+      }
+
+      const cachedSessions = queryClient.getQueryData(['chatSessions']) as ChatSession[] || [];
+      const updatedSessions = cachedSessions.filter(session => !successfulIds.includes(session.id));
+      queryClient.setQueryData(['chatSessions'], updatedSessions);
+    }
 
     // Show consolidated toast
     const successCount = sessionIds.length - failedDeletions.length;
@@ -143,7 +163,7 @@ export function useSessionManagement(refetchSessions: RefetchFunction) {
     if (failedDeletions.length > 0) {
       throw new Error(`Failed to delete ${failedDeletions.length} sessions: ${failedDeletions.join(', ')}`);
     }
-  }, [toast, refetchSessions]);
+  }, [toast, currentSessionId, queryClient]);
 
   const updateSession = useCallback(async (sessionId: string, lastMessage: string) => {
     try {

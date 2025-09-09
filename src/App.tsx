@@ -35,8 +35,21 @@ import ChatHistorySync from "./components/ChatHistorySync";
 import { AdminErrorBoundary } from "./components/admin/AdminErrorBoundary";
 
 
-// Create a new query client instance
-const queryClient = new QueryClient();
+// Create a new query client instance with proper cache configuration
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 5, // 5 minutes
+      gcTime: 1000 * 60 * 10, // 10 minutes
+      retry: 2,
+      refetchOnWindowFocus: false,
+      refetchOnReconnect: true,
+    },
+    mutations: {
+      retry: 1,
+    },
+  },
+});
 
 function App() {
   return (
