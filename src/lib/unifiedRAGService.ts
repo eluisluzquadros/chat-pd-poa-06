@@ -4,6 +4,7 @@
  */
 
 import { supabase } from "@/integrations/supabase/client";
+import { getRagEndpoint } from "@/config/rag-config";
 
 export interface RAGRequestOptions {
   message: string;
@@ -25,11 +26,10 @@ export class UnifiedRAGService {
   }
 
   /**
-   * Get the endpoint - always use unified agentic-rag
+   * Get the endpoint - use Dify or local RAG based on configuration
    */
   private getEndpoint(): string {
-    // Using single unified agentic-rag with multi-LLM support
-    return 'agentic-rag';
+    return getRagEndpoint();
   }
 
   /**
@@ -62,6 +62,21 @@ export class UnifiedRAGService {
         // Metadata para auditoria (não afeta comportamento RAG)
         originalUserRole: options.userRole || 'user',
         adminContext: options.userRole && ['tester', 'qa-validator', 'admin'].includes(options.userRole)
+      };
+    }
+
+    // Format for Dify RAG proxy
+    if (endpoint === 'agentic-rag-dify') {
+      return {
+        originalQuery: options.message,
+        user_role: 'citizen', // PADRONIZADO: sempre 'citizen' para RAG
+        metadata: {
+          sessionId: options.sessionId || `session-${Date.now()}`,
+          userId: options.userId || 'anonymous',
+          model: options.model || 'dify-agent',
+          originalUserRole: options.userRole || 'user',
+          adminContext: options.userRole && ['tester', 'qa-validator', 'admin'].includes(options.userRole)
+        }
       };
     }
 
