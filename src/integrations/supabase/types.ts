@@ -2243,11 +2243,7 @@ export type Database = {
         Returns: Json
       }
       check_auth_rate_limit: {
-        Args: {
-          max_attempts?: number
-          user_ip: unknown
-          window_minutes?: number
-        }
+        Args: { max_attempts: number; user_ip: unknown; window_minutes: number }
         Returns: boolean
       }
       check_quality_thresholds: {
@@ -2274,10 +2270,6 @@ export type Database = {
       convert_string_to_vector: {
         Args: Record<PropertyKey, never>
         Returns: undefined
-      }
-      execute_dynamic_sql: {
-        Args: { sql_query: string }
-        Returns: Json
       }
       execute_sql_query: {
         Args: { query_text: string }
@@ -2464,10 +2456,10 @@ export type Database = {
       log_user_action: {
         Args: {
           action_name: string
-          new_values?: Json
-          old_values?: Json
-          record_id?: string
-          table_name?: string
+          new_values: Json
+          old_values: Json
+          record_id: string
+          table_name: string
         }
         Returns: undefined
       }
