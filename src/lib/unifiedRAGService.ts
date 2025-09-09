@@ -87,6 +87,15 @@ export class UnifiedRAGService {
    * Call the RAG system with unified parameters
    */
   async callRAG(options: RAGRequestOptions): Promise<any> {
+    const requestId = `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    console.log(`🔄 [UnifiedRAGService] Starting callRAG - ID: ${requestId}`);
+    console.log(`👤 [UnifiedRAGService] User context:`, {
+      userId: options.userId,
+      userRole: options.userRole,
+      sessionId: options.sessionId,
+      model: options.model
+    });
+    
     const endpoint = await this.getEndpoint();
     const requestBody = this.formatRequestBody(options, endpoint);
     
@@ -97,25 +106,55 @@ export class UnifiedRAGService {
     const startTime = Date.now();
     
     try {
+      console.log(`📡 [UnifiedRAGService] Calling supabase.functions.invoke...`);
+      
       const { data, error } = await supabase.functions.invoke(endpoint, {
         body: requestBody
       });
 
       const responseTime = Date.now() - startTime;
       console.log(`⏱️ [UnifiedRAGService] Response received in ${responseTime}ms`);
+      console.log(`🔍 [UnifiedRAGService] Raw response structure:`, {
+        hasData: !!data,
+        hasError: !!error,
+        dataKeys: data ? Object.keys(data) : null,
+        errorDetails: error
+      });
 
       if (error) {
-        console.error(`❌ [UnifiedRAGService] Error:`, error);
+        console.error(`❌ [UnifiedRAGService] Supabase function error:`, error);
+        console.error(`🔍 [UnifiedRAGService] Error context:`, {
+          requestId,
+          endpoint,
+          userRole: options.userRole,
+          userId: options.userId,
+          errorType: typeof error,
+          errorMessage: error.message || 'No message'
+        });
         throw new Error(`RAG system error: ${error.message || 'Unknown error'}`);
       }
 
       if (!data) {
         console.error(`❌ [UnifiedRAGService] Empty response from ${endpoint}`);
+        console.error(`🔍 [UnifiedRAGService] Empty response context:`, {
+          requestId,
+          endpoint,
+          userRole: options.userRole,
+          userId: options.userId,
+          requestBody
+        });
         throw new Error('RAG system returned empty response');
       }
 
-      console.log(`✅ [UnifiedRAGService] Response received`);
-      console.log(`📊 [UnifiedRAGService] Confidence: ${data.confidence}`);
+      console.log(`✅ [UnifiedRAGService] Response received successfully`);
+      console.log(`📊 [UnifiedRAGService] Response metrics:`, {
+        requestId,
+        confidence: data.confidence,
+        hasResponse: !!data.response,
+        responseLength: data.response?.length || 0,
+        hasSources: !!data.sources,
+        hasAgentTrace: !!data.agentTrace
+      });
       console.log(`📝 [UnifiedRAGService] Response preview:`, data.response?.substring(0, 200));
       
       if (data.agentTrace) {
@@ -126,11 +165,10 @@ export class UnifiedRAGService {
       }
 
       // Ensure consistent response format
-      // CRITICAL: For Dify responses, DO NOT apply templateFilter
       const rawResponse = data.response || data.content || '';
       
-      return {
-        response: rawResponse, // Return exactly as received - NO FILTERING for Dify
+      const finalResult = {
+        response: rawResponse,
         confidence: data.confidence || 0,
         sources: data.sources || { tabular: 0, conceptual: 0 },
         executionTime: data.executionTime || responseTime,
@@ -140,12 +178,39 @@ export class UnifiedRAGService {
           endpoint,
           model: options.model,
           responseTime,
+          requestId,
           isDify: endpoint === 'agentic-rag-dify'
         }
       };
+
+      console.log(`🎉 [UnifiedRAGService] callRAG completed successfully:`, {
+        requestId,
+        hasValidResponse: !!finalResult.response,
+        confidence: finalResult.confidence
+      });
+      
+      return finalResult;
       
     } catch (error) {
-      console.error(`❌ [UnifiedRAGService] Failed after ${Date.now() - startTime}ms:`, error);
+      const responseTime = Date.now() - startTime;
+      console.error(`❌ [UnifiedRAGService] callRAG failed after ${responseTime}ms:`, {
+        requestId,
+        endpoint,
+        userRole: options.userRole,
+        userId: options.userId,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : undefined
+      });
+      
+      // Enhanced error context
+      if (error instanceof Error) {
+        if (error.message.includes('fetch')) {
+          console.error(`🔍 [UnifiedRAGService] Network/Fetch error - check edge function status`);
+        } else if (error.message.includes('auth')) {
+          console.error(`🔍 [UnifiedRAGService] Authentication error - check user permissions for edge functions`);
+        }
+      }
+      
       throw error;
     }
   }

@@ -94,18 +94,26 @@ export function useMessageSubmit({
       const { AuthService } = await import("@/services/authService");
       const userRole = await AuthService.getUserRole(session.user.id);
 
-      console.log(`🚀 Processing message via ${selectedModel}...`);
-      console.log('📝 Message details:', {
-        message: currentInput,
+      console.log(`🚀 [useMessageSubmit] Processing message via ${selectedModel}...`);
+      console.log('📝 [useMessageSubmit] Message details:', {
+        message: currentInput.substring(0, 100) + (currentInput.length > 100 ? '...' : ''),
         model: selectedModel,
         userRole,
         sessionId,
-        userId: session.user.id
+        userId: session.user.id,
+        userEmail: session.user.email
       });
       
+      console.log('📞 [useMessageSubmit] Calling ChatService.processMessage...');
       const result = await chatService.processMessage(currentInput, userRole, sessionId, selectedModel);
 
-      console.log(`✅ ${selectedModel} response received:`, result);
+      console.log(`✅ [useMessageSubmit] ${selectedModel} response received:`, {
+        hasResponse: !!result.response,
+        responseLength: result.response?.length || 0,
+        confidence: result.confidence,
+        executionTime: result.executionTime
+      });
+      console.log(`📝 [useMessageSubmit] Response preview:`, result.response?.substring(0, 200));
 
       console.log('Creating assistant message...');
       const assistantMessage: Message = {
@@ -158,13 +166,50 @@ export function useMessageSubmit({
       }
 
     } catch (error) {
-      console.error('Error in handleSubmit:', error);
+      console.error('❌ [useMessageSubmit] Error in handleSubmit:', {
+        error: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : undefined,
+        userRole,
+        selectedModel,
+        sessionId,
+        userId: session?.user?.id,
+        userEmail: session?.user?.email,
+        messageLength: currentInput.length
+      });
+      
       setInput(currentInput);
+      
+      // Enhanced error messaging
+      let errorMessage = "Failed to send message";
+      if (error instanceof Error) {
+        if (error.message.includes('User not authenticated')) {
+          errorMessage = "Authentication failed. Please refresh and try again.";
+        } else if (error.message.includes('RAG system')) {
+          errorMessage = "AI service temporarily unavailable. Please try again.";
+        } else if (error.message.includes('network') || error.message.includes('fetch')) {
+          errorMessage = "Network error. Please check your connection and try again.";
+        } else {
+          errorMessage = error.message;
+        }
+      }
+      
       toast({
         title: "Error",
-        description: error instanceof Error ? error.message : "Failed to send message",
+        description: errorMessage,
         variant: "destructive",
       });
+      
+      // Also add error message to chat for debugging
+      if (process.env.NODE_ENV === 'development') {
+        const errorMessage: Message = {
+          id: crypto.randomUUID(),
+          content: `❌ Debug Error: ${error instanceof Error ? error.message : 'Unknown error'}`,
+          role: "assistant",
+          timestamp: new Date(),
+          model: selectedModel,
+        };
+        addMessage(errorMessage);
+      }
     } finally {
       setIsLoading(false);
     }
