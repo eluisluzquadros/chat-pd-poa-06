@@ -32,7 +32,16 @@ export function useSessionManagement(refetchSessions: RefetchFunction) {
 
   const deleteSession = useCallback(async (sessionId: string, showToast: boolean = true) => {
     try {
-      // Delete chat history first (child records)
+      // Delete token usage first (if it exists)
+      const { error: tokenError } = await supabase
+        .from('qa_token_usage')
+        .delete()
+        .eq('validation_run_id', sessionId);
+
+      // Don't throw on token error as this table might not have records
+      if (tokenError) console.warn('Token deletion warning:', tokenError);
+
+      // Delete chat history second (child records)
       const { error: historyError } = await supabase
         .from('chat_history')
         .delete()
