@@ -1248,13 +1248,6 @@ export type Database = {
             referencedRelation: "qa_validation_runs"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "qa_token_usage_validation_run_id_fkey"
-            columns: ["validation_run_id"]
-            isOneToOne: false
-            referencedRelation: "qa_validation_token_stats"
-            referencedColumns: ["validation_run_id"]
-          },
         ]
       }
       qa_validation_preferences: {
@@ -2189,7 +2182,15 @@ export type Database = {
           total_tokens: number | null
           validation_run_id: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "qa_token_usage_validation_run_id_fkey"
+            columns: ["validation_run_id"]
+            isOneToOne: false
+            referencedRelation: "qa_validation_runs"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       quality_metrics_daily: {
         Row: {
