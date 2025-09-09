@@ -21,7 +21,7 @@ export function SystemToggle() {
           <div className="font-medium text-primary mb-1">🚀 Funcionalidades Ativas</div>
           <ul className="space-y-0.5 text-[10px] leading-tight">
             <li>• Agentes especializados autônomos</li>
-            <li>• Knowledge Graph com relações jurídicas</li>
+            <li>• Legal Knowledge Graph</li>
             <li>• Auto-validação e refinamento</li>
             <li>• Chunking hierárquico de documentos</li>
           </ul>
