@@ -53,7 +53,7 @@ const RAGConfigurationTab = () => {
                 {status.isConfigured ? "Configurado" : "Não Configurado"}
               </Badge>
               <Badge variant="outline">
-                {status.currentMode.toUpperCase()} Ativo
+                {status.currentMode === 'dify' ? 'Rag-v2' : 'Rag-v1'} Ativo
               </Badge>
             </div>
             
