@@ -24,36 +24,38 @@ export default function Chat() {
 
   return (
     <SimpleAuthGuard>
-      <div className="min-h-screen flex flex-col bg-background">
+      <div className="h-screen flex flex-col bg-background">
         <Header />
         
-        <SidebarProvider defaultOpen={true}>
-          <div className="flex flex-1 w-full">
-            <AppSidebar
-              messages={messages}
-              onNewChat={handleNewChat}
-              chatSessions={chatSessions}
-              currentSessionId={currentSessionId}
-              onSelectSession={handleSelectSession}
-              onDeleteSession={handleDeleteSession}
-              isLoading={chatLoading}
-            />
-            
-            <SidebarInset className="flex-1">
-              <ChatMain
+        <div className="flex-1 min-h-0">
+          <SidebarProvider defaultOpen={true}>
+            <div className="flex h-full w-full">
+              <AppSidebar
                 messages={messages}
-                input={input}
-                setInput={setInput}
-                onSubmit={handleSubmit}
-                isLoading={chatLoading}
                 onNewChat={handleNewChat}
-                selectedModel={selectedModel}
-                onModelSelect={switchModel}
+                chatSessions={chatSessions}
                 currentSessionId={currentSessionId}
+                onSelectSession={handleSelectSession}
+                onDeleteSession={handleDeleteSession}
+                isLoading={chatLoading}
               />
-            </SidebarInset>
-          </div>
-        </SidebarProvider>
+              
+              <SidebarInset className="flex-1 h-full">
+                <ChatMain
+                  messages={messages}
+                  input={input}
+                  setInput={setInput}
+                  onSubmit={handleSubmit}
+                  isLoading={chatLoading}
+                  onNewChat={handleNewChat}
+                  selectedModel={selectedModel}
+                  onModelSelect={switchModel}
+                  currentSessionId={currentSessionId}
+                />
+              </SidebarInset>
+            </div>
+          </SidebarProvider>
+        </div>
       </div>
     </SimpleAuthGuard>
   );

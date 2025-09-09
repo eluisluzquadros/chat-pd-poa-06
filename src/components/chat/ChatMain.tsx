@@ -39,7 +39,7 @@ export function ChatMain({
   const welcomeText = "Como posso ajudar você hoje?";
 
   return (
-    <div className="flex flex-col h-screen bg-background">
+    <div className="flex flex-col h-full bg-background">
       {/* Container principal do chat */}
       <div className="flex flex-col flex-1 min-h-0 relative overflow-hidden">
         {/* Floating controls */}
@@ -69,7 +69,7 @@ export function ChatMain({
             
             {/* Input sempre presente */}
             <div className="flex-shrink-0 border-t border-border bg-background/95 backdrop-blur pb-safe">
-              <div className="max-w-4xl mx-auto p-3 sm:p-4">
+              <div className="max-w-4xl mx-auto p-3 sm:p-4 pb-6 sm:pb-8">
                 <ChatInput 
                   input={input} 
                   setInput={setInput} 
@@ -108,7 +108,7 @@ export function ChatMain({
             
             {/* Input sempre presente mesmo na tela de boas-vindas */}
             <div className="flex-shrink-0 border-t border-border bg-background/95 backdrop-blur pb-safe">
-              <div className="max-w-4xl mx-auto p-3 sm:p-4">
+              <div className="max-w-4xl mx-auto p-3 sm:p-4 pb-6 sm:pb-8">
                 <ChatInput 
                   input={input} 
                   setInput={setInput} 
