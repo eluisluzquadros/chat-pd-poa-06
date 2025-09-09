@@ -2,3 +2,6 @@ project_id = "ngrqwmvuhvjkeohesbxs"
 
 [functions.agentic-rag-dify]
 verify_jwt = true
+
+[functions.test-rag-config]
+verify_jwt = true
