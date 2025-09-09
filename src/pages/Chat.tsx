@@ -18,6 +18,7 @@ export default function Chat() {
     handleNewChat,
     handleSelectSession,
     handleDeleteSession,
+    handleDeleteSessions,
     selectedModel,
     switchModel,
   } = useChat();
@@ -37,6 +38,7 @@ export default function Chat() {
                 currentSessionId={currentSessionId}
                 onSelectSession={handleSelectSession}
                 onDeleteSession={handleDeleteSession}
+                onDeleteSessions={handleDeleteSessions}
                 isLoading={chatLoading}
                 selectedModel={selectedModel}
                 onModelSelect={switchModel}

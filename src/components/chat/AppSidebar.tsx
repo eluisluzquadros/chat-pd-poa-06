@@ -26,6 +26,7 @@ interface AppSidebarProps {
   currentSessionId: string | null;
   onSelectSession: (sessionId: string) => void;
   onDeleteSession: (sessionId: string) => void;
+  onDeleteSessions?: (sessionIds: string[]) => void;
   isLoading?: boolean;
   selectedModel?: string;
   onModelSelect?: (model: string) => void;
@@ -38,6 +39,7 @@ export function AppSidebar({
   currentSessionId,
   onSelectSession,
   onDeleteSession,
+  onDeleteSessions,
   isLoading = false,
   selectedModel,
   onModelSelect,
@@ -45,6 +47,7 @@ export function AppSidebar({
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedSessions, setSelectedSessions] = useState<string[]>([]);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const { toast } = useToast();
   const { toggleSidebar } = useSidebar();
   const { isAdmin } = useAuth();
@@ -59,22 +62,30 @@ export function AppSidebar({
   );
 
   const handleDeleteSelected = async () => {
+    if (isDeleting || selectedSessions.length === 0) return;
+    
+    setIsDeleting(true);
     try {
-      for (const sessionId of selectedSessions) {
-        await onDeleteSession(sessionId);
+      if (onDeleteSessions) {
+        // Use batch deletion if available
+        await onDeleteSessions(selectedSessions);
+      } else {
+        // Fallback to individual deletions
+        for (const sessionId of selectedSessions) {
+          await onDeleteSession(sessionId);
+        }
+        toast({
+          title: "Sucesso",
+          description: `${selectedSessions.length} conversa(s) excluída(s) com sucesso`,
+        });
       }
-      toast({
-        title: "Sucesso",
-        description: `${selectedSessions.length} conversa(s) excluída(s) com sucesso`,
-      });
       setSelectedSessions([]);
       setIsDeleteDialogOpen(false);
     } catch (error) {
-      toast({
-        title: "Erro",
-        description: "Não foi possível excluir algumas conversas",
-        variant: "destructive",
-      });
+      console.error('Error deleting sessions:', error);
+      // Error toast is handled by the deletion functions
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -92,7 +103,7 @@ export function AppSidebar({
         <SidebarHeader className="p-4 border-b border-border">
           <HeaderActions
             selectedSessions={selectedSessions}
-            isLoading={isLoading}
+            isLoading={isLoading || isDeleting}
             onNewChat={onNewChat}
             onOpenDeleteDialog={() => setIsDeleteDialogOpen(true)}
           />
@@ -135,6 +146,7 @@ export function AppSidebar({
         selectedCount={selectedSessions.length}
         onOpenChange={setIsDeleteDialogOpen}
         onConfirmDelete={handleDeleteSelected}
+        isDeleting={isDeleting}
       />
     </>
   );

@@ -29,6 +29,7 @@ export function useChat(): UseChatHookReturn {
     handleNewChat,
     handleSelectSession,
     handleDeleteSession,
+    handleDeleteSessions,
     selectedModel,
     switchModel,
   } = chatOperations;
@@ -127,6 +128,7 @@ export function useChat(): UseChatHookReturn {
     handleNewChat,
     handleSelectSession,
     handleDeleteSession,
+    handleDeleteSessions,
     isConnectionError,
     selectedModel,
     switchModel,

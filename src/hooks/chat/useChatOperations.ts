@@ -30,6 +30,7 @@ export function useChatOperations(refetchSessions: RefetchFunction) {
     setCurrentSessionId,
     createSession,
     deleteSession,
+    deleteSessions,
     updateSession,
   } = useSessionManagement(refetchSessions);
 
@@ -67,6 +68,22 @@ export function useChatOperations(refetchSessions: RefetchFunction) {
     setIsLoading,
   });
 
+  const handleDeleteSessions = useCallback(async (sessionIds: string[]) => {
+    try {
+      setIsLoading(true);
+      // Check if current session is in the list to be deleted
+      if (sessionIds.includes(currentSessionId!)) {
+        handleNewChat();
+      }
+      await deleteSessions(sessionIds);
+    } catch (error) {
+      console.error('Error in handleDeleteSessions:', error);
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
+  }, [currentSessionId, handleNewChat, deleteSessions, setIsLoading]);
+
   return {
     messages,
     input,
@@ -77,6 +94,7 @@ export function useChatOperations(refetchSessions: RefetchFunction) {
     handleNewChat,
     handleSelectSession,
     handleDeleteSession,
+    handleDeleteSessions,
     selectedModel,
     switchModel,
   };

@@ -30,38 +30,73 @@ export function useSessionManagement(refetchSessions: RefetchFunction) {
     return newSession.id;
   }, []);
 
-  const deleteSession = useCallback(async (sessionId: string) => {
+  const deleteSession = useCallback(async (sessionId: string, showToast: boolean = true) => {
     try {
-      const { error: deleteHistoryError } = await supabase
-        .from('chat_history')
-        .delete()
-        .eq('session_id', sessionId);
-
-      if (deleteHistoryError) throw deleteHistoryError;
-
-      const { error: deleteSessionError } = await supabase
-        .from('chat_sessions')
-        .delete()
-        .eq('id', sessionId);
-
-      if (deleteSessionError) throw deleteSessionError;
-
-      await refetchSessions();
-      
-      toast({
-        title: "Sucesso",
-        description: "Conversa excluída com sucesso",
+      // Use the atomic SQL function for deletion
+      const { error } = await supabase.rpc('delete_chat_session', {
+        session_id_param: sessionId
       });
+
+      if (error) throw error;
+
+      if (showToast) {
+        toast({
+          title: "Sucesso",
+          description: "Conversa excluída com sucesso",
+        });
+      }
     } catch (error) {
       console.error('Error deleting session:', error);
-      toast({
-        title: "Erro",
-        description: "Falha ao excluir conversa",
-        variant: "destructive",
-      });
+      if (showToast) {
+        toast({
+          title: "Erro",
+          description: "Falha ao excluir conversa",
+          variant: "destructive",
+        });
+      }
       throw error;
     }
-  }, [refetchSessions, toast]);
+  }, [toast]);
+
+  const deleteSessions = useCallback(async (sessionIds: string[]) => {
+    const failedDeletions: string[] = [];
+    
+    for (const sessionId of sessionIds) {
+      try {
+        await deleteSession(sessionId, false); // Don't show individual toasts
+      } catch (error) {
+        failedDeletions.push(sessionId);
+      }
+    }
+
+    // Single refetch after all operations
+    await refetchSessions();
+
+    // Show consolidated toast
+    const successCount = sessionIds.length - failedDeletions.length;
+    if (successCount > 0 && failedDeletions.length === 0) {
+      toast({
+        title: "Sucesso",
+        description: `${successCount} conversa(s) excluída(s) com sucesso`,
+      });
+    } else if (successCount > 0 && failedDeletions.length > 0) {
+      toast({
+        title: "Parcialmente concluído",
+        description: `${successCount} conversa(s) excluída(s). ${failedDeletions.length} falharam.`,
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "Erro",
+        description: "Não foi possível excluir nenhuma conversa",
+        variant: "destructive",
+      });
+    }
+
+    if (failedDeletions.length > 0) {
+      throw new Error(`Failed to delete ${failedDeletions.length} sessions`);
+    }
+  }, [deleteSession, refetchSessions, toast]);
 
   const updateSession = useCallback(async (sessionId: string, lastMessage: string) => {
     try {
@@ -85,6 +120,7 @@ export function useSessionManagement(refetchSessions: RefetchFunction) {
     setCurrentSessionId,
     createSession,
     deleteSession,
+    deleteSessions,
     updateSession,
   };
 }
