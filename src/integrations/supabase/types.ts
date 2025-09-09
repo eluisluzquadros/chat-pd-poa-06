@@ -2767,6 +2767,10 @@ export type Database = {
         Args: { doc_id: string; new_embedding: number[] }
         Returns: undefined
       }
+      user_owns_session: {
+        Args: { session_id_param: string }
+        Returns: boolean
+      }
       validate_qa_model: {
         Args: { model_name: string }
         Returns: boolean
