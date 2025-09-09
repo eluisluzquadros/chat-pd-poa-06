@@ -32,66 +32,95 @@ export function useSessionManagement(refetchSessions: RefetchFunction) {
 
   const deleteSession = useCallback(async (sessionId: string, showToast: boolean = true) => {
     try {
-      // Delete token usage first (if it exists)
-      const { error: tokenError } = await supabase
-        .from('qa_token_usage')
-        .delete()
-        .eq('validation_run_id', sessionId);
+      console.log(`[DELETE SESSION] Starting atomic deletion for session: ${sessionId}`);
+      
+      // Use the new atomic SQL function for reliable deletion
+      const { data, error } = await supabase.rpc('delete_chat_session_atomic', {
+        session_id_param: sessionId
+      });
 
-      // Don't throw on token error as this table might not have records
-      if (tokenError) console.warn('Token deletion warning:', tokenError);
+      if (error) {
+        console.error('[DELETE SESSION] RPC Error:', error);
+        throw error;
+      }
 
-      // Delete chat history second (child records)
-      const { error: historyError } = await supabase
-        .from('chat_history')
-        .delete()
-        .eq('session_id', sessionId);
+      if (!data?.success) {
+        console.error('[DELETE SESSION] Function returned error:', data);
+        throw new Error(data?.error || 'Falha na deleção da conversa');
+      }
 
-      if (historyError) throw historyError;
-
-      // Then delete the chat session (parent record)
-      const { error: sessionError } = await supabase
-        .from('chat_sessions')
-        .delete()
-        .eq('id', sessionId);
-
-      if (sessionError) throw sessionError;
+      console.log('[DELETE SESSION] Success:', data);
+      
+      // Only refetch sessions after confirmed successful deletion
+      await refetchSessions();
 
       if (showToast) {
         toast({
           title: "Sucesso",
-          description: "Conversa excluída com sucesso",
+          description: data.message || "Conversa excluída com sucesso",
         });
       }
-    } catch (error) {
-      console.error('Error deleting session:', error);
+    } catch (error: any) {
+      console.error('[DELETE SESSION] Complete error details:', {
+        sessionId,
+        error: error?.message || error,
+        stack: error?.stack
+      });
+      
       if (showToast) {
         toast({
           title: "Erro",
-          description: "Falha ao excluir conversa",
+          description: error?.message || "Falha ao excluir conversa",
           variant: "destructive",
         });
       }
       throw error;
     }
-  }, [toast]);
+  }, [toast, refetchSessions]);
 
   const deleteSessions = useCallback(async (sessionIds: string[]) => {
-    const failedDeletions: string[] = [];
+    console.log(`[DELETE SESSIONS] Starting batch deletion for ${sessionIds.length} sessions:`, sessionIds);
     
-    for (const sessionId of sessionIds) {
+    const failedDeletions: string[] = [];
+    const successResults: any[] = [];
+    
+    // Process deletions in parallel for better performance
+    const deletePromises = sessionIds.map(async (sessionId) => {
       try {
-        await deleteSession(sessionId, false); // Don't show individual toasts
+        const { data, error } = await supabase.rpc('delete_chat_session_atomic', {
+          session_id_param: sessionId
+        });
+
+        if (error) {
+          console.error(`[DELETE SESSIONS] RPC Error for ${sessionId}:`, error);
+          failedDeletions.push(sessionId);
+          return { sessionId, success: false, error };
+        }
+
+        if (!data?.success) {
+          console.error(`[DELETE SESSIONS] Function error for ${sessionId}:`, data);
+          failedDeletions.push(sessionId);
+          return { sessionId, success: false, error: data?.error };
+        }
+
+        successResults.push(data);
+        return { sessionId, success: true, data };
       } catch (error) {
+        console.error(`[DELETE SESSIONS] Exception for ${sessionId}:`, error);
         failedDeletions.push(sessionId);
+        return { sessionId, success: false, error };
       }
-    }
+    });
+
+    await Promise.all(deletePromises);
 
     // Single refetch after all operations
     await refetchSessions();
 
     // Show consolidated toast
     const successCount = sessionIds.length - failedDeletions.length;
+    console.log(`[DELETE SESSIONS] Results: ${successCount} success, ${failedDeletions.length} failed`);
+    
     if (successCount > 0 && failedDeletions.length === 0) {
       toast({
         title: "Sucesso",
@@ -112,9 +141,9 @@ export function useSessionManagement(refetchSessions: RefetchFunction) {
     }
 
     if (failedDeletions.length > 0) {
-      throw new Error(`Failed to delete ${failedDeletions.length} sessions`);
+      throw new Error(`Failed to delete ${failedDeletions.length} sessions: ${failedDeletions.join(', ')}`);
     }
-  }, [deleteSession, refetchSessions, toast]);
+  }, [toast, refetchSessions]);
 
   const updateSession = useCallback(async (sessionId: string, lastMessage: string) => {
     try {

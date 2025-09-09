@@ -2308,6 +2308,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
+      delete_chat_session_atomic: {
+        Args: { session_id_param: string }
+        Returns: Json
+      }
       execute_sql_query: {
         Args: { query_text: string }
         Returns: Json
