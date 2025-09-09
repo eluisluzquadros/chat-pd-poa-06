@@ -39,9 +39,9 @@ export function ChatMain({
   const welcomeText = "Como posso ajudar você hoje?";
 
   return (
-    <div className="flex flex-col h-full bg-background">
+    <div className="flex flex-col h-screen bg-background">
       {/* Container principal do chat */}
-      <div className="flex flex-col flex-1 min-h-0 relative">
+      <div className="flex flex-col flex-1 min-h-0 relative overflow-hidden">
         {/* Floating controls */}
         <div className="absolute top-4 left-4 z-30">
           <SidebarTrigger className="text-foreground hover:bg-accent" />
@@ -68,8 +68,8 @@ export function ChatMain({
             </div>
             
             {/* Input sempre presente */}
-            <div className="flex-shrink-0 border-t border-border bg-background/95 backdrop-blur">
-              <div className="max-w-4xl mx-auto p-4">
+            <div className="flex-shrink-0 border-t border-border bg-background/95 backdrop-blur pb-safe">
+              <div className="max-w-4xl mx-auto p-3 sm:p-4">
                 <ChatInput 
                   input={input} 
                   setInput={setInput} 
@@ -107,8 +107,8 @@ export function ChatMain({
             </div>
             
             {/* Input sempre presente mesmo na tela de boas-vindas */}
-            <div className="flex-shrink-0 border-t border-border bg-background/95 backdrop-blur">
-              <div className="max-w-4xl mx-auto p-4">
+            <div className="flex-shrink-0 border-t border-border bg-background/95 backdrop-blur pb-safe">
+              <div className="max-w-4xl mx-auto p-3 sm:p-4">
                 <ChatInput 
                   input={input} 
                   setInput={setInput} 

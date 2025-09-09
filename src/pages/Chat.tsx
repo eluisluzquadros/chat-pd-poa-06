@@ -2,7 +2,6 @@
 import { useChat } from "@/hooks/useChat";
 import { SimpleAuthGuard } from "@/components/SimpleAuthGuard";
 import { Header } from "@/components/Header";
-import { ThemeToggle } from "@/components/home/hero/ThemeToggle";
 import { AppSidebar } from "@/components/chat/AppSidebar";
 import { ChatMain } from "@/components/chat/ChatMain";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
@@ -55,10 +54,6 @@ export default function Chat() {
             </SidebarInset>
           </div>
         </SidebarProvider>
-        
-        <div className="fixed bottom-4 right-4 z-20">
-          <ThemeToggle />
-        </div>
       </div>
     </SimpleAuthGuard>
   );
