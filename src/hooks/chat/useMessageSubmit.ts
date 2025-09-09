@@ -55,7 +55,12 @@ export function useMessageSubmit({
     const currentInput = input;
     setInput("");
 
+    // Get user role for context - declare here for proper scope
+    const { AuthService } = await import("@/services/authService");
+    let userRole: string = 'user'; // default fallback
+    
     try {
+      userRole = await AuthService.getUserRole(session.user.id);
       let sessionId = currentSessionId;
       
       if (!sessionId) {
@@ -89,10 +94,6 @@ export function useMessageSubmit({
         });
 
       if (userMessageError) throw userMessageError;
-
-      // Get user role for context using AuthService cache
-      const { AuthService } = await import("@/services/authService");
-      const userRole = await AuthService.getUserRole(session.user.id);
 
       console.log(`🚀 [useMessageSubmit] Processing message via ${selectedModel}...`);
       console.log('📝 [useMessageSubmit] Message details:', {
@@ -171,7 +172,7 @@ export function useMessageSubmit({
         stack: error instanceof Error ? error.stack : undefined,
         userRole,
         selectedModel,
-        sessionId,
+        sessionId: currentSessionId,
         userId: session?.user?.id,
         userEmail: session?.user?.email,
         messageLength: currentInput.length

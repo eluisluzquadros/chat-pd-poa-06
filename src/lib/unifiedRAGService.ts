@@ -157,11 +157,14 @@ export class UnifiedRAGService {
       });
       console.log(`📝 [UnifiedRAGService] Response preview:`, data.response?.substring(0, 200));
       
-      if (data.agentTrace) {
+      // Handle agent trace (defensive check)
+      if (data.agentTrace && Array.isArray(data.agentTrace)) {
         console.log(`🤖 [UnifiedRAGService] Agent trace: ${data.agentTrace.length} agents`);
         data.agentTrace.forEach((agent: any, i: number) => {
           console.log(`   Agent ${i}: ${agent.type} (confidence: ${agent.confidence}, hasData: ${agent.hasRegimeData || agent.hasRiskData || agent.hasZotData || 'none'})`);
         });
+      } else {
+        console.log(`🤖 [UnifiedRAGService] Agent trace: ${data.agentTrace ? 'invalid format' : 'undefined'} agents`);
       }
 
       // Ensure consistent response format
