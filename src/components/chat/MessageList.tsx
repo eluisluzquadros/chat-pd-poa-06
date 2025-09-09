@@ -8,6 +8,7 @@ import { MessageContent } from "./MessageContent";
 import { AgenticV2ResponseRenderer } from "./AgenticV2ResponseRenderer";
 import { cn } from "@/lib/utils";
 import { useRAGMode } from "@/hooks/useRAGMode";
+import { useAdminTestMode } from "@/hooks/useAdminTestMode";
 import { useAuth } from "@/context/AuthContext";
 
 interface MessageListProps {
@@ -23,7 +24,11 @@ export const MessageList = memo(function MessageList({
 }: MessageListProps) {
   const { toast } = useToast();
   const { ragMode } = useRAGMode();
+  const { getEffectiveConfig } = useAdminTestMode();
   const { isAdmin } = useAuth();
+  
+  // Get effective configuration (test mode takes precedence for admins)
+  const effectiveConfig = isAdmin ? getEffectiveConfig() : { ragMode, isTestMode: false };
   const scrollRef = useRef<HTMLDivElement>(null);
   const isAutoScrollEnabled = useRef(true);
 
@@ -104,11 +109,12 @@ export const MessageList = memo(function MessageList({
 
                    {/* Conteúdo da mensagem */}
                    <div className="pr-8">
-                      {message.role === "assistant" && ragMode === 'dify' ? (
+                      {message.role === "assistant" && effectiveConfig.ragMode === 'dify' ? (
                         <AgenticV2ResponseRenderer 
                           content={message.content} 
                           isAgenticV2={true}
                           isAdmin={isAdmin}
+                          isTestMode={effectiveConfig.isTestMode}
                         />
                      ) : (
                         <MessageContent 

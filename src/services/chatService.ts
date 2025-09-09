@@ -2,14 +2,19 @@
 import { supabase } from "@/integrations/supabase/client";
 import { getCurrentAuthenticatedSession } from "@/utils/authUtils";
 import { useTokenTracking } from "@/hooks/useTokenTracking";
-import { unifiedRAGService } from "@/lib/unifiedRAGService";
+import { enhancedRAGService } from "@/services/enhancedRAGService";
 
 export class ChatService {
   async processMessage(
     message: string, 
     userRole?: string, 
     sessionId?: string,
-    model?: string
+    model?: string,
+    adminTestConfig?: {
+      isTestMode: boolean;
+      ragMode: 'local' | 'dify';
+      llmModel: string;
+    }
   ): Promise<{
     response: string;
     confidence: number;
@@ -75,14 +80,19 @@ export class ChatService {
         userRole: userRole || 'citizen'
       });
 
-      // Use the unified RAG service for consistency
-      const ragResult = await unifiedRAGService.callRAG({
+      // Use the enhanced RAG service with admin test mode support
+      const effectiveModel = adminTestConfig?.isTestMode ? adminTestConfig.llmModel : (model || 'gpt-3.5-turbo');
+      
+      const ragResult = await enhancedRAGService.callRAG({
         message,
-        model: model || 'gpt-3.5-turbo',
+        model: effectiveModel,
         sessionId: sessionId || `session_${Date.now()}`,
         userId: finalSession.user.id,
         userRole: userRole || 'citizen',
-        bypassCache: false
+        bypassCache: false,
+        isAdminTestMode: adminTestConfig?.isTestMode || false,
+        testRAGMode: adminTestConfig?.ragMode,
+        testModel: adminTestConfig?.llmModel
       });
 
       const executionTime = Date.now() - startTime;

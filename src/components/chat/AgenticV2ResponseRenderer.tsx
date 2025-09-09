@@ -5,9 +5,10 @@ interface AgenticV2ResponseRendererProps {
   content: string;
   isAgenticV2?: boolean;
   isAdmin?: boolean;
+  isTestMode?: boolean;
 }
 
-export function AgenticV2ResponseRenderer({ content, isAgenticV2 = false, isAdmin = false }: AgenticV2ResponseRendererProps) {
+export function AgenticV2ResponseRenderer({ content, isAgenticV2 = false, isAdmin = false, isTestMode = false }: AgenticV2ResponseRendererProps) {
   if (!isAgenticV2) {
     // For non-agentic-v2 responses, apply normal markdown processing
     return (
@@ -28,6 +29,11 @@ export function AgenticV2ResponseRenderer({ content, isAgenticV2 = false, isAdmi
           <Badge variant="outline" className="bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300">
             agentic-rag-v2
           </Badge>
+          {isTestMode && (
+            <Badge variant="secondary" className="bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300">
+              TEST MODE
+            </Badge>
+          )}
         </div>
       )}
       

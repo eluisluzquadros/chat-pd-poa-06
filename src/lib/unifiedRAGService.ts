@@ -34,16 +34,16 @@ export class UnifiedRAGService {
 
   /**
    * Format the request body based on endpoint requirements
-   * PADRONIZAÇÃO: Força userRole='citizen' e cache habilitado para consistência
+   * CORREÇÃO: Respeita userRole original para admin test mode
    */
   private formatRequestBody(options: RAGRequestOptions, endpoint: string): any {
     const baseBody = {
       message: options.message,
-      userRole: 'citizen', // PADRONIZADO: sempre 'citizen' para RAG consistency
+      userRole: options.userRole || 'citizen', // CORRIGIDO: respeita userRole original
       sessionId: options.sessionId || `session-${Date.now()}`,
       userId: options.userId || 'anonymous',
-      model: options.model || 'gpt-3.5-turbo', // PADRONIZADO: modelo default unificado
-      bypassCache: options.bypassCache === true // PADRONIZADO: cache habilitado por padrão
+      model: options.model || 'gpt-3.5-turbo',
+      bypassCache: options.bypassCache === true
     };
 
     // Add fields for new RAG real implementation
@@ -56,7 +56,7 @@ export class UnifiedRAGService {
           useAgenticRAG: true,
           useKnowledgeGraph: true,
           useHierarchicalChunks: true,
-          userRole: 'citizen', // PADRONIZADO: sempre 'citizen' para RAG
+          userRole: options.userRole || 'citizen', // CORRIGIDO: respeita userRole original
           userId: options.userId || 'anonymous'
         },
         // Metadata para auditoria (não afeta comportamento RAG)
@@ -69,7 +69,7 @@ export class UnifiedRAGService {
     if (endpoint === 'agentic-rag-dify') {
       return {
         originalQuery: options.message,
-        user_role: 'citizen', // PADRONIZADO: sempre 'citizen' para RAG
+        user_role: options.userRole || 'citizen', // CORRIGIDO: respeita userRole original
         metadata: {
           sessionId: options.sessionId || `session-${Date.now()}`,
           userId: options.userId || 'anonymous',
