@@ -28,8 +28,8 @@ export class UnifiedRAGService {
   /**
    * Get the endpoint - use Dify or local RAG based on configuration
    */
-  private getEndpoint(): string {
-    return getRagEndpoint();
+  private async getEndpoint(): Promise<string> {
+    return await getRagEndpoint();
   }
 
   /**
@@ -87,7 +87,7 @@ export class UnifiedRAGService {
    * Call the RAG system with unified parameters
    */
   async callRAG(options: RAGRequestOptions): Promise<any> {
-    const endpoint = this.getEndpoint();
+    const endpoint = await this.getEndpoint();
     const requestBody = this.formatRequestBody(options, endpoint);
     
     console.log(`🎯 [UnifiedRAGService] Using endpoint: ${endpoint}`);
@@ -199,12 +199,12 @@ export class UnifiedRAGService {
   /**
    * Get system status and configuration
    */
-  getSystemStatus(): {
+  async getSystemStatus(): Promise<{
     version: string;
     endpoint: string;
     features: string[];
-  } {
-    const endpoint = this.getEndpoint();
+  }> {
+    const endpoint = await this.getEndpoint();
     
     return {
       version: 'unified',

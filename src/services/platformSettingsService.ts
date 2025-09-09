@@ -232,6 +232,39 @@ class PlatformSettingsService {
     return this.updateSetting('allow_user_model_selection', allowed, 'Permite que usuários não-admin selecionem modelos LLM');
   }
 
+  // Métodos específicos para configuração RAG
+  async getRagMode(): Promise<'dify' | 'local'> {
+    const mode = await this.getSetting('rag_mode');
+    return mode === 'dify' ? 'dify' : 'local';
+  }
+
+  async setRagMode(mode: 'dify' | 'local'): Promise<boolean> {
+    return this.updateSetting('rag_mode', mode, `Modo de operação do sistema RAG: ${mode}`);
+  }
+
+  async getRagStatus(): Promise<{ mode: 'dify' | 'local'; lastUpdated?: string }> {
+    try {
+      const { data, error } = await supabase
+        .from('platform_settings')
+        .select('value, updated_at')
+        .eq('key', 'rag_mode')
+        .eq('is_active', true)
+        .single();
+
+      if (error) {
+        return { mode: 'local' };
+      }
+
+      return {
+        mode: data.value === 'dify' ? 'dify' : 'local',
+        lastUpdated: data.updated_at,
+      };
+    } catch (error) {
+      console.error('Erro ao obter status RAG:', error);
+      return { mode: 'local' };
+    }
+  }
+
   // Limpar cache manualmente
   clearCache(): void {
     settingsCache.clear();
