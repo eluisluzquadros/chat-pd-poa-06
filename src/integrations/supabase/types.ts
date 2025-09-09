@@ -2145,6 +2145,42 @@ export type Database = {
         }
         Relationships: []
       }
+      llm_models_public: {
+        Row: {
+          average_latency: number | null
+          created_at: string | null
+          id: number | null
+          is_active: boolean | null
+          max_tokens: number | null
+          model: string | null
+          provider: string | null
+          public_capabilities: Json | null
+          updated_at: string | null
+        }
+        Insert: {
+          average_latency?: number | null
+          created_at?: string | null
+          id?: number | null
+          is_active?: boolean | null
+          max_tokens?: number | null
+          model?: string | null
+          provider?: string | null
+          public_capabilities?: never
+          updated_at?: string | null
+        }
+        Update: {
+          average_latency?: number | null
+          created_at?: string | null
+          id?: number | null
+          is_active?: boolean | null
+          max_tokens?: number | null
+          model?: string | null
+          provider?: string | null
+          public_capabilities?: never
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       model_feedback_stats: {
         Row: {
           comments_count: number | null
