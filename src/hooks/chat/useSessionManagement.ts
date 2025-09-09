@@ -32,12 +32,21 @@ export function useSessionManagement(refetchSessions: RefetchFunction) {
 
   const deleteSession = useCallback(async (sessionId: string, showToast: boolean = true) => {
     try {
-      // Use the atomic SQL function for deletion
-      const { error } = await supabase.rpc('delete_chat_session', {
-        session_id_param: sessionId
-      });
+      // Delete chat history first (child records)
+      const { error: historyError } = await supabase
+        .from('chat_history')
+        .delete()
+        .eq('session_id', sessionId);
 
-      if (error) throw error;
+      if (historyError) throw historyError;
+
+      // Then delete the chat session (parent record)
+      const { error: sessionError } = await supabase
+        .from('chat_sessions')
+        .delete()
+        .eq('id', sessionId);
+
+      if (sessionError) throw sessionError;
 
       if (showToast) {
         toast({
