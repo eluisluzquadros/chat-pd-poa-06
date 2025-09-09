@@ -1,12 +1,10 @@
 
 import { MessageList } from "@/components/chat/MessageList";
 import { ChatInput } from "@/components/chat/ChatInput";
-import { ModelSelector } from "@/components/chat/ModelSelector";
 import { Message } from "@/types/chat";
 import { cn } from "@/lib/utils";
 import { useTheme } from "@/components/ui/theme-provider";
 import { SidebarTrigger } from "@/components/ui/sidebar";
-import { useAuth } from "@/context/AuthContext";
 
 interface ChatMainProps {
   messages: Message[];
@@ -15,8 +13,6 @@ interface ChatMainProps {
   onSubmit: (e: React.FormEvent) => void;
   isLoading: boolean;
   onNewChat: () => void;
-  selectedModel: string;
-  onModelSelect: (model: string) => void;
   currentSessionId?: string | null;
 }
 
@@ -27,13 +23,10 @@ export function ChatMain({
   onSubmit,
   isLoading,
   onNewChat,
-  selectedModel,
-  onModelSelect,
   currentSessionId
 }: ChatMainProps) {
   
   const { theme } = useTheme();
-  const { isAdmin } = useAuth();
   const hasMessages = messages.length > 0;
   
   const welcomeText = "Como posso ajudar você hoje?";
@@ -47,17 +40,6 @@ export function ChatMain({
           <SidebarTrigger className="text-foreground/80 hover:text-foreground hover:bg-accent/50 backdrop-blur-sm rounded-lg transition-all duration-200" />
         </div>
         
-        {isAdmin && (
-          <div className="absolute top-4 right-4 z-30">
-            <div className="backdrop-blur-sm bg-background/30 rounded-lg p-1">
-              <ModelSelector 
-                selectedModel={selectedModel} 
-                onModelSelect={onModelSelect}
-              />
-            </div>
-          </div>
-        )}
-        
         {hasMessages ? (
           <>
             {/* Lista de mensagens com scroll próprio */}
@@ -66,7 +48,6 @@ export function ChatMain({
                 messages={messages} 
                 isLoading={isLoading} 
                 currentSessionId={currentSessionId}
-                selectedModel={selectedModel}
               />
             </div>
             

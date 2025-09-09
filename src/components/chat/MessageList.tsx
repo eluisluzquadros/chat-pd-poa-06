@@ -8,21 +8,22 @@ import { MessageContent } from "./MessageContent";
 import { AgenticV2ResponseRenderer } from "./AgenticV2ResponseRenderer";
 import { cn } from "@/lib/utils";
 import { useRAGMode } from "@/hooks/useRAGMode";
+import { useAuth } from "@/context/AuthContext";
+
 interface MessageListProps {
   messages: Message[];
   isLoading: boolean;
   currentSessionId?: string | null;
-  selectedModel?: string;
 }
 
 export const MessageList = memo(function MessageList({
   messages,
   isLoading,
-  currentSessionId,
-  selectedModel
+  currentSessionId
 }: MessageListProps) {
   const { toast } = useToast();
   const { ragMode } = useRAGMode();
+  const { isAdmin } = useAuth();
   const scrollRef = useRef<HTMLDivElement>(null);
   const isAutoScrollEnabled = useRef(true);
 
@@ -107,15 +108,16 @@ export const MessageList = memo(function MessageList({
                         <AgenticV2ResponseRenderer 
                           content={message.content} 
                           isAgenticV2={true}
+                          isAdmin={isAdmin}
                         />
                      ) : (
-                       <MessageContent 
-                         content={message.content} 
-                         role={message.role}
-                         messageId={message.role === "assistant" ? message.id : undefined}
-                         sessionId={message.role === "assistant" && currentSessionId ? currentSessionId : undefined}
-                         model={message.role === "assistant" ? (message.model || selectedModel) : undefined}
-                       />
+                        <MessageContent 
+                          content={message.content} 
+                          role={message.role}
+                          messageId={message.role === "assistant" ? message.id : undefined}
+                          sessionId={message.role === "assistant" && currentSessionId ? currentSessionId : undefined}
+                          model={message.role === "assistant" ? message.model : undefined}
+                        />
                      )}
                    </div>
 

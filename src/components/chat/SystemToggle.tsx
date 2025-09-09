@@ -1,40 +1,32 @@
-import React, { useState, useEffect } from 'react';
-import { Switch } from '@/components/ui/switch';
-import { Label } from '@/components/ui/label';
+import React from 'react';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Bot, Zap, Settings } from 'lucide-react';
+import { Bot, Zap } from 'lucide-react';
 
 export function SystemToggle() {
   return (
-    <Card className="mb-4">
-      <CardHeader className="pb-3">
-        <CardTitle className="flex items-center gap-2 text-sm">
-          <Zap className="h-4 w-4" />
-          Sistema Agentic RAG
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="pt-0">
-        <div className="flex items-center gap-3">
-          <Badge variant="default" className="text-xs flex items-center gap-1">
-            <Bot className="h-3 w-3" />
-            ATIVO
-          </Badge>
-          <div className="text-sm font-medium text-muted-foreground">
-            Sistema unificado com agentes autônomos
-          </div>
+    <div className="px-1 py-2 mb-3">
+      <div className="flex items-center gap-2 p-2 rounded-lg bg-accent/30 border border-accent/50">
+        <div className="flex items-center gap-1.5">
+          <Zap className="h-3.5 w-3.5 text-primary" />
+          <span className="text-xs font-medium text-foreground">Sistema Agentic RAG</span>
         </div>
-        
-        <div className="mt-3 text-xs text-muted-foreground">
+        <Badge variant="default" className="text-[10px] px-1.5 py-0.5 h-auto flex items-center gap-1">
+          <Bot className="h-2.5 w-2.5" />
+          ATIVO
+        </Badge>
+      </div>
+      
+      <div className="mt-2 px-2">
+        <div className="text-[10px] text-muted-foreground">
           <div className="font-medium text-primary mb-1">🚀 Funcionalidades Ativas</div>
-          <ul className="space-y-0.5 text-xs">
+          <ul className="space-y-0.5 text-[10px] leading-tight">
             <li>• Agentes especializados autônomos</li>
             <li>• Knowledge Graph com relações jurídicas</li>
             <li>• Auto-validação e refinamento</li>
             <li>• Chunking hierárquico de documentos</li>
           </ul>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

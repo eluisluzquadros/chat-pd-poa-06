@@ -38,6 +38,8 @@ export default function Chat() {
                 onSelectSession={handleSelectSession}
                 onDeleteSession={handleDeleteSession}
                 isLoading={chatLoading}
+                selectedModel={selectedModel}
+                onModelSelect={switchModel}
               />
               
               <SidebarInset className="flex-1 h-full">
@@ -48,8 +50,6 @@ export default function Chat() {
                   onSubmit={handleSubmit}
                   isLoading={chatLoading}
                   onNewChat={handleNewChat}
-                  selectedModel={selectedModel}
-                  onModelSelect={switchModel}
                   currentSessionId={currentSessionId}
                 />
               </SidebarInset>

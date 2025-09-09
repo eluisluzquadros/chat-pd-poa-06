@@ -6,7 +6,9 @@ import { HeaderActions } from "./sidebar/HeaderActions";
 import { SearchBar } from "./sidebar/SearchBar";
 import { SessionList } from "./sidebar/SessionList";
 import { DeleteSessionDialog } from "./sidebar/DeleteSessionDialog";
-// SystemToggle removed - using unified agentic-rag
+import { SystemToggle } from "./SystemToggle";
+import { ModelSelector } from "./ModelSelector";
+import { useAuth } from "@/context/AuthContext";
 import {
   Sidebar,
   SidebarContent,
@@ -24,6 +26,8 @@ interface AppSidebarProps {
   onSelectSession: (sessionId: string) => void;
   onDeleteSession: (sessionId: string) => void;
   isLoading?: boolean;
+  selectedModel?: string;
+  onModelSelect?: (model: string) => void;
 }
 
 export function AppSidebar({
@@ -34,12 +38,15 @@ export function AppSidebar({
   onSelectSession,
   onDeleteSession,
   isLoading = false,
+  selectedModel,
+  onModelSelect,
 }: AppSidebarProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedSessions, setSelectedSessions] = useState<string[]>([]);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const { toast } = useToast();
   const { toggleSidebar } = useSidebar();
+  const { isAdmin } = useAuth();
 
   const filteredSessions = chatSessions.filter(session =>
     session.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -98,7 +105,16 @@ export function AppSidebar({
         <SidebarContent>
           <SidebarGroup>
             <SidebarGroupContent>
-              {/* SystemToggle removed - using unified agentic-rag */}
+              {isAdmin && <SystemToggle />}
+              {isAdmin && selectedModel && onModelSelect && (
+                <div className="px-1 mb-3">
+                  <div className="text-xs font-medium text-muted-foreground mb-2 px-2">Modelo de IA</div>
+                  <ModelSelector 
+                    selectedModel={selectedModel} 
+                    onModelSelect={onModelSelect}
+                  />
+                </div>
+              )}
               <SessionList
                 sessions={sortedSessions}
                 currentSessionId={currentSessionId}
