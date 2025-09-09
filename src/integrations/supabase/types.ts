@@ -296,6 +296,7 @@ export type Database = {
           created_at: string
           id: string
           message: Json
+          metadata: Json | null
           session_id: string
           user_id: string
         }
@@ -303,6 +304,7 @@ export type Database = {
           created_at?: string
           id?: string
           message: Json
+          metadata?: Json | null
           session_id: string
           user_id: string
         }
@@ -310,6 +312,7 @@ export type Database = {
           created_at?: string
           id?: string
           message?: Json
+          metadata?: Json | null
           session_id?: string
           user_id?: string
         }
