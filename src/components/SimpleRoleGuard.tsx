@@ -167,19 +167,21 @@ export const SimpleRoleGuard = ({
     // Verificação inicial
     checkAccess();
     
-    // Timeout de fallback mais longo - 10 segundos para evitar negação prematura
-    const fallbackTimeout = setTimeout(() => {
+    // Timeout de segurança mais longo - só para casos extremos
+    const safetyTimeout = setTimeout(() => {
       if (isActive && isInitializing) {
-        console.log("⏰ Timeout de fallback após 10s - verificando estado final");
+        console.log("⏰ Timeout de segurança após 30s - verificando estado final");
         
-        // Se já conseguiu verificar algum role, usar esse role
-        if (userRole) {
-          console.log("✅ Role já verificado durante timeout:", userRole);
-          let finalAccess = false;
+        // Tentar usar role do sessionStorage como último recurso
+        const cachedRole = sessionStorage.getItem('urbanista-user-role');
+        if (cachedRole) {
+          console.log("✅ Usando role do cache como fallback:", cachedRole);
+          setUserRole(cachedRole);
           
-          if (adminOnly && userRole === 'admin') {
+          let finalAccess = false;
+          if (adminOnly && cachedRole === 'admin') {
             finalAccess = true;
-          } else if (supervisorOnly && (userRole === 'supervisor' || userRole === 'admin')) {
+          } else if (supervisorOnly && (cachedRole === 'supervisor' || cachedRole === 'admin')) {
             finalAccess = true;
           } else if (!adminOnly && !supervisorOnly) {
             finalAccess = true;
@@ -187,20 +189,20 @@ export const SimpleRoleGuard = ({
           
           setHasAccess(finalAccess);
           setIsInitializing(false);
-          console.log("✅ Acesso baseado em role já verificado:", finalAccess);
+          console.log("✅ Acesso baseado em cache:", finalAccess);
         } else {
-          console.log("❌ Timeout final sem role - negando acesso");
+          console.log("❌ Timeout de segurança sem role - negando acesso");
           setUserRole(null);
           setHasAccess(false);
           setIsInitializing(false);
         }
       }
-    }, 10000);
+    }, 30000); // 30 segundos - muito mais tempo para evitar timeouts prematuros
     
     return () => {
       isActive = false;
       if (retryTimeout) clearTimeout(retryTimeout);
-      if (fallbackTimeout) clearTimeout(fallbackTimeout);
+      if (safetyTimeout) clearTimeout(safetyTimeout);
       subscription.unsubscribe();
     };
   }, [adminOnly, supervisorOnly, location.pathname]);

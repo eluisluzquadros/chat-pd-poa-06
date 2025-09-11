@@ -33,6 +33,7 @@ const KnowledgeBaseAdminLazy = React.lazy(() => import("./pages/admin/KnowledgeB
 // Components
 import { SimpleAuthGuard } from "./components/SimpleAuthGuard";
 import { SimpleRoleGuard } from "./components/SimpleRoleGuard";
+import { AdminRoleGuard } from "./components/layout/AdminRoleGuard";
 import ChatHistorySync from "./components/ChatHistorySync";
 import { AdminErrorBoundary } from "./components/admin/AdminErrorBoundary";
 
@@ -143,13 +144,11 @@ function App() {
                 </SimpleAuthGuard>
               } />
               <Route path="/admin/quality-v3" element={
-                <SimpleAuthGuard>
-                  <SimpleRoleGuard adminOnly={true}>
-                    <AdminErrorBoundary>
-                      <QualityV3 />
-                    </AdminErrorBoundary>
-                  </SimpleRoleGuard>
-                </SimpleAuthGuard>
+                <AdminRoleGuard>
+                  <AdminErrorBoundary>
+                    <QualityV3 />
+                  </AdminErrorBoundary>
+                </AdminRoleGuard>
               } />
               <Route path="/admin/benchmark" element={
                 <SimpleAuthGuard>
@@ -161,13 +160,11 @@ function App() {
                 </SimpleAuthGuard>
               } />
               <Route path="/admin/benchmark-v3" element={
-                <SimpleAuthGuard>
-                  <SimpleRoleGuard adminOnly={true}>
-                    <AdminErrorBoundary>
-                      <BenchmarkV3 />
-                    </AdminErrorBoundary>
-                  </SimpleRoleGuard>
-                </SimpleAuthGuard>
+                <AdminRoleGuard>
+                  <AdminErrorBoundary>
+                    <BenchmarkV3 />
+                  </AdminErrorBoundary>
+                </AdminRoleGuard>
               } />
               <Route path="/admin/metrics" element={
                 <SimpleAuthGuard>

@@ -22,19 +22,82 @@ export const SimpleAuthGuard = ({
   const [hasPermission, setHasPermission] = useState(true);
   const location = useLocation();
   
-  // Efeito simplificado para verificar autenticação
+  // Efeito melhorado para verificar autenticação com melhor persistência
   useEffect(() => {
     const checkAuth = async () => {
       try {
+        console.log("🔍 SimpleRoleGuard: Iniciando verificação sem limpeza de cache");
+        console.log("🔍 SimpleRoleGuard: Verificando acesso", {
+          adminOnly: requiredRole === 'admin',
+          supervisorOnly: requiredRole === 'supervisor',
+          location: location.pathname
+        });
+
+        // Verificar cache de role no sessionStorage primeiro
+        const cachedRole = sessionStorage.getItem('urbanista-user-role');
+        
         const session = await AuthService.getCurrentSession();
         const isAuth = !!session;
         
+        console.log(isAuth ? "✅ Sessão encontrada:" : "❌ Nenhuma sessão encontrada", session?.user?.email);
+        
         setIsAuthenticated(isAuth);
         
-        // Para admin routes, assumir permissão se autenticado
-        if (isAuth && requiredRole) {
-          setUserRole('admin');
-          setHasPermission(true);
+        if (isAuth && session?.user) {
+          // Se tem role em cache, usar primeiro para resposta rápida
+          if (cachedRole && requiredRole) {
+            console.log("🔄 Usando role do cache:", cachedRole);
+            setUserRole(cachedRole);
+            
+            const hasAccess = (requiredRole === 'admin' && cachedRole === 'admin') || 
+                             (requiredRole === 'supervisor' && (cachedRole === 'supervisor' || cachedRole === 'admin')) || 
+                             (requiredRole === 'analyst' && (cachedRole === 'analyst' || cachedRole === 'supervisor' || cachedRole === 'admin')) ||
+                             (!requiredRole);
+                             
+            setHasPermission(hasAccess);
+            
+            if (hasAccess) {
+              console.log("✅ Acesso permitido via cache");
+              setIsInitializing(false);
+              return;
+            }
+          }
+          
+          // Buscar role real do usuário de forma assíncrona
+          try {
+            const realRole = await AuthService.getUserRole(session.user.id);
+            console.log("🔍 Role real do usuário:", realRole);
+            
+            setUserRole(realRole);
+            
+            if (realRole) {
+              // Atualizar cache
+              sessionStorage.setItem('urbanista-user-role', realRole);
+              
+              const hasAccess = (requiredRole === 'admin' && realRole === 'admin') || 
+                               (requiredRole === 'supervisor' && (realRole === 'supervisor' || realRole === 'admin')) || 
+                               (requiredRole === 'analyst' && (realRole === 'analyst' || realRole === 'supervisor' || realRole === 'admin')) ||
+                               (!requiredRole);
+                               
+              setHasPermission(hasAccess);
+              console.log("✅ Verificação completa - Role:", realRole, "Acesso:", hasAccess);
+            }
+          } catch (roleError) {
+            console.error("Erro ao buscar role:", roleError);
+            // Em caso de erro, usar cache se disponível
+            if (cachedRole) {
+              setUserRole(cachedRole);
+              const hasAccess = (requiredRole === 'admin' && cachedRole === 'admin') || 
+                               (requiredRole === 'supervisor' && (cachedRole === 'supervisor' || cachedRole === 'admin')) || 
+                               (!requiredRole);
+              setHasPermission(hasAccess);
+            } else {
+              setHasPermission(false);
+            }
+          }
+        } else {
+          setUserRole(null);
+          setHasPermission(false);
         }
       } catch (error) {
         console.error("SimpleAuthGuard: Erro na verificação:", error);
@@ -46,7 +109,7 @@ export const SimpleAuthGuard = ({
     };
     
     checkAuth();
-  }, [requiredRole]);
+  }, [requiredRole, location.pathname]);
 
   // Mostrar spinner de carregamento durante inicialização
   if (isInitializing) {

@@ -7,11 +7,11 @@ let isAuthOperationInProgress = false;
 
 // Cache para roles de usuário para evitar múltiplas consultas
 const userRoleCache = new Map<string, { role: string; timestamp: number }>();
-const ROLE_CACHE_TTL = 30 * 60 * 1000; // 30 minutos
+const ROLE_CACHE_TTL = 60 * 60 * 1000; // 60 minutos - aumentado para maior persistência
 
 // Cache para sessões para evitar múltiplas consultas
 const sessionCache = new Map<string, { session: any; timestamp: number }>();
-const SESSION_CACHE_TTL = 15 * 60 * 1000; // 15 minutos
+const SESSION_CACHE_TTL = 30 * 60 * 1000; // 30 minutos - aumentado para maior persistência
 
 // Throttling para operações de auth - otimizado para balance entre performance e confiabilidade
 const authCallsThrottle = new Map<string, number>();
@@ -260,11 +260,22 @@ export const AuthService = {
         return 'supervisor';
       }
       
-      // Verificar cache primeiro
+      // Verificar cache primeiro - com backup em localStorage
       const cached = userRoleCache.get(userId);
       if (cached && (Date.now() - cached.timestamp) < ROLE_CACHE_TTL) {
         console.log("Role retornado do cache:", cached.role);
+        // Atualizar também o sessionStorage para persistência
+        sessionStorage.setItem('urbanista-user-role', cached.role);
         return cached.role;
+      }
+      
+      // Verificar cache em sessionStorage como backup
+      const sessionRole = sessionStorage.getItem('urbanista-user-role');
+      if (sessionRole && !cached) {
+        console.log("Role recuperado do sessionStorage:", sessionRole);
+        // Recriar cache com role do sessionStorage
+        userRoleCache.set(userId, { role: sessionRole, timestamp: Date.now() });
+        return sessionRole;
       }
       
       // Throttling para evitar múltiplas chamadas rápidas
@@ -341,7 +352,11 @@ export const AuthService = {
       }
       
       const finalRole = accountData?.role || 'citizen'; // Default para citizen
+      
+      // Atualizar cache e sessionStorage
       userRoleCache.set(userId, { role: finalRole, timestamp: now });
+      sessionStorage.setItem('urbanista-user-role', finalRole);
+      
       return finalRole;
     } catch (error) {
       console.error("Erro ao obter papel do usuário:", error);
