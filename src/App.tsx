@@ -14,6 +14,7 @@ import NotFound from "./pages/NotFound";
 import UserManagement from "./pages/admin/UserManagement";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import QualityV2 from "./pages/admin/QualityV2";
+import QualityV3 from "./pages/admin/QualityV3";
 import QualityTest from "./pages/admin/QualityTest";
 import TestQA from "./pages/admin/TestQA";
 import TestQACases from "./pages/admin/TestQACases";
@@ -22,6 +23,7 @@ import FeedbackManagement from "./pages/admin/FeedbackManagement";
 import UserSettings from "./pages/UserSettings";
 import Reports from "./pages/Reports";
 import BenchmarkV2 from "./pages/admin/BenchmarkV2";
+import BenchmarkV3 from "./pages/admin/BenchmarkV3";
 import RegimeUrbanisticoDashboard from "./pages/RegimeUrbanisticoDashboard";
 import Metrics from "./pages/admin/Metrics";
 import PlatformSettings from "./pages/admin/PlatformSettings";
@@ -140,11 +142,29 @@ function App() {
                   </SimpleRoleGuard>
                 </SimpleAuthGuard>
               } />
+              <Route path="/admin/quality-v3" element={
+                <SimpleAuthGuard>
+                  <SimpleRoleGuard adminOnly={true}>
+                    <AdminErrorBoundary>
+                      <QualityV3 />
+                    </AdminErrorBoundary>
+                  </SimpleRoleGuard>
+                </SimpleAuthGuard>
+              } />
               <Route path="/admin/benchmark" element={
                 <SimpleAuthGuard>
                   <SimpleRoleGuard adminOnly={true}>
                     <AdminErrorBoundary>
                       <BenchmarkV2 />
+                    </AdminErrorBoundary>
+                  </SimpleRoleGuard>
+                </SimpleAuthGuard>
+              } />
+              <Route path="/admin/benchmark-v3" element={
+                <SimpleAuthGuard>
+                  <SimpleRoleGuard adminOnly={true}>
+                    <AdminErrorBoundary>
+                      <BenchmarkV3 />
                     </AdminErrorBoundary>
                   </SimpleRoleGuard>
                 </SimpleAuthGuard>

@@ -291,6 +291,66 @@ export type Database = {
         }
         Relationships: []
       }
+      benchmark_v3_results: {
+        Row: {
+          avg_cost_per_query: number | null
+          avg_quality_score: number | null
+          avg_response_time: number | null
+          benchmark_session_id: string
+          created_at: string | null
+          historical_comparison: Json | null
+          id: string
+          model: string
+          optimization_suggestions: Json | null
+          passed_tests: number
+          performance_metrics: Json | null
+          provider: string
+          success_rate: number | null
+          test_category: string
+          total_tests: number
+          trend_analysis: Json | null
+          updated_at: string | null
+        }
+        Insert: {
+          avg_cost_per_query?: number | null
+          avg_quality_score?: number | null
+          avg_response_time?: number | null
+          benchmark_session_id: string
+          created_at?: string | null
+          historical_comparison?: Json | null
+          id?: string
+          model: string
+          optimization_suggestions?: Json | null
+          passed_tests?: number
+          performance_metrics?: Json | null
+          provider: string
+          success_rate?: number | null
+          test_category: string
+          total_tests?: number
+          trend_analysis?: Json | null
+          updated_at?: string | null
+        }
+        Update: {
+          avg_cost_per_query?: number | null
+          avg_quality_score?: number | null
+          avg_response_time?: number | null
+          benchmark_session_id?: string
+          created_at?: string | null
+          historical_comparison?: Json | null
+          id?: string
+          model?: string
+          optimization_suggestions?: Json | null
+          passed_tests?: number
+          performance_metrics?: Json | null
+          provider?: string
+          success_rate?: number | null
+          test_category?: string
+          total_tests?: number
+          trend_analysis?: Json | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       chat_history: {
         Row: {
           created_at: string
@@ -1059,6 +1119,92 @@ export type Database = {
         }
         Relationships: []
       }
+      qa_dual_validation_runs: {
+        Row: {
+          accuracy_difference: number | null
+          avg_response_time_v1: number | null
+          avg_response_time_v2: number | null
+          comparison_results: Json | null
+          completed_at: string | null
+          config: Json
+          created_at: string | null
+          created_by: string | null
+          error_message: string | null
+          id: string
+          session_id: string
+          started_at: string | null
+          status: string
+          total_tests: number | null
+          updated_at: string | null
+          v1_accuracy: number | null
+          v1_metrics: Json | null
+          v1_passed_tests: number | null
+          v1_run_id: string | null
+          v2_accuracy: number | null
+          v2_metrics: Json | null
+          v2_passed_tests: number | null
+          v2_run_id: string | null
+        }
+        Insert: {
+          accuracy_difference?: number | null
+          avg_response_time_v1?: number | null
+          avg_response_time_v2?: number | null
+          comparison_results?: Json | null
+          completed_at?: string | null
+          config?: Json
+          created_at?: string | null
+          created_by?: string | null
+          error_message?: string | null
+          id?: string
+          session_id: string
+          started_at?: string | null
+          status?: string
+          total_tests?: number | null
+          updated_at?: string | null
+          v1_accuracy?: number | null
+          v1_metrics?: Json | null
+          v1_passed_tests?: number | null
+          v1_run_id?: string | null
+          v2_accuracy?: number | null
+          v2_metrics?: Json | null
+          v2_passed_tests?: number | null
+          v2_run_id?: string | null
+        }
+        Update: {
+          accuracy_difference?: number | null
+          avg_response_time_v1?: number | null
+          avg_response_time_v2?: number | null
+          comparison_results?: Json | null
+          completed_at?: string | null
+          config?: Json
+          created_at?: string | null
+          created_by?: string | null
+          error_message?: string | null
+          id?: string
+          session_id?: string
+          started_at?: string | null
+          status?: string
+          total_tests?: number | null
+          updated_at?: string | null
+          v1_accuracy?: number | null
+          v1_metrics?: Json | null
+          v1_passed_tests?: number | null
+          v1_run_id?: string | null
+          v2_accuracy?: number | null
+          v2_metrics?: Json | null
+          v2_passed_tests?: number | null
+          v2_run_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "qa_dual_validation_runs_v1_run_id_fkey"
+            columns: ["v1_run_id"]
+            isOneToOne: false
+            referencedRelation: "qa_validation_runs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       qa_learning_insights: {
         Row: {
           category: string
@@ -1423,6 +1569,63 @@ export type Database = {
         }
         Relationships: []
       }
+      quality_insights_v3: {
+        Row: {
+          category: string
+          confidence_score: number | null
+          created_at: string | null
+          data_points: Json | null
+          description: string
+          id: string
+          impact_score: number | null
+          insight_type: string
+          is_resolved: boolean | null
+          rag_version: string
+          recommendations: Json | null
+          resolved_at: string | null
+          resolved_by: string | null
+          severity: string
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          category: string
+          confidence_score?: number | null
+          created_at?: string | null
+          data_points?: Json | null
+          description: string
+          id?: string
+          impact_score?: number | null
+          insight_type: string
+          is_resolved?: boolean | null
+          rag_version: string
+          recommendations?: Json | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          severity: string
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          category?: string
+          confidence_score?: number | null
+          created_at?: string | null
+          data_points?: Json | null
+          description?: string
+          id?: string
+          impact_score?: number | null
+          insight_type?: string
+          is_resolved?: boolean | null
+          rag_version?: string
+          recommendations?: Json | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          severity?: string
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       quality_metrics: {
         Row: {
           category: string | null
@@ -1512,6 +1715,78 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: []
+      }
+      rag_version_comparisons: {
+        Row: {
+          created_at: string | null
+          difference_analysis: Json | null
+          dual_run_id: string | null
+          id: string
+          quality_metrics: Json | null
+          query_text: string
+          similarity_score: number | null
+          test_case_id: number | null
+          v1_accuracy_score: number | null
+          v1_is_correct: boolean | null
+          v1_response: string | null
+          v1_response_time: number | null
+          v2_accuracy_score: number | null
+          v2_is_correct: boolean | null
+          v2_response: string | null
+          v2_response_time: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          difference_analysis?: Json | null
+          dual_run_id?: string | null
+          id?: string
+          quality_metrics?: Json | null
+          query_text: string
+          similarity_score?: number | null
+          test_case_id?: number | null
+          v1_accuracy_score?: number | null
+          v1_is_correct?: boolean | null
+          v1_response?: string | null
+          v1_response_time?: number | null
+          v2_accuracy_score?: number | null
+          v2_is_correct?: boolean | null
+          v2_response?: string | null
+          v2_response_time?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          difference_analysis?: Json | null
+          dual_run_id?: string | null
+          id?: string
+          quality_metrics?: Json | null
+          query_text?: string
+          similarity_score?: number | null
+          test_case_id?: number | null
+          v1_accuracy_score?: number | null
+          v1_is_correct?: boolean | null
+          v1_response?: string | null
+          v1_response_time?: number | null
+          v2_accuracy_score?: number | null
+          v2_is_correct?: boolean | null
+          v2_response?: string | null
+          v2_response_time?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rag_version_comparisons_dual_run_id_fkey"
+            columns: ["dual_run_id"]
+            isOneToOne: false
+            referencedRelation: "qa_dual_validation_runs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rag_version_comparisons_test_case_id_fkey"
+            columns: ["test_case_id"]
+            isOneToOne: false
+            referencedRelation: "qa_test_cases"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       regime_urbanistico_consolidado: {
         Row: {
