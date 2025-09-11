@@ -1,5 +1,6 @@
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
+import { parseMarkdown } from '@/utils/markdownUtils';
 
 interface AgenticV2ResponseRendererProps {
   content: string;
@@ -9,22 +10,12 @@ interface AgenticV2ResponseRendererProps {
 }
 
 export function AgenticV2ResponseRenderer({ content, isAgenticV2 = false, isAdmin = false, isTestMode = false }: AgenticV2ResponseRendererProps) {
-  if (!isAgenticV2) {
-    // For non-agentic-v2 responses, apply normal markdown processing
-    return (
-      <div className="prose prose-sm max-w-none dark:prose-invert">
-        <div 
-          className="whitespace-pre-wrap text-foreground leading-relaxed"
-          dangerouslySetInnerHTML={{ __html: content.replace(/\n/g, '<br />') }}
-        />
-      </div>
-    );
-  }
+  // Apply consistent markdown processing for all responses
+  const htmlContent = parseMarkdown(content);
 
-  // For agentic-v2 responses, preserve exactly as received
   return (
     <div className="space-y-4">
-      {isAdmin && (
+      {isAgenticV2 && isAdmin && (
         <div className="flex items-center gap-2 mb-3">
           <Badge variant="outline" className="bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300">
             agentic-rag-v2
@@ -37,18 +28,10 @@ export function AgenticV2ResponseRenderer({ content, isAgenticV2 = false, isAdmi
         </div>
       )}
       
-      <div className="prose prose-sm max-w-none dark:prose-invert">
-        <div 
-          className="whitespace-pre-wrap text-foreground leading-relaxed"
-          style={{
-            fontSize: '14px',
-            lineHeight: '1.6',
-            fontFamily: 'inherit'
-          }}
-        >
-          {content}
-        </div>
-      </div>
+      <div 
+        className="text-sm leading-relaxed space-y-0 [&>*:first-child]:mt-0"
+        dangerouslySetInnerHTML={{ __html: htmlContent }}
+      />
     </div>
   );
 }
