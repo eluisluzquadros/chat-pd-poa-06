@@ -161,11 +161,13 @@ export default function QualityV3() {
       });
 
       // Chamar edge function para validação dual
-      const { data, error } = await supabase.functions.invoke('qa-execute-validation-v3', {
+      const { data, error } = await supabase.functions.invoke('qa-execute-validation-v2', {
         body: { 
-          config,
-          mode: 'dual',
-          ragVersions: ['v1', 'v2']
+          mode: 'random',
+          randomCount: config.testCount || 10,
+          models: ['agentic-rag'],
+          includeSQL: false,
+          excludeSQL: false
         }
       });
 
