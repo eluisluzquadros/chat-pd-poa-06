@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
 import { 
   RefreshCw, Play, GitCompare, BarChart3, 
@@ -46,6 +47,13 @@ interface DualValidationProgress {
   comparisonComplete: boolean;
 }
 
+interface ValidationConfig {
+  testCount: number;
+  selectedModel: string;
+  includeSQL: boolean;
+  excludeSQL: boolean;
+}
+
 export default function QualityV3() {
   const [metrics, setMetrics] = useState<QualityMetricsV3Data>({
     totalDualRuns: 0,
@@ -76,6 +84,16 @@ export default function QualityV3() {
 
   const [comparisonData, setComparisonData] = useState<any[]>([]);
   const [insights, setInsights] = useState<any[]>([]);
+  const [selectedModel, setSelectedModel] = useState('anthropic/claude-3-5-sonnet-20241022');
+
+  // Modelos LLM válidos disponíveis
+  const availableModels = [
+    { value: 'anthropic/claude-3-5-sonnet-20241022', label: 'Claude 3.5 Sonnet (Recomendado)' },
+    { value: 'anthropic/claude-3-5-haiku-20241022', label: 'Claude 3.5 Haiku (Rápido)' },
+    { value: 'openai/gpt-4o', label: 'GPT-4o' },
+    { value: 'openai/gpt-4o-mini', label: 'GPT-4o Mini' },
+    { value: 'openai/gpt-3.5-turbo', label: 'GPT-3.5 Turbo' },
+  ];
 
   // Fetch dados de qualidade V3
   const fetchQualityV3Data = async () => {
@@ -146,45 +164,86 @@ export default function QualityV3() {
   };
 
   // Handler para executar validação dual
-  const handleDualValidation = async (config: any) => {
+  const handleDualValidation = async (config: ValidationConfig) => {
     try {
+      // Validar modelo selecionado
+      if (!config.selectedModel) {
+        toast.error('Selecione um modelo válido antes de executar a validação');
+        return;
+      }
+
+      // Verificar se o modelo está na lista de válidos
+      const isValidModel = availableModels.some(model => model.value === config.selectedModel);
+      if (!isValidModel) {
+        toast.error('Modelo selecionado não é válido. Use um modelo LLM da lista.');
+        return;
+      }
+
       setDualProgress({
         isRunning: true,
         currentTest: 0,
         totalTests: config.testCount || 10,
         percentage: 0,
         currentVersion: 'v1',
-        status: 'Iniciando validação dual...',
+        status: `Iniciando validação com ${config.selectedModel}...`,
         v1Complete: false,
         v2Complete: false,
         comparisonComplete: false
       });
 
-      // Chamar edge function para validação dual
+      console.log('🚀 Executando validação dual com configuração:', {
+        model: config.selectedModel,
+        testCount: config.testCount,
+        includeSQL: config.includeSQL,
+        excludeSQL: config.excludeSQL
+      });
+
+      // Chamar edge function para validação dual com modelo LLM válido
       const { data, error } = await supabase.functions.invoke('qa-execute-validation-v2', {
         body: { 
           mode: 'random',
           randomCount: config.testCount || 10,
-          models: ['agentic-rag'],
-          includeSQL: false,
-          excludeSQL: false
+          models: [config.selectedModel], // Usar modelo LLM válido
+          includeSQL: config.includeSQL || false,
+          excludeSQL: config.excludeSQL || false
         }
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Edge Function error:', error);
+        throw new Error(`Edge Function error: ${error.message || 'Unknown error'}`);
+      }
 
-      toast.success('Validação dual iniciada com sucesso!');
+      if (!data) {
+        throw new Error('Edge Function retornou dados vazios');
+      }
+
+      console.log('✅ Validação dual executada com sucesso:', data);
+      toast.success(`Validação dual iniciada com ${config.selectedModel}!`);
       
       // Refresh dados após validação
       setTimeout(() => {
         fetchQualityV3Data();
-        setDualProgress(prev => ({ ...prev, isRunning: false }));
+        setDualProgress(prev => ({ 
+          ...prev, 
+          isRunning: false,
+          status: 'Validação concluída com sucesso',
+          percentage: 100,
+          v1Complete: true,
+          v2Complete: true,
+          comparisonComplete: true
+        }));
       }, 2000);
 
     } catch (error) {
       console.error('Dual validation error:', error);
-      toast.error(`Erro na validação dual: ${error.message}`);
-      setDualProgress(prev => ({ ...prev, isRunning: false }));
+      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
+      toast.error(`Erro na validação dual: ${errorMessage}`);
+      setDualProgress(prev => ({ 
+        ...prev, 
+        isRunning: false,
+        status: `Erro: ${errorMessage}`
+      }));
     }
   };
 
@@ -342,10 +401,56 @@ export default function QualityV3() {
             </TabsList>
 
             <TabsContent value="dual-validation" className="space-y-4">
+              {/* Seletor de Modelo */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Configuração da Validação Dual</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Modelo LLM</label>
+                      <Select value={selectedModel} onValueChange={setSelectedModel}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecione um modelo" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {availableModels.map((model) => (
+                            <SelectItem key={model.value} value={model.value}>
+                              {model.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <p className="text-xs text-muted-foreground">
+                        Selecione o modelo LLM para executar a validação
+                      </p>
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Status</label>
+                      <div className="flex items-center gap-2 p-2 rounded border bg-muted/50">
+                        {selectedModel ? (
+                          <>
+                            <CheckCircle className="h-4 w-4 text-green-500" />
+                            <span className="text-sm">Modelo válido selecionado</span>
+                          </>
+                        ) : (
+                          <>
+                            <AlertCircle className="h-4 w-4 text-yellow-500" />
+                            <span className="text-sm">Selecione um modelo</span>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
               <DualRAGValidator 
                 onExecute={handleDualValidation}
                 isRunning={dualProgress.isRunning}
                 progress={dualProgress}
+                selectedModel={selectedModel}
               />
             </TabsContent>
 

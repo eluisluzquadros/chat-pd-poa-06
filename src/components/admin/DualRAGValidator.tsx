@@ -14,6 +14,7 @@ import {
 interface DualRAGValidatorProps {
   onExecute: (config: any) => void;
   isRunning: boolean;
+  selectedModel?: string;
   progress?: {
     v1Complete: boolean;
     v2Complete: boolean;
@@ -22,7 +23,7 @@ interface DualRAGValidatorProps {
   };
 }
 
-export function DualRAGValidator({ onExecute, isRunning, progress }: DualRAGValidatorProps) {
+export function DualRAGValidator({ onExecute, isRunning, selectedModel, progress }: DualRAGValidatorProps) {
   const [config, setConfig] = useState({
     testCount: 20,
     categories: [] as string[],
@@ -43,6 +44,7 @@ export function DualRAGValidator({ onExecute, isRunning, progress }: DualRAGVali
   const handleExecute = () => {
     onExecute({
       ...config,
+      selectedModel,
       mode: 'dual_validation',
       ragVersions: ['v1', 'v2']
     });
@@ -236,7 +238,7 @@ export function DualRAGValidator({ onExecute, isRunning, progress }: DualRAGVali
       <div className="flex justify-end">
         <Button 
           onClick={handleExecute}
-          disabled={isRunning || config.categories.length === 0}
+          disabled={isRunning || !selectedModel}
           size="lg"
           className="gap-2"
         >
