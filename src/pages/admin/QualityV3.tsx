@@ -21,6 +21,7 @@ import { DualRAGValidator } from '@/components/admin/DualRAGValidator';
 import { RAGVersionComparator } from '@/components/admin/RAGVersionComparator';
 import { UnifiedQAExecutor } from '@/components/admin/UnifiedQAExecutor';
 import { QualityMetricsV3 } from '@/components/admin/QualityMetricsV3';
+import { ExecutionResults } from '@/components/admin/ExecutionResults';
 
 interface QualityMetricsV3Data {
   totalDualRuns: number;
@@ -54,6 +55,17 @@ interface ValidationConfig {
   excludeSQL: boolean;
 }
 
+interface ExecutionResult {
+  id: string;
+  query: string;
+  ragVersion: 'v1' | 'v2';
+  response: string;
+  executionTime: number;
+  timestamp: string;
+  confidence?: number;
+  success: boolean;
+}
+
 export default function QualityV3() {
   const [metrics, setMetrics] = useState<QualityMetricsV3Data>({
     totalDualRuns: 0,
@@ -85,6 +97,7 @@ export default function QualityV3() {
   const [comparisonData, setComparisonData] = useState<any[]>([]);
   const [insights, setInsights] = useState<any[]>([]);
   const [selectedModel, setSelectedModel] = useState('anthropic/claude-3-5-sonnet-20241022');
+  const [executionResults, setExecutionResults] = useState<ExecutionResult[]>([]);
 
   // Modelos LLM válidos disponíveis
   const availableModels = [
@@ -315,6 +328,20 @@ export default function QualityV3() {
       }
 
       console.log(`✅ ${version.toUpperCase()} result:`, data);
+      
+      // Armazenar resultado da execução
+      const executionResult: ExecutionResult = {
+        id: `${Date.now()}-${version}`,
+        query,
+        ragVersion: version,
+        response: data?.response || data?.answer || JSON.stringify(data),
+        executionTime: data?.executionTime || 0,
+        timestamp: new Date().toISOString(),
+        confidence: data?.confidence,
+        success: true
+      };
+      
+      setExecutionResults(prev => [executionResult, ...prev.slice(0, 19)]); // Manter últimos 20 resultados
       
       // Update progress
       setDualProgress(prev => ({
@@ -608,6 +635,12 @@ export default function QualityV3() {
               <UnifiedQAExecutor 
                 onExecute={handleUnifiedExecution}
                 isRunning={dualProgress.isRunning}
+              />
+              
+              {/* Resultados das Execuções */}
+              <ExecutionResults 
+                results={executionResults}
+                onClear={() => setExecutionResults([])}
               />
             </TabsContent>
           </Tabs>
