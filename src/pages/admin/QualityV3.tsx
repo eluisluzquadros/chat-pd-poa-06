@@ -300,11 +300,13 @@ export default function QualityV3() {
         status: `Executando em RAG ${version.toUpperCase()}...`
       }));
 
+      // Parâmetros específicos por versão
+      const body = version === 'v1' 
+        ? { message: query, userRole: 'admin' }
+        : { originalQuery: query, user_role: 'admin' };
+
       const { data, error } = await supabase.functions.invoke(endpointName, {
-        body: { 
-          message: query,
-          userRole: 'admin'
-        }
+        body
       });
 
       if (error) {
