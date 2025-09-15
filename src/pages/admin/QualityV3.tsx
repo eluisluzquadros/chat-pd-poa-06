@@ -247,6 +247,104 @@ export default function QualityV3() {
     }
   };
 
+  // Handler para execução unificada (RAG versions)
+  const handleUnifiedExecution = async (config: any) => {
+    try {
+      console.log('🚀 Unified execution config:', config);
+
+      if (config.mode === 'single') {
+        // Executar query única
+        await handleSingleQuery(config);
+      } else if (config.mode === 'batch') {
+        // Executar lote de testes
+        await handleBatchExecution(config);
+      } else if (config.mode === 'comparison') {
+        // Executar comparação avançada
+        await handleAdvancedComparison(config);
+      }
+
+    } catch (error) {
+      console.error('Unified execution error:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
+      toast.error(`Erro na execução unificada: ${errorMessage}`);
+      setDualProgress(prev => ({ 
+        ...prev, 
+        isRunning: false,
+        status: `Erro: ${errorMessage}`
+      }));
+    }
+  };
+
+  // Handler para query única
+  const handleSingleQuery = async (config: any) => {
+    const { query, ragVersions } = config;
+    
+    setDualProgress({
+      isRunning: true,
+      currentTest: 1,
+      totalTests: 1,
+      percentage: 0,
+      currentVersion: ragVersions[0],
+      status: `Executando query: "${query.substring(0, 50)}..."`,
+      v1Complete: false,
+      v2Complete: false,
+      comparisonComplete: false
+    });
+
+    for (const version of ragVersions) {
+      const endpointName = version === 'v1' ? 'agentic-rag' : 'agentic-rag-dify';
+      
+      setDualProgress(prev => ({
+        ...prev,
+        currentVersion: version,
+        status: `Executando em RAG ${version.toUpperCase()}...`
+      }));
+
+      const { data, error } = await supabase.functions.invoke(endpointName, {
+        body: { 
+          message: query,
+          userRole: 'admin'
+        }
+      });
+
+      if (error) {
+        console.error(`Error in ${endpointName}:`, error);
+        throw new Error(`Erro em RAG ${version.toUpperCase()}: ${error.message}`);
+      }
+
+      console.log(`✅ ${version.toUpperCase()} result:`, data);
+      
+      // Update progress
+      setDualProgress(prev => ({
+        ...prev,
+        [version === 'v1' ? 'v1Complete' : 'v2Complete']: true,
+        percentage: ragVersions.length === 1 ? 100 : (version === 'v1' ? 50 : 100)
+      }));
+    }
+
+    setDualProgress(prev => ({ 
+      ...prev, 
+      isRunning: false,
+      status: 'Query executada com sucesso',
+      percentage: 100,
+      comparisonComplete: true
+    }));
+
+    toast.success('Query executada com sucesso!');
+  };
+
+  // Handler para execução em lote
+  const handleBatchExecution = async (config: any) => {
+    // Implementação simplificada por agora
+    toast.info('Execução em lote será implementada em breve');
+  };
+
+  // Handler para comparação avançada
+  const handleAdvancedComparison = async (config: any) => {
+    // Implementação simplificada por agora
+    toast.info('Comparação avançada será implementada em breve');
+  };
+
   useEffect(() => {
     fetchQualityV3Data();
   }, []);
@@ -506,7 +604,7 @@ export default function QualityV3() {
 
             <TabsContent value="executor" className="space-y-4">
               <UnifiedQAExecutor 
-                onExecute={handleDualValidation}
+                onExecute={handleUnifiedExecution}
                 isRunning={dualProgress.isRunning}
               />
             </TabsContent>
