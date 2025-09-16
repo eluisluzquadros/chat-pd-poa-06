@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { UPDATED_MODEL_CONFIGS } from '@/config/llm-models-2025';
 import { useRAGMode } from '@/hooks/useRAGMode';
+import { difyAgentsService, DifyAgent } from '@/services/difyAgentsService';
 interface ModelSelectorProps {
   selectedModel?: string;
   onModelSelect?: (model: string) => void;
@@ -29,15 +30,85 @@ export function ModelSelector({
   selectedModel = 'anthropic/claude-3-5-sonnet-20241022',
   onModelSelect
 }: ModelSelectorProps) {
-  const {
-    ragMode,
-    loading
-  } = useRAGMode();
+  const { ragMode, loading } = useRAGMode();
+  const [agents, setAgents] = useState<DifyAgent[]>([]);
+  const [agentsLoading, setAgentsLoading] = useState(true);
+  
   const selectedModelInfo = AVAILABLE_MODELS.find(m => m.value === selectedModel);
 
-  // Quando agentic-v2 estiver ativo, mostrar apenas indicador do agente
+  useEffect(() => {
+    const loadAgents = async () => {
+      try {
+        const activeAgents = await difyAgentsService.getActiveAgents();
+        setAgents(activeAgents);
+      } catch (error) {
+        console.error('Erro ao carregar agentes:', error);
+      } finally {
+        setAgentsLoading(false);
+      }
+    };
+
+    loadAgents();
+  }, []);
+
+  // Se temos agentes cadastrados, mostrar seletor de agentes
+  if (!agentsLoading && agents.length > 0) {
+    const defaultAgent = agents.find(agent => agent.is_default);
+    const currentAgent = agents.find(agent => 
+      selectedModel === agent.name || 
+      (defaultAgent && selectedModel === 'default')
+    ) || defaultAgent;
+
+    return (
+      <div className="space-y-2">
+        <Label htmlFor="agent-select" className="text-sm font-medium">
+          Sistema de IA ({agents.length} disponíveis)
+        </Label>
+        <Select 
+          value={currentAgent?.name || agents[0]?.name} 
+          onValueChange={(value) => onModelSelect?.(value)}
+        >
+          <SelectTrigger id="agent-select" className="w-full">
+            <SelectValue placeholder="Selecione um agente" />
+          </SelectTrigger>
+          <SelectContent className="max-h-[300px]">
+            {agents.map((agent) => (
+              <SelectItem key={agent.id} value={agent.name}>
+                <div className="flex flex-col w-full">
+                  <div className="flex items-center justify-between w-full">
+                    <span className="font-medium">{agent.display_name}</span>
+                    {agent.is_default && (
+                      <Badge variant="default" className="ml-2 text-xs">
+                        Padrão
+                      </Badge>
+                    )}
+                  </div>
+                  {agent.description && (
+                    <span className="text-xs text-muted-foreground mt-1">
+                      {agent.description}
+                    </span>
+                  )}
+                </div>
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <p className="text-xs text-muted-foreground">
+          Agente selecionado: <span className="font-medium">{currentAgent?.display_name || 'Nenhum'}</span>
+          {currentAgent?.provider && (
+            <span className="ml-2 px-1 py-0.5 bg-muted rounded text-xs">
+              {currentAgent.provider}
+            </span>
+          )}
+        </p>
+      </div>
+    );
+  }
+
+  // Fallback: Quando RAG v2 estiver ativo mas sem agentes cadastrados
   if (!loading && ragMode === 'dify') {
-    return <div className="space-y-2">
+    return (
+      <div className="space-y-2">
         <Label className="text-sm font-medium">
           Sistema de IA
         </Label>
@@ -46,8 +117,8 @@ export function ModelSelector({
             agentic-rag-v2
           </Badge>
         </div>
-        
-      </div>;
+      </div>
+    );
   }
 
   // Modo normal - mostrar seletor de modelos

@@ -1,5 +1,6 @@
-// RAG Configuration for Dify Integration
+// Enhanced RAG Configuration with Agent Support
 import { platformSettingsService } from '@/services/platformSettingsService';
+import { difyAgentsService } from '@/services/difyAgentsService';
 
 export const ragConfig = {
   useDify: import.meta.env.VITE_USE_DIFY_RAG === 'true',
@@ -12,6 +13,32 @@ let cachedMode: 'dify' | 'local' | null = null;
 let cacheTimestamp = 0;
 const CACHE_TTL = 60000; // 1 minuto
 
+// Buscar agente padrão ativo
+export const getDefaultAgent = async () => {
+  try {
+    const defaultAgent = await difyAgentsService.getDefaultAgent();
+    return defaultAgent;
+  } catch (error) {
+    console.error('Erro ao buscar agente padrão:', error);
+    return null;
+  }
+};
+
+// Mapear nome do agente para endpoint apropriado
+export const getEndpointFromAgentName = (agentName: string): string => {
+  // Mapear novos nomes para endpoints
+  const endpointMapping: Record<string, string> = {
+    'agentic-v1': 'agentic-rag',
+    'agentic-claude_35_sonnet': 'agentic-rag-dify',
+    'agentic-gpt_5_nano': 'agentic-rag-dify',
+    // Compatibilidade com nomes antigos
+    'agentic-rag': 'agentic-rag',
+    'agentic-rag-dify': 'agentic-rag-dify',
+  };
+
+  return endpointMapping[agentName] || 'agentic-rag';
+};
+
 export const getRagEndpoint = async (): Promise<string> => {
   // Verificar cache primeiro
   const now = Date.now();
@@ -20,7 +47,19 @@ export const getRagEndpoint = async (): Promise<string> => {
   }
 
   try {
-    // Consultar configuração do banco
+    // Primeiro, tentar buscar agente padrão
+    const defaultAgent = await getDefaultAgent();
+    if (defaultAgent) {
+      const endpoint = getEndpointFromAgentName(defaultAgent.name);
+      
+      // Atualizar cache baseado no endpoint
+      cachedMode = endpoint === 'agentic-rag-dify' ? 'dify' : 'local';
+      cacheTimestamp = now;
+      
+      return endpoint;
+    }
+
+    // Fallback para configuração tradicional
     const mode = await platformSettingsService.getRagMode();
     
     // Atualizar cache

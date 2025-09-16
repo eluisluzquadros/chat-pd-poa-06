@@ -446,6 +446,57 @@ export type Database = {
         }
         Relationships: []
       }
+      dify_agents: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string | null
+          dify_config: Json
+          display_name: string
+          id: string
+          is_active: boolean
+          is_default: boolean
+          model: string
+          name: string
+          parameters: Json
+          provider: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          dify_config?: Json
+          display_name: string
+          id?: string
+          is_active?: boolean
+          is_default?: boolean
+          model: string
+          name: string
+          parameters?: Json
+          provider: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          dify_config?: Json
+          display_name?: string
+          id?: string
+          is_active?: boolean
+          is_default?: boolean
+          model?: string
+          name?: string
+          parameters?: Json
+          provider?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       interest_manifestations: {
         Row: {
           account_created: boolean
@@ -2754,7 +2805,7 @@ export type Database = {
       }
       l2_normalize: {
         Args: { "": string } | { "": unknown } | { "": unknown }
-        Returns: unknown
+        Returns: string
       }
       log_agent_performance: {
         Args: {
@@ -2802,9 +2853,10 @@ export type Database = {
               query_embedding: string
             }
         Returns: {
-          chunk_metadata: Json
-          content_chunk: string
-          document_id: number
+          article_number: number
+          article_text: string
+          document_type: string
+          full_content: string
           similarity: number
         }[]
       }
