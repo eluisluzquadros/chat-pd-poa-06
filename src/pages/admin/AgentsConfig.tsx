@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, Settings, Power, Star, Trash2, Edit } from 'lucide-react';
+import { Plus, Settings, Power, Star, Trash2, Edit, TestTube } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -9,8 +9,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Slider } from '@/components/ui/slider';
 import { useDifyAgents } from '@/hooks/useDifyAgents';
-import { CreateDifyAgentData } from '@/services/difyAgentsService';
+import { CreateDifyAgentData, DifyConfig, DifyParameters } from '@/services/difyAgentsService';
 import { Separator } from '@/components/ui/separator';
 
 // Modelos disponíveis por provedor
@@ -30,6 +32,13 @@ const PROVIDERS = {
       { id: 'gpt-4o-mini', name: 'GPT-4o Mini' },
     ]
   },
+  dify: {
+    name: 'Dify',
+    models: [
+      { id: 'dify-app', name: 'Dify App' },
+      { id: 'dify-workflow', name: 'Dify Workflow' },
+    ]
+  },
   legacy: {
     name: 'Sistema Legado',
     models: [
@@ -46,7 +55,29 @@ interface AgentFormData {
   model: string;
   is_active: boolean;
   is_default: boolean;
+  dify_config: DifyConfig;
+  parameters: DifyParameters;
 }
+
+const defaultDifyConfig: DifyConfig = {
+  base_url: '',
+  service_api_endpoint: '',
+  api_key: '',
+  app_id: '',
+  public_url: '',
+  server_url: '',
+  workflow_id: '',
+};
+
+const defaultParameters: DifyParameters = {
+  temperature: 0.7,
+  max_tokens: 4000,
+  top_p: 1,
+  stream: true,
+  timeout: 30000,
+  max_retries: 3,
+  response_format: 'text',
+};
 
 const defaultFormData: AgentFormData = {
   name: '',
@@ -56,6 +87,8 @@ const defaultFormData: AgentFormData = {
   model: '',
   is_active: true,
   is_default: false,
+  dify_config: defaultDifyConfig,
+  parameters: defaultParameters,
 };
 
 export default function AgentsConfig() {
@@ -63,6 +96,7 @@ export default function AgentsConfig() {
   const [showDialog, setShowDialog] = useState(false);
   const [editingAgent, setEditingAgent] = useState<string | null>(null);
   const [formData, setFormData] = useState<AgentFormData>(defaultFormData);
+  const [activeTab, setActiveTab] = useState('general');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -70,6 +104,15 @@ export default function AgentsConfig() {
     // Validação básica
     if (!formData.name || !formData.display_name || !formData.provider || !formData.model) {
       return;
+    }
+
+    // Validação específica para Dify
+    if (formData.provider === 'dify') {
+      if (!formData.dify_config.base_url || !formData.dify_config.service_api_endpoint || 
+          !formData.dify_config.api_key || !formData.dify_config.app_id) {
+        alert('Para agentes Dify, é necessário preencher Base URL, Service API Endpoint, API Key e App ID');
+        return;
+      }
     }
 
     try {
@@ -81,6 +124,8 @@ export default function AgentsConfig() {
         model: formData.model,
         is_active: formData.is_active,
         is_default: formData.is_default,
+        dify_config: formData.dify_config,
+        parameters: formData.parameters,
       };
 
       if (editingAgent) {
@@ -92,6 +137,7 @@ export default function AgentsConfig() {
       setShowDialog(false);
       setEditingAgent(null);
       setFormData(defaultFormData);
+      setActiveTab('general');
     } catch (error) {
       // Erro já tratado no hook
     }
@@ -107,6 +153,8 @@ export default function AgentsConfig() {
       model: agent.model,
       is_active: agent.is_active,
       is_default: agent.is_default,
+      dify_config: agent.dify_config || defaultDifyConfig,
+      parameters: agent.parameters || defaultParameters,
     });
     setShowDialog(true);
   };
@@ -114,6 +162,7 @@ export default function AgentsConfig() {
   const handleCreate = () => {
     setEditingAgent(null);
     setFormData(defaultFormData);
+    setActiveTab('general');
     setShowDialog(true);
   };
 
@@ -123,14 +172,41 @@ export default function AgentsConfig() {
     }
   };
 
+  const updateDifyConfig = (field: keyof DifyConfig, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      dify_config: { ...prev.dify_config, [field]: value }
+    }));
+  };
+
+  const updateParameters = (field: keyof DifyParameters, value: any) => {
+    setFormData(prev => ({
+      ...prev,
+      parameters: { ...prev.parameters, [field]: value }
+    }));
+  };
+
+  const testConnection = async () => {
+    if (!formData.dify_config.base_url || !formData.dify_config.api_key) {
+      alert('Configure Base URL e API Key antes de testar a conexão');
+      return;
+    }
+    
+    // TODO: Implementar teste de conexão real
+    alert('Funcionalidade de teste de conexão será implementada em breve');
+  };
+
   const getProviderBadgeVariant = (provider: string) => {
     switch (provider) {
       case 'anthropic': return 'default';
       case 'openai': return 'secondary';
+      case 'dify': return 'default';
       case 'legacy': return 'outline';
       default: return 'outline';
     }
   };
+
+  const isDifyProvider = formData.provider === 'dify';
 
   if (loading) {
     return (
@@ -148,7 +224,7 @@ export default function AgentsConfig() {
         <div>
           <h1 className="text-3xl font-bold">Configuração de Agentes</h1>
           <p className="text-muted-foreground mt-2">
-            Gerencie os agentes de IA disponíveis no sistema
+            Gerencie os agentes de IA disponíveis no sistema, incluindo configurações Dify
           </p>
         </div>
         <Button onClick={handleCreate} className="flex items-center gap-2">
@@ -207,6 +283,11 @@ export default function AgentsConfig() {
                 {agent.description && (
                   <p className="text-sm text-muted-foreground">{agent.description}</p>
                 )}
+                {agent.provider === 'dify' && agent.dify_config?.base_url && (
+                  <div className="text-sm text-muted-foreground">
+                    <strong>Dify URL:</strong> {agent.dify_config.base_url}
+                  </div>
+                )}
                 <div className="flex items-center gap-2 pt-2">
                   {!agent.is_default && agent.is_active && (
                     <Button
@@ -243,118 +324,319 @@ export default function AgentsConfig() {
       </div>
 
       <Dialog open={showDialog} onOpenChange={setShowDialog}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
               {editingAgent ? 'Editar Agente' : 'Novo Agente'}
             </DialogTitle>
           </DialogHeader>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="display_name">Nome de Exibição</Label>
-              <Input
-                id="display_name"
-                value={formData.display_name}
-                onChange={(e) => setFormData(prev => ({ ...prev, display_name: e.target.value }))}
-                placeholder="ex: Claude 3.5 Sonnet"
-                required
-              />
-            </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="name">Nome Técnico</Label>
-              <Input
-                id="name"
-                value={formData.name}
-                onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                placeholder="ex: agentic-claude_35_sonnet"
-                required
-              />
-            </div>
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="general">Informações Gerais</TabsTrigger>
+              <TabsTrigger value="dify" disabled={!isDifyProvider}>Configuração Dify</TabsTrigger>
+              <TabsTrigger value="parameters">Parâmetros</TabsTrigger>
+            </TabsList>
 
-            <div className="space-y-2">
-              <Label htmlFor="provider">Provedor</Label>
-              <Select
-                value={formData.provider}
-                onValueChange={(value) => setFormData(prev => ({ ...prev, provider: value, model: '' }))}
-                required
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione o provedor" />
-                </SelectTrigger>
-                <SelectContent>
-                  {Object.entries(PROVIDERS).map(([key, provider]) => (
-                    <SelectItem key={key} value={key}>
-                      {provider.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <TabsContent value="general" className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="display_name">Nome de Exibição</Label>
+                  <Input
+                    id="display_name"
+                    value={formData.display_name}
+                    onChange={(e) => setFormData(prev => ({ ...prev, display_name: e.target.value }))}
+                    placeholder="ex: Claude 3.5 Sonnet"
+                    required
+                  />
+                </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="model">Modelo</Label>
-              <Select
-                value={formData.model}
-                onValueChange={(value) => setFormData(prev => ({ ...prev, model: value }))}
-                required
-                disabled={!formData.provider}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione o modelo" />
-                </SelectTrigger>
-                <SelectContent>
-                  {formData.provider && PROVIDERS[formData.provider as keyof typeof PROVIDERS]?.models.map((model) => (
-                    <SelectItem key={model.id} value={model.id}>
-                      {model.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+                <div className="space-y-2">
+                  <Label htmlFor="name">Nome Técnico</Label>
+                  <Input
+                    id="name"
+                    value={formData.name}
+                    onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                    placeholder="ex: agentic-claude_35_sonnet"
+                    required
+                  />
+                </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="description">Descrição</Label>
-              <Textarea
-                id="description"
-                value={formData.description}
-                onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                placeholder="Descrição opcional do agente"
-                rows={3}
-              />
-            </div>
+                <div className="space-y-2">
+                  <Label htmlFor="provider">Provedor</Label>
+                  <Select
+                    value={formData.provider}
+                    onValueChange={(value) => setFormData(prev => ({ ...prev, provider: value, model: '' }))}
+                    required
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione o provedor" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Object.entries(PROVIDERS).map(([key, provider]) => (
+                        <SelectItem key={key} value={key}>
+                          {provider.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
 
-            <Separator />
+                <div className="space-y-2">
+                  <Label htmlFor="model">Modelo</Label>
+                  <Select
+                    value={formData.model}
+                    onValueChange={(value) => setFormData(prev => ({ ...prev, model: value }))}
+                    required
+                    disabled={!formData.provider}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione o modelo" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {formData.provider && PROVIDERS[formData.provider as keyof typeof PROVIDERS]?.models.map((model) => (
+                        <SelectItem key={model.id} value={model.id}>
+                          {model.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
 
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <Switch
-                  id="is_active"
-                  checked={formData.is_active}
-                  onCheckedChange={(checked) => setFormData(prev => ({ ...prev, is_active: checked }))}
-                />
-                <Label htmlFor="is_active">Ativo</Label>
+                <div className="space-y-2">
+                  <Label htmlFor="description">Descrição</Label>
+                  <Textarea
+                    id="description"
+                    value={formData.description}
+                    onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                    placeholder="Descrição opcional do agente"
+                    rows={3}
+                  />
+                </div>
+
+                <Separator />
+
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <Switch
+                      id="is_active"
+                      checked={formData.is_active}
+                      onCheckedChange={(checked) => setFormData(prev => ({ ...prev, is_active: checked }))}
+                    />
+                    <Label htmlFor="is_active">Ativo</Label>
+                  </div>
+
+                  <div className="flex items-center space-x-2">
+                    <Switch
+                      id="is_default"
+                      checked={formData.is_default}
+                      onCheckedChange={(checked) => setFormData(prev => ({ ...prev, is_default: checked }))}
+                    />
+                    <Label htmlFor="is_default">Padrão</Label>
+                  </div>
+                </div>
+              </TabsContent>
+
+              <TabsContent value="dify" className="space-y-4">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-semibold">Configuração Dify</h3>
+                    <Button type="button" variant="outline" size="sm" onClick={testConnection}>
+                      <TestTube className="h-4 w-4 mr-2" />
+                      Testar Conexão
+                    </Button>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="base_url">Base URL *</Label>
+                      <Input
+                        id="base_url"
+                        value={formData.dify_config.base_url}
+                        onChange={(e) => updateDifyConfig('base_url', e.target.value)}
+                        placeholder="https://api.dify.ai"
+                        required={isDifyProvider}
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="service_api_endpoint">Service API Endpoint *</Label>
+                      <Input
+                        id="service_api_endpoint"
+                        value={formData.dify_config.service_api_endpoint}
+                        onChange={(e) => updateDifyConfig('service_api_endpoint', e.target.value)}
+                        placeholder="/v1/chat-messages"
+                        required={isDifyProvider}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="api_key">API Key *</Label>
+                    <Input
+                      id="api_key"
+                      type="password"
+                      value={formData.dify_config.api_key}
+                      onChange={(e) => updateDifyConfig('api_key', e.target.value)}
+                      placeholder="app-xxxxxxxxxxxxxxxxxxxxxxxx"
+                      required={isDifyProvider}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="app_id">App ID *</Label>
+                    <Input
+                      id="app_id"
+                      value={formData.dify_config.app_id}
+                      onChange={(e) => updateDifyConfig('app_id', e.target.value)}
+                      placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+                      required={isDifyProvider}
+                    />
+                  </div>
+
+                  <Separator />
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="public_url">Public URL</Label>
+                      <Input
+                        id="public_url"
+                        value={formData.dify_config.public_url}
+                        onChange={(e) => updateDifyConfig('public_url', e.target.value)}
+                        placeholder="https://dify.example.com"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="server_url">Server URL</Label>
+                      <Input
+                        id="server_url"
+                        value={formData.dify_config.server_url}
+                        onChange={(e) => updateDifyConfig('server_url', e.target.value)}
+                        placeholder="https://server.dify.ai"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="workflow_id">Workflow ID</Label>
+                    <Input
+                      id="workflow_id"
+                      value={formData.dify_config.workflow_id}
+                      onChange={(e) => updateDifyConfig('workflow_id', e.target.value)}
+                      placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+                    />
+                  </div>
+                </div>
+              </TabsContent>
+
+              <TabsContent value="parameters" className="space-y-4">
+                <h3 className="text-lg font-semibold">Parâmetros do Modelo</h3>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Temperature: {formData.parameters.temperature}</Label>
+                    <Slider
+                      value={[formData.parameters.temperature || 0.7]}
+                      onValueChange={([value]) => updateParameters('temperature', value)}
+                      max={2}
+                      min={0}
+                      step={0.1}
+                      className="w-full"
+                    />
+                    <div className="text-xs text-muted-foreground">Controla a criatividade das respostas</div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="max_tokens">Max Tokens</Label>
+                    <Input
+                      id="max_tokens"
+                      type="number"
+                      value={formData.parameters.max_tokens}
+                      onChange={(e) => updateParameters('max_tokens', parseInt(e.target.value))}
+                      min={1}
+                      max={16000}
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Top-p: {formData.parameters.top_p}</Label>
+                    <Slider
+                      value={[formData.parameters.top_p || 1]}
+                      onValueChange={([value]) => updateParameters('top_p', value)}
+                      max={1}
+                      min={0}
+                      step={0.1}
+                      className="w-full"
+                    />
+                    <div className="text-xs text-muted-foreground">Controla a diversidade de tokens</div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="timeout">Timeout (ms)</Label>
+                    <Input
+                      id="timeout"
+                      type="number"
+                      value={formData.parameters.timeout}
+                      onChange={(e) => updateParameters('timeout', parseInt(e.target.value))}
+                      min={1000}
+                      max={300000}
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="max_retries">Max Retries</Label>
+                    <Input
+                      id="max_retries"
+                      type="number"
+                      value={formData.parameters.max_retries}
+                      onChange={(e) => updateParameters('max_retries', parseInt(e.target.value))}
+                      min={0}
+                      max={10}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="response_format">Formato de Resposta</Label>
+                    <Select
+                      value={formData.parameters.response_format}
+                      onValueChange={(value: 'text' | 'json') => updateParameters('response_format', value)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="text">Texto</SelectItem>
+                        <SelectItem value="json">JSON</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    id="stream"
+                    checked={formData.parameters.stream}
+                    onCheckedChange={(checked) => updateParameters('stream', checked)}
+                  />
+                  <Label htmlFor="stream">Stream (respostas em tempo real)</Label>
+                </div>
+              </TabsContent>
+
+              <div className="flex gap-2 pt-4">
+                <Button type="button" variant="outline" onClick={() => setShowDialog(false)} className="flex-1">
+                  Cancelar
+                </Button>
+                <Button type="submit" disabled={creating} className="flex-1">
+                  {editingAgent ? 'Atualizar' : 'Criar'}
+                </Button>
               </div>
-
-              <div className="flex items-center space-x-2">
-                <Switch
-                  id="is_default"
-                  checked={formData.is_default}
-                  onCheckedChange={(checked) => setFormData(prev => ({ ...prev, is_default: checked }))}
-                />
-                <Label htmlFor="is_default">Padrão</Label>
-              </div>
-            </div>
-
-            <div className="flex gap-2 pt-4">
-              <Button type="button" variant="outline" onClick={() => setShowDialog(false)} className="flex-1">
-                Cancelar
-              </Button>
-              <Button type="submit" disabled={creating} className="flex-1">
-                {editingAgent ? 'Atualizar' : 'Criar'}
-              </Button>
-            </div>
-          </form>
+            </form>
+          </Tabs>
         </DialogContent>
       </Dialog>
     </div>
