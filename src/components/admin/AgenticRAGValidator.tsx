@@ -277,7 +277,7 @@ export function AgenticRAGValidator() {
       <Card>
         <CardHeader>
           <div className="flex justify-between items-center">
-            <CardTitle>Validador Agentic-RAG v3</CardTitle>
+            <CardTitle>Validador de Agentes RAG</CardTitle>
             <div className="flex gap-2">
               <Button 
                 variant="outline" 

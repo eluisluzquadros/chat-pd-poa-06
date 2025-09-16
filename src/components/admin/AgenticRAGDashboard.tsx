@@ -194,7 +194,7 @@ const AgenticRAGDashboard: React.FC = () => {
     const avgLatency = metrics.length > 0 ? Math.round(metrics.reduce((sum, m) => sum + m.total_latency, 0) / metrics.length) : 0;
     const avgConfidence = metrics.length > 0 ? Math.round(metrics.reduce((sum, m) => sum + (m.confidence_score || 0), 0) / metrics.length * 100) / 100 : 0;
     const totalCost = metrics.reduce((sum, m) => sum + (m.estimated_cost || 0), 0);
-    const v3Queries = metrics.filter(m => m.rag_version === 'v3').length;
+    const v1Queries = metrics.filter(m => m.rag_version === 'v1').length;
     const v2Queries = metrics.filter(m => m.rag_version === 'v2').length;
 
     return {
@@ -204,7 +204,7 @@ const AgenticRAGDashboard: React.FC = () => {
       avgLatency,
       avgConfidence,
       totalCost: Math.round(totalCost * 1000) / 1000,
-      v3Queries,
+      v1Queries,
       v2Queries,
       avgFeedbackRating: userFeedback.length > 0 ? Math.round(userFeedback.reduce((sum, f) => sum + f.rating, 0) / userFeedback.length * 10) / 10 : 0
     };
@@ -228,7 +228,7 @@ const AgenticRAGDashboard: React.FC = () => {
     return (
       <div className="p-6 space-y-6">
         <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold">Dashboard Agentic-RAG V3</h1>
+          <h1 className="text-3xl font-bold">Dashboard de Monitoramento</h1>
           <div className="animate-spin">
             <RefreshCw className="h-6 w-6" />
           </div>
@@ -254,7 +254,7 @@ const AgenticRAGDashboard: React.FC = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Dashboard Agentic-RAG V3</h1>
+          <h1 className="text-3xl font-bold">Dashboard de Monitoramento</h1>
           <p className="text-muted-foreground mt-1">
             Monitoramento em tempo real do sistema RAG com métricas de performance e qualidade
           </p>
@@ -339,7 +339,7 @@ const AgenticRAGDashboard: React.FC = () => {
           <CardContent>
             <div className="text-2xl font-bold">{summaryStats.totalQueries.toLocaleString()}</div>
             <div className="text-xs text-muted-foreground mt-1">
-              V3: {summaryStats.v3Queries} | V2: {summaryStats.v2Queries}
+              V1: {summaryStats.v1Queries} | V2: {summaryStats.v2Queries}
             </div>
           </CardContent>
         </Card>
@@ -485,7 +485,7 @@ const AgenticRAGDashboard: React.FC = () => {
                       dataKey="avg_latency" 
                       stroke="#8884d8" 
                       strokeWidth={2}
-                      name="V3"
+                      name="V1"
                     />
                   </LineChart>
                 </ResponsiveContainer>
@@ -586,7 +586,7 @@ const AgenticRAGDashboard: React.FC = () => {
                       <div>
                         <div className="font-medium">
                           {category.query_category || 'Geral'}
-                          <Badge className="ml-2" variant={category.rag_version === 'v3' ? 'default' : 'secondary'}>
+                          <Badge className="ml-2" variant={category.rag_version === 'v1' ? 'default' : 'secondary'}>
                             {category.rag_version}
                           </Badge>
                         </div>
@@ -770,7 +770,7 @@ const AgenticRAGDashboard: React.FC = () => {
         <TabsContent value="abtest" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>A/B Testing: V2 vs V3</CardTitle>
+              <CardTitle>A/B Testing: V1 vs V2</CardTitle>
               <CardDescription>Comparação de performance entre versões</CardDescription>
             </CardHeader>
             <CardContent>
@@ -798,20 +798,20 @@ const AgenticRAGDashboard: React.FC = () => {
                 </div>
 
                 <div className="space-y-4">
-                  <h4 className="font-medium">Métricas V3</h4>
+                  <h4 className="font-medium">Métricas V1</h4>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="p-3 border rounded">
                       <div className="text-sm text-muted-foreground">Queries</div>
-                      <div className="text-xl font-bold">{summaryStats.v3Queries}</div>
+                      <div className="text-xl font-bold">{summaryStats.v1Queries}</div>
                     </div>
                     <div className="p-3 border rounded">
                       <div className="text-sm text-muted-foreground">Latência Média</div>
                       <div className="text-xl font-bold">
-                        {metrics.filter(m => m.rag_version === 'v3').length > 0 
+                        {metrics.filter(m => m.rag_version === 'v1').length > 0 
                           ? Math.round(
-                              metrics.filter(m => m.rag_version === 'v3')
+                              metrics.filter(m => m.rag_version === 'v1')
                                 .reduce((sum, m) => sum + m.total_latency, 0) / 
-                              metrics.filter(m => m.rag_version === 'v3').length
+                              metrics.filter(m => m.rag_version === 'v1').length
                             )
                           : 0}ms
                       </div>

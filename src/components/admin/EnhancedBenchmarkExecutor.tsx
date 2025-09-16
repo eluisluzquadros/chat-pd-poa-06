@@ -72,7 +72,7 @@ export function EnhancedBenchmarkExecutor({ onExecute, isRunning, progress }: En
 
         <Button onClick={() => onExecute(config)} disabled={isRunning} className="w-full gap-2">
           <Play className="h-4 w-4" />
-          Executar Benchmark V3
+          Executar Benchmark Avançado
         </Button>
       </CardContent>
     </Card>
