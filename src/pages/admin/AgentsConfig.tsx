@@ -159,6 +159,26 @@ export default function AgentsConfig() {
   };
 
   const updateApiConfig = (field: keyof ApiConfig, value: string) => {
+    // Validação especial para service_api_endpoint - deve ser caminho relativo
+    if (field === 'service_api_endpoint') {
+      // Remover URL completa se detectada e manter apenas o caminho
+      if (value.includes('://')) {
+        try {
+          const url = new URL(value);
+          value = url.pathname;
+        } catch {
+          // Se falhar, tentar extrair parte após o domínio
+          const match = value.match(/https?:\/\/[^\/]+(.*)$/);
+          value = match ? match[1] : value;
+        }
+      }
+      
+      // Garantir que comece com /
+      if (value && !value.startsWith('/')) {
+        value = '/' + value;
+      }
+    }
+    
     setFormData(prev => ({
       ...prev,
       api_config: { ...prev.api_config, [field]: value }
@@ -431,13 +451,16 @@ export default function AgentsConfig() {
 
               <TabsContent value="api" className="space-y-4">
                 <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                  <h4 className="font-semibold text-blue-800 mb-2">💡 Dicas de Configuração</h4>
+                  <h4 className="font-semibold text-blue-800 mb-2">💡 Configuração Dify Simplificada</h4>
                   <ul className="text-sm text-blue-700 space-y-1">
-                    <li>• <strong>Base URL:</strong> Use sempre a URL completa (ex: https://api.dify.ai/v1)</li>
-                    <li>• <strong>Service Endpoint:</strong> Use o caminho relativo (ex: /chat-messages)</li>
-                    <li>• <strong>API Key:</strong> Formato app-xxxx (encontre em API Management no Dify)</li>
-                    <li>• <strong>App ID:</strong> UUID da aplicação (encontre na URL da app no Dify)</li>
+                    <li>• <strong>Base URL:</strong> https://api.dify.ai/v1 (padrão do Dify)</li>
+                    <li>• <strong>Service Endpoint:</strong> /chat-messages (apenas o caminho, sem domínio)</li>
+                    <li>• <strong>API Key:</strong> Formato app-xxxx (encontre em API Management → API Keys)</li>
+                    <li>• <strong>App ID:</strong> ID da aplicação (encontre na URL da app ou em Settings)</li>
                   </ul>
+                  <div className="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded text-xs text-yellow-800">
+                    ⚠️ <strong>Service Endpoint</strong> deve ser apenas o caminho (ex: /chat-messages), não uma URL completa
+                  </div>
                 </div>
                 
                 <AgentFormValidator
@@ -538,6 +561,11 @@ export default function AgentsConfig() {
                           required
                           className={!formData.api_config.service_api_endpoint && showValidation ? 'border-destructive' : ''}
                         />
+                        {formData.api_config.service_api_endpoint && formData.api_config.service_api_endpoint.includes('://') && (
+                          <div className="text-xs text-orange-600 mt-1">
+                            ⚠️ Detectada URL completa. Use apenas o caminho (ex: /chat-messages)
+                          </div>
+                        )}
                       </div>
                     </TooltipProvider>
                   </div>
