@@ -15,51 +15,29 @@ import { useDifyAgents } from '@/hooks/useDifyAgents';
 import { CreateDifyAgentData, DifyConfig, DifyParameters } from '@/services/difyAgentsService';
 import { Separator } from '@/components/ui/separator';
 
-// Modelos disponíveis por provedor
-const PROVIDERS = {
-  anthropic: {
-    name: 'Anthropic',
-    models: [
-      { id: 'claude-3-5-sonnet-20241022', name: 'Claude 3.5 Sonnet' },
-      { id: 'claude-3-5-haiku-20241022', name: 'Claude 3.5 Haiku' },
-    ]
-  },
-  openai: {
-    name: 'OpenAI',
-    models: [
-      { id: 'gpt-5-nano-2025-08-07', name: 'GPT-5 Nano' },
-      { id: 'gpt-4o', name: 'GPT-4o' },
-      { id: 'gpt-4o-mini', name: 'GPT-4o Mini' },
-    ]
-  },
-  dify: {
-    name: 'Dify',
-    models: [
-      { id: 'dify-app', name: 'Dify App' },
-      { id: 'dify-workflow', name: 'Dify Workflow' },
-    ]
-  },
-  legacy: {
-    name: 'Sistema Legado',
-    models: [
-      { id: 'supabase-rag', name: 'Supabase RAG' },
-    ]
-  }
-};
+// Modelos disponíveis
+const MODELS = [
+  { id: 'claude-3-5-sonnet-20241022', name: 'Claude 3.5 Sonnet' },
+  { id: 'claude-3-5-haiku-20241022', name: 'Claude 3.5 Haiku' },
+  { id: 'gpt-5-nano-2025-08-07', name: 'GPT-5 Nano' },
+  { id: 'gpt-4o', name: 'GPT-4o' },
+  { id: 'gpt-4o-mini', name: 'GPT-4o Mini' },
+  { id: 'custom-workflow', name: 'Workflow Personalizado' },
+  { id: 'custom-app', name: 'Aplicação Personalizada' },
+];
 
 interface AgentFormData {
   name: string;
   display_name: string;
   description: string;
-  provider: string;
   model: string;
   is_active: boolean;
   is_default: boolean;
-  dify_config: DifyConfig;
+  api_config: DifyConfig;
   parameters: DifyParameters;
 }
 
-const defaultDifyConfig: DifyConfig = {
+const defaultApiConfig: DifyConfig = {
   base_url: '',
   service_api_endpoint: '',
   api_key: '',
@@ -83,11 +61,10 @@ const defaultFormData: AgentFormData = {
   name: '',
   display_name: '',
   description: '',
-  provider: '',
   model: '',
   is_active: true,
   is_default: false,
-  dify_config: defaultDifyConfig,
+  api_config: defaultApiConfig,
   parameters: defaultParameters,
 };
 
@@ -102,17 +79,15 @@ export default function AgentsConfig() {
     e.preventDefault();
     
     // Validação básica
-    if (!formData.name || !formData.display_name || !formData.provider || !formData.model) {
+    if (!formData.name || !formData.display_name || !formData.model) {
       return;
     }
 
-    // Validação específica para Dify
-    if (formData.provider === 'dify') {
-      if (!formData.dify_config.base_url || !formData.dify_config.service_api_endpoint || 
-          !formData.dify_config.api_key || !formData.dify_config.app_id) {
-        alert('Para agentes Dify, é necessário preencher Base URL, Service API Endpoint, API Key e App ID');
-        return;
-      }
+    // Validação de configuração da API
+    if (!formData.api_config.base_url || !formData.api_config.service_api_endpoint || 
+        !formData.api_config.api_key || !formData.api_config.app_id) {
+      alert('É necessário preencher Base URL, Service API Endpoint, API Key e App ID');
+      return;
     }
 
     try {
@@ -120,11 +95,11 @@ export default function AgentsConfig() {
         name: formData.name,
         display_name: formData.display_name,
         description: formData.description || undefined,
-        provider: formData.provider,
+        provider: 'api',
         model: formData.model,
         is_active: formData.is_active,
         is_default: formData.is_default,
-        dify_config: formData.dify_config,
+        dify_config: formData.api_config,
         parameters: formData.parameters,
       };
 
@@ -149,11 +124,10 @@ export default function AgentsConfig() {
       name: agent.name,
       display_name: agent.display_name,
       description: agent.description || '',
-      provider: agent.provider,
       model: agent.model,
       is_active: agent.is_active,
       is_default: agent.is_default,
-      dify_config: agent.dify_config || defaultDifyConfig,
+      api_config: agent.dify_config || defaultApiConfig,
       parameters: agent.parameters || defaultParameters,
     });
     setShowDialog(true);
@@ -172,10 +146,10 @@ export default function AgentsConfig() {
     }
   };
 
-  const updateDifyConfig = (field: keyof DifyConfig, value: string) => {
+  const updateApiConfig = (field: keyof DifyConfig, value: string) => {
     setFormData(prev => ({
       ...prev,
-      dify_config: { ...prev.dify_config, [field]: value }
+      api_config: { ...prev.api_config, [field]: value }
     }));
   };
 
@@ -187,7 +161,7 @@ export default function AgentsConfig() {
   };
 
   const testConnection = async () => {
-    if (!formData.dify_config.base_url || !formData.dify_config.api_key) {
+    if (!formData.api_config.base_url || !formData.api_config.api_key) {
       alert('Configure Base URL e API Key antes de testar a conexão');
       return;
     }
@@ -196,17 +170,9 @@ export default function AgentsConfig() {
     alert('Funcionalidade de teste de conexão será implementada em breve');
   };
 
-  const getProviderBadgeVariant = (provider: string) => {
-    switch (provider) {
-      case 'anthropic': return 'default';
-      case 'openai': return 'secondary';
-      case 'dify': return 'default';
-      case 'legacy': return 'outline';
-      default: return 'outline';
-    }
+  const getProviderBadgeVariant = () => {
+    return 'default' as const;
   };
-
-  const isDifyProvider = formData.provider === 'dify';
 
   if (loading) {
     return (
@@ -224,7 +190,7 @@ export default function AgentsConfig() {
         <div>
           <h1 className="text-3xl font-bold">Configuração de Agentes</h1>
           <p className="text-muted-foreground mt-2">
-            Gerencie os agentes de IA disponíveis no sistema, incluindo configurações Dify
+            Gerencie os agentes de IA disponíveis no sistema
           </p>
         </div>
         <Button onClick={handleCreate} className="flex items-center gap-2">
@@ -240,8 +206,8 @@ export default function AgentsConfig() {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <CardTitle className="text-lg">{agent.display_name}</CardTitle>
-                  <Badge variant={getProviderBadgeVariant(agent.provider)}>
-                    {PROVIDERS[agent.provider as keyof typeof PROVIDERS]?.name || agent.provider}
+                  <Badge variant={getProviderBadgeVariant()}>
+                    Agente IA
                   </Badge>
                   {agent.is_default && (
                     <Badge variant="default" className="flex items-center gap-1">
@@ -283,9 +249,9 @@ export default function AgentsConfig() {
                 {agent.description && (
                   <p className="text-sm text-muted-foreground">{agent.description}</p>
                 )}
-                {agent.provider === 'dify' && agent.dify_config?.base_url && (
+                {agent.dify_config?.base_url && (
                   <div className="text-sm text-muted-foreground">
-                    <strong>Dify URL:</strong> {agent.dify_config.base_url}
+                    <strong>API URL:</strong> {agent.dify_config.base_url}
                   </div>
                 )}
                 <div className="flex items-center gap-2 pt-2">
@@ -334,7 +300,7 @@ export default function AgentsConfig() {
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="general">Informações Gerais</TabsTrigger>
-              <TabsTrigger value="dify" disabled={!isDifyProvider}>Configuração Dify</TabsTrigger>
+              <TabsTrigger value="api">Configuração de API</TabsTrigger>
               <TabsTrigger value="parameters">Parâmetros</TabsTrigger>
             </TabsList>
 
@@ -363,38 +329,17 @@ export default function AgentsConfig() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="provider">Provedor</Label>
-                  <Select
-                    value={formData.provider}
-                    onValueChange={(value) => setFormData(prev => ({ ...prev, provider: value, model: '' }))}
-                    required
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione o provedor" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {Object.entries(PROVIDERS).map(([key, provider]) => (
-                        <SelectItem key={key} value={key}>
-                          {provider.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
                   <Label htmlFor="model">Modelo</Label>
                   <Select
                     value={formData.model}
                     onValueChange={(value) => setFormData(prev => ({ ...prev, model: value }))}
                     required
-                    disabled={!formData.provider}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Selecione o modelo" />
                     </SelectTrigger>
                     <SelectContent>
-                      {formData.provider && PROVIDERS[formData.provider as keyof typeof PROVIDERS]?.models.map((model) => (
+                      {MODELS.map((model) => (
                         <SelectItem key={model.id} value={model.id}>
                           {model.name}
                         </SelectItem>
@@ -437,10 +382,10 @@ export default function AgentsConfig() {
                 </div>
               </TabsContent>
 
-              <TabsContent value="dify" className="space-y-4">
+              <TabsContent value="api" className="space-y-4">
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <h3 className="text-lg font-semibold">Configuração Dify</h3>
+                    <h3 className="text-lg font-semibold">Configuração de API</h3>
                     <Button type="button" variant="outline" size="sm" onClick={testConnection}>
                       <TestTube className="h-4 w-4 mr-2" />
                       Testar Conexão
@@ -452,10 +397,10 @@ export default function AgentsConfig() {
                       <Label htmlFor="base_url">Base URL *</Label>
                       <Input
                         id="base_url"
-                        value={formData.dify_config.base_url}
-                        onChange={(e) => updateDifyConfig('base_url', e.target.value)}
+                       value={formData.api_config.base_url}
+                        onChange={(e) => updateApiConfig('base_url', e.target.value)}
                         placeholder="https://api.dify.ai"
-                        required={isDifyProvider}
+                        required
                       />
                     </div>
 
@@ -463,10 +408,10 @@ export default function AgentsConfig() {
                       <Label htmlFor="service_api_endpoint">Service API Endpoint *</Label>
                       <Input
                         id="service_api_endpoint"
-                        value={formData.dify_config.service_api_endpoint}
-                        onChange={(e) => updateDifyConfig('service_api_endpoint', e.target.value)}
+                        value={formData.api_config.service_api_endpoint}
+                        onChange={(e) => updateApiConfig('service_api_endpoint', e.target.value)}
                         placeholder="/v1/chat-messages"
-                        required={isDifyProvider}
+                        required
                       />
                     </div>
                   </div>
@@ -476,10 +421,10 @@ export default function AgentsConfig() {
                     <Input
                       id="api_key"
                       type="password"
-                      value={formData.dify_config.api_key}
-                      onChange={(e) => updateDifyConfig('api_key', e.target.value)}
+                      value={formData.api_config.api_key}
+                      onChange={(e) => updateApiConfig('api_key', e.target.value)}
                       placeholder="app-xxxxxxxxxxxxxxxxxxxxxxxx"
-                      required={isDifyProvider}
+                      required
                     />
                   </div>
 
@@ -487,10 +432,10 @@ export default function AgentsConfig() {
                     <Label htmlFor="app_id">App ID *</Label>
                     <Input
                       id="app_id"
-                      value={formData.dify_config.app_id}
-                      onChange={(e) => updateDifyConfig('app_id', e.target.value)}
+                      value={formData.api_config.app_id}
+                      onChange={(e) => updateApiConfig('app_id', e.target.value)}
                       placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-                      required={isDifyProvider}
+                      required
                     />
                   </div>
 
@@ -501,9 +446,9 @@ export default function AgentsConfig() {
                       <Label htmlFor="public_url">Public URL</Label>
                       <Input
                         id="public_url"
-                        value={formData.dify_config.public_url}
-                        onChange={(e) => updateDifyConfig('public_url', e.target.value)}
-                        placeholder="https://dify.example.com"
+                        value={formData.api_config.public_url}
+                        onChange={(e) => updateApiConfig('public_url', e.target.value)}
+                        placeholder="https://api.example.com"
                       />
                     </div>
 
@@ -511,9 +456,9 @@ export default function AgentsConfig() {
                       <Label htmlFor="server_url">Server URL</Label>
                       <Input
                         id="server_url"
-                        value={formData.dify_config.server_url}
-                        onChange={(e) => updateDifyConfig('server_url', e.target.value)}
-                        placeholder="https://server.dify.ai"
+                        value={formData.api_config.server_url}
+                        onChange={(e) => updateApiConfig('server_url', e.target.value)}
+                        placeholder="https://server.api.example.com"
                       />
                     </div>
                   </div>
@@ -522,8 +467,8 @@ export default function AgentsConfig() {
                     <Label htmlFor="workflow_id">Workflow ID</Label>
                     <Input
                       id="workflow_id"
-                      value={formData.dify_config.workflow_id}
-                      onChange={(e) => updateDifyConfig('workflow_id', e.target.value)}
+                      value={formData.api_config.workflow_id}
+                      onChange={(e) => updateApiConfig('workflow_id', e.target.value)}
                       placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
                     />
                   </div>
