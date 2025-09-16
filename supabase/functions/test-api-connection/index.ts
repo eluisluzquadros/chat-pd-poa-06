@@ -15,7 +15,14 @@ interface TestConnectionRequest {
 
 async function testAPIConnection(config: TestConnectionRequest): Promise<{ success: boolean; message: string; details?: any }> {
   try {
-    const { base_url, api_key, service_api_endpoint = '/v1/chat-messages', timeout = 10000 } = config;
+    const { base_url, api_key, service_api_endpoint = '/chat-messages', timeout = 10000 } = config;
+    
+    console.log('🔧 Configuração recebida:', {
+      base_url,
+      service_api_endpoint,
+      api_key: api_key ? '***' + api_key.slice(-4) : 'não informada',
+      timeout
+    });
     
     // Validar campos obrigatórios
     if (!base_url || !api_key) {
@@ -25,38 +32,71 @@ async function testAPIConnection(config: TestConnectionRequest): Promise<{ succe
       };
     }
 
-    // Construir URL de teste
-    const testUrl = new URL(service_api_endpoint, base_url).toString();
+    // Validar se service_api_endpoint começa com /
+    const endpoint = service_api_endpoint.startsWith('/') ? service_api_endpoint : `/${service_api_endpoint}`;
     
-    console.log(`Testando conexão com: ${testUrl}`);
+    // Construir URL de teste - garantir que base_url termine sem /
+    const cleanBaseUrl = base_url.replace(/\/$/, '');
+    const testUrl = `${cleanBaseUrl}${endpoint}`;
+    
+    console.log(`🔗 URL de teste construída: ${testUrl}`);
+    
+    // Preparar headers para Dify API v1
+    const headers = {
+      'Authorization': `Bearer ${api_key}`,
+      'Content-Type': 'application/json',
+    };
+    
+    // Body para Dify API v1 (formato correto)
+    const requestBody = {
+      inputs: {},
+      query: 'teste de conexão',
+      response_mode: 'blocking',
+      user: 'connection-test'
+    };
+    
+    console.log('📤 Enviando requisição:', {
+      url: testUrl,
+      method: 'POST',
+      headers: { ...headers, 'Authorization': 'Bearer ***' },
+      body: requestBody
+    });
     
     // Fazer requisição de teste
     const response = await fetch(testUrl, {
       method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${api_key}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        inputs: {},
-        query: 'teste de conexão',
-        response_mode: 'blocking',
-        user: 'test-connection'
-      }),
+      headers,
+      body: JSON.stringify(requestBody),
       signal: AbortSignal.timeout(timeout)
     });
 
     const responseText = await response.text();
     
+    console.log('📥 Resposta recebida:', {
+      status: response.status,
+      statusText: response.statusText,
+      headers: Object.fromEntries(response.headers.entries()),
+      bodyLength: responseText.length,
+      bodyPreview: responseText.substring(0, 200)
+    });
+    
     // Verificar resposta
     if (response.ok) {
+      let parsedResponse;
+      try {
+        parsedResponse = JSON.parse(responseText);
+      } catch {
+        parsedResponse = { raw: responseText };
+      }
+      
       return {
         success: true,
         message: 'Conexão estabelecida com sucesso',
         details: {
           status: response.status,
           statusText: response.statusText,
-          hasResponse: responseText.length > 0
+          hasResponse: responseText.length > 0,
+          response: parsedResponse
         }
       };
     } else {
@@ -65,8 +105,14 @@ async function testAPIConnection(config: TestConnectionRequest): Promise<{ succe
       try {
         errorDetails = JSON.parse(responseText);
       } catch {
-        errorDetails = { message: responseText };
+        errorDetails = { message: responseText, raw: responseText };
       }
+
+      console.log('❌ Erro na API:', {
+        status: response.status,
+        statusText: response.statusText,
+        errorDetails
+      });
 
       return {
         success: false,

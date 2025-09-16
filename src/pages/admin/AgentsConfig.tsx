@@ -42,8 +42,8 @@ interface AgentFormData {
 }
 
 const defaultApiConfig: ApiConfig = {
-  base_url: '',
-  service_api_endpoint: '',
+  base_url: 'https://api.dify.ai/v1',
+  service_api_endpoint: '/chat-messages',
   api_key: '',
   app_id: '',
   public_url: '',
@@ -430,6 +430,16 @@ export default function AgentsConfig() {
               </TabsContent>
 
               <TabsContent value="api" className="space-y-4">
+                <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                  <h4 className="font-semibold text-blue-800 mb-2">💡 Dicas de Configuração</h4>
+                  <ul className="text-sm text-blue-700 space-y-1">
+                    <li>• <strong>Base URL:</strong> Use sempre a URL completa (ex: https://api.dify.ai/v1)</li>
+                    <li>• <strong>Service Endpoint:</strong> Use o caminho relativo (ex: /chat-messages)</li>
+                    <li>• <strong>API Key:</strong> Formato app-xxxx (encontre em API Management no Dify)</li>
+                    <li>• <strong>App ID:</strong> UUID da aplicação (encontre na URL da app no Dify)</li>
+                  </ul>
+                </div>
+                
                 <AgentFormValidator
                   formData={formData}
                   showValidation={showValidation}
@@ -507,40 +517,79 @@ export default function AgentsConfig() {
                       </div>
                     </TooltipProvider>
 
+                    <TooltipProvider>
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2">
+                          <Label htmlFor="service_api_endpoint">Service API Endpoint *</Label>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <AlertCircle className="h-4 w-4 text-muted-foreground" />
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>Caminho relativo da API (ex: /chat-messages ou /v1/chat-messages)</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </div>
+                        <Input
+                          id="service_api_endpoint"
+                          value={formData.api_config.service_api_endpoint}
+                          onChange={(e) => updateApiConfig('service_api_endpoint', e.target.value)}
+                          placeholder="/chat-messages"
+                          required
+                          className={!formData.api_config.service_api_endpoint && showValidation ? 'border-destructive' : ''}
+                        />
+                      </div>
+                    </TooltipProvider>
+                  </div>
+
+                  <TooltipProvider>
                     <div className="space-y-2">
-                      <Label htmlFor="service_api_endpoint">Service API Endpoint *</Label>
+                      <div className="flex items-center gap-2">
+                        <Label htmlFor="api_key">API Key *</Label>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <AlertCircle className="h-4 w-4 text-muted-foreground" />
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Chave de API da aplicação Dify (formato: app-xxxx)</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </div>
                       <Input
-                        id="service_api_endpoint"
-                        value={formData.api_config.service_api_endpoint}
-                        onChange={(e) => updateApiConfig('service_api_endpoint', e.target.value)}
-                        placeholder="/v1/chat-messages"
+                        id="api_key"
+                        type="password"
+                        value={formData.api_config.api_key}
+                        onChange={(e) => updateApiConfig('api_key', e.target.value)}
+                        placeholder="app-xxxxxxxxxxxxxxxxxxxxxxxx"
                         required
+                        className={!formData.api_config.api_key && showValidation ? 'border-destructive' : ''}
                       />
                     </div>
-                  </div>
+                  </TooltipProvider>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="api_key">API Key *</Label>
-                    <Input
-                      id="api_key"
-                      type="password"
-                      value={formData.api_config.api_key}
-                      onChange={(e) => updateApiConfig('api_key', e.target.value)}
-                      placeholder="app-xxxxxxxxxxxxxxxxxxxxxxxx"
-                      required
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="app_id">App ID *</Label>
-                    <Input
-                      id="app_id"
-                      value={formData.api_config.app_id}
-                      onChange={(e) => updateApiConfig('app_id', e.target.value)}
-                      placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-                      required
-                    />
-                  </div>
+                  <TooltipProvider>
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2">
+                        <Label htmlFor="app_id">App ID *</Label>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <AlertCircle className="h-4 w-4 text-muted-foreground" />
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Identificador único da aplicação no Dify</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </div>
+                      <Input
+                        id="app_id"
+                        value={formData.api_config.app_id}
+                        onChange={(e) => updateApiConfig('app_id', e.target.value)}
+                        placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+                        required
+                        className={!formData.api_config.app_id && showValidation ? 'border-destructive' : ''}
+                      />
+                    </div>
+                  </TooltipProvider>
 
                   <Separator />
 

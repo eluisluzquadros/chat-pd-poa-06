@@ -42,7 +42,7 @@ export const useConnectionTest = () => {
         body: {
           base_url: params.base_url,
           api_key: params.api_key,
-          service_api_endpoint: params.service_api_endpoint || '/v1/chat-messages',
+          service_api_endpoint: params.service_api_endpoint || '/chat-messages',
           app_id: params.app_id,
           timeout: params.timeout || 10000,
         }
