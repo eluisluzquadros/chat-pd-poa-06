@@ -5,3 +5,6 @@ verify_jwt = true
 
 [functions.test-rag-config]
 verify_jwt = true
+
+[functions.test-api-connection]
+verify_jwt = false

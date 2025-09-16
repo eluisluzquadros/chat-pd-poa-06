@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, Settings, Power, Star, Trash2, Edit, TestTube } from 'lucide-react';
+import { Plus, Settings, Star, Trash2, Edit, TestTube, Loader2, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -11,9 +11,13 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Slider } from '@/components/ui/slider';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useAgents } from '@/hooks/useAgents';
+import { useConnectionTest } from '@/hooks/useConnectionTest';
 import { CreateAgentData, ApiConfig, ModelParameters } from '@/services/agentsService';
 import { Separator } from '@/components/ui/separator';
+import { AgentFormValidator } from '@/components/admin/AgentFormValidator';
+import { AgentPreview } from '@/components/admin/AgentPreview';
 
 // Modelos disponíveis
 const MODELS = [
@@ -69,24 +73,28 @@ const defaultFormData: AgentFormData = {
 };
 
 export default function AgentsConfig() {
-  const { agents, loading, creating, updateAgent, createAgent, deleteAgent, toggleAgentStatus, setAsDefault } = useAgents();
+  const { agents, loading, creating, updating, updateAgent, createAgent, deleteAgent, toggleAgentStatus, setAsDefault } = useAgents();
+  const { testing, lastResult, testConnection, clearResult } = useConnectionTest();
   const [showDialog, setShowDialog] = useState(false);
   const [editingAgent, setEditingAgent] = useState<string | null>(null);
   const [formData, setFormData] = useState<AgentFormData>(defaultFormData);
   const [activeTab, setActiveTab] = useState('general');
+  const [showValidation, setShowValidation] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setShowValidation(true);
     
     // Validação básica
     if (!formData.name || !formData.display_name || !formData.model) {
+      setActiveTab('general');
       return;
     }
 
     // Validação de configuração da API
     if (!formData.api_config.base_url || !formData.api_config.service_api_endpoint || 
         !formData.api_config.api_key || !formData.api_config.app_id) {
-      alert('É necessário preencher Base URL, Service API Endpoint, API Key e App ID');
+      setActiveTab('api');
       return;
     }
 
@@ -113,6 +121,8 @@ export default function AgentsConfig() {
       setEditingAgent(null);
       setFormData(defaultFormData);
       setActiveTab('general');
+      setShowValidation(false);
+      clearResult();
     } catch (error) {
       // Erro já tratado no hook
     }
@@ -137,6 +147,8 @@ export default function AgentsConfig() {
     setEditingAgent(null);
     setFormData(defaultFormData);
     setActiveTab('general');
+    setShowValidation(false);
+    clearResult();
     setShowDialog(true);
   };
 
@@ -160,14 +172,13 @@ export default function AgentsConfig() {
     }));
   };
 
-  const testConnection = async () => {
-    if (!formData.api_config.base_url || !formData.api_config.api_key) {
-      alert('Configure Base URL e API Key antes de testar a conexão');
-      return;
-    }
-    
-    // TODO: Implementar teste de conexão real
-    alert('Funcionalidade de teste de conexão será implementada em breve');
+  const handleTestConnection = async () => {
+    await testConnection({
+      base_url: formData.api_config.base_url,
+      api_key: formData.api_config.api_key,
+      service_api_endpoint: formData.api_config.service_api_endpoint,
+      app_id: formData.api_config.app_id,
+    });
   };
 
   const getProviderBadgeVariant = () => {
@@ -298,35 +309,71 @@ export default function AgentsConfig() {
           </DialogHeader>
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="general">Informações Gerais</TabsTrigger>
               <TabsTrigger value="api">Configuração de API</TabsTrigger>
               <TabsTrigger value="parameters">Parâmetros</TabsTrigger>
+              <TabsTrigger value="preview">Preview</TabsTrigger>
             </TabsList>
 
             <form onSubmit={handleSubmit} className="space-y-6">
               <TabsContent value="general" className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="display_name">Nome de Exibição</Label>
-                  <Input
-                    id="display_name"
-                    value={formData.display_name}
-                    onChange={(e) => setFormData(prev => ({ ...prev, display_name: e.target.value }))}
-                    placeholder="ex: Claude 3.5 Sonnet"
-                    required
-                  />
-                </div>
+                <AgentFormValidator
+                  formData={formData}
+                  showValidation={showValidation}
+                  validationRules={[
+                    { field: 'display_name', label: 'Nome de Exibição', required: true },
+                    { field: 'name', label: 'Nome Técnico', required: true },
+                    { field: 'model', label: 'Modelo', required: true },
+                  ]}
+                />
+                <TooltipProvider>
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <Label htmlFor="display_name">Nome de Exibição *</Label>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <AlertCircle className="h-4 w-4 text-muted-foreground" />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Nome amigável que será exibido na interface</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </div>
+                    <Input
+                      id="display_name"
+                      value={formData.display_name}
+                      onChange={(e) => setFormData(prev => ({ ...prev, display_name: e.target.value }))}
+                      placeholder="ex: Claude 3.5 Sonnet"
+                      required
+                      className={!formData.display_name && showValidation ? 'border-destructive' : ''}
+                    />
+                  </div>
+                </TooltipProvider>
 
-                <div className="space-y-2">
-                  <Label htmlFor="name">Nome Técnico</Label>
-                  <Input
-                    id="name"
-                    value={formData.name}
-                    onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                    placeholder="ex: agentic-claude_35_sonnet"
-                    required
-                  />
-                </div>
+                <TooltipProvider>
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <Label htmlFor="name">Nome Técnico *</Label>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <AlertCircle className="h-4 w-4 text-muted-foreground" />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Identificador único do agente (sem espaços, use underscore)</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </div>
+                    <Input
+                      id="name"
+                      value={formData.name}
+                      onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value.replace(/\s+/g, '_').toLowerCase() }))}
+                      placeholder="ex: agentic-claude_35_sonnet"
+                      required
+                      className={!formData.name && showValidation ? 'border-destructive' : ''}
+                    />
+                  </div>
+                </TooltipProvider>
 
                 <div className="space-y-2">
                   <Label htmlFor="model">Modelo</Label>
@@ -383,26 +430,82 @@ export default function AgentsConfig() {
               </TabsContent>
 
               <TabsContent value="api" className="space-y-4">
+                <AgentFormValidator
+                  formData={formData}
+                  showValidation={showValidation}
+                  validationRules={[
+                    { field: 'api_config.base_url', label: 'Base URL', required: true },
+                    { field: 'api_config.service_api_endpoint', label: 'Service API Endpoint', required: true },
+                    { field: 'api_config.api_key', label: 'API Key', required: true },
+                    { field: 'api_config.app_id', label: 'App ID', required: true },
+                  ]}
+                />
+                
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <h3 className="text-lg font-semibold">Configuração de API</h3>
-                    <Button type="button" variant="outline" size="sm" onClick={testConnection}>
-                      <TestTube className="h-4 w-4 mr-2" />
-                      Testar Conexão
+                    <Button 
+                      type="button" 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={handleTestConnection}
+                      disabled={testing || !formData.api_config.base_url || !formData.api_config.api_key}
+                    >
+                      {testing ? (
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      ) : (
+                        <TestTube className="h-4 w-4 mr-2" />
+                      )}
+                      {testing ? 'Testando...' : 'Testar Conexão'}
                     </Button>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="base_url">Base URL *</Label>
-                      <Input
-                        id="base_url"
-                       value={formData.api_config.base_url}
-                        onChange={(e) => updateApiConfig('base_url', e.target.value)}
-                        placeholder="https://api.dify.ai"
-                        required
-                      />
+                  {lastResult && (
+                    <div className={`p-3 rounded-md border ${
+                      lastResult.success 
+                        ? 'bg-green-50 border-green-200 text-green-800' 
+                        : 'bg-red-50 border-red-200 text-red-800'
+                    }`}>
+                      <div className="flex items-center gap-2">
+                        {lastResult.success ? (
+                          <div className="h-2 w-2 rounded-full bg-green-500" />
+                        ) : (
+                          <div className="h-2 w-2 rounded-full bg-red-500" />
+                        )}
+                        <span className="font-medium">{lastResult.message}</span>
+                      </div>
+                      {lastResult.details && (
+                        <div className="mt-2 text-xs opacity-75">
+                          {JSON.stringify(lastResult.details, null, 2)}
+                        </div>
+                      )}
                     </div>
+                  )}
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <TooltipProvider>
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2">
+                          <Label htmlFor="base_url">Base URL *</Label>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <AlertCircle className="h-4 w-4 text-muted-foreground" />
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>URL base da API (ex: https://api.dify.ai)</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </div>
+                        <Input
+                          id="base_url"
+                          value={formData.api_config.base_url}
+                          onChange={(e) => updateApiConfig('base_url', e.target.value)}
+                          placeholder="https://api.dify.ai"
+                          required
+                          className={!formData.api_config.base_url && showValidation ? 'border-destructive' : ''}
+                        />
+                      </div>
+                    </TooltipProvider>
 
                     <div className="space-y-2">
                       <Label htmlFor="service_api_endpoint">Service API Endpoint *</Label>
@@ -479,67 +582,109 @@ export default function AgentsConfig() {
                 <h3 className="text-lg font-semibold">Parâmetros do Modelo</h3>
 
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>Temperature: {formData.parameters.temperature}</Label>
-                    <Slider
-                      value={[formData.parameters.temperature || 0.7]}
-                      onValueChange={([value]) => updateParameters('temperature', value)}
-                      max={2}
-                      min={0}
-                      step={0.1}
-                      className="w-full"
-                    />
-                    <div className="text-xs text-muted-foreground">Controla a criatividade das respostas</div>
-                  </div>
+                  <TooltipProvider>
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2">
+                        <Label>Temperature: {formData.parameters.temperature}</Label>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <AlertCircle className="h-4 w-4 text-muted-foreground" />
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Controla a criatividade das respostas (0-2)</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </div>
+                      <Slider
+                        value={[formData.parameters.temperature || 0.7]}
+                        onValueChange={([value]) => updateParameters('temperature', value)}
+                        max={2}
+                        min={0}
+                        step={0.1}
+                        className="w-full"
+                      />
+                    </div>
+                  </TooltipProvider>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="max_tokens">Max Tokens</Label>
-                    <Input
-                      id="max_tokens"
-                      type="number"
-                      value={formData.parameters.max_tokens}
-                      onChange={(e) => updateParameters('max_tokens', parseInt(e.target.value))}
-                      min={1}
-                      max={16000}
-                    />
-                  </div>
-                </div>
+                  <TooltipProvider>
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2">
+                        <Label>Top P: {formData.parameters.top_p}</Label>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <AlertCircle className="h-4 w-4 text-muted-foreground" />
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Controla a diversidade das respostas (0-1)</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </div>
+                      <Slider
+                        value={[formData.parameters.top_p || 1]}
+                        onValueChange={([value]) => updateParameters('top_p', value)}
+                        max={1}
+                        min={0}
+                        step={0.1}
+                        className="w-full"
+                      />
+                    </div>
+                  </TooltipProvider>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>Top-p: {formData.parameters.top_p}</Label>
-                    <Slider
-                      value={[formData.parameters.top_p || 1]}
-                      onValueChange={([value]) => updateParameters('top_p', value)}
-                      max={1}
-                      min={0}
-                      step={0.1}
-                      className="w-full"
-                    />
-                    <div className="text-xs text-muted-foreground">Controla a diversidade de tokens</div>
-                  </div>
+                  <TooltipProvider>
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2">
+                        <Label htmlFor="max_tokens">Max Tokens</Label>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <AlertCircle className="h-4 w-4 text-muted-foreground" />
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Limite máximo de tokens na resposta</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </div>
+                      <Input
+                        id="max_tokens"
+                        type="number"
+                        value={formData.parameters.max_tokens || 4000}
+                        onChange={(e) => updateParameters('max_tokens', parseInt(e.target.value) || 4000)}
+                        min={1}
+                        max={32000}
+                      />
+                    </div>
+                  </TooltipProvider>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="timeout">Timeout (ms)</Label>
-                    <Input
-                      id="timeout"
-                      type="number"
-                      value={formData.parameters.timeout}
-                      onChange={(e) => updateParameters('timeout', parseInt(e.target.value))}
-                      min={1000}
-                      max={300000}
-                    />
-                  </div>
-                </div>
+                  <TooltipProvider>
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2">
+                        <Label htmlFor="timeout">Timeout (ms)</Label>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <AlertCircle className="h-4 w-4 text-muted-foreground" />
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Tempo limite para requisições em milissegundos</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </div>
+                      <Input
+                        id="timeout"
+                        type="number"
+                        value={formData.parameters.timeout || 30000}
+                        onChange={(e) => updateParameters('timeout', parseInt(e.target.value) || 30000)}
+                        min={1000}
+                        max={120000}
+                      />
+                    </div>
+                  </TooltipProvider>
 
-                <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="max_retries">Max Retries</Label>
                     <Input
                       id="max_retries"
                       type="number"
-                      value={formData.parameters.max_retries}
-                      onChange={(e) => updateParameters('max_retries', parseInt(e.target.value))}
+                      value={formData.parameters.max_retries || 3}
+                      onChange={(e) => updateParameters('max_retries', parseInt(e.target.value) || 3)}
                       min={0}
                       max={10}
                     />
@@ -548,8 +693,8 @@ export default function AgentsConfig() {
                   <div className="space-y-2">
                     <Label htmlFor="response_format">Formato de Resposta</Label>
                     <Select
-                      value={formData.parameters.response_format}
-                      onValueChange={(value: 'text' | 'json') => updateParameters('response_format', value)}
+                      value={formData.parameters.response_format || 'text'}
+                      onValueChange={(value) => updateParameters('response_format', value)}
                     >
                       <SelectTrigger>
                         <SelectValue />
@@ -565,19 +710,30 @@ export default function AgentsConfig() {
                 <div className="flex items-center space-x-2">
                   <Switch
                     id="stream"
-                    checked={formData.parameters.stream}
+                    checked={formData.parameters.stream ?? true}
                     onCheckedChange={(checked) => updateParameters('stream', checked)}
                   />
-                  <Label htmlFor="stream">Stream (respostas em tempo real)</Label>
+                  <Label htmlFor="stream">Streaming habilitado</Label>
                 </div>
               </TabsContent>
 
-              <div className="flex gap-2 pt-4">
-                <Button type="button" variant="outline" onClick={() => setShowDialog(false)} className="flex-1">
+              <TabsContent value="preview" className="space-y-4">
+                <AgentPreview formData={formData} />
+              </TabsContent>
+
+              <div className="flex justify-end gap-2 pt-4">
+                <Button type="button" variant="outline" onClick={() => setShowDialog(false)}>
                   Cancelar
                 </Button>
-                <Button type="submit" disabled={creating} className="flex-1">
-                  {editingAgent ? 'Atualizar' : 'Criar'}
+                <Button type="submit" disabled={creating || updating}>
+                  {creating || updating ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      {editingAgent ? 'Atualizando...' : 'Criando...'}
+                    </>
+                  ) : (
+                    editingAgent ? 'Atualizar Agente' : 'Criar Agente'
+                  )}
                 </Button>
               </div>
             </form>
