@@ -1,6 +1,6 @@
 // Enhanced RAG Configuration with Agent Support
 import { platformSettingsService } from '@/services/platformSettingsService';
-import { difyAgentsService } from '@/services/difyAgentsService';
+import { agentsService } from '@/services/agentsService';
 
 export const ragConfig = {
   useDify: import.meta.env.VITE_USE_DIFY_RAG === 'true',
@@ -16,7 +16,7 @@ const CACHE_TTL = 60000; // 1 minuto
 // Buscar agente padrão ativo
 export const getDefaultAgent = async () => {
   try {
-    const defaultAgent = await difyAgentsService.getDefaultAgent();
+    const defaultAgent = await agentsService.getDefaultAgent();
     return defaultAgent;
   } catch (error) {
     console.error('Erro ao buscar agente padrão:', error);

@@ -4,7 +4,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { UPDATED_MODEL_CONFIGS } from '@/config/llm-models-2025';
 import { useRAGMode } from '@/hooks/useRAGMode';
-import { difyAgentsService, DifyAgent } from '@/services/difyAgentsService';
+import { agentsService, Agent } from '@/services/agentsService';
 interface ModelSelectorProps {
   selectedModel?: string;
   onModelSelect?: (model: string) => void;
@@ -31,7 +31,7 @@ export function ModelSelector({
   onModelSelect
 }: ModelSelectorProps) {
   const { ragMode, loading } = useRAGMode();
-  const [agents, setAgents] = useState<DifyAgent[]>([]);
+  const [agents, setAgents] = useState<Agent[]>([]);
   const [agentsLoading, setAgentsLoading] = useState(true);
   
   const selectedModelInfo = AVAILABLE_MODELS.find(m => m.value === selectedModel);
@@ -39,7 +39,7 @@ export function ModelSelector({
   useEffect(() => {
     const loadAgents = async () => {
       try {
-        const activeAgents = await difyAgentsService.getActiveAgents();
+        const activeAgents = await agentsService.getActiveAgents();
         setAgents(activeAgents);
       } catch (error) {
         console.error('Erro ao carregar agentes:', error);

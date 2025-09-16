@@ -11,8 +11,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Slider } from '@/components/ui/slider';
-import { useDifyAgents } from '@/hooks/useDifyAgents';
-import { CreateDifyAgentData, DifyConfig, DifyParameters } from '@/services/difyAgentsService';
+import { useAgents } from '@/hooks/useAgents';
+import { CreateAgentData, ApiConfig, ModelParameters } from '@/services/agentsService';
 import { Separator } from '@/components/ui/separator';
 
 // Modelos disponíveis
@@ -33,11 +33,11 @@ interface AgentFormData {
   model: string;
   is_active: boolean;
   is_default: boolean;
-  api_config: DifyConfig;
-  parameters: DifyParameters;
+  api_config: ApiConfig;
+  parameters: ModelParameters;
 }
 
-const defaultApiConfig: DifyConfig = {
+const defaultApiConfig: ApiConfig = {
   base_url: '',
   service_api_endpoint: '',
   api_key: '',
@@ -47,7 +47,7 @@ const defaultApiConfig: DifyConfig = {
   workflow_id: '',
 };
 
-const defaultParameters: DifyParameters = {
+const defaultParameters: ModelParameters = {
   temperature: 0.7,
   max_tokens: 4000,
   top_p: 1,
@@ -69,7 +69,7 @@ const defaultFormData: AgentFormData = {
 };
 
 export default function AgentsConfig() {
-  const { agents, loading, creating, updateAgent, createAgent, deleteAgent, toggleAgentStatus, setAsDefault } = useDifyAgents();
+  const { agents, loading, creating, updateAgent, createAgent, deleteAgent, toggleAgentStatus, setAsDefault } = useAgents();
   const [showDialog, setShowDialog] = useState(false);
   const [editingAgent, setEditingAgent] = useState<string | null>(null);
   const [formData, setFormData] = useState<AgentFormData>(defaultFormData);
@@ -91,7 +91,7 @@ export default function AgentsConfig() {
     }
 
     try {
-      const agentData: CreateDifyAgentData = {
+      const agentData: CreateAgentData = {
         name: formData.name,
         display_name: formData.display_name,
         description: formData.description || undefined,
@@ -99,7 +99,7 @@ export default function AgentsConfig() {
         model: formData.model,
         is_active: formData.is_active,
         is_default: formData.is_default,
-        dify_config: formData.api_config,
+        api_config: formData.api_config,
         parameters: formData.parameters,
       };
 
@@ -127,7 +127,7 @@ export default function AgentsConfig() {
       model: agent.model,
       is_active: agent.is_active,
       is_default: agent.is_default,
-      api_config: agent.dify_config || defaultApiConfig,
+      api_config: agent.api_config || defaultApiConfig,
       parameters: agent.parameters || defaultParameters,
     });
     setShowDialog(true);
@@ -146,14 +146,14 @@ export default function AgentsConfig() {
     }
   };
 
-  const updateApiConfig = (field: keyof DifyConfig, value: string) => {
+  const updateApiConfig = (field: keyof ApiConfig, value: string) => {
     setFormData(prev => ({
       ...prev,
       api_config: { ...prev.api_config, [field]: value }
     }));
   };
 
-  const updateParameters = (field: keyof DifyParameters, value: any) => {
+  const updateParameters = (field: keyof ModelParameters, value: any) => {
     setFormData(prev => ({
       ...prev,
       parameters: { ...prev.parameters, [field]: value }
@@ -249,9 +249,9 @@ export default function AgentsConfig() {
                 {agent.description && (
                   <p className="text-sm text-muted-foreground">{agent.description}</p>
                 )}
-                {agent.dify_config?.base_url && (
+                {agent.api_config?.base_url && (
                   <div className="text-sm text-muted-foreground">
-                    <strong>API URL:</strong> {agent.dify_config.base_url}
+                    <strong>API URL:</strong> {agent.api_config.base_url}
                   </div>
                 )}
                 <div className="flex items-center gap-2 pt-2">

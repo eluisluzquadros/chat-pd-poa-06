@@ -1,7 +1,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import type { Json } from '@/integrations/supabase/types';
 
-export interface DifyConfig {
+export interface ApiConfig {
   base_url?: string;
   service_api_endpoint?: string;
   api_key?: string;
@@ -11,7 +11,7 @@ export interface DifyConfig {
   workflow_id?: string;
 }
 
-export interface DifyParameters {
+export interface ModelParameters {
   temperature?: number;
   max_tokens?: number;
   top_p?: number;
@@ -21,44 +21,44 @@ export interface DifyParameters {
   response_format?: 'text' | 'json';
 }
 
-export interface DifyAgent {
+export interface Agent {
   id: string;
   name: string;
   display_name: string;
   description?: string;
   provider: string;
   model: string;
-  dify_config?: DifyConfig;
-  parameters?: DifyParameters;
+  api_config?: ApiConfig;
+  parameters?: ModelParameters;
   is_active: boolean;
   is_default: boolean;
   created_at: string;
   updated_at: string;
 }
 
-export interface CreateDifyAgentData {
+export interface CreateAgentData {
   name: string;
   display_name: string;
   description?: string;
   provider: string;
   model: string;
-  dify_config?: DifyConfig;
-  parameters?: DifyParameters;
+  api_config?: ApiConfig;
+  parameters?: ModelParameters;
   is_active?: boolean;
   is_default?: boolean;
 }
 
-export class DifyAgentsService {
-  private static instance: DifyAgentsService;
+export class AgentsService {
+  private static instance: AgentsService;
 
-  static getInstance(): DifyAgentsService {
-    if (!DifyAgentsService.instance) {
-      DifyAgentsService.instance = new DifyAgentsService();
+  static getInstance(): AgentsService {
+    if (!AgentsService.instance) {
+      AgentsService.instance = new AgentsService();
     }
-    return DifyAgentsService.instance;
+    return AgentsService.instance;
   }
 
-  async getAllAgents(): Promise<DifyAgent[]> {
+  async getAllAgents(): Promise<Agent[]> {
     const { data, error } = await supabase
       .from('dify_agents')
       .select('*')
@@ -71,12 +71,12 @@ export class DifyAgentsService {
 
     return (data || []).map(agent => ({
       ...agent,
-      dify_config: (agent.dify_config as unknown as DifyConfig) || {},
-      parameters: (agent.parameters as unknown as DifyParameters) || {},
+      api_config: (agent.dify_config as unknown as ApiConfig) || {},
+      parameters: (agent.parameters as unknown as ModelParameters) || {},
     }));
   }
 
-  async getActiveAgents(): Promise<DifyAgent[]> {
+  async getActiveAgents(): Promise<Agent[]> {
     const { data, error } = await supabase
       .from('dify_agents')
       .select('*')
@@ -90,12 +90,12 @@ export class DifyAgentsService {
 
     return (data || []).map(agent => ({
       ...agent,
-      dify_config: (agent.dify_config as unknown as DifyConfig) || {},
-      parameters: (agent.parameters as unknown as DifyParameters) || {},
+      api_config: (agent.dify_config as unknown as ApiConfig) || {},
+      parameters: (agent.parameters as unknown as ModelParameters) || {},
     }));
   }
 
-  async getDefaultAgent(): Promise<DifyAgent | null> {
+  async getDefaultAgent(): Promise<Agent | null> {
     const { data, error } = await supabase
       .from('dify_agents')
       .select('*')
@@ -112,12 +112,12 @@ export class DifyAgentsService {
 
     return {
       ...data,
-      dify_config: (data.dify_config as unknown as DifyConfig) || {},
-      parameters: (data.parameters as unknown as DifyParameters) || {},
+      api_config: (data.dify_config as unknown as ApiConfig) || {},
+      parameters: (data.parameters as unknown as ModelParameters) || {},
     };
   }
 
-  async createAgent(agentData: CreateDifyAgentData): Promise<DifyAgent> {
+  async createAgent(agentData: CreateAgentData): Promise<Agent> {
     // Se este agente está sendo marcado como padrão, desmarcar outros
     if (agentData.is_default) {
       await this.clearDefaultAgent();
@@ -127,7 +127,7 @@ export class DifyAgentsService {
       .from('dify_agents')
       .insert({
         ...agentData,
-        dify_config: (agentData.dify_config || {}) as Json,
+        dify_config: (agentData.api_config || {}) as Json,
         parameters: (agentData.parameters || {}) as Json,
       })
       .select()
@@ -140,12 +140,12 @@ export class DifyAgentsService {
 
     return {
       ...data,
-      dify_config: (data.dify_config as unknown as DifyConfig) || {},
-      parameters: (data.parameters as unknown as DifyParameters) || {},
+      api_config: (data.dify_config as unknown as ApiConfig) || {},
+      parameters: (data.parameters as unknown as ModelParameters) || {},
     };
   }
 
-  async updateAgent(id: string, agentData: Partial<CreateDifyAgentData>): Promise<DifyAgent> {
+  async updateAgent(id: string, agentData: Partial<CreateAgentData>): Promise<Agent> {
     // Se este agente está sendo marcado como padrão, desmarcar outros
     if (agentData.is_default) {
       await this.clearDefaultAgent();
@@ -153,7 +153,7 @@ export class DifyAgentsService {
 
     const updateData = {
       ...agentData,
-      ...(agentData.dify_config && { dify_config: agentData.dify_config as unknown as Json }),
+      ...(agentData.api_config && { dify_config: agentData.api_config as unknown as Json }),
       ...(agentData.parameters && { parameters: agentData.parameters as unknown as Json }),
     };
 
@@ -171,8 +171,8 @@ export class DifyAgentsService {
 
     return {
       ...data,
-      dify_config: (data.dify_config as unknown as DifyConfig) || {},
-      parameters: (data.parameters as unknown as DifyParameters) || {},
+      api_config: (data.dify_config as unknown as ApiConfig) || {},
+      parameters: (data.parameters as unknown as ModelParameters) || {},
     };
   }
 
@@ -188,7 +188,7 @@ export class DifyAgentsService {
     }
   }
 
-  async toggleAgentStatus(id: string, is_active: boolean): Promise<DifyAgent> {
+  async toggleAgentStatus(id: string, is_active: boolean): Promise<Agent> {
     const { data, error } = await supabase
       .from('dify_agents')
       .update({ is_active })
@@ -203,12 +203,12 @@ export class DifyAgentsService {
 
     return {
       ...data,
-      dify_config: (data.dify_config as unknown as DifyConfig) || {},
-      parameters: (data.parameters as unknown as DifyParameters) || {},
+      api_config: (data.dify_config as unknown as ApiConfig) || {},
+      parameters: (data.parameters as unknown as ModelParameters) || {},
     };
   }
 
-  async setAsDefault(id: string): Promise<DifyAgent> {
+  async setAsDefault(id: string): Promise<Agent> {
     // Primeiro, remover o padrão de outros agentes
     await this.clearDefaultAgent();
 
@@ -227,8 +227,8 @@ export class DifyAgentsService {
 
     return {
       ...data,
-      dify_config: (data.dify_config as unknown as DifyConfig) || {},
-      parameters: (data.parameters as unknown as DifyParameters) || {},
+      api_config: (data.dify_config as unknown as ApiConfig) || {},
+      parameters: (data.parameters as unknown as ModelParameters) || {},
     };
   }
 
@@ -244,7 +244,7 @@ export class DifyAgentsService {
     }
   }
 
-  async getAgentByName(name: string): Promise<DifyAgent | null> {
+  async getAgentByName(name: string): Promise<Agent | null> {
     const { data, error } = await supabase
       .from('dify_agents')
       .select('*')
@@ -260,10 +260,10 @@ export class DifyAgentsService {
 
     return {
       ...data,
-      dify_config: (data.dify_config as unknown as DifyConfig) || {},
-      parameters: (data.parameters as unknown as DifyParameters) || {},
+      api_config: (data.dify_config as unknown as ApiConfig) || {},
+      parameters: (data.parameters as unknown as ModelParameters) || {},
     };
   }
 }
 
-export const difyAgentsService = DifyAgentsService.getInstance();
+export const agentsService = AgentsService.getInstance();

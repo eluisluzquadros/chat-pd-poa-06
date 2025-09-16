@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
-import { difyAgentsService, DifyAgent, CreateDifyAgentData } from '@/services/difyAgentsService';
+import { agentsService, Agent, CreateAgentData } from '@/services/agentsService';
 import { toast } from 'sonner';
 
-export const useDifyAgents = () => {
-  const [agents, setAgents] = useState<DifyAgent[]>([]);
+export const useAgents = () => {
+  const [agents, setAgents] = useState<Agent[]>([]);
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
   const [updating, setUpdating] = useState(false);
@@ -11,7 +11,7 @@ export const useDifyAgents = () => {
   const loadAgents = async () => {
     try {
       setLoading(true);
-      const data = await difyAgentsService.getAllAgents();
+      const data = await agentsService.getAllAgents();
       setAgents(data);
     } catch (error) {
       console.error('Erro ao carregar agentes:', error);
@@ -21,10 +21,10 @@ export const useDifyAgents = () => {
     }
   };
 
-  const createAgent = async (agentData: CreateDifyAgentData) => {
+  const createAgent = async (agentData: CreateAgentData) => {
     try {
       setCreating(true);
-      const newAgent = await difyAgentsService.createAgent(agentData);
+      const newAgent = await agentsService.createAgent(agentData);
       setAgents(prev => [newAgent, ...prev]);
       toast.success('Agente criado com sucesso');
       return newAgent;
@@ -37,10 +37,10 @@ export const useDifyAgents = () => {
     }
   };
 
-  const updateAgent = async (id: string, agentData: Partial<CreateDifyAgentData>) => {
+  const updateAgent = async (id: string, agentData: Partial<CreateAgentData>) => {
     try {
       setUpdating(true);
-      const updatedAgent = await difyAgentsService.updateAgent(id, agentData);
+      const updatedAgent = await agentsService.updateAgent(id, agentData);
       setAgents(prev => prev.map(agent => 
         agent.id === id ? updatedAgent : agent
       ));
@@ -57,7 +57,7 @@ export const useDifyAgents = () => {
 
   const deleteAgent = async (id: string) => {
     try {
-      await difyAgentsService.deleteAgent(id);
+      await agentsService.deleteAgent(id);
       setAgents(prev => prev.filter(agent => agent.id !== id));
       toast.success('Agente removido com sucesso');
     } catch (error) {
@@ -68,7 +68,7 @@ export const useDifyAgents = () => {
 
   const toggleAgentStatus = async (id: string, is_active: boolean) => {
     try {
-      const updatedAgent = await difyAgentsService.toggleAgentStatus(id, is_active);
+      const updatedAgent = await agentsService.toggleAgentStatus(id, is_active);
       setAgents(prev => prev.map(agent => 
         agent.id === id ? updatedAgent : agent
       ));
@@ -81,7 +81,7 @@ export const useDifyAgents = () => {
 
   const setAsDefault = async (id: string) => {
     try {
-      const updatedAgent = await difyAgentsService.setAsDefault(id);
+      const updatedAgent = await agentsService.setAsDefault(id);
       // Atualizar todos os agentes (remover padrão dos outros, definir no atual)
       setAgents(prev => prev.map(agent => ({
         ...agent,
