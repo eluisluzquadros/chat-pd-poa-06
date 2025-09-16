@@ -118,18 +118,31 @@ export class AgentsService {
   }
 
   async createAgent(agentData: CreateAgentData): Promise<Agent> {
+    console.log('🔧 Criando agente:', agentData);
+    
     // Se este agente está sendo marcado como padrão, desmarcar outros
     if (agentData.is_default) {
       await this.clearDefaultAgent();
     }
 
+    // Criar objeto limpo removendo campos que não existem na tabela
+    const cleanData = {
+      name: agentData.name,
+      display_name: agentData.display_name,
+      description: agentData.description || null,
+      provider: agentData.provider,
+      model: agentData.model,
+      dify_config: (agentData.api_config || {}) as Json,
+      parameters: (agentData.parameters || {}) as Json,
+      is_active: agentData.is_active ?? true,
+      is_default: agentData.is_default ?? false,
+    };
+
+    console.log('🔧 Dados limpos para inserção:', cleanData);
+
     const { data, error } = await supabase
       .from('dify_agents')
-      .insert({
-        ...agentData,
-        dify_config: (agentData.api_config || {}) as Json,
-        parameters: (agentData.parameters || {}) as Json,
-      })
+      .insert(cleanData)
       .select()
       .single();
 
@@ -146,16 +159,27 @@ export class AgentsService {
   }
 
   async updateAgent(id: string, agentData: Partial<CreateAgentData>): Promise<Agent> {
+    console.log('🔧 Atualizando agente:', id, agentData);
+    
     // Se este agente está sendo marcado como padrão, desmarcar outros
     if (agentData.is_default) {
       await this.clearDefaultAgent();
     }
 
-    const updateData = {
-      ...agentData,
-      ...(agentData.api_config && { dify_config: agentData.api_config as unknown as Json }),
-      ...(agentData.parameters && { parameters: agentData.parameters as unknown as Json }),
-    };
+    // Criar objeto limpo removendo campos que não existem na tabela e api_config
+    const updateData: Record<string, any> = {};
+    
+    if (agentData.name !== undefined) updateData.name = agentData.name;
+    if (agentData.display_name !== undefined) updateData.display_name = agentData.display_name;
+    if (agentData.description !== undefined) updateData.description = agentData.description;
+    if (agentData.provider !== undefined) updateData.provider = agentData.provider;
+    if (agentData.model !== undefined) updateData.model = agentData.model;
+    if (agentData.api_config !== undefined) updateData.dify_config = agentData.api_config as Json;
+    if (agentData.parameters !== undefined) updateData.parameters = agentData.parameters as Json;
+    if (agentData.is_active !== undefined) updateData.is_active = agentData.is_active;
+    if (agentData.is_default !== undefined) updateData.is_default = agentData.is_default;
+
+    console.log('🔧 Dados limpos para atualização:', updateData);
 
     const { data, error } = await supabase
       .from('dify_agents')
