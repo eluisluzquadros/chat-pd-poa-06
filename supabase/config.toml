@@ -1,10 +1,19 @@
 project_id = "ngrqwmvuhvjkeohesbxs"
 
-[functions.agentic-rag-dify]
+[functions.agentic-rag]
 verify_jwt = true
 
 [functions.test-rag-config]
+verify_jwt = false
+
+[functions.query-analyzer]
 verify_jwt = true
 
-[functions.test-api-connection]
-verify_jwt = false
+[functions.sql-generator]
+verify_jwt = true
+
+[functions.response-synthesizer]
+verify_jwt = true
+
+[functions.enhanced-vector-search]
+verify_jwt = true

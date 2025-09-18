@@ -17,16 +17,10 @@ serve(async (req) => {
 
     console.log('🔧 Received request body:', JSON.stringify(requestBody, null, 2));
     console.log(`🔧 Testing RAG config - Mode: ${mode}, Action: ${action}`);
-    console.log(`🔧 Action type: ${typeof action}, Action value: "${action}"`);
+    console.log(`🔧 Raw action: "${action}" (${typeof action})`);
     
-    
-    // Normalizar action para evitar problemas de encoding/espaços
-    const normalizedAction = action?.toString().trim().toLowerCase();
-    console.log(`🔧 Original action: "${action}", Normalized: "${normalizedAction}"`);
-    console.log(`🔧 Action comparison: "${normalizedAction}" === "test_api_connection" = ${normalizedAction === 'test_api_connection'}`);
-
-    // NOVA FUNCIONALIDADE: Teste de conexão de API externa
-    if (normalizedAction === 'test_api_connection') {
+    // CORREÇÃO: Teste direto sem normalização complexa
+    if (action === 'test_api_connection') {
       console.log('🧪 Testing external API connection:', { base_url, service_api_endpoint });
       
       if (!base_url || !api_key) {
