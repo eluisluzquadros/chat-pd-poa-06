@@ -19,8 +19,12 @@ serve(async (req) => {
     console.log(`🔧 Testing RAG config - Mode: ${mode}, Action: ${action}`);
     console.log(`🔧 Raw action: "${action}" (${typeof action})`);
     
-    // CORREÇÃO: Teste direto sem normalização complexa
-    if (action && action.toString() === 'test_api_connection') {
+    // Normalizar action para comparação robusta
+    const normalizedAction = action ? action.toString().trim().toLowerCase() : '';
+    console.log(`🔧 Normalized action: "${normalizedAction}"`);
+    
+    // CORREÇÃO: Teste de conexão API externa
+    if (normalizedAction === 'test_api_connection') {
       console.log('🧪 Testing external API connection:', { base_url, service_api_endpoint });
       
       if (!base_url || !api_key) {
@@ -79,7 +83,7 @@ serve(async (req) => {
     }
 
     // Verificar secrets do Dify
-    if (action === 'check_secrets') {
+    if (normalizedAction === 'check_secrets') {
       if (mode === 'dify') {
         const difyApiKey = Deno.env.get('DIFY_API_KEY');
         const difyBaseUrl = Deno.env.get('DIFY_BASE_URL');
@@ -113,7 +117,7 @@ serve(async (req) => {
     }
 
     // Testar configuração atual
-    if (action === 'test') {
+    if (normalizedAction === 'test') {
       const testQuery = query || 'teste de configuração';
       
       if (mode === 'dify') {
