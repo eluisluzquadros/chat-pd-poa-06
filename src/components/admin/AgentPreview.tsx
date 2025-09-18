@@ -13,33 +13,33 @@ interface AgentPreviewProps {
     model: string;
     is_active: boolean;
     is_default: boolean;
-    api_config: ApiConfig;
+    dify_config: ApiConfig; // Alinhado com estrutura da interface
     parameters: ModelParameters;
   };
 }
 
 export function AgentPreview({ formData }: AgentPreviewProps) {
-  const formatApiUrl = () => {
-    if (!formData.api_config.base_url || !formData.api_config.service_api_endpoint) {
+  const formatDifyUrl = () => {
+    if (!formData.dify_config.base_url || !formData.dify_config.service_api_endpoint) {
       return 'URL não configurada';
     }
     
     try {
-      return new URL(formData.api_config.service_api_endpoint, formData.api_config.base_url).toString();
+      return new URL(formData.dify_config.service_api_endpoint, formData.dify_config.base_url).toString();
     } catch {
-      return `${formData.api_config.base_url}${formData.api_config.service_api_endpoint}`;
+      return `${formData.dify_config.base_url}${formData.dify_config.service_api_endpoint}`;
     }
   };
 
   const getModelDisplayName = () => {
     const modelMap: Record<string, string> = {
+      'custom-app': '🚀 Aplicação Dify (App)',
+      'custom-workflow': '⚡ Workflow Dify',
       'claude-3-5-sonnet-20241022': 'Claude 3.5 Sonnet',
       'claude-3-5-haiku-20241022': 'Claude 3.5 Haiku',
       'gpt-5-nano-2025-08-07': 'GPT-5 Nano',
       'gpt-4o': 'GPT-4o',
       'gpt-4o-mini': 'GPT-4o Mini',
-      'custom-workflow': 'Workflow Personalizado',
-      'custom-app': 'Aplicação Personalizada',
     };
     
     return modelMap[formData.model] || formData.model;
@@ -91,41 +91,41 @@ export function AgentPreview({ formData }: AgentPreviewProps) {
             </div>
             <div>
               <h4 className="text-sm font-medium text-muted-foreground mb-1">Provedor</h4>
-              <p className="text-sm">API Externa</p>
+              <p className="text-sm">🚀 Dify AI</p>
             </div>
           </div>
 
           <Separator />
 
-          <div>
-            <div className="flex items-center gap-2 mb-3">
-              <Settings className="h-4 w-4" />
-              <h4 className="text-sm font-medium">Configuração de API</h4>
-            </div>
-            
-            <div className="space-y-2 text-sm">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <span className="text-muted-foreground">URL da API:</span>
-                  <p className="font-mono text-xs break-all">{formatApiUrl()}</p>
-                </div>
-                <div>
-                  <span className="text-muted-foreground">App ID:</span>
-                  <p className="font-mono text-xs">{formData.api_config.app_id || 'Não configurado'}</p>
-                </div>
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <Settings className="h-4 w-4" />
+                <h4 className="text-sm font-medium">Configuração Dify</h4>
               </div>
               
-              <div>
-                <span className="text-muted-foreground">API Key:</span>
-                <p className="font-mono text-xs">
-                  {formData.api_config.api_key ? 
-                    `${formData.api_config.api_key.substring(0, 8)}...${formData.api_config.api_key.slice(-4)}` : 
-                    'Não configurada'
-                  }
-                </p>
+              <div className="space-y-2 text-sm">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <span className="text-muted-foreground">URL da API:</span>
+                    <p className="font-mono text-xs break-all">{formatDifyUrl()}</p>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">App ID:</span>
+                    <p className="font-mono text-xs">{formData.dify_config.app_id || 'Não configurado'}</p>
+                  </div>
+                </div>
+                
+                <div>
+                  <span className="text-muted-foreground">API Key:</span>
+                  <p className="font-mono text-xs">
+                    {formData.dify_config.api_key ? 
+                      `${formData.dify_config.api_key.substring(0, 8)}...${formData.dify_config.api_key.slice(-4)}` : 
+                      'Não configurada'
+                    }
+                  </p>
+                </div>
               </div>
             </div>
-          </div>
 
           <Separator />
 
