@@ -38,15 +38,16 @@ export const useConnectionTest = () => {
       setTesting(true);
       toast.loading('Testando conexão...', { id: 'connection-test' });
 
-      console.log('🔧 Chamando função test-api-connection com params:', {
+      console.log('🔧 Chamando função test-rag-config (test_api_connection) com params:', {
         base_url: params.base_url,
         service_api_endpoint: params.service_api_endpoint || '/chat-messages',
         api_key: params.api_key ? '***' + params.api_key.slice(-4) : 'não informada',
         timeout: params.timeout || 10000,
       });
 
-      const { data, error } = await supabase.functions.invoke('test-api-connection', {
+      const { data, error } = await supabase.functions.invoke('test-rag-config', {
         body: {
+          action: 'test_api_connection',
           base_url: params.base_url,
           api_key: params.api_key,
           service_api_endpoint: params.service_api_endpoint || '/chat-messages',
@@ -60,7 +61,7 @@ export const useConnectionTest = () => {
         
         let errorMessage = error.message;
         if (error.message?.includes('Failed to send a request')) {
-          errorMessage = 'Função test-api-connection não encontrada ou indisponível. Verifique se a função foi implantada corretamente.';
+          errorMessage = 'Função test-rag-config não encontrada ou indisponível. Verifique se a função foi implantada corretamente.';
         }
         
         const result = {

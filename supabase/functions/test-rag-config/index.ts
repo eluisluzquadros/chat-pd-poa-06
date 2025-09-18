@@ -12,9 +12,68 @@ serve(async (req) => {
   }
 
   try {
-    const { mode, action, query } = await req.json();
+    const { mode, action, query, base_url, api_key, service_api_endpoint, app_id, timeout } = await req.json();
 
     console.log(`🔧 Testing RAG config - Mode: ${mode}, Action: ${action}`);
+
+    // NOVA FUNCIONALIDADE: Teste de conexão de API externa
+    if (action === 'test_api_connection') {
+      console.log('🧪 Testing external API connection:', { base_url, service_api_endpoint });
+      
+      if (!base_url || !api_key) {
+        throw new Error('Base URL e API Key são obrigatórios');
+      }
+
+      const testUrl = `${base_url}${service_api_endpoint || '/chat-messages'}`;
+      const timeoutMs = timeout || 10000;
+
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+        const response = await fetch(testUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${api_key}`
+          },
+          body: JSON.stringify({
+            inputs: {},
+            query: 'teste de conexão',
+            response_mode: 'blocking',
+            conversation_id: '',
+            user: 'test-user',
+            files: []
+          }),
+          signal: controller.signal
+        });
+
+        clearTimeout(timeoutId);
+
+        if (response.ok) {
+          const data = await response.text();
+          return new Response(
+            JSON.stringify({
+              success: true,
+              message: 'Conexão testada com sucesso',
+              details: {
+                status: response.status,
+                statusText: response.statusText,
+                responseSize: data.length
+              }
+            }),
+            { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        } else {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+      } catch (error) {
+        if (error.name === 'AbortError') {
+          throw new Error(`Timeout: A requisição excedeu ${timeoutMs}ms`);
+        }
+        throw new Error(`Erro na conexão: ${error.message}`);
+      }
+    }
 
     // Verificar secrets do Dify
     if (action === 'check_secrets') {
