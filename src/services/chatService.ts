@@ -15,6 +15,7 @@ export class ChatService {
     confidence: number;
     sources: { tabular: number; conceptual: number };
     executionTime: number;
+    usedFallback?: boolean;
   }> {
     const startTime = Date.now();
     console.log('🔧 ChatService.processMessage START:', {
@@ -75,39 +76,70 @@ export class ChatService {
         userRole: userRole || 'citizen'
       });
 
-      // Call Dify agent directly via agentic-rag-dify
-      console.log('🔥 Calling agentic-rag-dify directly...');
+      // FALLBACK AUTOMÁTICO: Tentar Dify primeiro, depois local
+      console.log('🔥 Trying agentic-rag-dify first...');
       
-      const { data: difyResult, error: difyError } = await supabase.functions.invoke('agentic-rag-dify', {
-        body: {
-          originalQuery: message,
-          user_role: userRole || 'citizen'
-        }
-      });
+      let ragResult = null;
+      let usedFallback = false;
 
-      if (difyError) {
-        console.error('❌ Error calling agentic-rag-dify:', difyError);
-        throw new Error(`RAG system error: ${difyError.message}`);
+      try {
+        const { data: difyResult, error: difyError } = await supabase.functions.invoke('agentic-rag-dify', {
+          body: {
+            originalQuery: message,
+            user_role: userRole || 'citizen'
+          }
+        });
+
+        if (difyError || !difyResult || !difyResult.response) {
+          throw new Error(`Dify failed: ${difyError?.message || 'No response'}`);
+        }
+
+        ragResult = difyResult;
+        console.log('✅ Using Dify (agentic-rag-dify) response');
+
+      } catch (difyError) {
+        console.warn('⚠️ Dify failed, falling back to local agentic-rag:', difyError);
+        usedFallback = true;
+
+        // FALLBACK: Usar agentic-rag local
+        const { data: localResult, error: localError } = await supabase.functions.invoke('agentic-rag', {
+          body: {
+            originalQuery: message,
+            user_role: userRole || 'citizen',
+            model: model || 'gpt-3.5-turbo',
+            sessionId: sessionId || `session_${Date.now()}`,
+            userId: finalSession.user.id
+          }
+        });
+
+        if (localError || !localResult || !localResult.response) {
+          throw new Error(`Both RAG systems failed - Dify: ${difyError.message}, Local: ${localError?.message || 'No response'}`);
+        }
+
+        ragResult = localResult;
+        console.log('✅ Using fallback local (agentic-rag) response');
       }
 
-      if (!difyResult || !difyResult.response) {
-        throw new Error('No response from AI agent');
+      if (!ragResult || !ragResult.response) {
+        throw new Error('No response from any AI agent');
       }
 
       const executionTime = Date.now() - startTime;
       console.log('✅ ChatService.processMessage COMPLETE:', {
         success: true,
         executionTime,
-        hasResponse: !!difyResult.response,
-        responseLength: difyResult.response?.length || 0,
-        confidence: difyResult.confidence
+        hasResponse: !!ragResult.response,
+        responseLength: ragResult.response?.length || 0,
+        confidence: ragResult.confidence,
+        usedFallback
       });
       
       return {
-        response: difyResult.response,
-        confidence: difyResult.confidence || 0.85,
-        sources: difyResult.sources || { tabular: 0, conceptual: 0 },
-        executionTime: difyResult.executionTime || executionTime
+        response: ragResult.response,
+        confidence: ragResult.confidence || 0.85,
+        sources: ragResult.sources || { tabular: 0, conceptual: 0 },
+        executionTime: ragResult.executionTime || executionTime,
+        usedFallback // Indicador de que usou fallback
       };
 
     } catch (error) {
