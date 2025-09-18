@@ -8,7 +8,7 @@ import { SessionList } from "./sidebar/SessionList";
 import { DeleteSessionDialog } from "./sidebar/DeleteSessionDialog";
 import { SystemToggle } from "./SystemToggle";
 import { ModelSelector } from "./ModelSelector";
-import { AdminTestToggle } from "./AdminTestToggle";
+
 import { useAuth } from "@/context/AuthContext";
 import {
   Sidebar,
@@ -117,8 +117,7 @@ export function AppSidebar({
         <SidebarContent>
           <SidebarGroup>
             <SidebarGroupContent>
-              {isAdmin && <SystemToggle />}
-              {isAdmin && <AdminTestToggle />}
+              <SystemToggle />
               {isAdmin && selectedModel && onModelSelect && (
                 <div className="px-1 mb-3">
                   <div className="text-xs font-medium text-muted-foreground mb-2 px-2">Modelo de IA</div>

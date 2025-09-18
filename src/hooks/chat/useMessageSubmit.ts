@@ -7,8 +7,6 @@ import { useToast } from "@/hooks/use-toast";
 import { getCurrentAuthenticatedSession } from "@/utils/authUtils";
 import { ChatService } from "@/services/chatService";
 import { useTokenTracking } from "@/hooks/useTokenTracking";
-import { useAdminTestMode } from "@/hooks/useAdminTestMode";
-import { useAuth } from "@/context/AuthContext";
 
 interface UseMessageSubmitProps {
   input: string;
@@ -38,8 +36,6 @@ export function useMessageSubmit({
   const { toast } = useToast();
   const chatService = new ChatService();
   const { trackTokenUsage, estimateTokens } = useTokenTracking();
-  const { getEffectiveConfig } = useAdminTestMode();
-  const { isAdmin } = useAuth();
 
   const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
@@ -109,23 +105,13 @@ export function useMessageSubmit({
         userEmail: session.user.email
       });
       
-      // Get admin test configuration if applicable
-      const effectiveConfig = isAdmin ? getEffectiveConfig() : null;
-      const adminTestConfig = effectiveConfig?.isTestMode ? {
-        isTestMode: true,
-        ragMode: effectiveConfig.ragMode,
-        llmModel: effectiveConfig.llmModel
-      } : undefined;
-      
       console.log('📞 [useMessageSubmit] Calling ChatService.processMessage...');
-      console.log('🧪 [useMessageSubmit] Admin test config:', adminTestConfig);
       
       const result = await chatService.processMessage(
         currentInput, 
         userRole, 
         sessionId, 
-        selectedModel,
-        adminTestConfig
+        selectedModel
       );
 
       console.log(`✅ [useMessageSubmit] ${selectedModel} response received:`, {
@@ -246,8 +232,6 @@ export function useMessageSubmit({
     setInput,
     setIsLoading,
     selectedModel,
-    getEffectiveConfig,
-    isAdmin,
   ]);
 
   return { handleSubmit };

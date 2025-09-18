@@ -9,12 +9,7 @@ export class ChatService {
     message: string, 
     userRole?: string, 
     sessionId?: string,
-    model?: string,
-    adminTestConfig?: {
-      isTestMode: boolean;
-      ragMode: 'local' | 'dify';
-      llmModel: string;
-    }
+    model?: string
   ): Promise<{
     response: string;
     confidence: number;
@@ -80,35 +75,39 @@ export class ChatService {
         userRole: userRole || 'citizen'
       });
 
-      // Use the enhanced RAG service with admin test mode support
-      const effectiveModel = adminTestConfig?.isTestMode ? adminTestConfig.llmModel : (model || 'gpt-3.5-turbo');
+      // Call Dify agent directly via agentic-rag-dify
+      console.log('🔥 Calling agentic-rag-dify directly...');
       
-      const ragResult = await enhancedRAGService.callRAG({
-        message,
-        model: effectiveModel,
-        sessionId: sessionId || `session_${Date.now()}`,
-        userId: finalSession.user.id,
-        userRole: userRole || 'citizen',
-        bypassCache: false,
-        isAdminTestMode: adminTestConfig?.isTestMode || false,
-        testRAGMode: adminTestConfig?.ragMode,
-        testModel: adminTestConfig?.llmModel
+      const { data: difyResult, error: difyError } = await supabase.functions.invoke('agentic-rag-dify', {
+        body: {
+          originalQuery: message,
+          user_role: userRole || 'citizen'
+        }
       });
+
+      if (difyError) {
+        console.error('❌ Error calling agentic-rag-dify:', difyError);
+        throw new Error(`RAG system error: ${difyError.message}`);
+      }
+
+      if (!difyResult || !difyResult.response) {
+        throw new Error('No response from AI agent');
+      }
 
       const executionTime = Date.now() - startTime;
       console.log('✅ ChatService.processMessage COMPLETE:', {
         success: true,
         executionTime,
-        hasResponse: !!ragResult.response,
-        responseLength: ragResult.response?.length || 0,
-        confidence: ragResult.confidence
+        hasResponse: !!difyResult.response,
+        responseLength: difyResult.response?.length || 0,
+        confidence: difyResult.confidence
       });
       
       return {
-        response: ragResult.response,
-        confidence: ragResult.confidence,
-        sources: ragResult.sources,
-        executionTime: ragResult.executionTime
+        response: difyResult.response,
+        confidence: difyResult.confidence || 0.85,
+        sources: difyResult.sources || { tabular: 0, conceptual: 0 },
+        executionTime: difyResult.executionTime || executionTime
       };
 
     } catch (error) {

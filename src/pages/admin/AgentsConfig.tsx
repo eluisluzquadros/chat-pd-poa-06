@@ -735,7 +735,7 @@ export default function AgentsConfig() {
                         ) : (
                           <TestTube className="h-4 w-4 mr-2" />
                         )}
-                        {testing ? 'Testando Conexão Dify...' : 'Testar Conexão com Dify'}
+                        {testing ? 'Testando Conexão...' : 'Testar Conexão API'}
                       </Button>
 
                       {lastResult && (
