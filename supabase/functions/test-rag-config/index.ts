@@ -6,6 +6,10 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
+  const VERSION = '3.0-FORCE-DEPLOY';
+  const DEPLOY_TIMESTAMP = '2025-01-26T10:30:00Z';
+  console.log(`🚀 test-rag-config function called - VERSION: ${VERSION} - DEPLOYED: ${DEPLOY_TIMESTAMP}`);
+  
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -15,7 +19,7 @@ serve(async (req) => {
     const requestBody = await req.json();
     const { mode, action, query, base_url, api_key, service_api_endpoint, app_id, timeout } = requestBody;
 
-    console.log('🔧 FORCE REDEPLOY v2 - Received request body:', JSON.stringify(requestBody, null, 2));
+    console.log(`🔧 VERSION ${VERSION} - Processing request:`, JSON.stringify(requestBody, null, 2));
     console.log(`🔧 Testing RAG config - Mode: ${mode}, Action: ${action}`);
     console.log(`🔧 Raw action: "${action}" (${typeof action})`);
     
