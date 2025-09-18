@@ -146,6 +146,8 @@ async function testAPIConnection(config: TestConnectionRequest): Promise<{ succe
 }
 
 Deno.serve(async (req) => {
+  console.log('🚀 test-api-connection function called - v2.0');
+  
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
