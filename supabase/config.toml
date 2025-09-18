@@ -3,17 +3,23 @@ project_id = "ngrqwmvuhvjkeohesbxs"
 [functions.agentic-rag]
 verify_jwt = true
 
-[functions.test-rag-config]
+[functions.agentic-rag-dify]
+verify_jwt = true
+
+[functions.chat]
+verify_jwt = true
+
+[functions.create-admin-user]
+verify_jwt = true
+
+[functions.multiLLMService]
+verify_jwt = true
+
+[functions.set-user-role]
+verify_jwt = true
+
+[functions.test-connection]
 verify_jwt = false
 
-[functions.query-analyzer]
-verify_jwt = true
-
-[functions.sql-generator]
-verify_jwt = true
-
-[functions.response-synthesizer]
-verify_jwt = true
-
-[functions.enhanced-vector-search]
-verify_jwt = true
+[functions.test-rag-config]
+verify_jwt = false
