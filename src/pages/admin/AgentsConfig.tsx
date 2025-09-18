@@ -19,11 +19,11 @@ import { Separator } from '@/components/ui/separator';
 import { AgentFormValidator } from '@/components/admin/AgentFormValidator';
 import { AgentPreview } from '@/components/admin/AgentPreview';
 
-// Modelos disponíveis - Alinhados com sistema Dify
+// Modelos disponíveis - Configuráveis via plataformas externas
 const MODELS = [
-  { id: 'custom-app', name: 'Aplicação Dify (App)', category: 'dify', description: 'Aplicação customizada via Dify' },
-  { id: 'custom-workflow', name: 'Workflow Dify', category: 'dify', description: 'Workflow automatizado via Dify' },
-  { id: 'claude-3-5-sonnet-20241022', name: 'Claude 3.5 Sonnet', category: 'anthropic', description: 'Modelo mais avançado da Anthropic' },
+  { id: 'custom-app', name: 'Aplicação Personalizada', category: 'custom', description: 'Aplicação customizada externa' },
+  { id: 'custom-workflow', name: 'Workflow Automatizado', category: 'custom', description: 'Workflow automatizado externo' },
+  { id: 'claude-3-5-sonnet-20241022', name: 'Claude 3.5 Sonnet', category: 'anthropic', description: 'Modelo avançado da Anthropic' },
   { id: 'claude-3-5-haiku-20241022', name: 'Claude 3.5 Haiku', category: 'anthropic', description: 'Modelo rápido e eficiente' },
   { id: 'gpt-5-nano-2025-08-07', name: 'GPT-5 Nano', category: 'openai', description: 'Versão compacta do GPT-5' },
   { id: 'gpt-4o', name: 'GPT-4o', category: 'openai', description: 'GPT-4 otimizado' },
@@ -37,15 +37,15 @@ interface AgentFormData {
   model: string;
   is_active: boolean;
   is_default: boolean;
-  dify_config: ApiConfig; // Alinhado com estrutura da tabela dify_agents
+  api_config: ApiConfig; // Configuração da API externa
   parameters: ModelParameters;
 }
 
-// Configuração padrão Dify - valores baseados no sistema atual
-const defaultDifyConfig: ApiConfig = {
+// Configuração padrão da API externa
+const defaultApiConfig: ApiConfig = {
   base_url: 'https://api.dify.ai/v1',
   service_api_endpoint: '/chat-messages',
-  api_key: 'app-0sZewWe2Z6pcucR70tyO8uKv', // Token padrão atual
+  api_key: 'app-0sZewWe2Z6pcucR70tyO8uKv',
   app_id: 'app-0sZewWe2Z6pcucR70tyO8uKv',
   public_url: 'https://api.dify.ai',
   server_url: 'https://api.dify.ai',
@@ -66,10 +66,10 @@ const defaultFormData: AgentFormData = {
   name: '',
   display_name: '',
   description: '',
-  model: 'custom-app', // Padrão para Dify App
+  model: 'custom-app',
   is_active: true,
   is_default: false,
-  dify_config: defaultDifyConfig,
+  api_config: defaultApiConfig,
   parameters: defaultParameters,
 };
 
@@ -92,9 +92,9 @@ export default function AgentsConfig() {
       return;
     }
 
-    // Validação de configuração Dify
-    if (!formData.dify_config.base_url || !formData.dify_config.service_api_endpoint || 
-        !formData.dify_config.api_key || !formData.dify_config.app_id) {
+    // Validação de configuração da API
+    if (!formData.api_config.base_url || !formData.api_config.service_api_endpoint || 
+        !formData.api_config.api_key || !formData.api_config.app_id) {
       setActiveTab('api');
       return;
     }
@@ -104,11 +104,11 @@ export default function AgentsConfig() {
         name: formData.name,
         display_name: formData.display_name,
         description: formData.description || undefined,
-        provider: 'dify', // Provider alinhado com Dify
+        provider: 'external', // Provider genérico para APIs externas
         model: formData.model,
         is_active: formData.is_active,
         is_default: formData.is_default,
-        api_config: formData.dify_config, // Usando dify_config
+        api_config: formData.api_config,
         parameters: formData.parameters,
       };
 
@@ -138,7 +138,7 @@ export default function AgentsConfig() {
       model: agent.model,
       is_active: agent.is_active,
       is_default: agent.is_default,
-      dify_config: agent.api_config || defaultDifyConfig, // Mapeamento correto
+      api_config: agent.api_config || defaultApiConfig,
       parameters: agent.parameters || defaultParameters,
     });
     setShowDialog(true);
@@ -159,7 +159,7 @@ export default function AgentsConfig() {
     }
   };
 
-  const updateDifyConfig = (field: keyof ApiConfig, value: string) => {
+  const updateApiConfig = (field: keyof ApiConfig, value: string) => {
     // Validação especial para service_api_endpoint - deve ser caminho relativo
     if (field === 'service_api_endpoint') {
       // Remover URL completa se detectada e manter apenas o caminho
@@ -180,12 +180,12 @@ export default function AgentsConfig() {
       }
     }
     
-    // Auto-sincronizar app_id com api_key se for um token Dify
+    // Auto-sincronizar app_id com api_key se necessário
     if (field === 'api_key' && value.startsWith('app-')) {
       setFormData(prev => ({
         ...prev,
-        dify_config: { 
-          ...prev.dify_config, 
+        api_config: { 
+          ...prev.api_config, 
           [field]: value,
           app_id: value // Sincronizar app_id automaticamente
         }
@@ -195,7 +195,7 @@ export default function AgentsConfig() {
     
     setFormData(prev => ({
       ...prev,
-      dify_config: { ...prev.dify_config, [field]: value }
+      api_config: { ...prev.api_config, [field]: value }
     }));
   };
 
@@ -208,10 +208,10 @@ export default function AgentsConfig() {
 
   const handleTestConnection = async () => {
     await testConnection({
-      base_url: formData.dify_config.base_url,
-      api_key: formData.dify_config.api_key,
-      service_api_endpoint: formData.dify_config.service_api_endpoint,
-      app_id: formData.dify_config.app_id,
+      base_url: formData.api_config.base_url,
+      api_key: formData.api_config.api_key,
+      service_api_endpoint: formData.api_config.service_api_endpoint,
+      app_id: formData.api_config.app_id,
     });
   };
 
@@ -233,26 +233,26 @@ export default function AgentsConfig() {
     <div className="container mx-auto py-8 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Configuração de Agentes Dify</h1>
+          <h1 className="text-3xl font-bold">Configuração de Agentes IA</h1>
           <p className="text-muted-foreground mt-2">
-            Gerencie os agentes de IA do sistema Dify integrado
+            Gerencie os agentes de IA conectados a plataformas externas
           </p>
         </div>
         <Button onClick={handleCreate} className="flex items-center gap-2">
           <Plus className="h-4 w-4" />
-          Novo Agente Dify
+          Novo Agente IA
         </Button>
       </div>
 
-      {/* Status do Sistema Dify */}
+      {/* Status do Sistema */}
       <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg">
         <div className="flex items-center justify-between">
           <div>
             <h3 className="font-semibold text-blue-800 mb-1 flex items-center gap-2">
-              🚀 Sistema Dify - Status Operacional
+              🤖 Sistema de Agentes IA - Status Operacional
             </h3>
             <div className="text-sm text-blue-700 space-y-1">
-              <p>✅ <strong>Dify API:</strong> {defaultDifyConfig.base_url}</p>
+              <p>✅ <strong>API Externa:</strong> {defaultApiConfig.base_url}</p>
               <p>🔑 <strong>Credenciais:</strong> Configuradas no Supabase</p>
               <p>⚡ <strong>Edge Function:</strong> agentic-rag-dify ativa</p>
             </div>
@@ -275,7 +275,7 @@ export default function AgentsConfig() {
                 <div className="flex items-center gap-3">
                   <CardTitle className="text-lg">{agent.display_name}</CardTitle>
                   <Badge variant={getProviderBadgeVariant()}>
-                    {agent.provider === 'dify' ? '🚀 Dify' : 'Agente IA'}
+                    🤖 Agente IA
                   </Badge>
                   {agent.is_default && (
                     <Badge variant="default" className="flex items-center gap-1">
@@ -319,7 +319,7 @@ export default function AgentsConfig() {
                 )}
                 {agent.api_config?.base_url && (
                   <div className="text-sm text-muted-foreground">
-                    <strong>Dify URL:</strong> {agent.api_config.base_url}
+                    <strong>API Externa:</strong> {agent.api_config.base_url}
                     {agent.api_config.app_id && (
                       <span className="ml-2">
                         <strong>App ID:</strong> {agent.api_config.app_id.substring(0, 12)}...
@@ -371,12 +371,10 @@ export default function AgentsConfig() {
           </DialogHeader>
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-5">
+            <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="general">Geral</TabsTrigger>
-              <TabsTrigger value="api">Dify Config</TabsTrigger>
-              <TabsTrigger value="parameters">Parâmetros</TabsTrigger>
+              <TabsTrigger value="api">Conexão API</TabsTrigger>
               <TabsTrigger value="preview">Preview</TabsTrigger>
-              <TabsTrigger value="test">🧪 Teste</TabsTrigger>
             </TabsList>
 
             <form onSubmit={handleSubmit} className="space-y-6">
@@ -498,13 +496,13 @@ export default function AgentsConfig() {
               <TabsContent value="api" className="space-y-4">
                 <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg">
                   <h4 className="font-semibold text-blue-800 mb-2 flex items-center gap-2">
-                    🚀 Configuração Dify - Sistema Atual
+                    🤖 Configuração da API Externa
                   </h4>
                   <ul className="text-sm text-blue-700 space-y-1">
-                    <li>• <strong>Base URL:</strong> {defaultDifyConfig.base_url}</li>
-                    <li>• <strong>Service Endpoint:</strong> {defaultDifyConfig.service_api_endpoint}</li>
-                    <li>• <strong>API Key:</strong> {defaultDifyConfig.api_key} (configurado)</li>
-                    <li>• <strong>App ID:</strong> ID da aplicação (encontre na URL da app ou em Settings)</li>
+                    <li>• <strong>Base URL:</strong> {defaultApiConfig.base_url}</li>
+                    <li>• <strong>Service Endpoint:</strong> {defaultApiConfig.service_api_endpoint}</li>
+                    <li>• <strong>API Key:</strong> {defaultApiConfig.api_key} (configurado)</li>
+                    <li>• <strong>App ID:</strong> ID da aplicação externa</li>
                   </ul>
                   <div className="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded text-xs text-yellow-800">
                     ⚠️ <strong>Service Endpoint</strong> deve ser apenas o caminho (ex: /chat-messages), não uma URL completa
@@ -515,10 +513,10 @@ export default function AgentsConfig() {
                   formData={formData}
                   showValidation={showValidation}
                   validationRules={[
-                    { field: 'dify_config.base_url', label: 'Base URL', required: true },
-                    { field: 'dify_config.service_api_endpoint', label: 'Service API Endpoint', required: true },
-                    { field: 'dify_config.api_key', label: 'API Key', required: true },
-                    { field: 'dify_config.app_id', label: 'App ID', required: true },
+                    { field: 'api_config.base_url', label: 'Base URL', required: true },
+                    { field: 'api_config.service_api_endpoint', label: 'Service API Endpoint', required: true },
+                    { field: 'api_config.api_key', label: 'API Key', required: true },
+                    { field: 'api_config.app_id', label: 'App ID', required: true },
                   ]}
                 />
                 
@@ -530,7 +528,7 @@ export default function AgentsConfig() {
                       variant="outline" 
                       size="sm" 
                       onClick={handleTestConnection}
-                      disabled={testing || !formData.dify_config.base_url || !formData.dify_config.api_key}
+                      disabled={testing || !formData.api_config.base_url || !formData.api_config.api_key}
                     >
                       {testing ? (
                         <Loader2 className="h-4 w-4 mr-2 animate-spin" />
@@ -579,11 +577,11 @@ export default function AgentsConfig() {
                         </div>
                         <Input
                           id="base_url"
-                          value={formData.dify_config.base_url}
-                          onChange={(e) => updateDifyConfig('base_url', e.target.value)}
+                          value={formData.api_config.base_url}
+                          onChange={(e) => updateApiConfig('base_url', e.target.value)}
                           placeholder="https://api.dify.ai"
                           required
-                          className={!formData.dify_config.base_url && showValidation ? 'border-destructive' : ''}
+                          className={!formData.api_config.base_url && showValidation ? 'border-destructive' : ''}
                         />
                       </div>
                     </TooltipProvider>
@@ -603,13 +601,13 @@ export default function AgentsConfig() {
                         </div>
                         <Input
                           id="service_api_endpoint"
-                          value={formData.dify_config.service_api_endpoint}
-                          onChange={(e) => updateDifyConfig('service_api_endpoint', e.target.value)}
+                          value={formData.api_config.service_api_endpoint}
+                          onChange={(e) => updateApiConfig('service_api_endpoint', e.target.value)}
                           placeholder="/chat-messages"
                           required
-                          className={!formData.dify_config.service_api_endpoint && showValidation ? 'border-destructive' : ''}
+                          className={!formData.api_config.service_api_endpoint && showValidation ? 'border-destructive' : ''}
                         />
-                        {formData.dify_config.service_api_endpoint && formData.dify_config.service_api_endpoint.includes('://') && (
+                        {formData.api_config.service_api_endpoint && formData.api_config.service_api_endpoint.includes('://') && (
                           <div className="text-xs text-orange-600 mt-1">
                             ⚠️ Detectada URL completa. Use apenas o caminho (ex: /chat-messages)
                           </div>
@@ -631,15 +629,15 @@ export default function AgentsConfig() {
                           </TooltipContent>
                         </Tooltip>
                       </div>
-                      <Input
-                        id="api_key"
-                        type="password"
-                        value={formData.dify_config.api_key}
-                        onChange={(e) => updateDifyConfig('api_key', e.target.value)}
-                        placeholder="app-xxxxxxxxxxxxxxxxxxxxxxxx"
-                        required
-                        className={!formData.dify_config.api_key && showValidation ? 'border-destructive' : ''}
-                      />
+                        <Input
+                          id="api_key"
+                          type="password"
+                          value={formData.api_config.api_key}
+                          onChange={(e) => updateApiConfig('api_key', e.target.value)}
+                          placeholder="app-xxxxxxxxxxxxxxxxxxxxxxxx"
+                          required
+                          className={!formData.api_config.api_key && showValidation ? 'border-destructive' : ''}
+                        />
                     </div>
                   </TooltipProvider>
 
@@ -658,11 +656,11 @@ export default function AgentsConfig() {
                       </div>
                       <Input
                         id="app_id"
-                        value={formData.dify_config.app_id}
-                        onChange={(e) => updateDifyConfig('app_id', e.target.value)}
+                        value={formData.api_config.app_id}
+                        onChange={(e) => updateApiConfig('app_id', e.target.value)}
                         placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
                         required
-                        className={!formData.dify_config.app_id && showValidation ? 'border-destructive' : ''}
+                        className={!formData.api_config.app_id && showValidation ? 'border-destructive' : ''}
                       />
                     </div>
                   </TooltipProvider>
@@ -674,8 +672,8 @@ export default function AgentsConfig() {
                       <Label htmlFor="public_url">Public URL</Label>
                       <Input
                         id="public_url"
-                        value={formData.dify_config.public_url}
-                        onChange={(e) => updateDifyConfig('public_url', e.target.value)}
+                        value={formData.api_config.public_url}
+                        onChange={(e) => updateApiConfig('public_url', e.target.value)}
                         placeholder="https://api.example.com"
                       />
                     </div>
@@ -684,8 +682,8 @@ export default function AgentsConfig() {
                       <Label htmlFor="server_url">Server URL</Label>
                       <Input
                         id="server_url"
-                        value={formData.dify_config.server_url}
-                        onChange={(e) => updateDifyConfig('server_url', e.target.value)}
+                        value={formData.api_config.server_url}
+                        onChange={(e) => updateApiConfig('server_url', e.target.value)}
                         placeholder="https://server.api.example.com"
                       />
                     </div>
@@ -695,152 +693,14 @@ export default function AgentsConfig() {
                     <Label htmlFor="workflow_id">Workflow ID</Label>
                     <Input
                       id="workflow_id"
-                      value={formData.dify_config.workflow_id}
-                      onChange={(e) => updateDifyConfig('workflow_id', e.target.value)}
+                      value={formData.api_config.workflow_id}
+                      onChange={(e) => updateApiConfig('workflow_id', e.target.value)}
                       placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
                     />
                   </div>
                 </div>
               </TabsContent>
 
-              <TabsContent value="parameters" className="space-y-4">
-                <h3 className="text-lg font-semibold">Parâmetros do Modelo</h3>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <TooltipProvider>
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2">
-                        <Label>Temperature: {formData.parameters.temperature}</Label>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <AlertCircle className="h-4 w-4 text-muted-foreground" />
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>Controla a criatividade das respostas (0-2)</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </div>
-                      <Slider
-                        value={[formData.parameters.temperature || 0.7]}
-                        onValueChange={([value]) => updateParameters('temperature', value)}
-                        max={2}
-                        min={0}
-                        step={0.1}
-                        className="w-full"
-                      />
-                    </div>
-                  </TooltipProvider>
-
-                  <TooltipProvider>
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2">
-                        <Label>Top P: {formData.parameters.top_p}</Label>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <AlertCircle className="h-4 w-4 text-muted-foreground" />
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>Controla a diversidade das respostas (0-1)</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </div>
-                      <Slider
-                        value={[formData.parameters.top_p || 1]}
-                        onValueChange={([value]) => updateParameters('top_p', value)}
-                        max={1}
-                        min={0}
-                        step={0.1}
-                        className="w-full"
-                      />
-                    </div>
-                  </TooltipProvider>
-
-                  <TooltipProvider>
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2">
-                        <Label htmlFor="max_tokens">Max Tokens</Label>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <AlertCircle className="h-4 w-4 text-muted-foreground" />
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>Limite máximo de tokens na resposta</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </div>
-                      <Input
-                        id="max_tokens"
-                        type="number"
-                        value={formData.parameters.max_tokens || 4000}
-                        onChange={(e) => updateParameters('max_tokens', parseInt(e.target.value) || 4000)}
-                        min={1}
-                        max={32000}
-                      />
-                    </div>
-                  </TooltipProvider>
-
-                  <TooltipProvider>
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2">
-                        <Label htmlFor="timeout">Timeout (ms)</Label>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <AlertCircle className="h-4 w-4 text-muted-foreground" />
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>Tempo limite para requisições em milissegundos</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </div>
-                      <Input
-                        id="timeout"
-                        type="number"
-                        value={formData.parameters.timeout || 30000}
-                        onChange={(e) => updateParameters('timeout', parseInt(e.target.value) || 30000)}
-                        min={1000}
-                        max={120000}
-                      />
-                    </div>
-                  </TooltipProvider>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="max_retries">Max Retries</Label>
-                    <Input
-                      id="max_retries"
-                      type="number"
-                      value={formData.parameters.max_retries || 3}
-                      onChange={(e) => updateParameters('max_retries', parseInt(e.target.value) || 3)}
-                      min={0}
-                      max={10}
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="response_format">Formato de Resposta</Label>
-                    <Select
-                      value={formData.parameters.response_format || 'text'}
-                      onValueChange={(value) => updateParameters('response_format', value)}
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="text">Texto</SelectItem>
-                        <SelectItem value="json">JSON</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-
-                <div className="flex items-center space-x-2">
-                  <Switch
-                    id="stream"
-                    checked={formData.parameters.stream ?? true}
-                    onCheckedChange={(checked) => updateParameters('stream', checked)}
-                  />
-                  <Label htmlFor="stream">Streaming habilitado</Label>
-                </div>
-              </TabsContent>
 
               <TabsContent value="preview" className="space-y-4">
                 <AgentPreview formData={formData} />
@@ -867,7 +727,7 @@ export default function AgentsConfig() {
                         type="button" 
                         variant="outline" 
                         onClick={handleTestConnection}
-                        disabled={testing || !formData.dify_config.base_url || !formData.dify_config.api_key}
+                        disabled={testing || !formData.api_config.base_url || !formData.api_config.api_key}
                         className="w-full"
                       >
                         {testing ? (
