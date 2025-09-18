@@ -19,8 +19,11 @@ serve(async (req) => {
     console.log(`🔧 Testing RAG config - Mode: ${mode}, Action: ${action}`);
     console.log(`🔧 Action type: ${typeof action}, Action value: "${action}"`);
     
+    
     // Normalizar action para evitar problemas de encoding/espaços
     const normalizedAction = action?.toString().trim().toLowerCase();
+    console.log(`🔧 Original action: "${action}", Normalized: "${normalizedAction}"`);
+    console.log(`🔧 Action comparison: "${normalizedAction}" === "test_api_connection" = ${normalizedAction === 'test_api_connection'}`);
 
     // NOVA FUNCIONALIDADE: Teste de conexão de API externa
     if (normalizedAction === 'test_api_connection') {
