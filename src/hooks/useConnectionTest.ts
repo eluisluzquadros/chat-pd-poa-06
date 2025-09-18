@@ -38,43 +38,92 @@ export const useConnectionTest = () => {
       setTesting(true);
       toast.loading('Testando conexão...', { id: 'connection-test' });
 
-      console.log('🔧 Chamando função test-rag-config (test_api_connection) com params:', {
+      console.log('🔧 Teste direto no frontend com params:', {
         base_url: params.base_url,
         service_api_endpoint: params.service_api_endpoint || '/chat-messages',
         api_key: params.api_key ? '***' + params.api_key.slice(-4) : 'não informada',
         timeout: params.timeout || 10000,
       });
 
-      const { data, error } = await supabase.functions.invoke('test-rag-config', {
-        body: {
-          action: 'test_api_connection',
-          base_url: params.base_url,
-          api_key: params.api_key,
-          service_api_endpoint: params.service_api_endpoint || '/chat-messages',
-          app_id: params.app_id,
-          timeout: params.timeout || 10000,
-        }
+      // Construir URL de teste
+      const endpoint = params.service_api_endpoint?.startsWith('/') 
+        ? params.service_api_endpoint 
+        : `/${params.service_api_endpoint || 'chat-messages'}`;
+      
+      const cleanBaseUrl = params.base_url.replace(/\/$/, '');
+      const testUrl = `${cleanBaseUrl}${endpoint}`;
+      
+      console.log(`🔗 URL de teste: ${testUrl}`);
+      
+      // Fazer requisição direta para a API Dify
+      const requestBody = {
+        inputs: {},
+        query: 'teste de conexão',
+        response_mode: 'blocking',
+        user: 'connection-test'
+      };
+
+      const headers = {
+        'Authorization': `Bearer ${params.api_key}`,
+        'Content-Type': 'application/json',
+      };
+
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), params.timeout || 10000);
+
+      const response = await fetch(testUrl, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(requestBody),
+        signal: controller.signal
       });
 
-      if (error) {
-        console.error('❌ Erro na função test-api-connection:', error);
-        
-        let errorMessage = error.message;
-        if (error.message?.includes('Failed to send a request')) {
-          errorMessage = 'Função test-rag-config não encontrada ou indisponível. Verifique se a função foi implantada corretamente.';
+      clearTimeout(timeoutId);
+
+      const responseText = await response.text();
+      
+      console.log('📥 Resposta recebida:', {
+        status: response.status,
+        statusText: response.statusText,
+        bodyLength: responseText.length,
+        bodyPreview: responseText.substring(0, 200)
+      });
+
+      let result: TestResult;
+
+      if (response.ok) {
+        let parsedResponse;
+        try {
+          parsedResponse = JSON.parse(responseText);
+        } catch {
+          parsedResponse = { raw: responseText };
         }
         
-        const result = {
-          success: false,
-          message: `Erro na função: ${errorMessage}`,
-          details: error
+        result = {
+          success: true,
+          message: 'Conexão estabelecida com sucesso!',
+          details: {
+            status: response.status,
+            statusText: response.statusText,
+            hasResponse: responseText.length > 0,
+            response: parsedResponse
+          }
         };
-        setLastResult(result);
-        toast.error(result.message, { id: 'connection-test' });
-        return result;
+      } else {
+        let errorDetails;
+        try {
+          errorDetails = JSON.parse(responseText);
+        } catch {
+          errorDetails = { message: responseText, raw: responseText };
+        }
+
+        result = {
+          success: false,
+          message: `Erro na API: ${response.status} ${response.statusText}`,
+          details: errorDetails
+        };
       }
 
-      const result = data as TestResult;
       setLastResult(result);
 
       if (result.success) {
