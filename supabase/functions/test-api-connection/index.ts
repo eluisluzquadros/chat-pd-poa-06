@@ -1,4 +1,5 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.0';
+import "https://deno.land/x/xhr@0.1.0/mod.ts";
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -145,8 +146,8 @@ async function testAPIConnection(config: TestConnectionRequest): Promise<{ succe
   }
 }
 
-Deno.serve(async (req) => {
-  console.log('🚀 test-api-connection function called - v2.0');
+serve(async (req) => {
+  console.log('🚀 test-api-connection function called - v3.0');
   
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
