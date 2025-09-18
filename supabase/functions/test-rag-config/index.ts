@@ -15,16 +15,33 @@ serve(async (req) => {
     const requestBody = await req.json();
     const { mode, action, query, base_url, api_key, service_api_endpoint, app_id, timeout } = requestBody;
 
-    console.log('🔧 Received request body:', JSON.stringify(requestBody, null, 2));
+    console.log('🔧 FORCE REDEPLOY v2 - Received request body:', JSON.stringify(requestBody, null, 2));
     console.log(`🔧 Testing RAG config - Mode: ${mode}, Action: ${action}`);
     console.log(`🔧 Raw action: "${action}" (${typeof action})`);
     
-    // Normalizar action para comparação robusta
-    const normalizedAction = action ? action.toString().trim().toLowerCase() : '';
-    console.log(`🔧 Normalized action: "${normalizedAction}"`);
+    // Debug byte por byte
+    const actionStr = action ? action.toString() : '';
+    console.log(`🔧 Action string: "${actionStr}"`);
+    console.log(`🔧 Action bytes:`, Array.from(actionStr).map(c => c.charCodeAt(0)));
     
-    // CORREÇÃO: Teste de conexão API externa
-    if (normalizedAction === 'test_api_connection') {
+    // Normalizar action para comparação robusta
+    const normalizedAction = actionStr.trim().toLowerCase();
+    console.log(`🔧 Normalized action: "${normalizedAction}"`);
+    console.log(`🔧 Normalized bytes:`, Array.from(normalizedAction).map(c => c.charCodeAt(0)));
+    
+    // Comparações múltiplas para debug
+    const testActions = ['test_api_connection', 'check_secrets', 'test'];
+    console.log('🔧 Testing against available actions:');
+    testActions.forEach(testAction => {
+      const exact = normalizedAction === testAction;
+      const includes = normalizedAction.includes(testAction);
+      const startsWith = normalizedAction.startsWith(testAction);
+      console.log(`  - "${testAction}": exact=${exact}, includes=${includes}, startsWith=${startsWith}`);
+    });
+    
+    // CORREÇÃO: Teste de conexão API externa - usando múltiplas estratégias
+    if (normalizedAction === 'test_api_connection' || normalizedAction.includes('test_api_connection') || normalizedAction.startsWith('test_api_connection')) {
+      console.log('🎯 MATCH: test_api_connection detected');
       console.log('🧪 Testing external API connection:', { base_url, service_api_endpoint });
       
       if (!base_url || !api_key) {
@@ -161,7 +178,33 @@ serve(async (req) => {
       );
     }
 
-    throw new Error('Ação não reconhecida');
+    // FALLBACK: Se chegou aqui, a ação não foi reconhecida
+    console.log('❌ No action matched. Available actions: test_api_connection, check_secrets, test');
+    console.log('❌ Received action details:', {
+      raw: action,
+      normalized: normalizedAction,
+      type: typeof action,
+      length: normalizedAction.length
+    });
+    
+    return new Response(
+      JSON.stringify({ 
+        error: 'Ação não reconhecida',
+        debug: {
+          receivedAction: action,
+          normalizedAction: normalizedAction,
+          availableActions: ['test_api_connection', 'check_secrets', 'test'],
+          actionType: typeof action,
+          actionLength: normalizedAction.length,
+          requestBody: requestBody
+        },
+        timestamp: new Date().toISOString(),
+      }),
+      { 
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+      }
+    );
 
   } catch (error) {
     console.error('❌ Error testing RAG config:', error);
