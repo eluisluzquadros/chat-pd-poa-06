@@ -20,7 +20,7 @@ serve(async (req) => {
     console.log(`🔧 Raw action: "${action}" (${typeof action})`);
     
     // CORREÇÃO: Teste direto sem normalização complexa
-    if (action === 'test_api_connection') {
+    if (action && action.toString() === 'test_api_connection') {
       console.log('🧪 Testing external API connection:', { base_url, service_api_endpoint });
       
       if (!base_url || !api_key) {
