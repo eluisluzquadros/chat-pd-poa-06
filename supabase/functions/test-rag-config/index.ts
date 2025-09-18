@@ -12,12 +12,18 @@ serve(async (req) => {
   }
 
   try {
-    const { mode, action, query, base_url, api_key, service_api_endpoint, app_id, timeout } = await req.json();
+    const requestBody = await req.json();
+    const { mode, action, query, base_url, api_key, service_api_endpoint, app_id, timeout } = requestBody;
 
+    console.log('🔧 Received request body:', JSON.stringify(requestBody, null, 2));
     console.log(`🔧 Testing RAG config - Mode: ${mode}, Action: ${action}`);
+    console.log(`🔧 Action type: ${typeof action}, Action value: "${action}"`);
+    
+    // Normalizar action para evitar problemas de encoding/espaços
+    const normalizedAction = action?.toString().trim().toLowerCase();
 
     // NOVA FUNCIONALIDADE: Teste de conexão de API externa
-    if (action === 'test_api_connection') {
+    if (normalizedAction === 'test_api_connection') {
       console.log('🧪 Testing external API connection:', { base_url, service_api_endpoint });
       
       if (!base_url || !api_key) {
