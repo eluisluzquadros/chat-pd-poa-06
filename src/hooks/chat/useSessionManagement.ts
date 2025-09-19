@@ -13,6 +13,12 @@ export function useSessionManagement(refetchSessions: RefetchFunction) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
+  // Função para validar UUID
+  const isValidUUID = (str: string): boolean => {
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    return uuidRegex.test(str);
+  };
+
   const createSession = useCallback(async (userId: string, title: string, model: string, message: string) => {
     const session = await getCurrentAuthenticatedSession();
     if (!session?.user) throw new Error("User not authenticated");
@@ -35,7 +41,39 @@ export function useSessionManagement(refetchSessions: RefetchFunction) {
 
   const deleteSession = useCallback(async (sessionId: string, showToast: boolean = true) => {
     try {
-      console.log(`[DELETE SESSION] Starting atomic deletion for session: ${sessionId}`);
+      console.log(`🔍 [DELETE SESSION] Iniciando exclusão para: ${sessionId}`);
+      console.log(`🔍 [DELETE SESSION] Tipo: ${typeof sessionId}, Tamanho: ${sessionId.length}`);
+      
+      // Validar se o sessionId é um UUID válido
+      if (!isValidUUID(sessionId)) {
+        console.error(`❌ [DELETE SESSION] ID inválido detectado: ${sessionId}`);
+        
+        // Remover diretamente do cache local se ID for inválido
+        const cachedSessions = queryClient.getQueryData(['chatSessions']) as ChatSession[] || [];
+        const updatedSessions = cachedSessions.filter(session => session.id !== sessionId);
+        queryClient.setQueryData(['chatSessions'], updatedSessions);
+        
+        // Limpar sessão atual se for a inválida
+        if (currentSessionId === sessionId) {
+          setCurrentSessionId(null);
+        }
+        
+        // Forçar refetch para sincronizar com o banco
+        await refetchSessions();
+        
+        if (showToast) {
+          toast({
+            title: "Sessão removida",
+            description: "Sessão com ID inválido foi removida da interface.",
+            variant: "destructive"
+          });
+        }
+        
+        console.log(`✅ [DELETE SESSION] ID inválido removido do cache: ${sessionId}`);
+        return;
+      }
+
+      console.log(`✅ [DELETE SESSION] UUID válido, prosseguindo com exclusão no banco`);
       
       // Use the new atomic SQL function for reliable deletion
       const { data, error } = await supabase.rpc('delete_chat_session_atomic', {
@@ -43,16 +81,16 @@ export function useSessionManagement(refetchSessions: RefetchFunction) {
       });
 
       if (error) {
-        console.error('[DELETE SESSION] RPC Error:', error);
+        console.error(`❌ [DELETE SESSION] RPC Error:`, error);
         throw error;
       }
 
       if (!data?.success) {
-        console.error('[DELETE SESSION] Function returned error:', data);
+        console.error(`❌ [DELETE SESSION] Function returned error:`, data);
         throw new Error(data?.error || 'Falha na deleção da conversa');
       }
 
-      console.log('[DELETE SESSION] Success:', data);
+      console.log(`✅ [DELETE SESSION] Success:`, data);
       
       // Clear current session if it was deleted
       if (currentSessionId === sessionId) {
@@ -73,7 +111,7 @@ export function useSessionManagement(refetchSessions: RefetchFunction) {
         });
       }
     } catch (error: any) {
-      console.error('[DELETE SESSION] Complete error details:', {
+      console.error(`❌ [DELETE SESSION] Complete error details:`, {
         sessionId,
         error: error?.message || error,
         stack: error?.stack
@@ -88,49 +126,85 @@ export function useSessionManagement(refetchSessions: RefetchFunction) {
       }
       throw error;
     }
-  }, [toast, currentSessionId, queryClient]);
+  }, [toast, currentSessionId, queryClient, refetchSessions]);
 
   const deleteSessions = useCallback(async (sessionIds: string[]) => {
-    console.log(`[DELETE SESSIONS] Starting batch deletion for ${sessionIds.length} sessions:`, sessionIds);
+    console.log(`🔍 [DELETE SESSIONS] Iniciando exclusão em lote para ${sessionIds.length} sessões:`, sessionIds);
+    
+    // Separar IDs válidos dos inválidos
+    const validIds: string[] = [];
+    const invalidIds: string[] = [];
+    
+    sessionIds.forEach(id => {
+      console.log(`🔍 [DELETE SESSIONS] Verificando ID: ${id} (tipo: ${typeof id}, tamanho: ${id.length})`);
+      if (isValidUUID(id)) {
+        validIds.push(id);
+        console.log(`✅ [DELETE SESSIONS] ID válido: ${id}`);
+      } else {
+        invalidIds.push(id);
+        console.error(`❌ [DELETE SESSIONS] ID inválido: ${id}`);
+      }
+    });
+    
+    // Limpar IDs inválidos do cache imediatamente
+    if (invalidIds.length > 0) {
+      console.log(`🧹 [DELETE SESSIONS] Limpando ${invalidIds.length} IDs inválidos do cache:`, invalidIds);
+      const cachedSessions = queryClient.getQueryData(['chatSessions']) as ChatSession[] || [];
+      const cleanedSessions = cachedSessions.filter(session => !invalidIds.includes(session.id));
+      queryClient.setQueryData(['chatSessions'], cleanedSessions);
+      
+      // Limpar sessão atual se for inválida
+      if (currentSessionId && invalidIds.includes(currentSessionId)) {
+        setCurrentSessionId(null);
+        console.log(`🧹 [DELETE SESSIONS] Sessão atual inválida removida: ${currentSessionId}`);
+      }
+    }
     
     const failedDeletions: string[] = [];
     const successResults: any[] = [];
     
-    // Process deletions in parallel for better performance
-    const deletePromises = sessionIds.map(async (sessionId) => {
-      try {
-        const { data, error } = await supabase.rpc('delete_chat_session_atomic', {
-          session_id_param: sessionId
-        });
+    // Processar apenas IDs válidos
+    if (validIds.length > 0) {
+      console.log(`✅ [DELETE SESSIONS] Processando ${validIds.length} IDs válidos:`, validIds);
+      
+      const deletePromises = validIds.map(async (sessionId) => {
+        try {
+          const { data, error } = await supabase.rpc('delete_chat_session_atomic', {
+            session_id_param: sessionId
+          });
 
-        if (error) {
-          console.error(`[DELETE SESSIONS] RPC Error for ${sessionId}:`, error);
+          if (error) {
+            console.error(`❌ [DELETE SESSIONS] RPC Error for ${sessionId}:`, error);
+            failedDeletions.push(sessionId);
+            return { sessionId, success: false, error };
+          }
+
+          if (!data?.success) {
+            console.error(`❌ [DELETE SESSIONS] Function error for ${sessionId}:`, data);
+            failedDeletions.push(sessionId);
+            return { sessionId, success: false, error: data?.error };
+          }
+
+          successResults.push(data);
+          console.log(`✅ [DELETE SESSIONS] Sucesso para ${sessionId}`);
+          return { sessionId, success: true, data };
+        } catch (error) {
+          console.error(`❌ [DELETE SESSIONS] Exception for ${sessionId}:`, error);
           failedDeletions.push(sessionId);
           return { sessionId, success: false, error };
         }
+      });
 
-        if (!data?.success) {
-          console.error(`[DELETE SESSIONS] Function error for ${sessionId}:`, data);
-          failedDeletions.push(sessionId);
-          return { sessionId, success: false, error: data?.error };
-        }
+      await Promise.all(deletePromises);
+    }
 
-        successResults.push(data);
-        return { sessionId, success: true, data };
-      } catch (error) {
-        console.error(`[DELETE SESSIONS] Exception for ${sessionId}:`, error);
-        failedDeletions.push(sessionId);
-        return { sessionId, success: false, error };
-      }
-    });
-
-    await Promise.all(deletePromises);
-
-    // Forçar invalidação completa e refetch após exclusões bem-sucedidas
-    const successfulIds = sessionIds.filter(id => !failedDeletions.includes(id));
-    if (successfulIds.length > 0) {
+    // Forçar invalidação completa e refetch
+    const successfulIds = validIds.filter(id => !failedDeletions.includes(id));
+    const totalCleaned = successfulIds.length + invalidIds.length;
+    
+    if (totalCleaned > 0) {
       // Clear current session if it was among the deleted ones
-      if (currentSessionId && successfulIds.includes(currentSessionId)) {
+      if (currentSessionId && (successfulIds.includes(currentSessionId) || invalidIds.includes(currentSessionId))) {
         setCurrentSessionId(null);
       }
 
@@ -143,19 +217,26 @@ export function useSessionManagement(refetchSessions: RefetchFunction) {
     }
 
     // Show consolidated toast
-    const successCount = sessionIds.length - failedDeletions.length;
-    console.log(`[DELETE SESSIONS] Results: ${successCount} success, ${failedDeletions.length} failed`);
+    console.log(`📊 [DELETE SESSIONS] Resultados: ${successfulIds.length} válidos excluídos, ${invalidIds.length} inválidos removidos, ${failedDeletions.length} falharam`);
     
-    if (successCount > 0 && failedDeletions.length === 0) {
+    if (failedDeletions.length === 0 && invalidIds.length === 0) {
       toast({
         title: "Sucesso",
-        description: `${successCount} conversa(s) excluída(s) com sucesso`,
+        description: `${sessionIds.length} conversa(s) excluída(s) com sucesso`,
       });
-    } else if (successCount > 0 && failedDeletions.length > 0) {
+    } else if (totalCleaned > 0) {
+      let description = `${totalCleaned} conversa(s) removida(s).`;
+      if (invalidIds.length > 0) {
+        description += ` ${invalidIds.length} tinha(m) ID inválido.`;
+      }
+      if (failedDeletions.length > 0) {
+        description += ` ${failedDeletions.length} falharam.`;
+      }
+      
       toast({
-        title: "Parcialmente concluído",
-        description: `${successCount} conversa(s) excluída(s). ${failedDeletions.length} falharam.`,
-        variant: "destructive",
+        title: "Exclusão concluída",
+        description,
+        variant: invalidIds.length > 0 ? "destructive" : "default"
       });
     } else {
       toast({
@@ -168,7 +249,7 @@ export function useSessionManagement(refetchSessions: RefetchFunction) {
     if (failedDeletions.length > 0) {
       throw new Error(`Failed to delete ${failedDeletions.length} sessions: ${failedDeletions.join(', ')}`);
     }
-  }, [toast, currentSessionId, queryClient]);
+  }, [toast, currentSessionId, queryClient, refetchSessions]);
 
   const updateSession = useCallback(async (sessionId: string, lastMessage: string) => {
     try {
