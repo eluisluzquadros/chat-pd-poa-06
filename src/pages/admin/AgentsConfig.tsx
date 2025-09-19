@@ -15,6 +15,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { useAgents } from '@/hooks/useAgents';
 import { useConnectionTest } from '@/hooks/useConnectionTest';
 import { CreateAgentData, ApiConfig, ModelParameters } from '@/services/agentsService';
+import { refreshRAGCacheWithToast } from '@/utils/ragCacheUtils';
 import { Separator } from '@/components/ui/separator';
 import { AgentFormValidator } from '@/components/admin/AgentFormValidator';
 import { AgentPreview } from '@/components/admin/AgentPreview';
@@ -124,6 +125,11 @@ export default function AgentsConfig() {
       setActiveTab('general');
       setShowValidation(false);
       clearResult();
+      
+      // Limpar cache se agente foi definido como padrão
+      if (formData.is_default) {
+        refreshRAGCacheWithToast();
+      }
     } catch (error) {
       // Erro já tratado no hook
     }
@@ -332,7 +338,10 @@ export default function AgentsConfig() {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => setAsDefault(agent.id)}
+                      onClick={async () => {
+                        await setAsDefault(agent.id);
+                        refreshRAGCacheWithToast();
+                      }}
                       className="flex items-center gap-2"
                     >
                       <Star className="h-3 w-3" />

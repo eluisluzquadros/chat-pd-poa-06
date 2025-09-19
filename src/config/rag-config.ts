@@ -28,14 +28,21 @@ export const getDefaultAgent = async () => {
 export const getEndpointFromAgentName = (agentName: string): string => {
   // Mapear novos nomes para endpoints
   const endpointMapping: Record<string, string> = {
-    'agentic-v1': 'agentic-rag',
+    // Agentes v3 (API externa)
+    'chatpdpoa-assistent-deepseek-chat': 'agentic-rag-dify',
     'agentic-claude_35_sonnet': 'agentic-rag-dify',
     'agentic-gpt_5_nano': 'agentic-rag-dify',
+    
+    // Agentes v2 (local)
+    'agentic_openai_gpt_4.1-mini': 'agentic-rag',
+    'agentic-v1': 'agentic-rag',
+    
     // Compatibilidade com nomes antigos
     'agentic-rag': 'agentic-rag',
     'agentic-rag-dify': 'agentic-rag-dify',
   };
 
+  console.log(`🎯 [RAG Config] Mapeando agente "${agentName}" para endpoint:`, endpointMapping[agentName] || 'agentic-rag');
   return endpointMapping[agentName] || 'agentic-rag';
 };
 
