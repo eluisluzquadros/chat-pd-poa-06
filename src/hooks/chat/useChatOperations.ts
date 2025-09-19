@@ -71,13 +71,18 @@ export function useChatOperations(refetchSessions: RefetchFunction) {
   const handleDeleteSessions = useCallback(async (sessionIds: string[]) => {
     try {
       setIsLoading(true);
-      // Check if current session is in the list to be deleted
+      console.log('🎯 Iniciando exclusão múltipla de sessões:', sessionIds);
+      
+      // Se a sessão atual está na lista para ser deletada, limpar primeiro
       if (sessionIds.includes(currentSessionId!)) {
         handleNewChat();
       }
+      
+      // Aguardar exclusão completa antes de continuar
       await deleteSessions(sessionIds);
+      console.log('✅ Sessões excluídas com sucesso:', sessionIds);
     } catch (error) {
-      console.error('Error in handleDeleteSessions:', error);
+      console.error('❌ Error in handleDeleteSessions:', error);
       throw error;
     } finally {
       setIsLoading(false);

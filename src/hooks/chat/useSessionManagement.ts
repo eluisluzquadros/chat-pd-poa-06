@@ -59,10 +59,12 @@ export function useSessionManagement(refetchSessions: RefetchFunction) {
         setCurrentSessionId(null);
       }
 
-      // Proactive cleanup: Remove from cache immediately
-      const cachedSessions = queryClient.getQueryData(['chatSessions']) as ChatSession[] || [];
-      const updatedSessions = cachedSessions.filter(session => session.id !== sessionId);
-      queryClient.setQueryData(['chatSessions'], updatedSessions);
+      // Forçar invalidação completa das queries para garantir atualização
+      queryClient.invalidateQueries(['chatSessions']);
+      
+      // Forçar refetch para garantir sincronização
+      await refetchSessions();
+      console.log('🔄 Cache invalidado e sessões recarregadas após exclusão');
 
       if (showToast) {
         toast({
@@ -124,7 +126,7 @@ export function useSessionManagement(refetchSessions: RefetchFunction) {
 
     await Promise.all(deletePromises);
 
-    // Proactive cleanup: Remove successfully deleted sessions from cache immediately
+    // Forçar invalidação completa e refetch após exclusões bem-sucedidas
     const successfulIds = sessionIds.filter(id => !failedDeletions.includes(id));
     if (successfulIds.length > 0) {
       // Clear current session if it was among the deleted ones
@@ -132,9 +134,12 @@ export function useSessionManagement(refetchSessions: RefetchFunction) {
         setCurrentSessionId(null);
       }
 
-      const cachedSessions = queryClient.getQueryData(['chatSessions']) as ChatSession[] || [];
-      const updatedSessions = cachedSessions.filter(session => !successfulIds.includes(session.id));
-      queryClient.setQueryData(['chatSessions'], updatedSessions);
+      // Forçar invalidação completa das queries
+      queryClient.invalidateQueries(['chatSessions']);
+      
+      // Forçar refetch para garantir sincronização
+      await refetchSessions();
+      console.log('🔄 Cache invalidado e sessões recarregadas após exclusão múltipla');
     }
 
     // Show consolidated toast
