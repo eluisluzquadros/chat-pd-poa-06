@@ -98,4 +98,5 @@ export const getRagEndpointSync = () => {
 export const clearRagConfigCache = () => {
   cachedMode = null;
   cacheTimestamp = 0;
+  console.log('🧹 [RAG Config] Cache limpo - próxima consulta buscará configuração atualizada');
 };

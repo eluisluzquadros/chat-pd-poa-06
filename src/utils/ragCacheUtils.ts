@@ -8,13 +8,16 @@ import { toast } from 'sonner';
 export const refreshRAGCache = () => {
   try {
     clearRagConfigCache();
-    console.log('🧹 Cache RAG limpo com sucesso');
+    console.log('🧹 [RAG Cache] Cache limpo - sistema v3 ativo');
     return true;
   } catch (error) {
     console.error('❌ Erro ao limpar cache RAG:', error);
     return false;
   }
 };
+
+// Forçar limpeza do cache no carregamento para aplicar a correção v3
+refreshRAGCache();
 
 export const refreshRAGCacheWithToast = () => {
   const success = refreshRAGCache();
