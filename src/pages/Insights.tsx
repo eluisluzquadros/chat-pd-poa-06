@@ -2,7 +2,7 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { SimpleAuthGuard } from "@/components/SimpleAuthGuard";
+import { AuthGuard } from "@/components/layout/AuthGuard";
 import { Loader2 } from "lucide-react";
 import { Header } from "@/components/Header";
 
@@ -30,7 +30,7 @@ export default function Insights() {
   }, [navigate]);
 
   return (
-    <SimpleAuthGuard>
+    <AuthGuard>
       <div className="min-h-screen flex flex-col">
         <Header />
         <div className="flex-grow flex items-center justify-center">
@@ -41,6 +41,6 @@ export default function Insights() {
         </div>
         
       </div>
-    </SimpleAuthGuard>
+    </AuthGuard>
   );
 }

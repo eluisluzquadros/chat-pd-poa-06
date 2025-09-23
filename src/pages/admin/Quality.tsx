@@ -16,12 +16,6 @@ import { MultiModelExecutionDialog } from '@/components/admin/MultiModelExecutio
 import { RefreshCw } from 'lucide-react';
 import { QAMaintenancePanel } from '@/components/admin/QAMaintenancePanel';
 import { TestQAFixes } from '@/components/admin/TestQAFixes';
-import { CrossValidationPanel } from '@/components/admin/CrossValidationPanel';
-import { CrossValidationPanelV2 } from '@/components/admin/CrossValidationPanelV2';
-import { TableCoverageMonitor } from '@/components/admin/TableCoverageMonitor';
-import { QANeighborhoodSweep } from '@/components/admin/QANeighborhoodSweep';
-import { SystemVersionIndicator } from '@/components/admin/SystemVersionIndicator';
-import { AgenticRAGValidator } from '@/components/admin/AgenticRAGValidator';
 
 export default function Quality() {
   const [metrics, setMetrics] = useState({
@@ -92,7 +86,6 @@ export default function Quality() {
           <p className="text-muted-foreground">Monitore e execute validações de qualidade do sistema</p>
         </div>
         <div className="flex gap-3">
-          <SystemVersionIndicator />
           <Button variant="outline" onClick={fetchMetrics} size="sm">
             <RefreshCw className="h-4 w-4 mr-2" />
             Atualizar
@@ -166,36 +159,20 @@ export default function Quality() {
         </Card>
       </div>
 
-      <Tabs defaultValue="validator" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-12 h-12">
-          <TabsTrigger value="validator" className="text-sm">🎯 Validador</TabsTrigger>
-          <TabsTrigger value="coverage" className="text-sm">📊 Cobertura</TabsTrigger>
+      <Tabs defaultValue="fixes" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-8 h-12">
           <TabsTrigger value="fixes" className="text-sm">🔧 Correções</TabsTrigger>
-          <TabsTrigger value="crossval" className="text-sm">⚡ Cross-Val</TabsTrigger>
           <TabsTrigger value="execution" className="text-sm">Execuções</TabsTrigger>
-          <TabsTrigger value="testcases" className="text-sm">Casos</TabsTrigger>
+          <TabsTrigger value="testcases" className="text-sm">Casos de Teste</TabsTrigger>
           <TabsTrigger value="models" className="text-sm">Modelos</TabsTrigger>
           <TabsTrigger value="analysis" className="text-sm">Análise</TabsTrigger>
           <TabsTrigger value="comparison" className="text-sm">Comparação</TabsTrigger>
           <TabsTrigger value="gaps" className="text-sm">Gaps</TabsTrigger>
           <TabsTrigger value="maintenance" className="text-sm">Manutenção</TabsTrigger>
-          <TabsTrigger value="sweep" className="text-sm">🧭 Sweep</TabsTrigger>
         </TabsList>
-
-        <TabsContent value="validator" className="space-y-4">
-          <AgenticRAGValidator />
-        </TabsContent>
-
-        <TabsContent value="coverage" className="space-y-4">
-          <TableCoverageMonitor />
-        </TabsContent>
 
         <TabsContent value="fixes" className="space-y-4">
           <TestQAFixes />
-        </TabsContent>
-
-        <TabsContent value="crossval" className="space-y-4">
-          <CrossValidationPanelV2 />
         </TabsContent>
 
         <TabsContent value="execution" className="space-y-4">
@@ -224,10 +201,6 @@ export default function Quality() {
 
         <TabsContent value="maintenance" className="space-y-4">
           <QAMaintenancePanel />
-        </TabsContent>
-
-        <TabsContent value="sweep" className="space-y-4">
-          <QANeighborhoodSweep />
         </TabsContent>
       </Tabs>
     </div>

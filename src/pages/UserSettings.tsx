@@ -3,15 +3,12 @@ import { Header } from "@/components/Header";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useProfileSettings } from "@/hooks/useProfileSettings";
 import { useAccountSettings } from "@/hooks/useAccountSettings";
-import { useAuth } from "@/context/AuthContext";
 import ProfileInfoTab from "@/components/profile/ProfileInfoTab";
 import SecurityTab from "@/components/profile/SecurityTab";
 import ProfileLoading from "@/components/profile/ProfileLoading";
 import AccountDeletion from "@/components/profile/AccountDeletion";
 import AccountInfoTab from "@/components/account/AccountInfoTab";
 import TutorialsTab from "@/components/account/TutorialsTab";
-import AppearanceTab from "@/components/profile/AppearanceTab";
-import RAGConfigurationTab from "@/components/admin/RAGConfigurationTab";
 
 
 const UserSettings = () => {
@@ -38,9 +35,6 @@ const UserSettings = () => {
     handleInputChange: handleAccountInputChange
   } = useAccountSettings();
 
-  // Auth context para verificar permissões
-  const { isAdmin } = useAuth();
-
   const isLoading = profileIsLoading || accountIsLoading;
 
   return (
@@ -57,11 +51,7 @@ const UserSettings = () => {
               <TabsTrigger value="personal">Informações Pessoais</TabsTrigger>
               <TabsTrigger value="account">Conta</TabsTrigger>
               <TabsTrigger value="security">Segurança</TabsTrigger>
-              <TabsTrigger value="appearance">Aparência</TabsTrigger>
               <TabsTrigger value="tutorials">Tutoriais</TabsTrigger>
-              {isAdmin && (
-                <TabsTrigger value="advanced">Configurações Avançadas</TabsTrigger>
-              )}
             </TabsList>
             
             <TabsContent value="personal">
@@ -95,19 +85,9 @@ const UserSettings = () => {
               </div>
             </TabsContent>
 
-            <TabsContent value="appearance">
-              <AppearanceTab />
-            </TabsContent>
-
             <TabsContent value="tutorials">
               <TutorialsTab />
             </TabsContent>
-
-            {isAdmin && (
-              <TabsContent value="advanced">
-                <RAGConfigurationTab />
-              </TabsContent>
-            )}
           </Tabs>
         )}
       </div>

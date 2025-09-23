@@ -8,7 +8,7 @@ const supabase = createClient(
 
 // Use a OpenAI API key do projeto
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY || 'YOUR_OPENAI_API_KEY_HERE'
+  apiKey: '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'
 });
 
 // Implementação local do chunking hierárquico

@@ -182,9 +182,6 @@ export const SecureAuthService = {
         // Log successful login action
         await supabase.rpc('log_user_action', {
           action_name: 'user_login',
-          table_name: 'auth_sessions',
-          record_id: data.user.id,
-          old_values: {},
           new_values: { email: sanitizedEmail, login_time: new Date().toISOString() }
         });
         
@@ -279,9 +276,6 @@ export const SecureAuthService = {
         // Log successful signup action
         await supabase.rpc('log_user_action', {
           action_name: 'user_signup',
-          table_name: 'profiles',
-          record_id: data.user.id,
-          old_values: {},
           new_values: { email: sanitizedEmail, signup_time: new Date().toISOString() }
         });
         
@@ -311,16 +305,10 @@ export const SecureAuthService = {
       
       // Log logout action before cleanup
       try {
-        const session = await SecureAuthService.getCurrentSession();
-        if (session?.user) {
-          await supabase.rpc('log_user_action', {
-            action_name: 'user_logout',
-            table_name: 'auth_sessions',
-            record_id: session.user.id,
-            old_values: {},
-            new_values: { logout_time: new Date().toISOString() }
-          });
-        }
+        await supabase.rpc('log_user_action', {
+          action_name: 'user_logout',
+          new_values: { logout_time: new Date().toISOString() }
+        });
       } catch (logError) {
         console.error("Error logging logout:", logError);
       }

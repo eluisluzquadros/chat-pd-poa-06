@@ -1,4 +1,3 @@
-// @ts-nocheck
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -13,7 +12,6 @@ import { Play, Settings } from 'lucide-react';
 import { useQAValidator } from '@/hooks/useQAValidator';
 import { supabase } from '@/integrations/supabase/client';
 import { Progress } from '@/components/ui/progress';
-import { QAModelSelector } from '@/components/admin/QAModelSelector';
 import { UPDATED_MODEL_CONFIGS } from '@/config/llm-models-2025';
 
 interface ValidationOptions {
@@ -103,15 +101,7 @@ export function ValidationOptionsDialog({ onValidationComplete }: ValidationOpti
 
   const handleExecute = async () => {
     try {
-      await runValidation({
-        models: [options.model], // Pass as array for multi-model support
-        mode: options.mode,
-        categories: options.categories,
-        difficulties: options.difficulties,
-        randomCount: options.randomCount,
-        includeSQL: options.includeSQL,
-        excludeSQL: options.excludeSQL
-      });
+      await runValidation(options);
       setOpen(false);
       onValidationComplete?.();
     } catch (error) {
@@ -161,13 +151,22 @@ export function ValidationOptionsDialog({ onValidationComplete }: ValidationOpti
           </Card>
         ) : (
           <div className="space-y-6">
-            {/* Model Selection with new component */}
-            <QAModelSelector
-              selectedModel={options.model}
-              onModelSelect={(model) => setOptions(prev => ({ ...prev, model }))}
-              label="Modelo para Validação"
-              showCosts={true}
-            />
+            {/* Model Selection */}
+            <div className="space-y-3">
+              <Label className="text-base font-semibold">Modelo</Label>
+              <Select value={options.model} onValueChange={(value) => setOptions(prev => ({ ...prev, model: value }))}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {models.map(model => (
+                    <SelectItem key={model.value} value={model.value}>
+                      {model.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
             <Separator />
 

@@ -1,1 +1,0 @@
-import './scripts/test-edge-functions-critical.mjs';

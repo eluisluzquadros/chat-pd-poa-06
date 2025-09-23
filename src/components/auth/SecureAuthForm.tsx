@@ -4,13 +4,12 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { EyeIcon, EyeOffIcon, AlertTriangle } from 'lucide-react';
+import { EyeIcon, EyeOffIcon, Shield, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 import { AuthService } from '@/services/authService';
 import { useAuth } from '@/context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { useTheme } from "@/components/ui/theme-provider";
 
 interface SecureAuthFormProps {
   mode: 'login' | 'signup';
@@ -30,7 +29,6 @@ export const SecureAuthForm = ({ mode, onModeChange }: SecureAuthFormProps) => {
   
   const { refreshAuthState, isAuthenticated } = useAuth();
   const navigate = useNavigate();
-  const { theme } = useTheme();
 
   // Redirect if already authenticated
   useEffect(() => {
@@ -189,17 +187,11 @@ export const SecureAuthForm = ({ mode, onModeChange }: SecureAuthFormProps) => {
   return (
     <Card className="w-full max-w-md mx-auto">
       <CardHeader className="space-y-1">
-        <div className="flex items-center justify-center">
-          <div className="w-full max-w-[200px]">
-            <img 
-              src={theme === 'dark' 
-                ? "/lovable-uploads/9138fd22-514b-41ba-9317-fecb0bacad7d.png" 
-                : "/lovable-uploads/9c959472-19d4-4cc4-9f30-354a6c05be72.png"
-              } 
-              alt="Plano Diretor de Porto Alegre" 
-              className="w-full"
-            />
-          </div>
+        <div className="flex items-center justify-center space-x-2">
+          <Shield className="h-6 w-6 text-primary" />
+          <CardTitle className="text-2xl font-bold">
+            {mode === 'login' ? 'Entrar' : 'Criar Conta'}
+          </CardTitle>
         </div>
       </CardHeader>
       

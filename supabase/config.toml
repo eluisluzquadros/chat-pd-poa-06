@@ -1,25 +1,51 @@
 project_id = "ngrqwmvuhvjkeohesbxs"
 
+[api]
+enabled = true
+port = 54321
+
+[db]
+port = 54322
+
+[studio]
+enabled = true
+port = 54323
+
 [functions.agentic-rag]
 verify_jwt = true
 
-[functions.agentic-rag-dify]
+[functions.query-analyzer]
 verify_jwt = true
 
-[functions.chat]
+[functions.sql-generator]
 verify_jwt = true
 
-[functions.create-admin-user]
+[functions.enhanced-vector-search]
 verify_jwt = true
 
-[functions.multiLLMService]
+[functions.response-synthesizer]
 verify_jwt = true
 
-[functions.set-user-role]
+[functions.match-documents]
 verify_jwt = true
 
-[functions.test-connection]
-verify_jwt = false
+[functions.generate-text-embedding]
+verify_jwt = true
 
-[functions.test-rag-config]
+[functions.qa-validator]
+verify_jwt = true
+
+[functions.predefined-responses]
+verify_jwt = true
+
+[functions.qa-cleanup-runs]
+verify_jwt = true
+
+[functions.qa-batch-execution]
+verify_jwt = true
+
+[functions.qa-ingest-kb]
+verify_jwt = true
+
+[functions.run-benchmark]
 verify_jwt = false

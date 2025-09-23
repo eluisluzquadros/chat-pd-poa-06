@@ -46,7 +46,7 @@ const AuthPage = () => {
   
   return (
     <div className="min-h-screen flex flex-col" style={{
-      backgroundImage: "url('/lovable-uploads/fa2fb874-6389-4e4d-8e5d-0fb551bdbce0.png')",
+      backgroundImage: "url('/lovable-uploads/1edf50f1-3214-47b8-94d3-567d2ef0cf99.png')",
       backgroundSize: "cover",
       backgroundPosition: "center",
       backgroundRepeat: "no-repeat"

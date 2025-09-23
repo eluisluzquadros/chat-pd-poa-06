@@ -128,9 +128,8 @@ export function EditTestCaseDialog({ testCase, open, onOpenChange, onTestCaseUpd
       
     } catch (error) {
       console.error('Error updating test case:', error);
-      const anyErr = error as any;
-      const details = anyErr?.message || anyErr?.error || JSON.stringify(anyErr);
-      toast.error(`Falha ao atualizar caso de teste: ${details}`);
+      const errorMessage = error instanceof Error ? error.message : "Erro ao atualizar caso de teste";
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }

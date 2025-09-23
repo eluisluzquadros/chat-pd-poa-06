@@ -53,16 +53,16 @@ Execute os testes e veja:
 
 ```bash
 # Anthropic
-npx supabase secrets set ANTHROPIC_API_KEY="YOUR_ANTHROPIC_API_KEY" --project-ref ngrqwmvuhvjkeohesbxs
+npx supabase secrets set ANTHROPIC_API_KEY="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" --project-ref ngrqwmvuhvjkeohesbxs
 
 # Google Gemini
-npx supabase secrets set GEMINI_API_KEY="YOUR_GEMINI_API_KEY" --project-ref ngrqwmvuhvjkeohesbxs
+npx supabase secrets set GEMINI_API_KEY="AIzaSyCN1bC1e-uVBt8EjUvVEHLtGgCobXoUmZo" --project-ref ngrqwmvuhvjkeohesbxs
 
 # DeepSeek
-npx supabase secrets set DEEPSEEK_API_KEY="YOUR_DEEPSEEK_API_KEY" --project-ref ngrqwmvuhvjkeohesbxs
+npx supabase secrets set DEEPSEEK_API_KEY="sk-1db103e612104b119547d1130cc6c06d" --project-ref ngrqwmvuhvjkeohesbxs
 
 # ZhipuAI
-npx supabase secrets set ZHIPUAI_API_KEY="YOUR_ZHIPUAI_API_KEY" --project-ref ngrqwmvuhvjkeohesbxs
+npx supabase secrets set ZHIPUAI_API_KEY="99e0d72dacc94db18ab1bb56d5b1b2aa.AGKfhwZQVe7Ki8IO" --project-ref ngrqwmvuhvjkeohesbxs
 ```
 
 ### 4. Corrigir Mensagem de Erro

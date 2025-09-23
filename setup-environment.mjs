@@ -16,9 +16,9 @@ const PROJECT_REF = 'ngrqwmvuhvjkeohesbxs';
 // Variáveis de ambiente necessárias para as functions
 const ENV_TEMPLATE = {
   // Supabase Configuration
-  SUPABASE_URL: process.env.SUPABASE_URL || 'YOUR_SUPABASE_URL',
-  SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY || 'YOUR_ANON_KEY',
-  SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY || 'YOUR_SERVICE_ROLE_KEY',
+  SUPABASE_URL: 'https://ngrqwmvuhvjkeohesbxs.supabase.co',
+  SUPABASE_ANON_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5ncnF3bXZ1aHZqa2VvaGVzYnhzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM2MDkwMTcsImV4cCI6MjA2OTE4NTAxN30.K3uyyzjyAQ17ohQGCUFx_RiMufblLyQzvxEZHakqKrg',
+  SUPABASE_SERVICE_ROLE_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5ncnF3bXZ1aHZqa2VvaGVzYnhzIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1MzYwOTAxNywiZXhwIjoyMDY5MTg1MDE3fQ.7jVZP70RAjpfFPfehZt5Gr3vSxn8DZ3YyPJNjCwZXEo',
   
   // OpenAI Configuration (necessário para várias functions)
   OPENAI_API_KEY: 'sk-proj-XXXXXX', // Deve ser configurado manualmente

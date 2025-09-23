@@ -29,7 +29,6 @@ export function useChat(): UseChatHookReturn {
     handleNewChat,
     handleSelectSession,
     handleDeleteSession,
-    handleDeleteSessions,
     selectedModel,
     switchModel,
   } = chatOperations;
@@ -79,42 +78,46 @@ export function useChat(): UseChatHookReturn {
     
     const setupRealtime = async () => {
       try {
+        // Check if user is authenticated first
         const session = await getCurrentAuthenticatedSession();
-        if (!session?.user || !currentSessionId) {
+        if (!session?.user) {
+          console.log("No authenticated session, skipping real-time setup");
           return;
         }
         
+        // Set up real-time subscription
         channel = supabase
-          .channel(`chat-${currentSessionId}`)
+          .channel('chat-history-changes')
           .on(
             'postgres_changes',
             {
               event: '*',
               schema: 'public',
               table: 'chat_history',
-              filter: `session_id=eq.${currentSessionId}`,
+              filter: currentSessionId ? `session_id=eq.${currentSessionId}` : undefined,
             },
-            () => {
-              // Simpler callback without async operations
-              setTimeout(() => refreshChatHistory(), 100);
+            async (payload) => {
+              console.log('Received real-time update:', payload);
+              await refreshChatHistory();
             }
           )
-          .subscribe();
+          .subscribe((status: string) => {
+            console.log("Subscription status:", status);
+          });
       } catch (error) {
         console.error("Error setting up real-time subscription:", error);
       }
     };
     
-    if (currentSessionId) {
-      setupRealtime();
-    }
+    setupRealtime();
 
     return () => {
+      console.log('Cleaning up subscription');
       if (channel) {
         supabase.removeChannel(channel);
       }
     };
-  }, [currentSessionId]);
+  }, [currentSessionId, refreshChatHistory]);
 
   return {
     messages,
@@ -128,7 +131,6 @@ export function useChat(): UseChatHookReturn {
     handleNewChat,
     handleSelectSession,
     handleDeleteSession,
-    handleDeleteSessions,
     isConnectionError,
     selectedModel,
     switchModel,

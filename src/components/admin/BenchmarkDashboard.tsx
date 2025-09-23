@@ -1,19 +1,15 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { RefreshCw, Crown, Zap, DollarSign, TrendingUp, AlertCircle, Settings } from 'lucide-react';
+import { RefreshCw, Crown, Zap, DollarSign, TrendingUp, AlertCircle } from 'lucide-react';
 import { useBenchmark } from '@/hooks/useBenchmark';
 import { BenchmarkModelTable } from '@/components/admin/BenchmarkModelTable';
 import { BenchmarkCharts } from '@/components/admin/BenchmarkCharts';
 import { BenchmarkOptionsDialog } from './BenchmarkOptionsDialog';
 import { BenchmarkExecutionHistory } from './BenchmarkExecutionHistory';
-import { BenchmarkResultsDialog } from './BenchmarkResultsDialog';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
-import { SystemVersionIndicator } from './SystemVersionIndicator';
 
 export function BenchmarkDashboard() {
   const { 
@@ -28,58 +24,29 @@ export function BenchmarkDashboard() {
     isBenchmarkRunning
   } = useBenchmark();
 
-  const [showOptionsDialog, setShowOptionsDialog] = useState(false);
-  const [showResultsDialog, setShowResultsDialog] = useState(false);
-  const [selectedModelResults, setSelectedModelResults] = useState<any>(null);
-  const [detailedResults, setDetailedResults] = useState<any[]>([]);
-  const [loadingResults, setLoadingResults] = useState(false);
-
-  // Get real execution history from qa_benchmarks table
-  const [executionHistory, setExecutionHistory] = useState<any[]>([]);
-  
-  React.useEffect(() => {
-    const fetchExecutionHistory = async () => {
-      try {
-        const { data: benchmarks } = await supabase
-          .from('qa_benchmarks')
-          .select('*')
-          .order('timestamp', { ascending: false })
-          .limit(10);
-
-        if (benchmarks?.length) {
-          const history = benchmarks.map((benchmark: any, index: number) => ({
-            id: benchmark.id.toString(),
-            timestamp: benchmark.timestamp,
-            status: 'completed' as const,
-            modelsTested: Array.isArray(benchmark.summaries) ? benchmark.summaries.length : 0,
-            testCases: 5, // Default for now, can be extracted from benchmark metadata
-            avgQuality: Array.isArray(benchmark.summaries) ? 
-              benchmark.summaries.reduce((sum: number, s: any) => sum + (s.avgQualityScore || 0), 0) / benchmark.summaries.length : 0,
-            avgResponseTime: Array.isArray(benchmark.summaries) ? 
-              benchmark.summaries.reduce((sum: number, s: any) => sum + (s.avgResponseTime || 0), 0) / benchmark.summaries.length : 0,
-            duration: Math.floor(Math.random() * 300 + 120) // Estimate for now
-          }));
-          setExecutionHistory(history);
-        } else if (modelPerformance.length > 0) {
-          // Fallback with current data
-          setExecutionHistory([{
-            id: 'current',
-            timestamp: new Date().toISOString(),
-            status: 'completed' as const,
-            modelsTested: modelPerformance.length,
-            testCases: 5,
-            avgQuality: modelPerformance.reduce((acc, model) => acc + model.avgQualityScore, 0) / modelPerformance.length,
-            avgResponseTime: modelPerformance.reduce((acc, model) => acc + model.avgResponseTime, 0) / modelPerformance.length,
-            duration: Math.floor(modelPerformance.length * 45)
-          }]);
-        }
-      } catch (error) {
-        console.error('Error fetching execution history:', error);
-      }
-    };
-
-    fetchExecutionHistory();
-  }, [modelPerformance, metrics.totalBenchmarks]);
+  // Mock execution history data for now
+  const mockExecutions = [
+    {
+      id: '1',
+      timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+      status: 'completed' as const,
+      modelsTested: 3,
+      testCases: 5,
+      avgQuality: 87.5,
+      avgResponseTime: 2456,
+      duration: 180
+    },
+    {
+      id: '2', 
+      timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
+      status: 'completed' as const,
+      modelsTested: 5,
+      testCases: 5,
+      avgQuality: 84.2,
+      avgResponseTime: 3124,
+      duration: 245
+    }
+  ];
 
   if (error) {
     return (
@@ -114,12 +81,11 @@ export function BenchmarkDashboard() {
           <p className="text-muted-foreground">Monitore o desempenho comparativo dos modelos de IA</p>
         </div>
         <div className="flex gap-3">
-          <SystemVersionIndicator />
           <Button variant="outline" onClick={refetch} size="sm" disabled={isLoading || isBenchmarkRunning}>
             <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
             Atualizar
           </Button>
-          <BenchmarkOptionsDialog
+          <BenchmarkOptionsDialog 
             onExecute={executeBenchmark}
             isRunning={isBenchmarkRunning}
           />
@@ -254,66 +220,7 @@ export function BenchmarkDashboard() {
         </TabsContent>
 
         <TabsContent value="models" className="space-y-4">
-          <BenchmarkModelTable 
-            modelPerformance={modelPerformance} 
-            onViewResults={async (model) => {
-              setSelectedModelResults(model);
-              setLoadingResults(true);
-              setShowResultsDialog(true);
-              
-              try {
-                // Fetch detailed results with JOIN to get real questions and expected answers
-                const { data: validationResults, error } = await supabase
-                  .from('qa_validation_results')
-                  .select(`
-                    *,
-                    qa_test_cases!inner(
-                      id,
-                      query,
-                      question,
-                      expected_answer,
-                      expected_keywords,
-                      category,
-                      complexity
-                    )
-                  `)
-                  .eq('model', model.model)
-                  .order('created_at', { ascending: false })
-                  .limit(50);
-
-                if (error) {
-                  console.error('Error fetching detailed results:', error);
-                  toast.error('Erro ao carregar resultados detalhados');
-                  setDetailedResults([]);
-                } else {
-                  // Transform the data to match BenchmarkResult interface using utility functions
-                  const transformedResults = validationResults?.map((result: any) => {
-                    const testCase = result.qa_test_cases;
-                    
-                    return {
-                      testCaseId: result.test_case_id,
-                      question: testCase?.query || testCase?.question || `Caso de teste ${result.test_case_id}`,
-                      expectedAnswer: testCase?.expected_keywords?.length > 0 
-                        ? `Palavras-chave esperadas: ${testCase.expected_keywords.join(', ')}`
-                        : testCase?.expected_answer || 'Não especificada',
-                      actualAnswer: result.actual_answer || 'Nenhuma resposta',
-                      success: result.is_correct || false,
-                      accuracy: result.accuracy_score || 0,
-                      responseTime: result.response_time_ms || 0,
-                      error: result.error_details
-                    };
-                  }) || [];
-                  
-                  setDetailedResults(transformedResults);
-                }
-              } catch (error) {
-                console.error('Error fetching results:', error);
-                setDetailedResults([]);
-              } finally {
-                setLoadingResults(false);
-              }
-            }}
-          />
+          <BenchmarkModelTable models={modelPerformance} isLoading={isLoading} />
         </TabsContent>
 
         <TabsContent value="charts" className="space-y-4">
@@ -327,7 +234,7 @@ export function BenchmarkDashboard() {
 
         <TabsContent value="executions" className="space-y-4">
           <BenchmarkExecutionHistory 
-            executions={executionHistory}
+            executions={mockExecutions}
             isLoading={isLoading}
             onRefresh={refetch}
           />
@@ -365,30 +272,6 @@ export function BenchmarkDashboard() {
           </Card>
         </TabsContent>
       </Tabs>
-
-
-      {selectedModelResults && (
-        <BenchmarkResultsDialog
-          open={showResultsDialog}
-          onOpenChange={(open) => {
-            setShowResultsDialog(open);
-            if (!open) {
-              setDetailedResults([]);
-              setSelectedModelResults(null);
-            }
-          }}
-          model={selectedModelResults.model}
-          provider={selectedModelResults.provider}
-          results={detailedResults}
-          summary={{
-            totalTests: selectedModelResults.totalTests,
-            passedTests: Math.round(selectedModelResults.totalTests * (selectedModelResults.successRate / 100)),
-            avgQualityScore: selectedModelResults.avgQualityScore,
-            avgResponseTime: selectedModelResults.avgResponseTime,
-            successRate: selectedModelResults.successRate
-          }}
-        />
-      )}
     </div>
   );
 }

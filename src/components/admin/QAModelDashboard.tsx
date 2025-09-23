@@ -59,7 +59,7 @@ export function QAModelDashboard({ onRunComparison }: ModelDashboardProps) {
 
       // Process validation results
       if (validationStats) {
-        const modelGroups = validationStats.reduce((acc, result: any) => {
+        const modelGroups = validationStats.reduce((acc, result) => {
           if (!acc[result.model]) acc[result.model] = [];
           acc[result.model].push(result);
           return acc;

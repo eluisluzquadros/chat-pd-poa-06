@@ -62,7 +62,7 @@ export function QAExecutionHistory() {
         .limit(20);
 
       if (error) throw error;
-      setRuns((data as any) || []);
+      setRuns(data || []);
     } catch (error) {
       console.error('Error fetching runs:', error);
     } finally {
@@ -76,22 +76,22 @@ export function QAExecutionHistory() {
       const { data, error } = await supabase
         .from('qa_validation_results')
         .select('*')
-        .eq('validation_run_id', runId as any)
+        .eq('validation_run_id', runId)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
       
       // Get test case details separately - handle both string and number IDs
-      const testCaseIds = (data as any)?.map((r: any) => r.test_case_id).filter(Boolean) || [];
+      const testCaseIds = data?.map(r => r.test_case_id).filter(Boolean) || [];
       const { data: testCases } = await supabase
         .from('qa_test_cases')
         .select('id, question, expected_answer, category, difficulty')
-        .in('id', testCaseIds.map((id: any) => typeof id === 'string' ? parseInt(id) : id));
+        .in('id', testCaseIds.map(id => typeof id === 'string' ? parseInt(id) : id));
 
       // Merge results with test case data
-      const enrichedResults = (data as any)?.map((result: any) => ({
-        ...(result as any),
-        test_case: (testCases as any)?.find((tc: any) => tc.id.toString() === (result as any).test_case_id)
+      const enrichedResults = data?.map(result => ({
+        ...result,
+        test_case: testCases?.find(tc => tc.id.toString() === result.test_case_id)
       })) || [];
 
       setRunResults(enrichedResults);

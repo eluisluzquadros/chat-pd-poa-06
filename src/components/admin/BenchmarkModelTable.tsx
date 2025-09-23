@@ -8,26 +8,17 @@ import { ArrowUpDown, Crown, Zap, DollarSign } from 'lucide-react';
 import { ModelPerformance } from '@/hooks/useBenchmark';
 
 interface BenchmarkModelTableProps {
-  modelPerformance: {
-    provider: string;
-    model: string;
-    avgQualityScore: number;
-    avgResponseTime: number;
-    avgCostPerQuery: number;
-    successRate: number;
-    totalTests: number;
-    recommendation: string;
-  }[];
-  onViewResults?: (model: any) => void;
+  models: ModelPerformance[];
+  isLoading: boolean;
 }
 
-export function BenchmarkModelTable({ modelPerformance, onViewResults }: BenchmarkModelTableProps) {
+export function BenchmarkModelTable({ models, isLoading }: BenchmarkModelTableProps) {
   const [sortBy, setSortBy] = useState<'quality' | 'speed' | 'cost'>('quality');
   const [filterProvider, setFilterProvider] = useState<string>('all');
 
-  const providers = Array.from(new Set(modelPerformance.map(m => m.provider)));
+  const providers = Array.from(new Set(models.map(m => m.provider)));
 
-  const filteredModels = modelPerformance
+  const filteredModels = models
     .filter(model => filterProvider === 'all' || model.provider === filterProvider)
     .sort((a, b) => {
       switch (sortBy) {
@@ -42,12 +33,12 @@ export function BenchmarkModelTable({ modelPerformance, onViewResults }: Benchma
       }
     });
 
-  const getRecommendationBadge = (model: any, index: number) => {
+  const getRecommendationBadge = (model: ModelPerformance, index: number) => {
     // Best in each category badges
     const badges = [];
     
     // Check if it's the best in quality
-    const bestQuality = modelPerformance.reduce((best, current) => 
+    const bestQuality = models.reduce((best, current) => 
       current.avgQualityScore > best.avgQualityScore ? current : best
     );
     if (model.model === bestQuality.model) {
@@ -60,7 +51,7 @@ export function BenchmarkModelTable({ modelPerformance, onViewResults }: Benchma
     }
 
     // Check if it's the fastest
-    const fastest = modelPerformance.reduce((fast, current) => 
+    const fastest = models.reduce((fast, current) => 
       current.avgResponseTime < fast.avgResponseTime ? current : fast
     );
     if (model.model === fastest.model) {
@@ -73,7 +64,7 @@ export function BenchmarkModelTable({ modelPerformance, onViewResults }: Benchma
     }
 
     // Check if it's the most economical
-    const cheapest = modelPerformance.reduce((cheap, current) => 
+    const cheapest = models.reduce((cheap, current) => 
       current.avgCostPerQuery < cheap.avgCostPerQuery ? current : cheap
     );
     if (model.model === cheapest.model) {
@@ -118,15 +109,17 @@ export function BenchmarkModelTable({ modelPerformance, onViewResults }: Benchma
     return 'text-red-600';
   };
 
-  if (!modelPerformance || modelPerformance.length === 0) {
+  if (isLoading) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Nenhum modelo encontrado</CardTitle>
+          <CardTitle>Carregando modelos...</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-center py-8 text-muted-foreground">
-            Execute um benchmark primeiro para ver os resultados dos modelos.
+          <div className="space-y-4">
+            {[...Array(5)].map((_, i) => (
+              <div key={i} className="h-16 bg-muted animate-pulse rounded"></div>
+            ))}
           </div>
         </CardContent>
       </Card>
@@ -192,7 +185,6 @@ export function BenchmarkModelTable({ modelPerformance, onViewResults }: Benchma
               <TableHead className="text-center">Custo</TableHead>
               <TableHead className="text-center">Taxa Sucesso</TableHead>
               <TableHead>Recomendações</TableHead>
-              <TableHead>Ações</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -220,18 +212,6 @@ export function BenchmarkModelTable({ modelPerformance, onViewResults }: Benchma
                   <div className="flex flex-wrap gap-1">
                     {getRecommendationBadge(model, index)}
                   </div>
-                </TableCell>
-                <TableCell>
-                  {onViewResults && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => onViewResults(model)}
-                      className="text-xs"
-                    >
-                      Ver Respostas
-                    </Button>
-                  )}
                 </TableCell>
               </TableRow>
             ))}

@@ -1,2 +1,0 @@
--- Deploy the corrected response-synthesizer function
--- This will be deployed as a new edge function

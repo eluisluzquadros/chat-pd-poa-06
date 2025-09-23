@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { FeedbackDashboard } from "@/components/admin/FeedbackDashboard";
+import { FeedbackNotifications } from "@/components/admin/FeedbackNotifications";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { 
@@ -117,25 +118,9 @@ export default function FeedbackManagement() {
 
         {/* Main Content */}
         <div className="space-y-6">
-          {activeSection === 'dashboard' && (
-            <Alert>
-              <AlertTriangle className="h-4 w-4" />
-              <AlertDescription>
-                O Dashboard de Feedback está temporariamente desabilitado enquanto implementamos a nova arquitetura de agentes.
-                Esta funcionalidade será restaurada em breve.
-              </AlertDescription>
-            </Alert>
-          )}
+          {activeSection === 'dashboard' && <FeedbackDashboard />}
           
-          {activeSection === 'notifications' && (
-            <Alert>
-              <AlertTriangle className="h-4 w-4" />
-              <AlertDescription>
-                As Notificações de Feedback estão temporariamente desabilitadas enquanto implementamos a nova arquitetura de agentes.
-                Esta funcionalidade será restaurada em breve.
-              </AlertDescription>
-            </Alert>
-          )}
+          {activeSection === 'notifications' && <FeedbackNotifications />}
           
           {activeSection === 'settings' && (
             <Card>

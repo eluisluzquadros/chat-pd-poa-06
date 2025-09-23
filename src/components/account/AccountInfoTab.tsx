@@ -43,22 +43,20 @@ const AccountInfoTab = ({
         .from("profiles")
         .update({
           full_name: formValues.fullName,
-        } as any)
-        .eq("id", profile.id as any);
+          first_name: formValues.firstName,
+          last_name: formValues.lastName,
+        })
+        .eq("id", profile.id);
         
       if (error) throw error;
       
       // Also update user_accounts if it exists
-      const { error: userAccountError } = await supabase
+      await supabase
         .from("user_accounts")
         .update({
           full_name: formValues.fullName,
-        } as any)
-        .eq("user_id", profile.id as any);
-      
-      if (userAccountError) {
-        console.warn("Could not update user_accounts:", userAccountError);
-      }
+        })
+        .eq("user_id", profile.id);
       
       toast.success("Perfil atualizado com sucesso");
     } catch (error: any) {

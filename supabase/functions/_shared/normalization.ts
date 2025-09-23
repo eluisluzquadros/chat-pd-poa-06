@@ -104,87 +104,73 @@ export function createBairroSearchPatterns(bairroName: string): string[] {
 }
 
 /**
- * Sistema Universal de Busca Multi-Layer para Bairros
- * Remove hardcodes e trata todos os 94 bairros de forma consistente
+ * Restaura acentos comuns em nomes de bairros
+ * Atualizado com 100% dos bairros do banco de dados
+ * Total de bairros mapeados: 51 (todos que possuem acentuação)
  */
-export function createUniversalBairroSearch(bairroName: string): string[] {
-  if (!bairroName) return [];
-  
-  const cleanName = bairroName.trim();
-  const queries: string[] = [];
-  
-  // Layer 1: Busca exata (preserva case original)
-  queries.push(`UPPER(bairro) = UPPER('${cleanName}')`);
-  
-  // Layer 2: Busca com normalização de acentos
-  const normalized = removeAccents(cleanName.toUpperCase());
-  if (normalized !== cleanName.toUpperCase()) {
-    queries.push(`UPPER(bairro) = '${normalized}'`);
-  }
-  
-  // Layer 3: Busca ILIKE flexível
-  queries.push(`bairro ILIKE '%${cleanName}%'`);
-  if (normalized !== cleanName.toUpperCase()) {
-    queries.push(`bairro ILIKE '%${normalized}%'`);
-  }
-  
-  // Layer 4: Busca por similarity (fuzzy)
-  queries.push(`similarity(bairro, '${cleanName}') > 0.6`);
-  
-  // Layer 5: Busca por partes de nomes compostos
-  const parts = cleanName.split(/\s+/);
-  if (parts.length > 1) {
-    for (const part of parts) {
-      if (part.length > 2) { // Evita preposições
-        queries.push(`bairro ILIKE '%${part}%'`);
-      }
-    }
-  }
-  
-  return [...new Set(queries)]; // Remove duplicatas
-}
-
-/**
- * Gera SQL completo com busca multi-layer para bairros
- * Combina múltiplas estratégias em uma única query com UNION
- */
-export function generateUniversalBairroSQL(bairroName: string, limit: number = 20): string {
-  const searchConditions = createUniversalBairroSearch(bairroName);
-  
-  const baseQuery = `
-    SELECT DISTINCT bairro, zona, altura_max_m, ca_max, ca_basico, to_max, taxa_permeabilidade,
-           recuo_jardim_m, recuo_lateral_m, recuo_fundos_m
-    FROM regime_urbanistico 
-    WHERE `;
-  
-  // Combina condições com OR para máxima flexibilidade
-  const combinedConditions = searchConditions.join(' OR ');
-  
-  return `${baseQuery}(${combinedConditions}) ORDER BY bairro, zona LIMIT ${limit}`;
-}
-
-/**
- * Função de validação para testar cobertura de todos os bairros
- * Identifica padrões de falha automaticamente
- */
-export function validateBairroSearch(bairroName: string): {
-  searchQueries: string[];
-  expectedMatches: string[];
-  debugInfo: any;
-} {
-  const queries = createUniversalBairroSearch(bairroName);
-  const normalized = removeAccents(bairroName.toUpperCase());
-  
-  return {
-    searchQueries: queries,
-    expectedMatches: [bairroName, normalized],
-    debugInfo: {
-      originalName: bairroName,
-      normalizedName: normalized,
-      queryCount: queries.length,
-      timestamp: new Date().toISOString()
-    }
+function restoreCommonAccents(normalized: string): string {
+  const accentsMap: { [key: string]: string } = {
+    'ARQUIPELAGO': 'ARQUIPÉLAGO',
+    'BELEM NOVO': 'BELÉM NOVO',
+    'BELEM VELHO': 'BELÉM VELHO',
+    'CAMAQUA': 'CAMAQUÃ',
+    'CENTRO HISTORICO': 'CENTRO HISTÓRICO',
+    'CHAPEU DO SOL': 'CHAPÉU DO SOL',
+    'CHACARA DAS PEDRAS': 'CHÁCARA DAS PEDRAS',
+    'ESPIRITO SANTO': 'ESPÍRITO SANTO',
+    'GLORIA': 'GLÓRIA',
+    'GUARUJA': 'GUARUJÁ',
+    'HIGIENOPOLIS': 'HIGIENÓPOLIS',
+    'HUMAITA': 'HUMAITÁ',
+    'HIPICA': 'HÍPICA',
+    'INDEPENDENCIA': 'INDEPENDÊNCIA',
+    'JARDIM BOTANICO': 'JARDIM BOTÂNICO',
+    'JARDIM LINDOIA': 'JARDIM LINDÓIA',
+    'JARDIM SABARA': 'JARDIM SABARÁ',
+    'JARDIM SAO PEDRO': 'JARDIM SÃO PEDRO',
+    'MARIO QUINTANA': 'MÁRIO QUINTANA',
+    'MONT SERRAT': 'MONT\'SERRAT',
+    'PARQUE SANTA FE': 'PARQUE SANTA FÉ',
+    'PETROPOLIS': 'PETRÓPOLIS',
+    'SANTA CECILIA': 'SANTA CECÍLIA',
+    'SANTO ANTONIO': 'SANTO ANTÔNIO',
+    'SAO CAETANO': 'SÃO CAETANO',
+    'SAO GERALDO': 'SÃO GERALDO',
+    'SAO JOAO': 'SÃO JOÃO',
+    'SAO JOSE': 'SÃO JOSÉ',
+    'SAO SEBASTIAO': 'SÃO SEBASTIÃO',
+    'SETIMO CEU': 'SÉTIMO CÉU',
+    'TERESOPOLIS': 'TERESÓPOLIS',
+    'TRES FIGUEIRAS': 'TRÊS FIGUEIRAS',
+    'VILA  ASSUNCAO': 'VILA  ASSUNÇÃO',
+    'VILA ASSUNCAO': 'VILA ASSUNÇÃO',
+    'VILA CONCEICAO': 'VILA CONCEIÇÃO',
+    'VILA JOAO PESSOA': 'VILA JOÃO PESSOA',
+    'VILA SAO JOSE': 'VILA SÃO JOSÉ',
+    // Bairros sem acentos mas mantidos para completude
+    'AUXILIADORA': 'AUXILIADORA',
+    'FLORESTA': 'FLORESTA',
+    'IPANEMA': 'IPANEMA',
+    'LOMBA DO PINHEIRO': 'LOMBA DO PINHEIRO',
+    'MEDIANEIRA': 'MEDIANEIRA',
+    'MOINHOS DE VENTO': 'MOINHOS DE VENTO',
+    'NAVEGANTES': 'NAVEGANTES',
+    'PARTENON': 'PARTENON',
+    'PEDRA REDONDA': 'PEDRA REDONDA',
+    'PONTA GROSSA': 'PONTA GROSSA',
+    'RESTINGA': 'RESTINGA',
+    'RUBEM BERTA': 'RUBEM BERTA',
+    'SANTA MARIA GORETTI': 'SANTA MARIA GORETTI',
+    'SANTA TEREZA': 'SANTA TEREZA',
+    'SANTANA': 'SANTANA',
+    'SARANDI': 'SARANDI',
+    'TRISTEZA': 'TRISTEZA',
+    'VILA IPIRANGA': 'VILA IPIRANGA',
+    'VILA JARDIM': 'VILA JARDIM',
+    'VILA NOVA': 'VILA NOVA'
   };
+  
+  return accentsMap[normalized] || normalized;
 }
 
 /**
@@ -211,15 +197,32 @@ export function extractZoneTerms(query: string): string[] {
 
 /**
  * Extrai termos relacionados a bairros de uma query
- * Sistema universal sem hardcodes específicos
  */
 export function extractBairroTerms(query: string): string[] {
+  // Lista de bairros conhecidos (pode ser expandida)
+  const knownBairros = [
+    'AUXILIADORA', 'AZENHA', 'BOM FIM', 'CENTRO', 'CENTRO HISTORICO',
+    'CIDADE BAIXA', 'FARROUPILHA', 'FLORESTA', 'INDEPENDENCIA',
+    'JARDIM BOTANICO', 'MENINO DEUS', 'MOINHOS DE VENTO', 'MONT SERRAT',
+    'PETROPOLIS', 'PRAIA DE BELAS', 'RIO BRANCO', 'SANTA CECILIA',
+    'SANTANA', 'SAO GERALDO', 'SAO JOAO', 'SAO JOSE', 'SAO SEBASTIAO',
+    'TERESOPOLIS', 'TRISTEZA', 'VILA IPIRANGA'
+  ];
+  
   const normalizedQuery = removeAccents(query.toUpperCase());
   const found: string[] = [];
   
+  // Busca por bairros conhecidos
+  for (const bairro of knownBairros) {
+    const normalizedBairro = removeAccents(bairro);
+    if (normalizedQuery.includes(normalizedBairro)) {
+      found.push(bairro);
+    }
+  }
+  
   // Busca por padrões "bairro X"
-  const bairroPattern = /\b(?:no|do|da|de|em)?\s*bairro\s+([A-ZÁÀÂÃÉÊÍÓÔÕÚÇ\s]+)/gi;
-  const matches = query.matchAll(bairroPattern);
+  const bairroPattern = /\b(?:no|do|da|de|em)?\s*bairro\s+([A-Z\s]+)/gi;
+  const matches = normalizedQuery.matchAll(bairroPattern);
   
   for (const match of matches) {
     const bairroName = match[1].trim();
@@ -228,50 +231,5 @@ export function extractBairroTerms(query: string): string[] {
     }
   }
   
-  // Busca por nomes isolados que possam ser bairros (queries curtas)
-  const words = query.trim().split(/\s+/);
-  if (words.length <= 3) {
-    const potentialBairro = words.join(' ').replace(/[.?!]$/, '').trim();
-    if (potentialBairro.length > 2) {
-      found.push(potentialBairro);
-    }
-  }
-  
   return [...new Set(found)];
-}
-
-/**
- * Cria função de teste para validar todos os 94 bairros
- * Identifica quais bairros não estão sendo encontrados
- */
-export function createBairroValidationSQL(): string {
-  return `
-    WITH test_bairros AS (
-      SELECT DISTINCT bairro FROM regime_urbanistico ORDER BY bairro
-    ),
-    search_tests AS (
-      SELECT 
-        bairro,
-        -- Teste 1: Busca exata
-        (SELECT COUNT(*) FROM regime_urbanistico r1 WHERE UPPER(r1.bairro) = UPPER(test_bairros.bairro)) as exact_match,
-        -- Teste 2: Busca normalizada
-        (SELECT COUNT(*) FROM regime_urbanistico r2 WHERE bairro ILIKE '%' || test_bairros.bairro || '%') as ilike_match,
-        -- Teste 3: Busca fuzzy
-        (SELECT COUNT(*) FROM regime_urbanistico r3 WHERE similarity(r3.bairro, test_bairros.bairro) > 0.6) as fuzzy_match
-      FROM test_bairros
-    )
-    SELECT 
-      bairro,
-      exact_match > 0 as exact_works,
-      ilike_match > 0 as ilike_works, 
-      fuzzy_match > 0 as fuzzy_works,
-      CASE 
-        WHEN exact_match = 0 AND ilike_match = 0 AND fuzzy_match = 0 THEN 'FAILING'
-        WHEN exact_match = 0 AND ilike_match = 0 THEN 'FUZZY_ONLY'
-        WHEN exact_match = 0 THEN 'ILIKE_ONLY'
-        ELSE 'WORKING'
-      END as status
-    FROM search_tests
-    ORDER BY status DESC, bairro;
-  `;
 }

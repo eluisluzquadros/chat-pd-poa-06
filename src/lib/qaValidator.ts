@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { supabase } from "@/integrations/supabase/client";
 
 interface QAValidationOptions {
@@ -218,9 +217,6 @@ export class QAValidator {
   }
 
   private evaluateAnswer(actual: string, expected: string): boolean {
-    // This method is deprecated - use SmartQAValidator instead
-    console.warn('[QAValidator] Using deprecated evaluation method. Consider using SmartQAValidator for better accuracy.');
-    
     const actualLower = actual.toLowerCase().trim();
     const expectedLower = expected.toLowerCase().trim();
 

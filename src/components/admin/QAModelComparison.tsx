@@ -69,8 +69,8 @@ export function QAModelComparison() {
       const { data: runs, error: runsError } = await supabase
         .from('qa_validation_runs')
         .select('*')
-        .in('model', selectedModels as any)
-        .eq('status', 'completed' as any)
+        .in('model', selectedModels)
+        .eq('status', 'completed')
         .order('completed_at', { ascending: false });
 
       if (runsError) {
@@ -94,7 +94,7 @@ export function QAModelComparison() {
       
       for (const model of selectedModels) {
         try {
-          const modelRuns = (runs as any).filter((r: any) => r.model === model);
+          const modelRuns = runs.filter(r => r.model === model);
           if (modelRuns.length === 0) continue;
 
           // Get the most recent run for this model
@@ -104,7 +104,7 @@ export function QAModelComparison() {
           const { data: resultData } = await supabase
             .from('qa_validation_results')
             .select('is_correct, test_case_id')
-            .eq('validation_run_id', (latestRun as any).id);
+            .eq('validation_run_id', latestRun.id);
           
           const { data: testCaseData } = await supabase
             .from('qa_test_cases')
@@ -115,15 +115,15 @@ export function QAModelComparison() {
           if (resultData && testCaseData) {
             const categoryGroups: Record<string, { total: number; correct: number }> = {};
             
-            (resultData as any).forEach((result: any) => {
-              const testCase = (testCaseData as any)?.find((tc: any) => tc.id.toString() === result.test_case_id);
+            resultData.forEach(result => {
+              const testCase = testCaseData.find(tc => tc.id.toString() === result.test_case_id);
               const category = testCase?.category || 'unknown';
               
               if (!categoryGroups[category]) {
                 categoryGroups[category] = { total: 0, correct: 0 };
               }
               categoryGroups[category].total++;
-              if ((result as any).is_correct) {
+              if (result.is_correct) {
                 categoryGroups[category].correct++;
               }
             });
@@ -135,10 +135,10 @@ export function QAModelComparison() {
 
           metrics.push({
             model: model,
-            accuracy: ((latestRun as any).overall_accuracy || 0) * 100,
-            avgResponseTime: (latestRun as any).avg_response_time_ms || 0,
-            totalTests: (latestRun as any).total_tests || 0,
-            passedTests: (latestRun as any).passed_tests || 0,
+            accuracy: (latestRun.overall_accuracy || 0) * 100,
+            avgResponseTime: latestRun.avg_response_time_ms || 0,
+            totalTests: latestRun.total_tests || 0,
+            passedTests: latestRun.passed_tests || 0,
             costPerTest: modelCosts[model] || 0.001,
             categoryPerformance
           });

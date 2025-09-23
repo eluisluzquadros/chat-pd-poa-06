@@ -50,7 +50,7 @@ export function QAKnowledgeGaps() {
       const { data: latestRun } = await supabase
         .from('qa_validation_runs')
         .select('id')
-        .eq('status', 'completed' as any)
+        .eq('status', 'completed')
         .order('completed_at', { ascending: false })
         .limit(1)
         .single();
@@ -73,8 +73,8 @@ export function QAKnowledgeGaps() {
             tags
           )
         `)
-        .eq('validation_run_id', (latestRun as any).id)
-        .eq('is_correct', false as any)
+        .eq('validation_run_id', latestRun.id)
+        .eq('is_correct', false)
         .order('accuracy_score', { ascending: true });
 
       if (!failedResults || failedResults.length === 0) {
@@ -200,32 +200,17 @@ export function QAKnowledgeGaps() {
   const triggerKnowledgeUpdate = async (gap: KnowledgeGap) => {
     setAnalysisInProgress(true);
     try {
-      // Enhanced local analysis with more actionable insights
+      // Simplified knowledge update - just generate insights locally
+      // Since the edge function doesn't exist, we'll analyze locally
       const insights = generateLocalInsights(gap);
-      const recommendations = generateRecommendations(gap);
       
-      // Save insight to qa_learning_insights table
-      await supabase.from('qa_learning_insights').insert({
-        insight_type: 'knowledge_gap',
-        category: gap.category,
-        model: 'system',
-        insight_data: {
-          topic: gap.topic,
-          severity: gap.severity,
-          failed_tests_count: gap.failedTests.length,
-          avg_accuracy: gap.failedTests.reduce((sum, t) => sum + t.accuracy_score, 0) / gap.failedTests.length,
-          suggested_action: gap.suggestedAction,
-          failed_questions: gap.failedTests.map(t => t.question)
-        },
-        confidence_score: gap.severity === 'critical' ? 0.9 : gap.severity === 'high' ? 0.8 : 0.7
-      } as any);
+      toast.success("Análise local de conhecimento concluída");
       
-      toast.success("Gap de conhecimento registrado para ação");
-      
+      // Show results in a simple format
       setUpdateAnalysisData({
         insights,
         gap,
-        recommendations
+        recommendations: generateRecommendations(gap)
       });
       setShowUpdateDialog(true);
 

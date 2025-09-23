@@ -1,172 +1,242 @@
-#\!/usr/bin/env node
-
-/**
- * Script para testar automaticamente todos os casos de teste QA
- * Valida a nova base de conhecimento contra os 121 casos de teste
- */
-
-import { createClient } from "@supabase/supabase-js";
-import fetch from "node-fetch";
-import dotenv from "dotenv";
-import path from "path";
-import { fileURLToPath } from "url";
-import fs from "fs/promises";
+import { createClient } from '@supabase/supabase-js';
+import dotenv from 'dotenv';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
+import fs from 'fs';
 
 const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const __dirname = dirname(__filename);
 
-dotenv.config({ path: path.join(__dirname, "..", ".env.local") });
+// Load environment variables
+dotenv.config({ path: join(__dirname, '..', '.env.local') });
 
-const SUPABASE_URL = process.env.SUPABASE_URL;
-const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY;
-const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const supabaseUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
+if (!supabaseUrl || !supabaseServiceKey) {
+  console.error('❌ Missing environment variables');
+  process.exit(1);
+}
 
-class QATestRunner {
-  constructor() {
-    this.results = [];
-    this.stats = {
-      total: 0,
-      passed: 0,
-      failed: 0,
-      partial: 0,
-      avgConfidence: 0,
-      avgTime: 0,
-      categories: {}
-    };
+const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+async function testQACases() {
+  console.log('🧪 Testando Casos de QA\n');
+  console.log('=' .repeat(70));
+  
+  // Buscar todos os casos de teste ativos
+  const { data: testCases, error } = await supabase
+    .from('qa_test_cases')
+    .select('*')
+    .eq('is_active', true)
+    .order('id', { ascending: true });
+  
+  if (error) {
+    console.error('❌ Erro:', error);
+    return;
   }
-
-  calculateSimilarity(str1, str2) {
-    if (\!str1 || \!str2) return 0;
-    
-    const s1 = str1.toLowerCase().trim();
-    const s2 = str2.toLowerCase().trim();
-    
-    const keywords = ["zeis", "zot", "coeficiente", "altura", "outorga", "taxa", "ocupação", 
-                     "aproveitamento", "básico", "máximo", "metros", "pavimentos"];
-    
-    let keywordMatches = 0;
-    for (const keyword of keywords) {
-      if (s1.includes(keyword) && s2.includes(keyword)) {
-        keywordMatches++;
-      }
+  
+  console.log(`📊 Total de casos: ${testCases.length}\n`);
+  
+  // Testar uma amostra primeiro (10 casos de diferentes categorias)
+  const categories = [...new Set(testCases.map(tc => tc.category))];
+  const sample = [];
+  
+  // Pegar 1 caso de cada categoria
+  categories.forEach(cat => {
+    const casesInCat = testCases.filter(tc => tc.category === cat);
+    if (casesInCat.length > 0) {
+      sample.push(casesInCat[0]);
     }
-    
-    const words1 = s1.split(/\s+/);
-    const words2 = s2.split(/\s+/);
-    const commonWords = words1.filter(w => words2.includes(w));
-    const wordSimilarity = commonWords.length / Math.max(words1.length, words2.length);
-    
-    const keywordBonus = keywordMatches * 0.1;
-    return Math.min(1, wordSimilarity + keywordBonus);
-  }
-
-  async runTest(testCase) {
-    const startTime = Date.now();
+  });
+  
+  console.log(`🔍 Testando amostra de ${sample.length} casos (1 por categoria):\n`);
+  
+  const results = [];
+  let successCount = 0;
+  let partialCount = 0;
+  let failCount = 0;
+  
+  for (let i = 0; i < sample.length; i++) {
+    const tc = sample[i];
+    console.log(`\n[${i + 1}/${sample.length}] Categoria: ${tc.category}`);
+    console.log(`❓ "${tc.question}"`);
     
     try {
-      const response = await fetch(`${SUPABASE_URL}/functions/v1/agentic-rag`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
-        },
-        body: JSON.stringify({
-          query: testCase.question,
-          sessionId: "qa-test",
+      const startTime = Date.now();
+      
+      // Testar com o agentic-rag
+      const { data, error } = await supabase.functions.invoke('agentic-rag', {
+        body: {
+          message: tc.question,
+          model: 'openai/gpt-3.5-turbo',
           bypassCache: true
-        })
+        }
       });
-
-      const result = await response.json();
+      
       const executionTime = Date.now() - startTime;
       
-      const similarity = this.calculateSimilarity(result.response, testCase.expected_answer);
-      const passed = similarity >= 0.6;
-      
-      return {
-        id: testCase.id,
-        question: testCase.question,
-        category: testCase.category,
-        status: passed ? "passed" : "failed",
-        score: similarity,
-        confidence: result.confidence || 0,
-        executionTime
-      };
-      
-    } catch (error) {
-      return {
-        id: testCase.id,
-        question: testCase.question,
-        category: testCase.category,
-        status: "error",
-        error: error.message,
-        executionTime: Date.now() - startTime
-      };
-    }
-  }
-
-  async runAllTests(limit = 10) {
-    console.log("🚀 === TESTE AUTOMÁTICO DE QA ===");
-    console.log(`📅 ${new Date().toLocaleString("pt-BR")}\n`);
-    
-    const { data: testCases, error } = await supabase
-      .from("qa_test_cases")
-      .select("*")
-      .limit(limit);
-    
-    if (error) {
-      console.error("❌ Erro ao buscar casos de teste:", error);
-      return;
-    }
-    
-    console.log(`📝 ${testCases.length} casos de teste encontrados\n`);
-    
-    for (let i = 0; i < testCases.length; i++) {
-      const testCase = testCases[i];
-      process.stdout.write(`  ${i + 1}/${testCases.length} - ${testCase.question.substring(0, 40)}... `);
-      
-      const result = await this.runTest(testCase);
-      this.results.push(result);
-      
-      this.stats.total++;
-      if (result.status === "passed") {
-        this.stats.passed++;
-        process.stdout.write("✅\n");
-      } else {
-        this.stats.failed++;
-        process.stdout.write("❌\n");
+      if (error) {
+        console.log(`   ❌ Erro: ${error.message}`);
+        results.push({
+          id: tc.id,
+          category: tc.category,
+          question: tc.question,
+          status: 'error',
+          error: error.message
+        });
+        failCount++;
+        continue;
       }
       
-      await new Promise(resolve => setTimeout(resolve, 500));
+      if (!data || !data.response) {
+        console.log(`   ❌ Sem resposta`);
+        results.push({
+          id: tc.id,
+          category: tc.category,
+          question: tc.question,
+          status: 'no_response'
+        });
+        failCount++;
+        continue;
+      }
+      
+      // Comparar com a resposta esperada
+      const actualResponse = data.response.toLowerCase();
+      const expectedAnswer = tc.expected_answer.toLowerCase();
+      
+      // Extrair números e palavras-chave importantes
+      const expectedNumbers = expectedAnswer.match(/\d+(\.\d+)?/g) || [];
+      const expectedKeywords = ['altura', 'máxima', 'metros', 'coeficiente', 'aproveitamento', 
+                                'básico', 'máximo', 'zot', 'zona', 'bairro']
+        .filter(kw => expectedAnswer.includes(kw));
+      
+      // Verificar se a resposta contém os números esperados
+      const hasNumbers = expectedNumbers.length === 0 || 
+                        expectedNumbers.some(num => actualResponse.includes(num));
+      
+      // Verificar se a resposta contém palavras-chave
+      const hasKeywords = expectedKeywords.length === 0 ||
+                         expectedKeywords.filter(kw => actualResponse.includes(kw)).length >= expectedKeywords.length * 0.5;
+      
+      if (hasNumbers && hasKeywords) {
+        console.log(`   ✅ Resposta correta (${executionTime}ms)`);
+        successCount++;
+        results.push({
+          id: tc.id,
+          category: tc.category,
+          question: tc.question,
+          status: 'success',
+          executionTime
+        });
+      } else if (hasKeywords) {
+        console.log(`   ⚠️ Resposta parcialmente correta (${executionTime}ms)`);
+        console.log(`      Faltam números: ${expectedNumbers.filter(n => !actualResponse.includes(n))}`);
+        partialCount++;
+        results.push({
+          id: tc.id,
+          category: tc.category,
+          question: tc.question,
+          status: 'partial',
+          missingNumbers: expectedNumbers.filter(n => !actualResponse.includes(n))
+        });
+      } else {
+        console.log(`   ❌ Resposta incorreta (${executionTime}ms)`);
+        console.log(`      Esperado: "${tc.expected_answer.substring(0, 100)}..."`);
+        console.log(`      Recebido: "${data.response.substring(0, 100)}..."`);
+        failCount++;
+        results.push({
+          id: tc.id,
+          category: tc.category,
+          question: tc.question,
+          status: 'incorrect',
+          expected: tc.expected_answer.substring(0, 200),
+          actual: data.response.substring(0, 200)
+        });
+      }
+      
+      // Log trace para debug
+      if (data.agentTrace) {
+        console.log(`   📊 Trace: ${data.agentTrace.map(s => s.step).join(' → ')}`);
+      }
+      
+    } catch (err) {
+      console.error(`   ❌ Erro inesperado: ${err.message}`);
+      results.push({
+        id: tc.id,
+        category: tc.category,
+        question: tc.question,
+        status: 'exception',
+        error: err.message
+      });
+      failCount++;
+    }
+    
+    // Delay entre testes
+    await new Promise(resolve => setTimeout(resolve, 500));
+  }
+  
+  // Resumo
+  console.log('\n' + '=' .repeat(70));
+  console.log('📊 RESUMO DOS TESTES:\n');
+  console.log(`Total testado: ${sample.length}`);
+  console.log(`✅ Corretos: ${successCount} (${(successCount/sample.length*100).toFixed(1)}%)`);
+  console.log(`⚠️ Parciais: ${partialCount} (${(partialCount/sample.length*100).toFixed(1)}%)`);
+  console.log(`❌ Incorretos: ${failCount} (${(failCount/sample.length*100).toFixed(1)}%)`);
+  
+  // Análise por categoria
+  console.log('\n📂 Por Categoria:');
+  categories.forEach(cat => {
+    const catResults = results.filter(r => r.category === cat);
+    const catSuccess = catResults.filter(r => r.status === 'success').length;
+    console.log(`  ${cat}: ${catSuccess}/${catResults.length} corretos`);
+  });
+  
+  // Salvar relatório
+  const report = {
+    timestamp: new Date().toISOString(),
+    totalCases: testCases.length,
+    testedCases: sample.length,
+    results: {
+      success: successCount,
+      partial: partialCount,
+      fail: failCount
+    },
+    details: results
+  };
+  
+  fs.writeFileSync('qa-test-results.json', JSON.stringify(report, null, 2));
+  console.log('\n📄 Relatório salvo em: qa-test-results.json');
+  
+  // Identificar padrões de falha
+  console.log('\n🔍 PADRÕES DE FALHA:');
+  const failures = results.filter(r => r.status === 'incorrect' || r.status === 'partial');
+  if (failures.length > 0) {
+    console.log('Principais problemas identificados:');
+    
+    // Verificar se está falhando em queries numéricas
+    const numericFailures = failures.filter(f => 
+      f.question.toLowerCase().includes('altura') ||
+      f.question.toLowerCase().includes('índice') ||
+      f.question.toLowerCase().includes('coeficiente')
+    );
+    
+    if (numericFailures.length > 0) {
+      console.log(`  • Falha em queries numéricas: ${numericFailures.length} casos`);
+    }
+    
+    // Verificar se está falhando em queries de bairros
+    const bairroFailures = failures.filter(f => 
+      f.question.toLowerCase().includes('bairro') ||
+      f.question.toLowerCase().includes('zona')
+    );
+    
+    if (bairroFailures.length > 0) {
+      console.log(`  • Falha em queries de bairros/zonas: ${bairroFailures.length} casos`);
     }
   }
-
-  generateReport() {
-    console.log("\n\n📊 === RELATÓRIO FINAL ===\n");
-    
-    const passRate = (this.stats.passed / this.stats.total) * 100;
-    
-    console.log(`Total de testes: ${this.stats.total}`);
-    console.log(`✅ Passou: ${this.stats.passed} (${passRate.toFixed(1)}%)`);
-    console.log(`❌ Falhou: ${this.stats.failed}`);
-    
-    if (passRate >= 80) {
-      console.log("\n✅ EXCELENTE - Base de conhecimento está muito boa\!");
-    } else if (passRate >= 60) {
-      console.log("\n🟡 BOM - Base funcional mas precisa melhorias");
-    } else {
-      console.log("\n❌ CRÍTICO - Base precisa ser revista");
-    }
-  }
+  
+  return report;
 }
 
-// Executar testes
-async function main() {
-  const runner = new QATestRunner();
-  await runner.runAllTests(10); // Testar apenas 10 casos inicialmente
-  runner.generateReport();
-}
-
-main().catch(console.error);
+testQACases().catch(console.error);

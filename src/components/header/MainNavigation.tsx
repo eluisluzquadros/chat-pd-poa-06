@@ -1,67 +1,45 @@
 
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
-import { Users, FileText, MessageCircle, BarChart3, Shield, Database, Settings } from 'lucide-react';
+import { Users, FileText, MessageCircle, BarChart3, Shield } from 'lucide-react';
 
 export const MainNavigation = () => {
-  const navigate = useNavigate();
   const { isAdmin, isSupervisor } = useAuth();
 
   return (
     <nav>
       <ul className="flex items-center space-x-4">
         <li>
-          <button 
-            onClick={() => navigate('/chat')} 
-            className="hover:underline flex items-center cursor-pointer"
-          >
+          <Link to="/chat" className="hover:underline flex items-center">
             <MessageCircle className="h-4 w-4 mr-1" />
             Assistente
-          </button>
+          </Link>
         </li>
         
-        <li>
-          <button 
-            onClick={() => navigate('/explorar-dados')} 
-            className="hover:underline flex items-center cursor-pointer"
-          >
-            <Database className="h-4 w-4 mr-1" />
-            Explorar Dados
-          </button>
-        </li>
-        
-        {(isAdmin || isSupervisor) && (
+        {/* Links condicionais baseados no papel do usuário */}
+        {isSupervisor && !isAdmin && (
           <li>
-            <button 
-              onClick={() => navigate('/admin/dashboard')} 
-              className="hover:underline flex items-center cursor-pointer"
-            >
-              <BarChart3 className="h-4 w-4 mr-1" />
-              Dashboard
-            </button>
+            <Link to="/reports" className="hover:underline flex items-center">
+              <FileText className="h-4 w-4 mr-1" />
+              Relatórios
+            </Link>
           </li>
         )}
         
         {isAdmin && (
           <>
             <li>
-              <button 
-                onClick={() => navigate('/admin/users')} 
-                className="hover:underline flex items-center cursor-pointer"
-              >
-                <Users className="h-4 w-4 mr-1" />
-                Usuários
-              </button>
+              <Link to="/admin/dashboard" className="hover:underline flex items-center">
+                <BarChart3 className="h-4 w-4 mr-1" />
+                Dashboard
+              </Link>
             </li>
             <li>
-              <button 
-                onClick={() => navigate('/admin/agents-config')} 
-                className="hover:underline flex items-center cursor-pointer"
-              >
-                <Settings className="h-4 w-4 mr-1" />
-                Agentes
-              </button>
+              <Link to="/admin/users" className="hover:underline flex items-center">
+                <Users className="h-4 w-4 mr-1" />
+                Usuários
+              </Link>
             </li>
           </>
         )}

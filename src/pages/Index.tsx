@@ -1,5 +1,6 @@
 
 import { Header } from "@/components/Header";
+import { AuthSyncComponent } from "@/components/AuthSyncComponent";
 import { useAuth } from "@/context/AuthContext";
 import { Hero } from "@/components/home/Hero";
 import { Features } from "@/components/home/Features";
@@ -35,7 +36,8 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Authentication state is handled in AuthContext */}
+      {/* Include the AuthSyncComponent to sync authentication state */}
+      <AuthSyncComponent />
       
       <Header />
       
