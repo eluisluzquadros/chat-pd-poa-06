@@ -68,7 +68,7 @@ export class DifyAdapter implements IExternalAgentAdapter {
       const payload = {
         inputs: {},
         query: message,
-        response_mode: options.stream ? 'streaming' : 'blocking',
+        response_mode: 'blocking', // Forçar modo blocking para JSON response
         conversation_id: conversationId,
         user: options.userId || 'anonymous',
         auto_generate_name: false
@@ -88,7 +88,7 @@ export class DifyAdapter implements IExternalAgentAdapter {
         method: 'POST',
         headers,
         body: JSON.stringify(payload),
-        signal: AbortSignal.timeout(options.maxTokens || 30000)
+        signal: AbortSignal.timeout(30000) // 30 segundos para timeout da requisição
       });
 
       if (!response.ok) {

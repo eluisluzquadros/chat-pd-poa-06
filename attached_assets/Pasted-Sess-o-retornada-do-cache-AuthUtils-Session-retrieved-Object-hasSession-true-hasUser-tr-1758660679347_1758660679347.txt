@@ -1,0 +1,33 @@
+Sessão retornada do cache
+🔍 AuthUtils - Session retrieved: 
+Object {hasSession: true, hasUser: true, userId: "d430b2b5-130a-4e02-a8aa-35ee4e8362d5", isDemoMode: false}
+🔍 ChatService - AuthUtils check: 
+Object {hasSession: true, hasUser: true, userId: "d430b2b5-130a-4e02-a8aa-35ee4e8362d5", userRole: "admin"}
+✅ ChatService - Authentication successful: 
+Object {userId: "d430b2b5-130a-4e02-a8aa-35ee4e8362d5", email: "admin@chat-pd-poa.org", userRole: "admin", sessionId: "29462e4c-be98-4ae3-93e2-49dd664e44b7"}
+🚀 Starting External Agent processing...
+📋 Agent Parameters: 
+Object {message: "oi", model: "anthropic/claude-3-5-sonnet-20241022", sessionId: "29462e4c-be98-4ae3-93e2-49dd664e44b7", userId: "d430b2b5-130a-4e02-a8aa-35ee4e8362d5", userRole: "admin"}
+🤖 Selected agent: 
+Object {agentId: "71951dfc-1d78-47ca-8fd6-ac1d9a790602", agentName: "agentic_openai_gpt_4.1-mini", provider: "external", model: "custom-app"}
+🔧 ExternalAgentGateway.processMessage START: 
+Object {agentId: "71951dfc-1d78-47ca-8fd6-ac1d9a790602", agentName: "agentic_openai_gpt_4.1-mini", provider: "external", messageLength: 2, options: {…}, …}
+🔧 DifyAdapter.process START: 
+Object {agentId: "71951dfc-1d78-47ca-8fd6-ac1d9a790602", agentName: "agentic_openai_gpt_4.1-mini", messageLength: 2, baseUrl: "https://api.dify.ai", appId: "zQovDueLSzeH3s55"}
+🔧 DifyAdapter conversation mapping: 
+Object {sessionId: "29462e4c-be98-4ae3-93e2-49dd664e44b7", storedConversationId: undefined, isNewConversation: true, finalConversationId: ""}
+📡 DifyAdapter making request to: https://api.dify.ai/v1/chat-messages
+❌ DifyAdapter.process FAILED: 
+Object {agentId: "71951dfc-1d78-47ca-8fd6-ac1d9a790602", executionTime: 4001, error: "The user aborted a request."}
+
+❌ ExternalAgentGateway.processMessage FAILED: 
+Object {agentId: "71951dfc-1d78-47ca-8fd6-ac1d9a790602", executionTime: 4001, error: "The user aborted a request.", stack: undefined}
+
+❌ ChatService.processMessage FAILED: 
+Object {executionTime: 4228, userRole: "admin", sessionId: "29462e4c-be98-4ae3-93e2-49dd664e44b7", model: "anthropic/claude-3-5-sonnet-20241022", error: "The user aborted a request.", …}
+
+❌ [useMessageSubmit] Error in handleSubmit: 
+Object {error: "The user aborted a request.", stack: undefined, userRole: "admin", selectedModel: "anthropic/claude-3-5-sonnet-20241022", sessionId: null, …}
+
+DOMException {code: 20, name: "AbortError", message: "The user aborted a request.", INDEX_SIZE_ERR: 1, DOMSTRING_SIZE_ERR: 2, …}
+
