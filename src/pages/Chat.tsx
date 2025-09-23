@@ -6,6 +6,7 @@ import { AppSidebar } from "@/components/chat/AppSidebar";
 import { ChatMain } from "@/components/chat/ChatMain";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { useAgentSelection } from "@/hooks/chat/useAgentSelection";
+import { useEffect } from "react";
 
 export default function Chat() {
   const {
@@ -20,6 +21,7 @@ export default function Chat() {
     handleSelectSession,
     handleDeleteSession,
     handleDeleteSessions,
+    switchModel, // Adicionar para sincronizar com agente selecionado
   } = useChat();
 
   const {
@@ -28,6 +30,14 @@ export default function Chat() {
     getSelectedAgentData,
     isLoading: agentLoading
   } = useAgentSelection();
+
+  // Sincronizar agente selecionado com sistema de modelos
+  useEffect(() => {
+    if (selectedAgent) {
+      console.log('🔄 [Chat] Sincronizando agente selecionado:', selectedAgent);
+      switchModel(selectedAgent); // Usar ID do agente como modelo
+    }
+  }, [selectedAgent, switchModel]);
 
   return (
     <SimpleAuthGuard>
