@@ -192,8 +192,8 @@ export class DifyAdapter implements IExternalAgentAdapter {
   // Método para gerar configuração exemplo do Dify
   static getExampleConfig() {
     return {
-      base_url: 'https://api.dify.ai/v1',
-      service_api_endpoint: '/chat-messages',
+      base_url: 'https://api.dify.ai',
+      service_api_endpoint: '/api/chat-messages',
       api_key: 'app-xxxxxxxxxxxxxxxxxxxxxxxx',
       app_id: 'app-xxxxxxxxxxxxxxxxxxxxxxxx',
       public_url: 'https://api.dify.ai',

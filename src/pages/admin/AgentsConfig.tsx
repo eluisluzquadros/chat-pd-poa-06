@@ -52,8 +52,8 @@ interface AgentFormData {
 
 // Configuração padrão da API externa
 const defaultApiConfig: ApiConfig = {
-  base_url: 'https://api.dify.ai/v1',
-  service_api_endpoint: '/chat-messages',
+  base_url: 'https://api.dify.ai',
+  service_api_endpoint: '/api/chat-messages',
   api_key: 'app-0sZewWe2Z6pcucR70tyO8uKv',
   app_id: 'app-0sZewWe2Z6pcucR70tyO8uKv',
   public_url: 'https://api.dify.ai',
@@ -153,8 +153,8 @@ export default function AgentsConfig() {
       switch (provider) {
         case 'dify':
           newApiConfig = {
-            base_url: 'https://api.dify.ai/v1',
-            service_api_endpoint: '/chat-messages',
+            base_url: 'https://api.dify.ai',
+            service_api_endpoint: '/api/chat-messages',
             api_key: '',
             app_id: '',
             public_url: 'https://api.dify.ai',
