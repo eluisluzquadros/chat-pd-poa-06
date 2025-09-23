@@ -16,11 +16,15 @@ This is a React-based chat application for Porto Alegre's urban planning regulat
 - **Supabase**: Pre-configured with hardcoded credentials
 
 ## Current State
-- ✅ Dependencies installed successfully
+- ✅ **TRANSFORMED TO EXTERNAL AGENT HUB** 
+- ✅ External Agent Gateway implemented (Dify, Langflow, CrewAI)
+- ✅ All persistence maintained in Supabase (conversations, users, auth, tests)
+- ✅ Admin Playground for isolated agent testing
+- ✅ Settings Advanced Configuration with default agent selection
+- ✅ Quality/Benchmark modules integrated with external agents
+- ✅ Legacy edge functions cleanup completed
 - ✅ Vite development server running on port 5000
-- ✅ Supabase integration working
-- ✅ Authentication system initialized
-- ✅ RAG system active
+- ✅ Authentication system functional
 - ✅ Deployment configuration set up
 
 ## Workflows
@@ -31,8 +35,12 @@ This is a React-based chat application for Porto Alegre's urban planning regulat
 - **Build**: `npm run build`
 - **Run**: `npm run preview`
 
-## Notes
-- This is a complex application with many features for urban planning regulations
-- The app appears to be in Portuguese and focuses on Porto Alegre's urban planning
-- Authentication is required to access most features
-- The system includes admin dashboards, quality testing, and various AI-powered features
+## Architecture Notes
+- **MAJOR TRANSFORMATION COMPLETED**: Platform now serves as frontend hub for external agents
+- **Data Persistence**: ALL data (conversations, users, auth, test histories, configurations) remains in Supabase
+- **AI Processing**: Moved from internal edge functions to external agents (Dify, Langflow, CrewAI)
+- **Admin Features**: Isolated playground for agent testing, advanced configuration settings
+- **Quality/Benchmark**: Integrated with external agents while maintaining Supabase persistence
+- Application in Portuguese focusing on Porto Alegre's urban planning regulations
+- Authentication required for full feature access
+- Robust fallback system maintains functionality when external agents unavailable
