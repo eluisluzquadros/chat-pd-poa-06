@@ -32,7 +32,7 @@ export class DifyAdapter implements IExternalAgentAdapter {
       const { base_url, service_api_endpoint, api_key, app_id } = agent.api_config!;
       
       // Construir URL do endpoint
-      const endpoint = service_api_endpoint || '/api/chat-messages';
+      const endpoint = service_api_endpoint || '/v1/chat-messages';
       const url = `${base_url}${endpoint}`;
 
       // Preparar payload para Dify
@@ -192,12 +192,12 @@ export class DifyAdapter implements IExternalAgentAdapter {
   // Método para gerar configuração exemplo do Dify
   static getExampleConfig() {
     return {
-      base_url: 'https://cloud.dify.ai',
-      service_api_endpoint: '/api/chat-messages',
+      base_url: 'https://api.dify.ai',
+      service_api_endpoint: '/v1/chat-messages',
       api_key: 'app-xxxxxxxxxxxxxxxxxxxxxxxx',
       app_id: 'app-xxxxxxxxxxxxxxxxxxxxxxxx',
-      public_url: 'https://cloud.dify.ai',
-      server_url: 'https://cloud.dify.ai'
+      public_url: 'https://udify.app/chat/XXXXX',
+      server_url: 'https://api.dify.ai'
     };
   }
 
