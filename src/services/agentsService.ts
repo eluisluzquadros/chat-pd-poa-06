@@ -117,6 +117,40 @@ export class AgentsService {
     };
   }
 
+  async setDefaultAgent(agentId: string): Promise<void> {
+    console.log(`🎯 [AgentsService] Definindo agente ${agentId} como padrão`);
+    
+    try {
+      // Primeiro, remove o flag de default de todos os agentes
+      const { error: clearError } = await supabase
+        .from('dify_agents')
+        .update({ is_default: false })
+        .eq('is_default', true);
+
+      if (clearError) {
+        console.error('Erro ao limpar agentes padrão:', clearError);
+        throw clearError;
+      }
+
+      // Depois, define o agente especificado como padrão
+      const { error: setError } = await supabase
+        .from('dify_agents')
+        .update({ is_default: true })
+        .eq('id', agentId)
+        .eq('is_active', true);
+
+      if (setError) {
+        console.error('Erro ao definir agente padrão:', setError);
+        throw setError;
+      }
+
+      console.log(`✅ [AgentsService] Agente ${agentId} definido como padrão com sucesso`);
+    } catch (error) {
+      console.error('Erro ao definir agente padrão:', error);
+      throw error;
+    }
+  }
+
   async createAgent(agentData: CreateAgentData): Promise<Agent> {
     console.log('🔧 Criando agente:', agentData);
     
