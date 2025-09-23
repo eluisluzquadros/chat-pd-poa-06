@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Delete Function</title>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <h2>Teste da Função de Deletar Conversas</h2>
+    <div id="status"></div>
+    
+    <button onclick="testFunction()">Testar Função delete_chat_session_atomic</button>
+    <button onclick="listSessions()">Listar Sessões</button>
+    
+    <script>
+        const SUPABASE_URL = "https://ngrqwmvuhvjkeohesbxs.supabase.co";
+        const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5ncnF3bXZ1aHZqa2VvaGVzYnhzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM2MDkwMTcsImV4cCI6MjA2OTE4NTAxN30.K3uyyzjyAQ17ohQGCUFx_RiMufblLyQzvxEZHakqKrg";
+        
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        
+        function log(message) {
+            console.log(message);
+            document.getElementById('status').innerHTML += '<div>' + JSON.stringify(message) + '</div>';
+        }
+        
+        async function testFunction() {
+            log('=== TESTE DA FUNÇÃO DELETE ===');
+            
+            try {
+                // 1. Verificar se função existe
+                log('1. Verificando se a função delete_chat_session_atomic existe...');
+                
+                const { data: functions, error: funcError } = await supabase
+                    .from('information_schema.routines')
+                    .select('routine_name')
+                    .eq('routine_name', 'delete_chat_session_atomic');
+                
+                if (funcError) {
+                    log('❌ Erro ao verificar função: ' + JSON.stringify(funcError));
+                } else {
+                    log('✅ Verificação da função: ' + JSON.stringify(functions));
+                    if (functions.length === 0) {
+                        log('❌ FUNÇÃO NÃO ENCONTRADA! delete_chat_session_atomic não existe no banco');
+                        return;
+                    }
+                }
+                
+                // 2. Testar com UUID inválido (deve retornar erro específico)
+                log('2. Testando função com UUID inválido...');
+                const testUuid = '00000000-0000-0000-0000-000000000000';
+                
+                const { data: testResult, error: testError } = await supabase
+                    .rpc('delete_chat_session_atomic', {
+                        session_id_param: testUuid
+                    });
+                
+                if (testError) {
+                    log('❌ Erro RPC: ' + JSON.stringify(testError));
+                } else {
+                    log('✅ Resposta da função: ' + JSON.stringify(testResult));
+                }
+                
+            } catch (error) {
+                log('❌ Erro completo: ' + JSON.stringify(error));
+            }
+        }
+        
+        async function listSessions() {
+            log('=== LISTANDO SESSÕES ===');
+            
+            try {
+                const { data: sessions, error } = await supabase
+                    .from('chat_sessions')
+                    .select('id, title, created_at, user_id')
+                    .limit(5);
+                
+                if (error) {
+                    log('❌ Erro ao listar sessões: ' + JSON.stringify(error));
+                } else {
+                    log('✅ Sessões encontradas: ' + JSON.stringify(sessions));
+                }
+            } catch (error) {
+                log('❌ Erro: ' + JSON.stringify(error));
+            }
+        }
+        
+        // Auto-executar teste ao carregar
+        window.onload = function() {
+            log('Página carregada. Clique nos botões para testar.');
+        };
+    </script>
+</body>
+</html>
