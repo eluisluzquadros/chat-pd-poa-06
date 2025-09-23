@@ -7,9 +7,10 @@ interface AgenticV2ResponseRendererProps {
   isAgenticV2?: boolean;
   isAdmin?: boolean;
   isTestMode?: boolean;
+  agentName?: string; // Nome do agente para exibir na tag
 }
 
-export function AgenticV2ResponseRenderer({ content, isAgenticV2 = false, isAdmin = false, isTestMode = false }: AgenticV2ResponseRendererProps) {
+export function AgenticV2ResponseRenderer({ content, isAgenticV2 = false, isAdmin = false, isTestMode = false, agentName }: AgenticV2ResponseRendererProps) {
   // Apply consistent markdown processing for all responses
   const htmlContent = parseMarkdown(content);
 
@@ -18,7 +19,7 @@ export function AgenticV2ResponseRenderer({ content, isAgenticV2 = false, isAdmi
       {isAgenticV2 && isAdmin && (
         <div className="flex items-center gap-2 mb-3">
           <Badge variant="outline" className="bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300">
-            agentic-rag-v2
+            {agentName || 'agentic-rag-v2'}
           </Badge>
           {isTestMode && (
             <Badge variant="secondary" className="bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300">

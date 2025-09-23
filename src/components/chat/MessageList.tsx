@@ -8,6 +8,7 @@ import { MessageContent } from "./MessageContent";
 import { AgenticV2ResponseRenderer } from "./AgenticV2ResponseRenderer";
 import { cn } from "@/lib/utils";
 import { useRAGMode } from "@/hooks/useRAGMode";
+import { useAgents } from "@/hooks/useAgents";
 
 import { useAuth } from "@/context/AuthContext";
 
@@ -25,9 +26,24 @@ export const MessageList = memo(function MessageList({
   const { toast } = useToast();
   const { ragMode } = useRAGMode();
   const { isAdmin } = useAuth();
+  const { agents } = useAgents(); // Para buscar nomes dos agentes
   
   // Always use external AI agents now
   const effectiveConfig = { ragMode: 'dify', isTestMode: false };
+
+  // Função para buscar nome do agente pelo ID/model
+  const getAgentDisplayName = (model?: string) => {
+    if (!model || !agents) return 'agentic-rag-v2';
+    
+    // Buscar agente pelo ID (model contém o ID do agente)
+    const agent = agents.find(a => a.id === model);
+    if (agent) {
+      return agent.display_name || agent.name;
+    }
+    
+    // Fallback para o valor original
+    return 'agentic-rag-v2';
+  };
   const scrollRef = useRef<HTMLDivElement>(null);
   const isAutoScrollEnabled = useRef(true);
 
@@ -114,6 +130,7 @@ export const MessageList = memo(function MessageList({
                           isAgenticV2={true}
                           isAdmin={isAdmin}
                           isTestMode={effectiveConfig.isTestMode}
+                          agentName={getAgentDisplayName(message.model)}
                         />
                      ) : (
                         <MessageContent 
