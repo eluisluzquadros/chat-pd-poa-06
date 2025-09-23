@@ -87,11 +87,17 @@ export class ChatService {
       let selectedAgent = null;
       
       if (model) {
-        // Se model foi especificado, tentar buscar agente por nome ou modelo
-        selectedAgent = await agentsService.getAgentByName(model);
+        // Primeiro tentar buscar por ID (para Admin Playground e seleção específica)
+        const allAgents = await agentsService.getActiveAgents();
+        selectedAgent = allAgents.find(agent => agent.id === model);
+        
         if (!selectedAgent) {
-          // Buscar por modelo nas configurações dos agentes
-          const allAgents = await agentsService.getActiveAgents();
+          // Se não encontrou por ID, tentar por nome
+          selectedAgent = await agentsService.getAgentByName(model);
+        }
+        
+        if (!selectedAgent) {
+          // Se não encontrou por nome, tentar por modelo
           selectedAgent = allAgents.find(agent => agent.model === model);
         }
       }

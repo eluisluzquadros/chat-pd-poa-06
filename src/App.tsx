@@ -21,6 +21,7 @@ import TestQACases from "./pages/admin/TestQACases";
 import ManualQATest from "./pages/admin/ManualQATest";
 import FeedbackManagement from "./pages/admin/FeedbackManagement";
 import AgentsConfig from "./pages/admin/AgentsConfig";
+import AdminPlayground from "./pages/admin/AdminPlayground";
 import UserSettings from "./pages/UserSettings";
 import Reports from "./pages/Reports";
 import BenchmarkV2 from "./pages/admin/BenchmarkV2";
@@ -174,6 +175,15 @@ function App() {
                   <SimpleRoleGuard adminOnly={true}>
                     <AdminErrorBoundary>
                       <AgentsConfig />
+                    </AdminErrorBoundary>
+                  </SimpleRoleGuard>
+                </SimpleAuthGuard>
+              } />
+              <Route path="/admin/playground" element={
+                <SimpleAuthGuard>
+                  <SimpleRoleGuard adminOnly={true}>
+                    <AdminErrorBoundary>
+                      <AdminPlayground />
                     </AdminErrorBoundary>
                   </SimpleRoleGuard>
                 </SimpleAuthGuard>

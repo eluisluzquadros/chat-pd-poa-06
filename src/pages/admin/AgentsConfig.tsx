@@ -20,21 +20,29 @@ import { Separator } from '@/components/ui/separator';
 import { AgentFormValidator } from '@/components/admin/AgentFormValidator';
 import { AgentPreview } from '@/components/admin/AgentPreview';
 
-// Modelos disponíveis - Configuráveis via plataformas externas
+// Plataformas e modelos disponíveis para agentes externos
+const PLATFORMS = [
+  { id: 'dify', name: 'Dify', description: 'Plataforma Dify para criação de aplicações AI' },
+  { id: 'langflow', name: 'Langflow', description: 'Framework visual para criação de fluxos LangChain' },
+  { id: 'crewai', name: 'CrewAI', description: 'Framework para múltiplos agentes AI colaborativos' },
+  { id: 'custom', name: 'Personalizado', description: 'API personalizada ou outro provedor' }
+];
+
 const MODELS = [
-  { id: 'custom-app', name: 'Aplicação Personalizada', category: 'custom', description: 'Aplicação customizada externa' },
-  { id: 'custom-workflow', name: 'Workflow Automatizado', category: 'custom', description: 'Workflow automatizado externo' },
-  { id: 'claude-3-5-sonnet-20241022', name: 'Claude 3.5 Sonnet', category: 'anthropic', description: 'Modelo avançado da Anthropic' },
-  { id: 'claude-3-5-haiku-20241022', name: 'Claude 3.5 Haiku', category: 'anthropic', description: 'Modelo rápido e eficiente' },
-  { id: 'gpt-5-nano-2025-08-07', name: 'GPT-5 Nano', category: 'openai', description: 'Versão compacta do GPT-5' },
+  { id: 'dify-app', name: 'Aplicação Dify', category: 'dify', description: 'Aplicação customizada no Dify' },
+  { id: 'dify-workflow', name: 'Workflow Dify', category: 'dify', description: 'Workflow automatizado no Dify' },
+  { id: 'langflow-flow', name: 'Fluxo Langflow', category: 'langflow', description: 'Fluxo criado no Langflow' },
+  { id: 'crewai-crew', name: 'Crew CrewAI', category: 'crewai', description: 'Múltiplos agentes do CrewAI' },
+  { id: 'claude-3-5-sonnet', name: 'Claude 3.5 Sonnet', category: 'anthropic', description: 'Modelo avançado da Anthropic' },
   { id: 'gpt-4o', name: 'GPT-4o', category: 'openai', description: 'GPT-4 otimizado' },
-  { id: 'gpt-4o-mini', name: 'GPT-4o Mini', category: 'openai', description: 'Versão econômica do GPT-4' },
+  { id: 'custom-api', name: 'API Personalizada', category: 'custom', description: 'Endpoint personalizado' },
 ];
 
 interface AgentFormData {
   name: string;
   display_name: string;
   description: string;
+  provider: string;
   model: string;
   is_active: boolean;
   is_default: boolean;
@@ -67,7 +75,8 @@ const defaultFormData: AgentFormData = {
   name: '',
   display_name: '',
   description: '',
-  model: 'custom-app',
+  provider: 'dify',
+  model: 'dify-app',
   is_active: true,
   is_default: false,
   api_config: defaultApiConfig,
@@ -105,7 +114,7 @@ export default function AgentsConfig() {
         name: formData.name,
         display_name: formData.display_name,
         description: formData.description || undefined,
-        provider: 'external', // Provider genérico para APIs externas
+        provider: formData.provider,
         model: formData.model,
         is_active: formData.is_active,
         is_default: formData.is_default,
@@ -135,12 +144,63 @@ export default function AgentsConfig() {
     }
   };
 
+  const handlePlatformChange = (provider: string) => {
+    setFormData(prev => {
+      // Atualizar configuração padrão baseada na plataforma
+      let newApiConfig = { ...defaultApiConfig };
+      let newModel = '';
+
+      switch (provider) {
+        case 'dify':
+          newApiConfig = {
+            base_url: 'https://api.dify.ai/v1',
+            service_api_endpoint: '/chat-messages',
+            api_key: '',
+            app_id: '',
+            public_url: 'https://api.dify.ai',
+            server_url: 'https://api.dify.ai'
+          };
+          newModel = 'dify-app';
+          break;
+        case 'langflow':
+          newApiConfig = {
+            base_url: 'https://api.langflow.org',
+            api_key: '',
+            workflow_id: '',
+            server_url: 'https://api.langflow.org'
+          };
+          newModel = 'langflow-flow';
+          break;
+        case 'crewai':
+          newApiConfig = {
+            base_url: 'https://api.crewai.com/v1',
+            api_key: '',
+            workflow_id: '',
+            server_url: 'https://api.crewai.com'
+          };
+          newModel = 'crewai-crew';
+          break;
+        default:
+          newModel = 'custom-api';
+          break;
+      }
+
+      return {
+        ...prev,
+        provider,
+        model: newModel,
+        api_config: newApiConfig
+      };
+    });
+  };
+
   const handleEdit = (agent: any) => {
     setEditingAgent(agent.id);
     setFormData({
       name: agent.name,
       display_name: agent.display_name,
       description: agent.description || '',
+      provider: agent.provider || 'dify',
       model: agent.model,
       is_active: agent.is_active,
       is_default: agent.is_default,
@@ -445,18 +505,53 @@ export default function AgentsConfig() {
                   </div>
                 </TooltipProvider>
 
+                <TooltipProvider>
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <Label htmlFor="provider">Plataforma *</Label>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <AlertCircle className="h-4 w-4 text-muted-foreground" />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Plataforma externa do agente (Dify, Langflow, CrewAI, etc.)</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </div>
+                    <Select value={formData.provider} onValueChange={handlePlatformChange}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione a plataforma" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {PLATFORMS.map(platform => (
+                          <SelectItem key={platform.id} value={platform.id}>
+                            <div className="flex flex-col">
+                              <span className="font-medium">{platform.name}</span>
+                              <span className="text-xs text-muted-foreground">{platform.description}</span>
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </TooltipProvider>
+
                 <div className="space-y-2">
-                  <Label htmlFor="model">Modelo</Label>
+                  <Label htmlFor="model">Modelo/Tipo</Label>
                   <Select
                     value={formData.model}
                     onValueChange={(value) => setFormData(prev => ({ ...prev, model: value }))}
                     required
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Selecione o modelo Dify" />
+                      <SelectValue placeholder="Selecione o modelo" />
                     </SelectTrigger>
                     <SelectContent>
-                      {MODELS.map((model) => (
+                      {MODELS.filter(model => 
+                        model.category === formData.provider || 
+                        (formData.provider === 'custom' && model.category === 'custom') ||
+                        (['anthropic', 'openai'].includes(model.category))
+                      ).map((model) => (
                         <SelectItem key={model.id} value={model.id}>
                           <div className="flex flex-col">
                             <span className="font-medium">{model.name}</span>

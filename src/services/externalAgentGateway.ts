@@ -52,26 +52,49 @@ export enum AgentPlatform {
 // Gateway principal para orquestração de agentes externos
 export class ExternalAgentGateway {
   private adapters = new Map<AgentPlatform, IExternalAgentAdapter>();
+  private initializationPromise: Promise<void> | null = null;
+  private initialized = false;
 
   constructor() {
-    // Registrar adapters disponíveis
-    this.registerAdapters();
+    // Inicializar adapters de forma assíncrona mas controlada
+    this.initializationPromise = this.registerAdapters();
   }
 
   private async registerAdapters(): Promise<void> {
     try {
-      // Import dinâmico para evitar problemas de circular dependencies
-      const { DifyAdapter } = await import('./adapters/difyAdapter');
-      const { LangflowAdapter } = await import('./adapters/langflowAdapter');
-      const { CrewAIAdapter } = await import('./adapters/crewaiAdapter');
+      // Import dinâmico dos adapters
+      const [
+        { DifyAdapter },
+        { LangflowAdapter }, 
+        { CrewAIAdapter }
+      ] = await Promise.all([
+        import('./adapters/difyAdapter'),
+        import('./adapters/langflowAdapter'),
+        import('./adapters/crewaiAdapter')
+      ]);
 
       this.adapters.set(AgentPlatform.DIFY, new DifyAdapter());
       this.adapters.set(AgentPlatform.LANGFLOW, new LangflowAdapter());
       this.adapters.set(AgentPlatform.CREWAI, new CrewAIAdapter());
 
+      this.initialized = true;
       console.log('✅ External Agent Adapters registered successfully');
     } catch (error) {
       console.error('❌ Failed to register adapters:', error);
+      this.initialized = false;
+      throw error;
+    }
+  }
+
+  // Garantir que o gateway está inicializado
+  private async ensureInitialized(): Promise<void> {
+    if (this.initializationPromise) {
+      await this.initializationPromise;
+      this.initializationPromise = null;
+    }
+    
+    if (!this.initialized || this.adapters.size === 0) {
+      throw new Error('External Agent Gateway not properly initialized');
     }
   }
 
@@ -83,12 +106,16 @@ export class ExternalAgentGateway {
   ): Promise<AgentProcessResponse> {
     const startTime = Date.now();
     
+    // Garantir que o gateway está inicializado
+    await this.ensureInitialized();
+    
     console.log(`🔧 ExternalAgentGateway.processMessage START:`, {
       agentId: agent.id,
       agentName: agent.name,
       provider: agent.provider,
       messageLength: message.length,
-      options
+      options,
+      adaptersCount: this.adapters.size
     });
 
     try {
@@ -145,6 +172,8 @@ export class ExternalAgentGateway {
   // Testar conexão com um agente específico
   async testConnection(agent: Agent): Promise<ConnectionTestResult> {
     try {
+      // Garantir que o gateway está inicializado
+      await this.ensureInitialized();
       const platform = this.detectPlatform(agent);
       const adapter = this.adapters.get(platform);
       
@@ -176,6 +205,8 @@ export class ExternalAgentGateway {
     const errors: string[] = [];
 
     try {
+      // Garantir que o gateway está inicializado
+      await this.ensureInitialized();
       // Verificar se tem API config
       if (!agent.api_config) {
         errors.push('API configuration is missing');
