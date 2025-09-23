@@ -36,11 +36,20 @@ export class DifyAdapter implements IExternalAgentAdapter {
       const url = `${base_url}${endpoint}`;
 
       // Preparar payload para Dify
+      // Validar UUID do sessionId - Dify espera UUIDs válidos ou string vazia
+      const validSessionId = this.validateUUID(options.sessionId) ? options.sessionId : '';
+      
+      console.log('🔧 DifyAdapter sessionId validation:', {
+        originalSessionId: options.sessionId,
+        isValidUUID: this.validateUUID(options.sessionId),
+        finalSessionId: validSessionId
+      });
+      
       const payload = {
         inputs: {},
         query: message,
         response_mode: options.stream ? 'streaming' : 'blocking',
-        conversation_id: options.sessionId || '',
+        conversation_id: validSessionId,
         user: options.userId || 'anonymous',
         auto_generate_name: false
       };
@@ -171,6 +180,13 @@ export class DifyAdapter implements IExternalAgentAdapter {
       const value = apiConfig[field];
       return value && typeof value === 'string' && value.trim().length > 0;
     });
+  }
+
+  // Validar se string é UUID válido (formato v4)
+  private validateUUID(uuid?: string): boolean {
+    if (!uuid || typeof uuid !== 'string') return false;
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    return uuidRegex.test(uuid);
   }
 
   // Método para gerar configuração exemplo do Dify

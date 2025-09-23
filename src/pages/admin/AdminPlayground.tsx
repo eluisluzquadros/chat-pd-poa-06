@@ -60,10 +60,11 @@ export default function AdminPlayground() {
       console.log(`🧪 [Admin Playground] Testing agent ${agentId} with message: ${message.substring(0, 50)}...`);
       
       // Usar o chatService mas em modo de teste (não salva no histórico)
+      // Usar sessionId vazio para permitir que o Dify crie um conversation_id válido automaticamente
       const result = await chatService.processMessage(
         message,
         'admin', // userRole
-        `playground-test-${Date.now()}`, // sessionId temporário
+        '', // sessionId vazio - Dify criará automaticamente
         agentId // model/agentId
       );
 
