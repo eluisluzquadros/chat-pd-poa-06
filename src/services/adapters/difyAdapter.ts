@@ -32,7 +32,7 @@ export class DifyAdapter implements IExternalAgentAdapter {
       const { base_url, service_api_endpoint, api_key, app_id } = agent.api_config!;
       
       // Construir URL do endpoint
-      const endpoint = service_api_endpoint || '/chat-messages';
+      const endpoint = service_api_endpoint || '/api/chat-messages';
       const url = `${base_url}${endpoint}`;
 
       // Preparar payload para Dify
