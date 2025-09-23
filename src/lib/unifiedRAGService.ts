@@ -5,6 +5,8 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { getRagEndpoint } from "@/config/rag-config";
+import { externalAgentGateway } from "@/services/externalAgentGateway";
+import { agentsService } from "@/services/agentsService";
 
 export interface RAGRequestOptions {
   message: string;
@@ -84,7 +86,159 @@ export class UnifiedRAGService {
   }
 
   /**
+   * Persist external agent execution to Supabase for Quality/Benchmark tracking
+   */
+  private async persistExternalAgentExecution(data: {
+    agentId: string;
+    agentName: string;
+    platform: string;
+    message: string;
+    response: string;
+    confidence: number;
+    executionTime: number;
+    userId?: string;
+    sessionId?: string;
+    userRole?: string;
+  }): Promise<void> {
+    try {
+      console.log(`💾 [UnifiedRAGService] Persisting external agent execution...`);
+      
+      // Usar estrutura da tabela agent_executions existente
+      const { error } = await supabase
+        .from('agent_executions')
+        .insert({
+          agent_type: `${data.platform}_external`,
+          user_id: data.userId || 'anonymous',
+          session_id: data.sessionId,
+          execution_time_ms: data.executionTime,
+          status: 'completed',
+          input_data: {
+            message: data.message,
+            agentId: data.agentId,
+            agentName: data.agentName,
+            platform: data.platform,
+            userRole: data.userRole
+          },
+          output_data: {
+            response: data.response,
+            confidence: data.confidence,
+            isExternalAgent: true,
+            source: 'external_agent_gateway'
+          }
+        });
+
+      if (error) {
+        console.warn(`⚠️ [UnifiedRAGService] Failed to persist execution (likely RLS):`, error);
+        // Não bloquear por falha na persistência - Quality/Benchmark ainda funcionarão
+      } else {
+        console.log(`✅ [UnifiedRAGService] External agent execution persisted successfully`);
+      }
+    } catch (error) {
+      console.warn(`⚠️ [UnifiedRAGService] Error persisting external agent execution:`, error);
+      // Não bloquear execução por falha na persistência
+    }
+  }
+
+  /**
+   * Call external agents through the External Agent Gateway
+   */
+  async callExternalAgent(options: RAGRequestOptions): Promise<any> {
+    const requestId = `ext_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    console.log(`🌐 [UnifiedRAGService] Starting external agent call - ID: ${requestId}`);
+    
+    try {
+      // Buscar agente por modelo especificado ou usar o padrão
+      let selectedAgent = null;
+      
+      if (options.model) {
+        const allAgents = await agentsService.getActiveAgents();
+        selectedAgent = allAgents.find(agent => 
+          agent.id === options.model || 
+          agent.name === options.model || 
+          agent.model === options.model
+        );
+      }
+      
+      if (!selectedAgent) {
+        selectedAgent = await agentsService.getDefaultAgent();
+      }
+      
+      if (!selectedAgent) {
+        throw new Error('Nenhum agente externo disponível');
+      }
+      
+      console.log(`🤖 [UnifiedRAGService] Using external agent: ${selectedAgent.display_name} (${selectedAgent.provider})`);
+      
+      // Chamar através do External Agent Gateway
+      const result = await externalAgentGateway.processMessage(
+        selectedAgent,
+        options.message,
+        {
+          sessionId: options.sessionId || `session-${Date.now()}`,
+          userId: options.userId || 'anonymous',
+          userRole: options.userRole || 'citizen'
+        }
+      );
+      
+      console.log(`✅ [UnifiedRAGService] External agent response received`);
+      
+      // Converter sources para formato esperado pelo legacy
+      const legacySources = Array.isArray(result.sources) 
+        ? { tabular: result.sources, conceptual: result.sources }
+        : result.sources || { tabular: [], conceptual: [] };
+      
+      // Criar resposta no formato esperado
+      const legacyResponse = {
+        response: result.response,
+        confidence: result.confidence || 0.8,
+        executionTime: result.executionTime || 0,
+        sources: legacySources,
+        selectedAgent: selectedAgent.display_name,
+        agentTrace: [{
+          type: selectedAgent.provider,
+          confidence: result.confidence || 0.8,
+          executionTime: result.executionTime || 0
+        }],
+        // Metadados para compatibilidade
+        metadata: {
+          ...result.metadata,
+          isExternalAgent: true,
+          platform: selectedAgent.provider,
+          agentId: selectedAgent.id
+        }
+      };
+      
+      // 🔄 PERSISTIR NO SUPABASE (manter compatibilidade com Quality/Benchmark)
+      try {
+        await this.persistExternalAgentExecution({
+          agentId: selectedAgent.id,
+          agentName: selectedAgent.display_name,
+          platform: selectedAgent.provider,
+          message: options.message,
+          response: result.response,
+          confidence: result.confidence || 0.8,
+          executionTime: result.executionTime || 0,
+          userId: options.userId,
+          sessionId: options.sessionId,
+          userRole: options.userRole
+        });
+        console.log(`💾 [UnifiedRAGService] External agent execution persisted to Supabase`);
+      } catch (persistError) {
+        console.warn(`⚠️ [UnifiedRAGService] Failed to persist external agent execution:`, persistError);
+        // Não bloquear a resposta por falha na persistência
+      }
+      
+      return legacyResponse;
+      
+    } catch (error) {
+      console.error(`❌ [UnifiedRAGService] External agent error:`, error);
+      throw error;
+    }
+  }
+
+  /**
    * Call the RAG system with unified parameters
+   * Now checks for external agents first, fallback to legacy
    */
   async callRAG(options: RAGRequestOptions): Promise<any> {
     const requestId = `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
@@ -102,6 +256,21 @@ export class UnifiedRAGService {
     console.log(`🎯 [UnifiedRAGService] Using endpoint: ${endpoint}`);
     console.log(`📝 [UnifiedRAGService] Query: "${options.message}"`);
     console.log(`🔧 [UnifiedRAGService] Request body:`, requestBody);
+    
+    // Primeiro tentar usar agentes externos se disponíveis
+    try {
+      console.log(`🔍 [UnifiedRAGService] Checking for external agents...`);
+      const activeAgents = await agentsService.getActiveAgents();
+      
+      if (activeAgents.length > 0) {
+        console.log(`🌐 [UnifiedRAGService] Found ${activeAgents.length} external agents, using External Agent Gateway`);
+        return await this.callExternalAgent(options);
+      } else {
+        console.log(`📡 [UnifiedRAGService] No external agents found, using legacy edge functions`);
+      }
+    } catch (externalError) {
+      console.warn(`⚠️ [UnifiedRAGService] External agent failed, fallback to legacy:`, externalError);
+    }
     
     const startTime = Date.now();
     
