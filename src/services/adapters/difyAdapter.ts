@@ -6,7 +6,21 @@ import {
   ConnectionTestResult 
 } from '../externalAgentGateway';
 
+/**
+ * DifyAdapter - Adapter para integração com a API Dify
+ * 
+ * Implementa mapeamento de conversações para resolver o erro "Conversation Not Exists":
+ * - Para novas conversações: envia conversation_id como string vazia ""
+ * - Dify retorna um conversation_id na resposta
+ * - Armazena o mapeamento: sessionId → dify_conversation_id
+ * - Para mensagens subsequentes: usa o dify_conversation_id armazenado
+ * 
+ * Isso resolve o problema onde enviávamos o sessionId UUID diretamente,
+ * mas Dify não reconhece UUIDs arbitrários como conversation_id válidos.
+ */
 export class DifyAdapter implements IExternalAgentAdapter {
+  // In-memory storage for session to Dify conversation mapping
+  private conversationMapping = new Map<string, string>();
   
   async process(
     agent: Agent, 
@@ -36,20 +50,26 @@ export class DifyAdapter implements IExternalAgentAdapter {
       const url = `${base_url}${endpoint}`;
 
       // Preparar payload para Dify
-      // Validar UUID do sessionId - Dify espera UUIDs válidos ou string vazia
-      const validSessionId = this.validateUUID(options.sessionId) ? options.sessionId : '';
+      // Implementar mapeamento de conversação: sessionId -> dify_conversation_id
+      const sessionId = options.sessionId || 'default';
+      const storedConversationId = this.conversationMapping.get(sessionId);
       
-      console.log('🔧 DifyAdapter sessionId validation:', {
-        originalSessionId: options.sessionId,
-        isValidUUID: this.validateUUID(options.sessionId),
-        finalSessionId: validSessionId
+      // Para novas conversações: usar string vazia
+      // Para conversações existentes: usar conversation_id armazenado
+      const conversationId = storedConversationId || '';
+      
+      console.log('🔧 DifyAdapter conversation mapping:', {
+        sessionId,
+        storedConversationId,
+        isNewConversation: !storedConversationId,
+        finalConversationId: conversationId
       });
       
       const payload = {
         inputs: {},
         query: message,
         response_mode: options.stream ? 'streaming' : 'blocking',
-        conversation_id: validSessionId,
+        conversation_id: conversationId,
         user: options.userId || 'anonymous',
         auto_generate_name: false
       };
@@ -79,11 +99,23 @@ export class DifyAdapter implements IExternalAgentAdapter {
       const data = await response.json();
       const executionTime = Date.now() - startTime;
 
+      // Armazenar conversation_id retornado pelo Dify para uso futuro
+      if (data.conversation_id && data.conversation_id !== conversationId) {
+        this.conversationMapping.set(sessionId, data.conversation_id);
+        console.log('💾 DifyAdapter stored conversation mapping:', {
+          sessionId,
+          difyConversationId: data.conversation_id,
+          wasNewConversation: !storedConversationId
+        });
+      }
+
       console.log('✅ DifyAdapter.process COMPLETE:', {
         agentId: agent.id,
         executionTime,
         hasResponse: !!data.answer,
-        responseLength: data.answer?.length || 0
+        responseLength: data.answer?.length || 0,
+        conversationId: data.conversation_id,
+        messageId: data.message_id
       });
 
       // Mapear resposta para formato padrão
@@ -187,6 +219,42 @@ export class DifyAdapter implements IExternalAgentAdapter {
     if (!uuid || typeof uuid !== 'string') return false;
     const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
     return uuidRegex.test(uuid);
+  }
+
+  // Métodos para gerenciar mapeamento de conversações
+  
+  /**
+   * Obtém o conversation_id do Dify para uma sessão específica
+   */
+  getStoredConversationId(sessionId: string): string | undefined {
+    return this.conversationMapping.get(sessionId);
+  }
+
+  /**
+   * Limpa o mapeamento de conversação para uma sessão específica
+   */
+  clearConversationMapping(sessionId: string): void {
+    this.conversationMapping.delete(sessionId);
+    console.log('🗑️ DifyAdapter cleared conversation mapping for session:', sessionId);
+  }
+
+  /**
+   * Limpa todos os mapeamentos de conversação
+   */
+  clearAllConversationMappings(): void {
+    const count = this.conversationMapping.size;
+    this.conversationMapping.clear();
+    console.log('🗑️ DifyAdapter cleared all conversation mappings:', { count });
+  }
+
+  /**
+   * Retorna estatísticas dos mapeamentos de conversação
+   */
+  getConversationMappingStats(): { totalSessions: number; sessions: string[] } {
+    return {
+      totalSessions: this.conversationMapping.size,
+      sessions: Array.from(this.conversationMapping.keys())
+    };
   }
 
   // Método para gerar configuração exemplo do Dify
