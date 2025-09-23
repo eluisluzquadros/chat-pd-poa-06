@@ -2,7 +2,8 @@
 import { supabase } from "@/integrations/supabase/client";
 import { getCurrentAuthenticatedSession } from "@/utils/authUtils";
 import { useTokenTracking } from "@/hooks/useTokenTracking";
-import { enhancedRAGService } from "@/services/enhancedRAGService";
+import { externalAgentGateway } from "@/services/externalAgentGateway";
+import { agentsService } from "@/services/agentsService";
 
 export class ChatService {
   async processMessage(
@@ -16,6 +17,12 @@ export class ChatService {
     sources: { tabular: number; conceptual: number };
     executionTime: number;
     usedFallback?: boolean;
+    selectedAgent?: {
+      id: string;
+      name: string;
+      provider: string;
+      model: string;
+    };
   }> {
     const startTime = Date.now();
     console.log('🔧 ChatService.processMessage START:', {
@@ -67,61 +74,68 @@ export class ChatService {
         sessionId
       });
 
-      console.log('🚀 Starting Agentic RAG processing...');
-      console.log('📋 RAG Parameters:', {
+      console.log('🚀 Starting External Agent processing...');
+      console.log('📋 Agent Parameters:', {
         message: message.substring(0, 100) + (message.length > 100 ? '...' : ''),
-        model: model || 'gpt-3.5-turbo',
+        model: model || 'default',
         sessionId: sessionId || `session_${Date.now()}`,
         userId: finalSession.user.id,
         userRole: userRole || 'citizen'
       });
 
-      // FALLBACK AUTOMÁTICO: Tentar Dify primeiro, depois local
-      console.log('🔥 Trying agentic-rag-dify first...');
+      // Determinar qual agente usar
+      let selectedAgent = null;
       
-      let ragResult = null;
-      let usedFallback = false;
-
-      try {
-        const { data: difyResult, error: difyError } = await supabase.functions.invoke('agentic-rag-dify', {
-          body: {
-            originalQuery: message,
-            user_role: userRole || 'citizen'
-          }
-        });
-
-        if (difyError || !difyResult || !difyResult.response) {
-          throw new Error(`Dify failed: ${difyError?.message || 'No response'}`);
+      if (model) {
+        // Se model foi especificado, tentar buscar agente por nome ou modelo
+        selectedAgent = await agentsService.getAgentByName(model);
+        if (!selectedAgent) {
+          // Buscar por modelo nas configurações dos agentes
+          const allAgents = await agentsService.getActiveAgents();
+          selectedAgent = allAgents.find(agent => agent.model === model);
         }
-
-        ragResult = difyResult;
-        console.log('✅ Using Dify (agentic-rag-dify) response');
-
-      } catch (difyError) {
-        console.warn('⚠️ Dify failed, falling back to local agentic-rag:', difyError);
-        usedFallback = true;
-
-        // FALLBACK: Usar agentic-rag local
-        const { data: localResult, error: localError } = await supabase.functions.invoke('agentic-rag', {
-          body: {
-            originalQuery: message,
-            user_role: userRole || 'citizen',
-            model: model || 'gpt-3.5-turbo',
-            sessionId: sessionId || `session_${Date.now()}`,
-            userId: finalSession.user.id
-          }
-        });
-
-        if (localError || !localResult || !localResult.response) {
-          throw new Error(`Both RAG systems failed - Dify: ${difyError.message}, Local: ${localError?.message || 'No response'}`);
-        }
-
-        ragResult = localResult;
-        console.log('✅ Using fallback local (agentic-rag) response');
+      }
+      
+      // Se não encontrou agente específico, usar o padrão
+      if (!selectedAgent) {
+        selectedAgent = await agentsService.getDefaultAgent();
+      }
+      
+      // Se ainda não tem agente, usar primeiro ativo disponível
+      if (!selectedAgent) {
+        const activeAgents = await agentsService.getActiveAgents();
+        selectedAgent = activeAgents[0];
+      }
+      
+      if (!selectedAgent) {
+        throw new Error('No active external agent available');
       }
 
+      console.log('🤖 Selected agent:', {
+        agentId: selectedAgent.id,
+        agentName: selectedAgent.name,
+        provider: selectedAgent.provider,
+        model: selectedAgent.model
+      });
+
+      // Processar via External Agent Gateway
+      const agentOptions = {
+        sessionId: sessionId || `session_${Date.now()}`,
+        userId: finalSession.user.id,
+        userRole: userRole || 'citizen',
+        temperature: selectedAgent.parameters?.temperature,
+        maxTokens: selectedAgent.parameters?.max_tokens,
+        stream: selectedAgent.parameters?.stream
+      };
+
+      const ragResult = await externalAgentGateway.processMessage(
+        selectedAgent,
+        message,
+        agentOptions
+      );
+
       if (!ragResult || !ragResult.response) {
-        throw new Error('No response from any AI agent');
+        throw new Error('No response from external agent');
       }
 
       const executionTime = Date.now() - startTime;
@@ -131,7 +145,8 @@ export class ChatService {
         hasResponse: !!ragResult.response,
         responseLength: ragResult.response?.length || 0,
         confidence: ragResult.confidence,
-        usedFallback
+        usedFallback: false,
+        selectedAgent: selectedAgent.name
       });
       
       return {
@@ -139,7 +154,13 @@ export class ChatService {
         confidence: ragResult.confidence || 0.85,
         sources: ragResult.sources || { tabular: 0, conceptual: 0 },
         executionTime: ragResult.executionTime || executionTime,
-        usedFallback // Indicador de que usou fallback
+        usedFallback: false, // Sempre false agora pois usamos agentes externos
+        selectedAgent: {
+          id: selectedAgent.id,
+          name: selectedAgent.name,
+          provider: selectedAgent.provider,
+          model: selectedAgent.model
+        }
       };
 
     } catch (error) {
@@ -162,12 +183,12 @@ export class ChatService {
             model,
             suggestedAction: 'Check user session and authentication state'
           });
-        } else if (error.message.includes('RAG system')) {
-          console.error('🔍 RAG System Error Details:', {
+        } else if (error.message.includes('external agent') || error.message.includes('agent')) {
+          console.error('🔍 External Agent Error Details:', {
             userRole,
             message: message.substring(0, 100),
             model,
-            suggestedAction: 'Check RAG endpoint and API keys'
+            suggestedAction: 'Check agent configuration and API keys'
           });
         }
       }
