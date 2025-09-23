@@ -126,10 +126,10 @@ export class DifyAdapter implements IExternalAgentAdapter {
         };
       }
 
-      const { base_url, api_key } = agent.api_config!;
+      const { base_url, api_key, app_id } = agent.api_config!;
       
-      // Endpoint para testar conexão (pode ser um endpoint de health check do Dify)
-      const url = `${base_url}/parameters`;
+      // Usar endpoint válido da API Dify para testar conexão
+      const url = `${base_url}/v1/parameters`;
       
       const response = await fetch(url, {
         method: 'GET',
