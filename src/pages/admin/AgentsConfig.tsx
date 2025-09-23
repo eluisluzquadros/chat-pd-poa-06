@@ -50,12 +50,12 @@ interface AgentFormData {
   parameters: ModelParameters;
 }
 
-// Configuração padrão da API externa
+// Configuração padrão da API externa (sem credenciais por segurança)
 const defaultApiConfig: ApiConfig = {
   base_url: 'https://cloud.dify.ai',
   service_api_endpoint: '/api/chat-messages',
-  api_key: 'app-0sZewWe2Z6pcucR70tyO8uKv',
-  app_id: 'app-0sZewWe2Z6pcucR70tyO8uKv',
+  api_key: '',
+  app_id: '',
   public_url: 'https://cloud.dify.ai',
   server_url: 'https://cloud.dify.ai',
   workflow_id: '',
@@ -319,7 +319,7 @@ export default function AgentsConfig() {
             </h3>
             <div className="text-sm text-blue-700 space-y-1">
               <p>✅ <strong>API Externa:</strong> {defaultApiConfig.base_url}</p>
-              <p>🔑 <strong>Credenciais:</strong> Configuradas no Supabase</p>
+              <p>🔑 <strong>Credenciais:</strong> Configure manualmente por segurança</p>
               <p>⚡ <strong>Edge Function:</strong> agentic-rag-dify ativa</p>
             </div>
           </div>
@@ -605,7 +605,7 @@ export default function AgentsConfig() {
                   <ul className="text-sm text-blue-700 space-y-1">
                     <li>• <strong>Base URL:</strong> {defaultApiConfig.base_url}</li>
                     <li>• <strong>Service Endpoint:</strong> {defaultApiConfig.service_api_endpoint}</li>
-                    <li>• <strong>API Key:</strong> {defaultApiConfig.api_key} (configurado)</li>
+                    <li>• <strong>API Key:</strong> Configure manualmente por segurança</li>
                     <li>• <strong>App ID:</strong> ID da aplicação externa</li>
                   </ul>
                   <div className="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded text-xs text-yellow-800">
@@ -891,6 +891,7 @@ export default function AgentsConfig() {
           </Tabs>
         </DialogContent>
       </Dialog>
+
     </div>
   );
 }
