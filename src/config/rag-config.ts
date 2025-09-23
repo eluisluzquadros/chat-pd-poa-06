@@ -2,8 +2,8 @@
 import { agentsService } from '@/services/agentsService';
 
 export const ragConfig = {
-  difyEndpoint: 'agentic-rag-dify',
-  localEndpoint: 'agentic-rag'
+  // Use legacy chat edge function as fallback when no external agents
+  defaultEndpoint: 'chat'
 } as const;
 
 // Cache para evitar múltiplas consultas de agentes
@@ -22,26 +22,10 @@ export const getDefaultAgent = async () => {
   }
 };
 
-// Mapear nome do agente para endpoint apropriado
+// LEGACY: This function is deprecated - External agents now use External Agent Gateway
 export const getEndpointFromAgentName = (agentName: string): string => {
-  // Mapear novos nomes para endpoints
-  const endpointMapping: Record<string, string> = {
-    // Agentes v3 (API externa)
-    'chatpdpoa-assistent-deepseek-chat': 'agentic-rag-dify',
-    'agentic-claude_35_sonnet': 'agentic-rag-dify',
-    'agentic-gpt_5_nano': 'agentic-rag-dify',
-    
-    // Agentes v2 (local)
-    'agentic_openai_gpt_4.1-mini': 'agentic-rag',
-    'agentic-v1': 'agentic-rag',
-    
-    // Compatibilidade com nomes antigos
-    'agentic-rag': 'agentic-rag',
-    'agentic-rag-dify': 'agentic-rag-dify',
-  };
-
-  console.log(`🎯 [RAG Config] Mapeando agente "${agentName}" para endpoint:`, endpointMapping[agentName] || 'agentic-rag');
-  return endpointMapping[agentName] || 'agentic-rag';
+  console.log(`🔄 [RAG Config] DEPRECATED: agente "${agentName}" should use External Agent Gateway, fallback to chat`);
+  return ragConfig.defaultEndpoint;
 };
 
 export const getRagEndpoint = async (): Promise<string> => {
@@ -61,11 +45,11 @@ export const getRagEndpoint = async (): Promise<string> => {
     }
 
     // Fallback se não houver agente padrão
-    console.warn('[RAG Config] Nenhum agente padrão encontrado, usando endpoint local');
-    return ragConfig.localEndpoint;
+    console.warn('[RAG Config] Nenhum agente padrão encontrado, usando endpoint de fallback');
+    return ragConfig.defaultEndpoint;
   } catch (error) {
     console.error('Erro ao obter agente para RAG, usando fallback:', error);
-    return ragConfig.localEndpoint;
+    return ragConfig.defaultEndpoint;
   }
 };
 
@@ -76,8 +60,8 @@ export const getRagEndpointSync = () => {
     return getEndpointFromAgentName(cachedAgent.name);
   }
   
-  // Fallback para endpoint local
-  return ragConfig.localEndpoint;
+  // Fallback para endpoint padrão
+  return ragConfig.defaultEndpoint;
 };
 
 // Limpar cache de agentes (útil após mudanças de configuração)

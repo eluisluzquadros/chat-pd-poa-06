@@ -48,36 +48,15 @@ export class UnifiedRAGService {
       bypassCache: options.bypassCache === true
     };
 
-    // Add fields for new RAG real implementation
-    if (endpoint === 'agentic-rag') {
+    // Legacy edge functions podem precisar de formato específico
+    if (['chat', 'test-connection', 'test-rag-config'].includes(endpoint)) {
       return {
         ...baseBody,
         query: options.message, // For compatibility
         message: options.message,
         options: {
-          useAgenticRAG: true,
-          useKnowledgeGraph: true,
-          useHierarchicalChunks: true,
-          userRole: options.userRole || 'citizen', // CORRIGIDO: respeita userRole original
+          userRole: options.userRole || 'citizen',
           userId: options.userId || 'anonymous'
-        },
-        // Metadata para auditoria (não afeta comportamento RAG)
-        originalUserRole: options.userRole || 'user',
-        adminContext: options.userRole && ['tester', 'qa-validator', 'admin'].includes(options.userRole)
-      };
-    }
-
-    // Format for Dify RAG proxy
-    if (endpoint === 'agentic-rag-dify') {
-      return {
-        originalQuery: options.message,
-        user_role: options.userRole || 'citizen', // CORRIGIDO: respeita userRole original
-        metadata: {
-          sessionId: options.sessionId || `session-${Date.now()}`,
-          userId: options.userId || 'anonymous',
-          model: options.model || 'agentic-rag-v2',
-          originalUserRole: options.userRole || 'user',
-          adminContext: options.userRole && ['tester', 'qa-validator', 'admin'].includes(options.userRole)
         }
       };
     }
