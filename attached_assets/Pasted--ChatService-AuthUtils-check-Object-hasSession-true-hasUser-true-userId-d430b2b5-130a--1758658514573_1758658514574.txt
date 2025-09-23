@@ -1,0 +1,27 @@
+🔍 ChatService - AuthUtils check: 
+Object {hasSession: true, hasUser: true, userId: "d430b2b5-130a-4e02-a8aa-35ee4e8362d5", userRole: "admin"}
+✅ ChatService - Authentication successful: 
+Object {userId: "d430b2b5-130a-4e02-a8aa-35ee4e8362d5", email: "admin@chat-pd-poa.org", userRole: "admin", sessionId: "8f0f553d-469f-4be1-9263-4996c6da15d3"}
+🚀 Starting External Agent processing...
+📋 Agent Parameters: 
+Object {message: "oi", model: "anthropic/claude-3-5-sonnet-20241022", sessionId: "8f0f553d-469f-4be1-9263-4996c6da15d3", userId: "d430b2b5-130a-4e02-a8aa-35ee4e8362d5", userRole: "admin"}
+🤖 Selected agent: 
+Object {agentId: "71951dfc-1d78-47ca-8fd6-ac1d9a790602", agentName: "agentic_openai_gpt_4.1-mini", provider: "external", model: "custom-app"}
+🔧 ExternalAgentGateway.processMessage START: 
+Object {agentId: "71951dfc-1d78-47ca-8fd6-ac1d9a790602", agentName: "agentic_openai_gpt_4.1-mini", provider: "external", messageLength: 2, options: {…}, …}
+🔧 DifyAdapter.process START: 
+Object {agentId: "71951dfc-1d78-47ca-8fd6-ac1d9a790602", agentName: "agentic_openai_gpt_4.1-mini", messageLength: 2, baseUrl: "https://api.dify.ai", appId: "zQovDueLSzeH3s55"}
+🔧 DifyAdapter sessionId validation: 
+Object {originalSessionId: "8f0f553d-469f-4be1-9263-4996c6da15d3", isValidUUID: true, finalSessionId: "8f0f553d-469f-4be1-9263-4996c6da15d3"}
+📡 DifyAdapter making request to: https://api.dify.ai/v1/chat-messages
+❌ DifyAdapter.process FAILED: 
+Object {agentId: "71951dfc-1d78-47ca-8fd6-ac1d9a790602", executionTime: 411, error: "Dify API error: 404 - {"code":"not_found","message":"Conversation Not Exists. You have…"}
+
+❌ ExternalAgentGateway.processMessage FAILED: 
+Object {agentId: "71951dfc-1d78-47ca-8fd6-ac1d9a790602", executionTime: 411, error: "Dify API error: 404 - {"code":"not_found","message":"Conversation Not Exists. You have…", stack: "Error: Dify API error: 404 - {"code":"not_found","message":"Conversation Not Exists. You…"}
+
+❌ ChatService.processMessage FAILED: 
+Object {executionTime: 612, userRole: "admin", sessionId: "8f0f553d-469f-4be1-9263-4996c6da15d3", model: "anthropic/claude-3-5-sonnet-20241022", error: "Dify API error: 404 - {"code":"not_found","message":"Conversation Not Exists. You have…", …}
+
+❌ [useMessageSubmit] Error in handleSubmit: 
+Object {error: "Dify API error: 404 - {"code":"not_found","message":"Conversation Not Exists. You have…", stack: "Error: Dify API error: 404 - {"code":"not_found","message":"Conversation Not Exists. You…", userRole: "admin", selectedModel: "anthropic/claude-3-5-sonnet-20241022", sessionId: null, …}
