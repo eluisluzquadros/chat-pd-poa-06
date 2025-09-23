@@ -9,6 +9,7 @@ import { Plus, Search, Edit, Trash2, Power, PowerOff } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { AddTestCaseDialog } from './AddTestCaseDialog';
 import { EditTestCaseDialog } from './EditTestCaseDialog';
+import { QATestCasesExportButton } from './QATestCasesExportButton';
 import { toast } from 'sonner';
 
 interface QATestCase {
@@ -52,15 +53,15 @@ export function QATestCasesList() {
       }
 
       if (categoryFilter !== 'all') {
-        query = query.eq('category', categoryFilter);
+        query = (query as any).eq('category', categoryFilter);
       }
 
       if (difficultyFilter !== 'all') {
-        query = query.eq('difficulty', difficultyFilter);
+        query = (query as any).eq('difficulty', difficultyFilter);
       }
 
       if (statusFilter !== 'all') {
-        query = query.eq('is_active', statusFilter === 'active');
+        query = (query as any).eq('is_active', statusFilter === 'active');
       }
 
       const { data, error } = await query;
@@ -69,9 +70,9 @@ export function QATestCasesList() {
 
       if (data) {
         // Convert database response to match interface
-        const mappedData = data.map(item => ({
+        const mappedData = data.map((item: any) => ({
           ...item,
-          id: item.id.toString(), // Convert number to string for interface compatibility
+          id: item.id.toString(),
           difficulty: item.difficulty || item.complexity || null
         }));
         setTestCases(mappedData as QATestCase[]);
@@ -93,8 +94,8 @@ export function QATestCasesList() {
         .neq('difficulty', null);
 
       if (data) {
-        const uniqueCategories = Array.from(new Set(data.map(item => item.category).filter(Boolean)));
-        const uniqueDifficulties = Array.from(new Set(data.map(item => item.difficulty).filter(Boolean)));
+        const uniqueCategories = Array.from(new Set(data.map((item: any) => item.category).filter(Boolean)));
+        const uniqueDifficulties = Array.from(new Set(data.map((item: any) => item.difficulty).filter(Boolean)));
         
         setCategories(uniqueCategories);
         setDifficulties(uniqueDifficulties);
@@ -118,8 +119,8 @@ export function QATestCasesList() {
     try {
       const { error } = await supabase
         .from('qa_test_cases')
-        .update({ is_active: !currentStatus })
-        .eq('id', parseInt(id)); // Convert string id back to number for query
+        .update({ is_active: !currentStatus } as any)
+        .eq('id', parseInt(id) as any);
 
       if (error) throw error;
 
@@ -138,7 +139,7 @@ export function QATestCasesList() {
       const { error } = await supabase
         .from('qa_test_cases')
         .delete()
-        .eq('id', parseInt(id)); // Convert string id back to number for query
+        .eq('id', parseInt(id) as any);
 
       if (error) throw error;
 
@@ -168,7 +169,10 @@ export function QATestCasesList() {
           <h2 className="text-2xl font-bold">Casos de Teste QA</h2>
           <p className="text-muted-foreground">Gerencie os casos de teste para validação de qualidade</p>
         </div>
-        <AddTestCaseDialog onTestCaseAdded={fetchTestCases} />
+        <div className="flex gap-2">
+          <QATestCasesExportButton />
+          <AddTestCaseDialog onTestCaseAdded={fetchTestCases} />
+        </div>
       </div>
 
       {/* Filters */}

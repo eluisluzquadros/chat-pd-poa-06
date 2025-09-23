@@ -15,6 +15,7 @@ interface DeleteSessionDialogProps {
   selectedCount: number;
   onOpenChange: (open: boolean) => void;
   onConfirmDelete: () => void;
+  isDeleting?: boolean;
 }
 
 export function DeleteSessionDialog({
@@ -22,6 +23,7 @@ export function DeleteSessionDialog({
   selectedCount,
   onOpenChange,
   onConfirmDelete,
+  isDeleting = false,
 }: DeleteSessionDialogProps) {
   return (
     <AlertDialog open={isOpen} onOpenChange={onOpenChange}>
@@ -33,14 +35,15 @@ export function DeleteSessionDialog({
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel onClick={() => onOpenChange(false)}>
+          <AlertDialogCancel disabled={isDeleting} onClick={() => onOpenChange(false)}>
             Cancelar
           </AlertDialogCancel>
           <AlertDialogAction
             onClick={onConfirmDelete}
+            disabled={isDeleting}
             className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
           >
-            Excluir
+            {isDeleting ? "Excluindo..." : "Excluir"}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

@@ -5,23 +5,29 @@ import { useToast } from "@/hooks/use-toast";
 import { useEffect, useRef, memo } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { MessageContent } from "./MessageContent";
+import { AgenticV2ResponseRenderer } from "./AgenticV2ResponseRenderer";
 import { cn } from "@/lib/utils";
-import { LLMProvider } from "@/types/chat";
+import { useRAGMode } from "@/hooks/useRAGMode";
+
+import { useAuth } from "@/context/AuthContext";
 
 interface MessageListProps {
   messages: Message[];
   isLoading: boolean;
   currentSessionId?: string | null;
-  selectedModel?: LLMProvider;
 }
 
 export const MessageList = memo(function MessageList({
   messages,
   isLoading,
-  currentSessionId,
-  selectedModel
+  currentSessionId
 }: MessageListProps) {
   const { toast } = useToast();
+  const { ragMode } = useRAGMode();
+  const { isAdmin } = useAuth();
+  
+  // Always use external AI agents now
+  const effectiveConfig = { ragMode: 'dify', isTestMode: false };
   const scrollRef = useRef<HTMLDivElement>(null);
   const isAutoScrollEnabled = useRef(true);
 
@@ -102,13 +108,22 @@ export const MessageList = memo(function MessageList({
 
                    {/* Conteúdo da mensagem */}
                    <div className="pr-8">
-                     <MessageContent 
-                       content={message.content} 
-                       role={message.role}
-                       messageId={message.role === "assistant" ? message.id : undefined}
-                       sessionId={message.role === "assistant" && currentSessionId ? currentSessionId : undefined}
-                       model={message.role === "assistant" ? (message.model || selectedModel) : undefined}
-                     />
+                      {message.role === "assistant" && effectiveConfig.ragMode === 'dify' ? (
+                        <AgenticV2ResponseRenderer 
+                          content={message.content} 
+                          isAgenticV2={true}
+                          isAdmin={isAdmin}
+                          isTestMode={effectiveConfig.isTestMode}
+                        />
+                     ) : (
+                        <MessageContent 
+                          content={message.content} 
+                          role={message.role}
+                          messageId={message.role === "assistant" ? message.id : undefined}
+                          sessionId={message.role === "assistant" && currentSessionId ? currentSessionId : undefined}
+                          model={message.role === "assistant" ? message.model : undefined}
+                        />
+                     )}
                    </div>
 
                   {/* Timestamp */}
@@ -119,9 +134,9 @@ export const MessageList = memo(function MessageList({
                       : "text-muted-foreground"
                   )}>
                     <span>{message.timestamp.toLocaleTimeString('pt-BR')}</span>
-                    {message.role === "assistant" && (
-                      <span className="ml-2 hidden sm:inline">via Chat-PD-POA:</span>
-                    )}
+                     {message.role === "assistant" && (
+                       <span className="ml-2 hidden sm:inline">via ChatPDPOA</span>
+                     )}
                   </div>
                 </div>
               </div>

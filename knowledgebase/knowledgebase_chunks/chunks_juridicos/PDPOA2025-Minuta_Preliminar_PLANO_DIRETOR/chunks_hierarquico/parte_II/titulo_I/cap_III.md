@@ -1,0 +1,22 @@
+
+### Capítulo III -  Do Comitê de Gerenciamento do Espaço Público
+
+###### Art. 127
+O Comitê de Gerenciamento do Espaço Público (CGEP) é instância colegiada multidisciplinar da Administração Pública, responsável pela coordenação integrada das intervenções em espaços públicos e pela compatibilização das ações e obras de iniciativa municipal com as diretrizes da política urbana, assegurando a qualificação do espaço público, sua fruição coletiva e a valorização do ambiente urbano.
+
+– coordenar o planejamento, a execução e o acompanhamento das obras e intervenções em espaços públicos, inclusive as decorrentes de planos urbanísticos, projetos urbanos e parcelamentos do solo;
+– implementar mecanismos de monitoramento e avaliação das iniciativas, projetos e obras executadas, com foco na eficácia e efetividade das ações públicas;
+– promover a articulação entre órgãos e entidades municipais envolvidos com obras e intervenções territoriais, estabelecendo fluxos permanentes de informação e colaboração técnica;
+– fomentar a padronização e a qualificação técnica na elaboração e na gestão de projetos e obras públicas no espaço urbano;
+– promover o uso eficiente dos recursos públicos, evitando sobreposição de ações e promovendo a integração entre os diferentes programas e projetos;
+– incentivar a adoção de metodologias inovadoras e tecnologias de informação aplicadas à gestão urbana e à execução de obras públicas;
+– aprovar as diretrizes urbanas e edilícias para a concessão de espaços públicos, as quais deverão ser integradas aos respectivos editais e contratos;
+– emitir diretrizes gerais para a contratação de intervenções urbanas no espaço público, com vistas à compatibilização com o planejamento urbano municipal.
+
+**§ 1** Compete ao CGEP:
+
+**§ 1** Compete ao CGEP:
+
+**§ 2** A composição, o funcionamento e outras atribuições do CGEP serão definidos em regulamento.
+
+**§ 2** A composição, o funcionamento e outras atribuições do CGEP serão definidos em regulamento.

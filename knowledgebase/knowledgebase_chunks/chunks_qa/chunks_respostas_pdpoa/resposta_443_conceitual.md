@@ -1,0 +1,7 @@
+# Conceitual - PDPOA 2025
+
+**Categoria:** conceitual
+**Tags:** conceitual
+**Origem:** Caso de teste #443 (Dificuldade: high)
+
+O Sistema Socioeconômico é um dos quatro sistemas estruturantes do território no novo Plano Diretor Urbano Sustentável (PDUS) de Porto Alegre. Ele organiza as atividades econômicas, sociais e produtivas da cidade, articulando o uso do solo à geração de empregos, à oferta de serviços, ao comércio, à inovação e às dinâmicas culturais e comunitárias. Esse sistema se articula diretamente com as Áreas Estruturadoras do PDUS, que são porções do território com alto potencial de transformação urbana e relevância estratégica para o desenvolvimento sustentável da cidade. Ao integrar as diretrizes do Sistema Socioeconômico a essas áreas --- como o Centro Histórico, o 4º Distrito, os eixos de transporte coletivo e os corredores de centralidades --- o plano orienta a aplicação de incentivos urbanísticos e o direcionamento de investimentos públicos, promovendo adensamento qualificado, aproveitamento da infraestrutura existente e integração entre moradia e emprego. O sistema também contempla as Áreas de Requalificação Urbana (ARU) como territórios prioritários, por combinarem déficit urbano com localização estratégica próxima a centralidades e áreas de emprego. Com isso, o Sistema Socioeconômico apoia decisões estruturantes de desenvolvimento econômico e territorial, ampliando oportunidades e promovendo uma ocupação urbana mais equilibrada, inclusiva e eficiente.

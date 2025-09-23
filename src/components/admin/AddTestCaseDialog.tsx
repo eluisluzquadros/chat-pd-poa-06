@@ -100,8 +100,9 @@ export function AddTestCaseDialog({ onTestCaseAdded }: AddTestCaseDialogProps) {
       
     } catch (error) {
       console.error('Error adding test case:', error);
-      const errorMessage = error instanceof Error ? error.message : "Erro ao adicionar caso de teste";
-      toast.error(errorMessage);
+      const anyErr = error as any;
+      const details = anyErr?.message || anyErr?.error || JSON.stringify(anyErr);
+      toast.error(`Falha ao adicionar caso de teste: ${details}`);
     } finally {
       setLoading(false);
     }

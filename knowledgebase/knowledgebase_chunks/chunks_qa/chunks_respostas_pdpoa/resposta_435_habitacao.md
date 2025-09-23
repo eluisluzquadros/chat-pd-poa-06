@@ -1,0 +1,7 @@
+# Habitacao - PDPOA 2025
+
+**Categoria:** habitacao
+**Tags:** habitacao
+**Origem:** Caso de teste #435 (Dificuldade: high)
+
+O novo Plano Diretor trata a habitação de interesse social como eixo estruturante da política urbana, com foco na redução do custo da moradia e na garantia do acesso de todos à cidade. Esse Objetivo Estratégico reconhece que o afastamento da população de baixa renda dos territórios bem estruturados é um dos principais vetores de desigualdade urbana em Porto Alegre, propondo ampliar a produção de moradia em áreas com infraestrutura, serviços e oferta de oportunidades, especialmente ao longo dos eixos de transporte coletivo e nas centralidades. Para viabilizar essa diretriz, a LUOS estabelece parâmetros específicos de parcelamento e uso do solo voltados à demanda habitacional prioritária, além de prever incentivos urbanísticos como a Outorga Onerosa do Direito de Construir, com fator de planejamento diferenciado --- incluindo a isenção do valor da outorga para habitação de interesse social --- e a destinação de recursos ao Fundo Municipal de Habitação. De forma complementar, o plano define as Áreas de Requalificação Urbana (ARU) como territórios com carências de infraestrutura e baixa integração à malha urbana, priorizando-os para intervenções públicas e privadas voltadas à urbanização, regularização e qualificação habitacional.

@@ -7,7 +7,7 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instanciate createClient with right options
+  // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "12.2.12 (cd3cf9e)"
@@ -63,6 +63,170 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      agent_performance_metrics: {
+        Row: {
+          agent_type: string
+          confidence: number | null
+          created_at: string | null
+          data_sources_used: string[] | null
+          error_message: string | null
+          execution_time: number | null
+          id: number
+          query_context: Json | null
+          records_processed: number | null
+          success: boolean | null
+        }
+        Insert: {
+          agent_type: string
+          confidence?: number | null
+          created_at?: string | null
+          data_sources_used?: string[] | null
+          error_message?: string | null
+          execution_time?: number | null
+          id?: number
+          query_context?: Json | null
+          records_processed?: number | null
+          success?: boolean | null
+        }
+        Update: {
+          agent_type?: string
+          confidence?: number | null
+          created_at?: string | null
+          data_sources_used?: string[] | null
+          error_message?: string | null
+          execution_time?: number | null
+          id?: number
+          query_context?: Json | null
+          records_processed?: number | null
+          success?: boolean | null
+        }
+        Relationships: []
+      }
+      agentic_query_cache: {
+        Row: {
+          agent_results: Json | null
+          confidence: number | null
+          created_at: string | null
+          execution_time: number | null
+          expires_at: string | null
+          final_response: string | null
+          hit_count: number | null
+          id: number
+          original_query: string
+          query_context: Json | null
+          query_hash: string
+          sources: Json | null
+          updated_at: string | null
+        }
+        Insert: {
+          agent_results?: Json | null
+          confidence?: number | null
+          created_at?: string | null
+          execution_time?: number | null
+          expires_at?: string | null
+          final_response?: string | null
+          hit_count?: number | null
+          id?: number
+          original_query: string
+          query_context?: Json | null
+          query_hash: string
+          sources?: Json | null
+          updated_at?: string | null
+        }
+        Update: {
+          agent_results?: Json | null
+          confidence?: number | null
+          created_at?: string | null
+          execution_time?: number | null
+          expires_at?: string | null
+          final_response?: string | null
+          hit_count?: number | null
+          id?: number
+          original_query?: string
+          query_context?: Json | null
+          query_hash?: string
+          sources?: Json | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      article_anexo_references: {
+        Row: {
+          anexo_id: number | null
+          article_number: number
+          created_at: string | null
+          document_type: string
+          id: number
+          reference_type: string | null
+        }
+        Insert: {
+          anexo_id?: number | null
+          article_number: number
+          created_at?: string | null
+          document_type: string
+          id?: number
+          reference_type?: string | null
+        }
+        Update: {
+          anexo_id?: number | null
+          article_number?: number
+          created_at?: string | null
+          document_type?: string
+          id?: number
+          reference_type?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "article_anexo_references_anexo_id_fkey"
+            columns: ["anexo_id"]
+            isOneToOne: false
+            referencedRelation: "legal_anexos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      article_metadata: {
+        Row: {
+          alinea_count: number | null
+          article_number: number
+          created_at: string | null
+          document_type: string
+          has_alineas: boolean | null
+          has_incisos: boolean | null
+          has_paragraphs: boolean | null
+          id: number
+          inciso_count: number | null
+          metadata: Json | null
+          paragraph_count: number | null
+        }
+        Insert: {
+          alinea_count?: number | null
+          article_number: number
+          created_at?: string | null
+          document_type: string
+          has_alineas?: boolean | null
+          has_incisos?: boolean | null
+          has_paragraphs?: boolean | null
+          id?: number
+          inciso_count?: number | null
+          metadata?: Json | null
+          paragraph_count?: number | null
+        }
+        Update: {
+          alinea_count?: number | null
+          article_number?: number
+          created_at?: string | null
+          document_type?: string
+          has_alineas?: boolean | null
+          has_incisos?: boolean | null
+          has_paragraphs?: boolean | null
+          id?: number
+          inciso_count?: number | null
+          metadata?: Json | null
+          paragraph_count?: number | null
+        }
+        Relationships: []
       }
       audit_log: {
         Row: {
@@ -127,62 +291,62 @@ export type Database = {
         }
         Relationships: []
       }
-      bairros_risco_desastre: {
+      benchmark_v3_results: {
         Row: {
-          areas_criticas: string | null
-          bairro_nome: string
-          bairro_nome_normalizado: string | null
+          avg_cost_per_query: number | null
+          avg_quality_score: number | null
+          avg_response_time: number | null
+          benchmark_session_id: string
           created_at: string | null
-          frequencia_anual: number | null
-          id: number
-          nivel_risco_deslizamento: number | null
-          nivel_risco_geral: number | null
-          nivel_risco_inundacao: number | null
-          observacoes: string | null
-          risco_alagamento: boolean | null
-          risco_deslizamento: boolean | null
-          risco_granizo: boolean | null
-          risco_inundacao: boolean | null
-          risco_vendaval: boolean | null
-          ultima_ocorrencia: string | null
+          historical_comparison: Json | null
+          id: string
+          model: string
+          optimization_suggestions: Json | null
+          passed_tests: number
+          performance_metrics: Json | null
+          provider: string
+          success_rate: number | null
+          test_category: string
+          total_tests: number
+          trend_analysis: Json | null
           updated_at: string | null
         }
         Insert: {
-          areas_criticas?: string | null
-          bairro_nome: string
-          bairro_nome_normalizado?: string | null
+          avg_cost_per_query?: number | null
+          avg_quality_score?: number | null
+          avg_response_time?: number | null
+          benchmark_session_id: string
           created_at?: string | null
-          frequencia_anual?: number | null
-          id?: number
-          nivel_risco_deslizamento?: number | null
-          nivel_risco_geral?: number | null
-          nivel_risco_inundacao?: number | null
-          observacoes?: string | null
-          risco_alagamento?: boolean | null
-          risco_deslizamento?: boolean | null
-          risco_granizo?: boolean | null
-          risco_inundacao?: boolean | null
-          risco_vendaval?: boolean | null
-          ultima_ocorrencia?: string | null
+          historical_comparison?: Json | null
+          id?: string
+          model: string
+          optimization_suggestions?: Json | null
+          passed_tests?: number
+          performance_metrics?: Json | null
+          provider: string
+          success_rate?: number | null
+          test_category: string
+          total_tests?: number
+          trend_analysis?: Json | null
           updated_at?: string | null
         }
         Update: {
-          areas_criticas?: string | null
-          bairro_nome?: string
-          bairro_nome_normalizado?: string | null
+          avg_cost_per_query?: number | null
+          avg_quality_score?: number | null
+          avg_response_time?: number | null
+          benchmark_session_id?: string
           created_at?: string | null
-          frequencia_anual?: number | null
-          id?: number
-          nivel_risco_deslizamento?: number | null
-          nivel_risco_geral?: number | null
-          nivel_risco_inundacao?: number | null
-          observacoes?: string | null
-          risco_alagamento?: boolean | null
-          risco_deslizamento?: boolean | null
-          risco_granizo?: boolean | null
-          risco_inundacao?: boolean | null
-          risco_vendaval?: boolean | null
-          ultima_ocorrencia?: string | null
+          historical_comparison?: Json | null
+          id?: string
+          model?: string
+          optimization_suggestions?: Json | null
+          passed_tests?: number
+          performance_metrics?: Json | null
+          provider?: string
+          success_rate?: number | null
+          test_category?: string
+          total_tests?: number
+          trend_analysis?: Json | null
           updated_at?: string | null
         }
         Relationships: []
@@ -192,6 +356,7 @@ export type Database = {
           created_at: string
           id: string
           message: Json
+          metadata: Json | null
           session_id: string
           user_id: string
         }
@@ -199,6 +364,7 @@ export type Database = {
           created_at?: string
           id?: string
           message: Json
+          metadata?: Json | null
           session_id: string
           user_id: string
         }
@@ -206,6 +372,7 @@ export type Database = {
           created_at?: string
           id?: string
           message?: Json
+          metadata?: Json | null
           session_id?: string
           user_id?: string
         }
@@ -218,6 +385,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      chat_memory: {
+        Row: {
+          assistant_response: string
+          created_at: string | null
+          id: number
+          metadata: Json | null
+          session_id: string
+          timestamp: string | null
+          user_message: string
+        }
+        Insert: {
+          assistant_response: string
+          created_at?: string | null
+          id?: number
+          metadata?: Json | null
+          session_id: string
+          timestamp?: string | null
+          user_message: string
+        }
+        Update: {
+          assistant_response?: string
+          created_at?: string | null
+          id?: number
+          metadata?: Json | null
+          session_id?: string
+          timestamp?: string | null
+          user_message?: string
+        }
+        Relationships: []
       }
       chat_sessions: {
         Row: {
@@ -249,145 +446,54 @@ export type Database = {
         }
         Relationships: []
       }
-      document_chunks: {
+      dify_agents: {
         Row: {
-          chunk_index: number
-          content: string
-          created_at: string | null
-          document_id: number | null
-          embedding: string | null
-          id: number
-          metadata: Json | null
-        }
-        Insert: {
-          chunk_index: number
-          content: string
-          created_at?: string | null
-          document_id?: number | null
-          embedding?: string | null
-          id?: number
-          metadata?: Json | null
-        }
-        Update: {
-          chunk_index?: number
-          content?: string
-          created_at?: string | null
-          document_id?: number | null
-          embedding?: string | null
-          id?: number
-          metadata?: Json | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "document_chunks_document_id_fkey"
-            columns: ["document_id"]
-            isOneToOne: false
-            referencedRelation: "documents"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      document_embeddings: {
-        Row: {
-          chunk_metadata: Json | null
-          content_chunk: string
-          created_at: string | null
-          document_id: number | null
-          embedding: string | null
-          id: number
-        }
-        Insert: {
-          chunk_metadata?: Json | null
-          content_chunk: string
-          created_at?: string | null
-          document_id?: number | null
-          embedding?: string | null
-          id?: number
-        }
-        Update: {
-          chunk_metadata?: Json | null
-          content_chunk?: string
-          created_at?: string | null
-          document_id?: number | null
-          embedding?: string | null
-          id?: number
-        }
-        Relationships: [
-          {
-            foreignKeyName: "document_embeddings_document_id_fkey"
-            columns: ["document_id"]
-            isOneToOne: false
-            referencedRelation: "documents"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      document_metadata: {
-        Row: {
-          created_at: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          dify_config: Json
+          display_name: string
           id: string
-          schema: string | null
-          title: string | null
-          url: string | null
-          user_id: string | null
+          is_active: boolean
+          is_default: boolean
+          model: string
+          name: string
+          parameters: Json
+          provider: string
+          updated_at: string
+          updated_by: string | null
         }
         Insert: {
-          created_at?: string | null
-          id: string
-          schema?: string | null
-          title?: string | null
-          url?: string | null
-          user_id?: string | null
-        }
-        Update: {
-          created_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          dify_config?: Json
+          display_name: string
           id?: string
-          schema?: string | null
-          title?: string | null
-          url?: string | null
-          user_id?: string | null
-        }
-        Relationships: []
-      }
-      documents: {
-        Row: {
-          content: string | null
-          embedding: string | null
-          file_name: string | null
-          file_path: string | null
-          id: number
-          is_processed: boolean | null
-          is_public: boolean | null
-          metadata: Json | null
-          title: string | null
-          type: string | null
-          user_id: string | null
-        }
-        Insert: {
-          content?: string | null
-          embedding?: string | null
-          file_name?: string | null
-          file_path?: string | null
-          id?: number
-          is_processed?: boolean | null
-          is_public?: boolean | null
-          metadata?: Json | null
-          title?: string | null
-          type?: string | null
-          user_id?: string | null
+          is_active?: boolean
+          is_default?: boolean
+          model: string
+          name: string
+          parameters?: Json
+          provider: string
+          updated_at?: string
+          updated_by?: string | null
         }
         Update: {
-          content?: string | null
-          embedding?: string | null
-          file_name?: string | null
-          file_path?: string | null
-          id?: number
-          is_processed?: boolean | null
-          is_public?: boolean | null
-          metadata?: Json | null
-          title?: string | null
-          type?: string | null
-          user_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          dify_config?: Json
+          display_name?: string
+          id?: string
+          is_active?: boolean
+          is_default?: boolean
+          model?: string
+          name?: string
+          parameters?: Json
+          provider?: string
+          updated_at?: string
+          updated_by?: string | null
         }
         Relationships: []
       }
@@ -423,6 +529,302 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      knowledge_graph_edges: {
+        Row: {
+          created_at: string | null
+          id: string
+          properties: Json | null
+          relationship_type: string
+          source_id: string
+          target_id: string
+          weight: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          properties?: Json | null
+          relationship_type: string
+          source_id: string
+          target_id: string
+          weight?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          properties?: Json | null
+          relationship_type?: string
+          source_id?: string
+          target_id?: string
+          weight?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "knowledge_graph_edges_source_id_fkey"
+            columns: ["source_id"]
+            isOneToOne: false
+            referencedRelation: "knowledge_graph_nodes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "knowledge_graph_edges_target_id_fkey"
+            columns: ["target_id"]
+            isOneToOne: false
+            referencedRelation: "knowledge_graph_nodes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      knowledge_graph_nodes: {
+        Row: {
+          created_at: string | null
+          embedding: string | null
+          id: string
+          importance_score: number | null
+          label: string
+          node_type: string
+          properties: Json | null
+        }
+        Insert: {
+          created_at?: string | null
+          embedding?: string | null
+          id?: string
+          importance_score?: number | null
+          label: string
+          node_type: string
+          properties?: Json | null
+        }
+        Update: {
+          created_at?: string | null
+          embedding?: string | null
+          id?: string
+          importance_score?: number | null
+          label?: string
+          node_type?: string
+          properties?: Json | null
+        }
+        Relationships: []
+      }
+      knowledgebase: {
+        Row: {
+          arquivo_origem: string | null
+          capitulo: string | null
+          categoria_qa: string | null
+          embedding: string | null
+          id: string | null
+          numero_qa: string | null
+          parte: string | null
+          pergunta: string | null
+          resposta: string | null
+          secao: string | null
+          subsecao: string | null
+          tamanho_texto: number | null
+          texto: string | null
+          tipo_documento: string | null
+          titulo: string | null
+        }
+        Insert: {
+          arquivo_origem?: string | null
+          capitulo?: string | null
+          categoria_qa?: string | null
+          embedding?: string | null
+          id?: string | null
+          numero_qa?: string | null
+          parte?: string | null
+          pergunta?: string | null
+          resposta?: string | null
+          secao?: string | null
+          subsecao?: string | null
+          tamanho_texto?: number | null
+          texto?: string | null
+          tipo_documento?: string | null
+          titulo?: string | null
+        }
+        Update: {
+          arquivo_origem?: string | null
+          capitulo?: string | null
+          categoria_qa?: string | null
+          embedding?: string | null
+          id?: string | null
+          numero_qa?: string | null
+          parte?: string | null
+          pergunta?: string | null
+          resposta?: string | null
+          secao?: string | null
+          subsecao?: string | null
+          tamanho_texto?: number | null
+          texto?: string | null
+          tipo_documento?: string | null
+          titulo?: string | null
+        }
+        Relationships: []
+      }
+      legal_anexos: {
+        Row: {
+          anexo_name: string
+          anexo_number: string
+          anexo_type: string | null
+          content_text: string | null
+          created_at: string | null
+          description: string | null
+          document_type: string
+          file_path: string | null
+          id: number
+          is_processed: boolean | null
+          metadata: Json | null
+          updated_at: string | null
+        }
+        Insert: {
+          anexo_name: string
+          anexo_number: string
+          anexo_type?: string | null
+          content_text?: string | null
+          created_at?: string | null
+          description?: string | null
+          document_type: string
+          file_path?: string | null
+          id?: number
+          is_processed?: boolean | null
+          metadata?: Json | null
+          updated_at?: string | null
+        }
+        Update: {
+          anexo_name?: string
+          anexo_number?: string
+          anexo_type?: string | null
+          content_text?: string | null
+          created_at?: string | null
+          description?: string | null
+          document_type?: string
+          file_path?: string | null
+          id?: number
+          is_processed?: boolean | null
+          metadata?: Json | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      legal_articles: {
+        Row: {
+          article_number: number
+          article_text: string | null
+          created_at: string | null
+          document_type: string
+          embedding: string | null
+          full_content: string
+          id: number
+          keywords: string[] | null
+          updated_at: string | null
+        }
+        Insert: {
+          article_number: number
+          article_text?: string | null
+          created_at?: string | null
+          document_type: string
+          embedding?: string | null
+          full_content: string
+          id?: number
+          keywords?: string[] | null
+          updated_at?: string | null
+        }
+        Update: {
+          article_number?: number
+          article_text?: string | null
+          created_at?: string | null
+          document_type?: string
+          embedding?: string | null
+          full_content?: string
+          id?: number
+          keywords?: string[] | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      legal_articles_backup_content: {
+        Row: {
+          article_number: number | null
+          article_text: string | null
+          created_at: string | null
+          document_type: string | null
+          embedding: string | null
+          full_content: string | null
+          id: number | null
+          keywords: string[] | null
+          updated_at: string | null
+        }
+        Insert: {
+          article_number?: number | null
+          article_text?: string | null
+          created_at?: string | null
+          document_type?: string | null
+          embedding?: string | null
+          full_content?: string | null
+          id?: number | null
+          keywords?: string[] | null
+          updated_at?: string | null
+        }
+        Update: {
+          article_number?: number | null
+          article_text?: string | null
+          created_at?: string | null
+          document_type?: string | null
+          embedding?: string | null
+          full_content?: string | null
+          id?: number | null
+          keywords?: string[] | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      legal_hierarchy: {
+        Row: {
+          article_end: number | null
+          article_start: number | null
+          created_at: string | null
+          document_type: string
+          full_path: string | null
+          hierarchy_name: string
+          hierarchy_number: string
+          hierarchy_type: string
+          id: number
+          order_index: number | null
+          parent_id: number | null
+        }
+        Insert: {
+          article_end?: number | null
+          article_start?: number | null
+          created_at?: string | null
+          document_type: string
+          full_path?: string | null
+          hierarchy_name: string
+          hierarchy_number: string
+          hierarchy_type: string
+          id?: number
+          order_index?: number | null
+          parent_id?: number | null
+        }
+        Update: {
+          article_end?: number | null
+          article_start?: number | null
+          created_at?: string | null
+          document_type?: string
+          full_path?: string | null
+          hierarchy_name?: string
+          hierarchy_number?: string
+          hierarchy_type?: string
+          id?: number
+          order_index?: number | null
+          parent_id?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "legal_hierarchy_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "legal_hierarchy"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       llm_metrics: {
         Row: {
@@ -520,6 +922,51 @@ export type Database = {
         }
         Relationships: []
       }
+      manual_qa_results: {
+        Row: {
+          actual_answer: string
+          category: string
+          expected_answer: string
+          id: string
+          is_correct: boolean
+          notes: string | null
+          question: string
+          response_time_ms: number | null
+          session_info: Json | null
+          test_case_id: number
+          tested_at: string
+          tested_by: string | null
+        }
+        Insert: {
+          actual_answer: string
+          category: string
+          expected_answer: string
+          id?: string
+          is_correct: boolean
+          notes?: string | null
+          question: string
+          response_time_ms?: number | null
+          session_info?: Json | null
+          test_case_id: number
+          tested_at?: string
+          tested_by?: string | null
+        }
+        Update: {
+          actual_answer?: string
+          category?: string
+          expected_answer?: string
+          id?: string
+          is_correct?: boolean
+          notes?: string | null
+          question?: string
+          response_time_ms?: number | null
+          session_info?: Json | null
+          test_case_id?: number
+          tested_at?: string
+          tested_by?: string | null
+        }
+        Relationships: []
+      }
       message_feedback: {
         Row: {
           comment: string | null
@@ -600,24 +1047,39 @@ export type Database = {
           },
         ]
       }
-      n8n_chat_histories: {
+      platform_settings: {
         Row: {
-          id: number
-          message: Json
-          session_id: string
-          user_id: string | null
+          category: string
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          key: string
+          updated_at: string
+          updated_by: string | null
+          value: Json
         }
         Insert: {
-          id?: number
-          message: Json
-          session_id: string
-          user_id?: string | null
+          category?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          key: string
+          updated_at?: string
+          updated_by?: string | null
+          value: Json
         }
         Update: {
-          id?: number
-          message?: Json
-          session_id?: string
-          user_id?: string | null
+          category?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          key?: string
+          updated_at?: string
+          updated_by?: string | null
+          value?: Json
         }
         Relationships: []
       }
@@ -707,6 +1169,92 @@ export type Database = {
           user_id?: string | null
         }
         Relationships: []
+      }
+      qa_dual_validation_runs: {
+        Row: {
+          accuracy_difference: number | null
+          avg_response_time_v1: number | null
+          avg_response_time_v2: number | null
+          comparison_results: Json | null
+          completed_at: string | null
+          config: Json
+          created_at: string | null
+          created_by: string | null
+          error_message: string | null
+          id: string
+          session_id: string
+          started_at: string | null
+          status: string
+          total_tests: number | null
+          updated_at: string | null
+          v1_accuracy: number | null
+          v1_metrics: Json | null
+          v1_passed_tests: number | null
+          v1_run_id: string | null
+          v2_accuracy: number | null
+          v2_metrics: Json | null
+          v2_passed_tests: number | null
+          v2_run_id: string | null
+        }
+        Insert: {
+          accuracy_difference?: number | null
+          avg_response_time_v1?: number | null
+          avg_response_time_v2?: number | null
+          comparison_results?: Json | null
+          completed_at?: string | null
+          config?: Json
+          created_at?: string | null
+          created_by?: string | null
+          error_message?: string | null
+          id?: string
+          session_id: string
+          started_at?: string | null
+          status?: string
+          total_tests?: number | null
+          updated_at?: string | null
+          v1_accuracy?: number | null
+          v1_metrics?: Json | null
+          v1_passed_tests?: number | null
+          v1_run_id?: string | null
+          v2_accuracy?: number | null
+          v2_metrics?: Json | null
+          v2_passed_tests?: number | null
+          v2_run_id?: string | null
+        }
+        Update: {
+          accuracy_difference?: number | null
+          avg_response_time_v1?: number | null
+          avg_response_time_v2?: number | null
+          comparison_results?: Json | null
+          completed_at?: string | null
+          config?: Json
+          created_at?: string | null
+          created_by?: string | null
+          error_message?: string | null
+          id?: string
+          session_id?: string
+          started_at?: string | null
+          status?: string
+          total_tests?: number | null
+          updated_at?: string | null
+          v1_accuracy?: number | null
+          v1_metrics?: Json | null
+          v1_passed_tests?: number | null
+          v1_run_id?: string | null
+          v2_accuracy?: number | null
+          v2_metrics?: Json | null
+          v2_passed_tests?: number | null
+          v2_run_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "qa_dual_validation_runs_v1_run_id_fkey"
+            columns: ["v1_run_id"]
+            isOneToOne: false
+            referencedRelation: "qa_validation_runs"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       qa_learning_insights: {
         Row: {
@@ -800,7 +1348,6 @@ export type Database = {
           difficulty: string | null
           expected_answer: string | null
           expected_keywords: string[]
-          expected_response: string | null
           expected_sql: string | null
           id: number
           is_active: boolean | null
@@ -821,7 +1368,6 @@ export type Database = {
           difficulty?: string | null
           expected_answer?: string | null
           expected_keywords: string[]
-          expected_response?: string | null
           expected_sql?: string | null
           id?: number
           is_active?: boolean | null
@@ -842,7 +1388,6 @@ export type Database = {
           difficulty?: string | null
           expected_answer?: string | null
           expected_keywords?: string[]
-          expected_response?: string | null
           expected_sql?: string | null
           id?: number
           is_active?: boolean | null
@@ -853,57 +1398,6 @@ export type Database = {
           sql_complexity?: string | null
           tags?: string[] | null
           test_id?: string
-          updated_at?: string | null
-          version?: number | null
-        }
-        Relationships: []
-      }
-      qa_test_cases_backup: {
-        Row: {
-          category: string | null
-          created_at: string | null
-          difficulty: string | null
-          expected_answer: string | null
-          expected_sql: string | null
-          id: string | null
-          is_active: boolean | null
-          is_sql_related: boolean | null
-          question: string | null
-          sql_complexity: string | null
-          tags: string[] | null
-          test_id: string | null
-          updated_at: string | null
-          version: number | null
-        }
-        Insert: {
-          category?: string | null
-          created_at?: string | null
-          difficulty?: string | null
-          expected_answer?: string | null
-          expected_sql?: string | null
-          id?: string | null
-          is_active?: boolean | null
-          is_sql_related?: boolean | null
-          question?: string | null
-          sql_complexity?: string | null
-          tags?: string[] | null
-          test_id?: string | null
-          updated_at?: string | null
-          version?: number | null
-        }
-        Update: {
-          category?: string | null
-          created_at?: string | null
-          difficulty?: string | null
-          expected_answer?: string | null
-          expected_sql?: string | null
-          id?: string | null
-          is_active?: boolean | null
-          is_sql_related?: boolean | null
-          question?: string | null
-          sql_complexity?: string | null
-          tags?: string[] | null
-          test_id?: string | null
           updated_at?: string | null
           version?: number | null
         }
@@ -951,13 +1445,6 @@ export type Database = {
             referencedRelation: "qa_validation_runs"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "qa_token_usage_validation_run_id_fkey"
-            columns: ["validation_run_id"]
-            isOneToOne: false
-            referencedRelation: "qa_validation_token_stats"
-            referencedColumns: ["validation_run_id"]
-          },
         ]
       }
       qa_validation_preferences: {
@@ -1000,6 +1487,7 @@ export type Database = {
           created_at: string
           error_details: string | null
           error_type: string | null
+          evaluation_reasoning: string | null
           generated_sql: string | null
           id: string
           is_correct: boolean
@@ -1009,7 +1497,7 @@ export type Database = {
           sql_executed: boolean | null
           sql_result_match: boolean | null
           sql_syntax_valid: boolean | null
-          test_case_id: string
+          test_case_id: number
           validation_run_id: string
         }
         Insert: {
@@ -1018,6 +1506,7 @@ export type Database = {
           created_at?: string
           error_details?: string | null
           error_type?: string | null
+          evaluation_reasoning?: string | null
           generated_sql?: string | null
           id?: string
           is_correct: boolean
@@ -1027,7 +1516,7 @@ export type Database = {
           sql_executed?: boolean | null
           sql_result_match?: boolean | null
           sql_syntax_valid?: boolean | null
-          test_case_id: string
+          test_case_id: number
           validation_run_id: string
         }
         Update: {
@@ -1036,6 +1525,7 @@ export type Database = {
           created_at?: string
           error_details?: string | null
           error_type?: string | null
+          evaluation_reasoning?: string | null
           generated_sql?: string | null
           id?: string
           is_correct?: boolean
@@ -1045,10 +1535,18 @@ export type Database = {
           sql_executed?: boolean | null
           sql_result_match?: boolean | null
           sql_syntax_valid?: boolean | null
-          test_case_id?: string
+          test_case_id?: number
           validation_run_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "fk_validation_results_test_case"
+            columns: ["test_case_id"]
+            isOneToOne: false
+            referencedRelation: "qa_test_cases"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       qa_validation_runs: {
         Row: {
@@ -1056,6 +1554,7 @@ export type Database = {
           completed_at: string | null
           error_message: string | null
           id: string
+          last_heartbeat: string | null
           model: string
           overall_accuracy: number | null
           passed_tests: number
@@ -1068,6 +1567,7 @@ export type Database = {
           completed_at?: string | null
           error_message?: string | null
           id?: string
+          last_heartbeat?: string | null
           model: string
           overall_accuracy?: number | null
           passed_tests?: number
@@ -1080,6 +1580,7 @@ export type Database = {
           completed_at?: string | null
           error_message?: string | null
           id?: string
+          last_heartbeat?: string | null
           model?: string
           overall_accuracy?: number | null
           passed_tests?: number
@@ -1116,6 +1617,63 @@ export type Database = {
           metrics?: Json | null
           resolved?: boolean | null
           resolved_at?: string | null
+        }
+        Relationships: []
+      }
+      quality_insights_v3: {
+        Row: {
+          category: string
+          confidence_score: number | null
+          created_at: string | null
+          data_points: Json | null
+          description: string
+          id: string
+          impact_score: number | null
+          insight_type: string
+          is_resolved: boolean | null
+          rag_version: string
+          recommendations: Json | null
+          resolved_at: string | null
+          resolved_by: string | null
+          severity: string
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          category: string
+          confidence_score?: number | null
+          created_at?: string | null
+          data_points?: Json | null
+          description: string
+          id?: string
+          impact_score?: number | null
+          insight_type: string
+          is_resolved?: boolean | null
+          rag_version: string
+          recommendations?: Json | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          severity: string
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          category?: string
+          confidence_score?: number | null
+          created_at?: string | null
+          data_points?: Json | null
+          description?: string
+          id?: string
+          impact_score?: number | null
+          insight_type?: string
+          is_resolved?: boolean | null
+          rag_version?: string
+          recommendations?: Json | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          severity?: string
+          title?: string
+          updated_at?: string | null
         }
         Relationships: []
       }
@@ -1163,274 +1721,300 @@ export type Database = {
       }
       query_cache: {
         Row: {
-          category: string | null
-          confidence: number | null
           created_at: string | null
+          expires_at: string | null
           hit_count: number | null
-          key: string
-          last_accessed: string | null
-          query: string
-          response: string
-          timestamp: string | null
-        }
-        Insert: {
-          category?: string | null
-          confidence?: number | null
-          created_at?: string | null
-          hit_count?: number | null
-          key: string
-          last_accessed?: string | null
-          query: string
-          response: string
-          timestamp?: string | null
-        }
-        Update: {
-          category?: string | null
-          confidence?: number | null
-          created_at?: string | null
-          hit_count?: number | null
-          key?: string
-          last_accessed?: string | null
-          query?: string
-          response?: string
-          timestamp?: string | null
-        }
-        Relationships: []
-      }
-      regime_urbanistico: {
-        Row: {
-          afastamento_frente: string | null
-          afastamento_fundos: string | null
-          afastamento_lateral: string | null
-          altura_maxima: number | null
-          area_maxima_quarteirao: string | null
-          area_minima_lote: number | null
-          area_minima_quarteirao: string | null
-          area_publica_equip_desmembramento_t1: string | null
-          area_publica_equip_desmembramento_t2: string | null
-          area_publica_equip_desmembramento_t3: string | null
-          area_publica_equip_fracionamento: string | null
-          area_publica_equip_loteamento: string | null
-          area_publica_viaria_desmembramento_t1: string | null
-          area_publica_viaria_desmembramento_t2: string | null
-          area_publica_viaria_desmembramento_t3: string | null
-          area_publica_viaria_fracionamento: string | null
-          area_publica_viaria_loteamento: string | null
-          bairro: string
-          coef_aproveitamento_basico: number | null
-          coef_aproveitamento_maximo: number | null
-          coef_basico_4d: string | null
-          coef_maximo_4d: string | null
-          comercio_atacadista_ia1: string | null
-          comercio_atacadista_ia2: string | null
-          comercio_atacadista_ia3: string | null
-          comercio_varejista_ia1: string | null
-          comercio_varejista_ia2: string | null
-          comercio_varejista_inocuo: string | null
-          created_at: string | null
-          enquadramento_desmembramento_t1: string | null
-          enquadramento_desmembramento_t2: string | null
-          enquadramento_desmembramento_t3: string | null
-          enquadramento_fracionamento: string | null
-          enquadramento_loteamento: string | null
-          face_maxima_quarteirao: string | null
-          fator_conversao_permeabilidade: string | null
           id: number
-          industria_inocua: string | null
-          industria_interferencia_ambiental: string | null
-          modulo_fracionamento: string | null
-          nivel_controle_entretenimento: string | null
-          recuo_jardim: string | null
-          servico_ia1: string | null
-          servico_ia2: string | null
-          servico_ia3: string | null
-          servico_inocuo: string | null
-          taxa_permeabilidade_acima_1500: string | null
-          taxa_permeabilidade_ate_1500: string | null
-          testada_minima_lote: number | null
+          last_hit: string | null
+          metadata: Json | null
+          query_hash: string
+          query_text: string
+          query_type: string | null
+          response_time_ms: number | null
+          result: Json
+          token_count: number | null
           updated_at: string | null
-          zona: string
         }
         Insert: {
-          afastamento_frente?: string | null
-          afastamento_fundos?: string | null
-          afastamento_lateral?: string | null
-          altura_maxima?: number | null
-          area_maxima_quarteirao?: string | null
-          area_minima_lote?: number | null
-          area_minima_quarteirao?: string | null
-          area_publica_equip_desmembramento_t1?: string | null
-          area_publica_equip_desmembramento_t2?: string | null
-          area_publica_equip_desmembramento_t3?: string | null
-          area_publica_equip_fracionamento?: string | null
-          area_publica_equip_loteamento?: string | null
-          area_publica_viaria_desmembramento_t1?: string | null
-          area_publica_viaria_desmembramento_t2?: string | null
-          area_publica_viaria_desmembramento_t3?: string | null
-          area_publica_viaria_fracionamento?: string | null
-          area_publica_viaria_loteamento?: string | null
-          bairro: string
-          coef_aproveitamento_basico?: number | null
-          coef_aproveitamento_maximo?: number | null
-          coef_basico_4d?: string | null
-          coef_maximo_4d?: string | null
-          comercio_atacadista_ia1?: string | null
-          comercio_atacadista_ia2?: string | null
-          comercio_atacadista_ia3?: string | null
-          comercio_varejista_ia1?: string | null
-          comercio_varejista_ia2?: string | null
-          comercio_varejista_inocuo?: string | null
           created_at?: string | null
-          enquadramento_desmembramento_t1?: string | null
-          enquadramento_desmembramento_t2?: string | null
-          enquadramento_desmembramento_t3?: string | null
-          enquadramento_fracionamento?: string | null
-          enquadramento_loteamento?: string | null
-          face_maxima_quarteirao?: string | null
-          fator_conversao_permeabilidade?: string | null
+          expires_at?: string | null
+          hit_count?: number | null
           id?: number
-          industria_inocua?: string | null
-          industria_interferencia_ambiental?: string | null
-          modulo_fracionamento?: string | null
-          nivel_controle_entretenimento?: string | null
-          recuo_jardim?: string | null
-          servico_ia1?: string | null
-          servico_ia2?: string | null
-          servico_ia3?: string | null
-          servico_inocuo?: string | null
-          taxa_permeabilidade_acima_1500?: string | null
-          taxa_permeabilidade_ate_1500?: string | null
-          testada_minima_lote?: number | null
+          last_hit?: string | null
+          metadata?: Json | null
+          query_hash: string
+          query_text: string
+          query_type?: string | null
+          response_time_ms?: number | null
+          result: Json
+          token_count?: number | null
           updated_at?: string | null
-          zona: string
         }
         Update: {
-          afastamento_frente?: string | null
-          afastamento_fundos?: string | null
-          afastamento_lateral?: string | null
-          altura_maxima?: number | null
-          area_maxima_quarteirao?: string | null
-          area_minima_lote?: number | null
-          area_minima_quarteirao?: string | null
-          area_publica_equip_desmembramento_t1?: string | null
-          area_publica_equip_desmembramento_t2?: string | null
-          area_publica_equip_desmembramento_t3?: string | null
-          area_publica_equip_fracionamento?: string | null
-          area_publica_equip_loteamento?: string | null
-          area_publica_viaria_desmembramento_t1?: string | null
-          area_publica_viaria_desmembramento_t2?: string | null
-          area_publica_viaria_desmembramento_t3?: string | null
-          area_publica_viaria_fracionamento?: string | null
-          area_publica_viaria_loteamento?: string | null
-          bairro?: string
-          coef_aproveitamento_basico?: number | null
-          coef_aproveitamento_maximo?: number | null
-          coef_basico_4d?: string | null
-          coef_maximo_4d?: string | null
-          comercio_atacadista_ia1?: string | null
-          comercio_atacadista_ia2?: string | null
-          comercio_atacadista_ia3?: string | null
-          comercio_varejista_ia1?: string | null
-          comercio_varejista_ia2?: string | null
-          comercio_varejista_inocuo?: string | null
           created_at?: string | null
-          enquadramento_desmembramento_t1?: string | null
-          enquadramento_desmembramento_t2?: string | null
-          enquadramento_desmembramento_t3?: string | null
-          enquadramento_fracionamento?: string | null
-          enquadramento_loteamento?: string | null
-          face_maxima_quarteirao?: string | null
-          fator_conversao_permeabilidade?: string | null
+          expires_at?: string | null
+          hit_count?: number | null
           id?: number
-          industria_inocua?: string | null
-          industria_interferencia_ambiental?: string | null
-          modulo_fracionamento?: string | null
-          nivel_controle_entretenimento?: string | null
-          recuo_jardim?: string | null
-          servico_ia1?: string | null
-          servico_ia2?: string | null
-          servico_ia3?: string | null
-          servico_inocuo?: string | null
-          taxa_permeabilidade_acima_1500?: string | null
-          taxa_permeabilidade_ate_1500?: string | null
-          testada_minima_lote?: number | null
+          last_hit?: string | null
+          metadata?: Json | null
+          query_hash?: string
+          query_text?: string
+          query_type?: string | null
+          response_time_ms?: number | null
+          result?: Json
+          token_count?: number | null
           updated_at?: string | null
-          zona?: string
         }
         Relationships: []
       }
-      regime_urbanistico_backup: {
+      rag_version_comparisons: {
         Row: {
-          altura_max_m: number | null
-          area_total_ha: number | null
-          bairro: string | null
-          ca_max: number | null
           created_at: string | null
-          densidade_hab_ha: number | null
-          divisao_lote: boolean | null
-          domicilios: number | null
-          id: number | null
-          metadata: Json | null
-          populacao: number | null
-          quarteirao_padrao_m: number | null
-          quota_ideal_m2: number | null
-          recuo_fundos_m: number | null
-          recuo_jardim_m: number | null
-          recuo_lateral_m: number | null
-          remembramento: boolean | null
-          taxa_permeabilidade: number | null
-          to_base: number | null
-          to_max: number | null
-          updated_at: string | null
-          zona: string | null
+          difference_analysis: Json | null
+          dual_run_id: string | null
+          id: string
+          quality_metrics: Json | null
+          query_text: string
+          similarity_score: number | null
+          test_case_id: number | null
+          v1_accuracy_score: number | null
+          v1_is_correct: boolean | null
+          v1_response: string | null
+          v1_response_time: number | null
+          v2_accuracy_score: number | null
+          v2_is_correct: boolean | null
+          v2_response: string | null
+          v2_response_time: number | null
         }
         Insert: {
-          altura_max_m?: number | null
-          area_total_ha?: number | null
-          bairro?: string | null
-          ca_max?: number | null
           created_at?: string | null
-          densidade_hab_ha?: number | null
-          divisao_lote?: boolean | null
-          domicilios?: number | null
-          id?: number | null
-          metadata?: Json | null
-          populacao?: number | null
-          quarteirao_padrao_m?: number | null
-          quota_ideal_m2?: number | null
-          recuo_fundos_m?: number | null
-          recuo_jardim_m?: number | null
-          recuo_lateral_m?: number | null
-          remembramento?: boolean | null
-          taxa_permeabilidade?: number | null
-          to_base?: number | null
-          to_max?: number | null
-          updated_at?: string | null
-          zona?: string | null
+          difference_analysis?: Json | null
+          dual_run_id?: string | null
+          id?: string
+          quality_metrics?: Json | null
+          query_text: string
+          similarity_score?: number | null
+          test_case_id?: number | null
+          v1_accuracy_score?: number | null
+          v1_is_correct?: boolean | null
+          v1_response?: string | null
+          v1_response_time?: number | null
+          v2_accuracy_score?: number | null
+          v2_is_correct?: boolean | null
+          v2_response?: string | null
+          v2_response_time?: number | null
         }
         Update: {
-          altura_max_m?: number | null
-          area_total_ha?: number | null
-          bairro?: string | null
-          ca_max?: number | null
           created_at?: string | null
-          densidade_hab_ha?: number | null
-          divisao_lote?: boolean | null
-          domicilios?: number | null
-          id?: number | null
-          metadata?: Json | null
-          populacao?: number | null
-          quarteirao_padrao_m?: number | null
-          quota_ideal_m2?: number | null
-          recuo_fundos_m?: number | null
-          recuo_jardim_m?: number | null
-          recuo_lateral_m?: number | null
-          remembramento?: boolean | null
-          taxa_permeabilidade?: number | null
-          to_base?: number | null
-          to_max?: number | null
-          updated_at?: string | null
-          zona?: string | null
+          difference_analysis?: Json | null
+          dual_run_id?: string | null
+          id?: string
+          quality_metrics?: Json | null
+          query_text?: string
+          similarity_score?: number | null
+          test_case_id?: number | null
+          v1_accuracy_score?: number | null
+          v1_is_correct?: boolean | null
+          v1_response?: string | null
+          v1_response_time?: number | null
+          v2_accuracy_score?: number | null
+          v2_is_correct?: boolean | null
+          v2_response?: string | null
+          v2_response_time?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rag_version_comparisons_dual_run_id_fkey"
+            columns: ["dual_run_id"]
+            isOneToOne: false
+            referencedRelation: "qa_dual_validation_runs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rag_version_comparisons_test_case_id_fkey"
+            columns: ["test_case_id"]
+            isOneToOne: false
+            referencedRelation: "qa_test_cases"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      regime_urbanistico_consolidado: {
+        Row: {
+          Afastamentos___Frente: string | null
+          Afastamentos___Fundos: string | null
+          Afastamentos___Laterais: string | null
+          Altura_Maxima___Edificacao_Isolada: number | null
+          Área_de_Destinacao_Publica___Equipamentos_Fracionamento: string | null
+          Área_de_Destinacao_Publica___Malha_Viaria_Fracionamento: string | null
+          Área_Maxima_do_Quarteirao: number | null
+          Área_Minima_do_Lote: number | null
+          Área_Minima_do_Quarteirao: string | null
+          Área_Publica___Equipamentos_Desmembramento_Tipo_1: string | null
+          Área_Publica___Equipamentos_Desmembramento_Tipo_2: string | null
+          Área_Publica___Equipamentos_Desmembramento_Tipo_3: string | null
+          Área_Publica___Equipamentos_Loteamento: number | null
+          Área_Publica___Malha_Viaria_Desmembramento_Tipo_1: number | null
+          Área_Publica___Malha_Viaria_Desmembramento_Tipo_2: number | null
+          Área_Publica___Malha_Viaria_Desmembramento_Tipo_3: number | null
+          Área_Publica___Malha_Viaria_Loteamento: number | null
+          Bairro: string
+          Categoria_Risco: string | null
+          Coeficiente_de_Aproveitamento___Basico: string | null
+          Coeficiente_de_Aproveitamento___Maximo: string | null
+          "Coeficiente_de_Aproveitamento_Basico_+4D": string | null
+          "Coeficiente_de_Aproveitamento_Maximo_+4D": string | null
+          "Comercio_Atacadista_IA1___Restricao_/_Porte": string | null
+          "Comercio_Atacadista_IA2___Restricao_/_Porte": string | null
+          "Comercio_Atacadista_IA3___Restricao_/_Porte": string | null
+          "Comercio_Varejista_IA1___Restricao_/_Porte": string | null
+          "Comercio_Varejista_IA2___Restricao_/_Porte": string | null
+          "Comercio_Varejista_Inocuo___Restricao_/_Porte": string | null
+          Enquadramento_Desmembramento_Tipo_1: string | null
+          Enquadramento_Desmembramento_Tipo_2: string | null
+          Enquadramento_Desmembramento_Tipo_3: string | null
+          Enquadramento_Fracionamento: number | null
+          Enquadramento_Loteamento: string | null
+          Face_Maxima_do_Quarteirao: number | null
+          Fator_de_Conversao_da_Taxa_de_Permeabilidade: string | null
+          id: number
+          "Industria_com_Interferência_Ambiental___Restricao_/_Porte":
+            | string
+            | null
+          "Industria_Inocua___Restricao_/_Porte": number | null
+          Modulo_de_Fracionamento: number | null
+          Nivel_de_Controle_de_Polarizacao_de_Entretenimento_Noturno:
+            | string
+            | null
+          Recuo_de_Jardim: number | null
+          "Servico_IA1___Restricao_/_Porte": string | null
+          "Servico_IA2___Restricao_/_Porte": string | null
+          "Servico_IA3___Restricao_/_Porte": string | null
+          "Servico_Inocuo___Restricao_/_Porte": string | null
+          "Taxa_de_Permeabilidade_acima_de_1,500_m2": number | null
+          "Taxa_de_Permeabilidade_ate_1,500_m2": number | null
+          Testada_Minima_do_Lote: number | null
+          Zona: string | null
+        }
+        Insert: {
+          Afastamentos___Frente?: string | null
+          Afastamentos___Fundos?: string | null
+          Afastamentos___Laterais?: string | null
+          Altura_Maxima___Edificacao_Isolada?: number | null
+          Área_de_Destinacao_Publica___Equipamentos_Fracionamento?:
+            | string
+            | null
+          Área_de_Destinacao_Publica___Malha_Viaria_Fracionamento?:
+            | string
+            | null
+          Área_Maxima_do_Quarteirao?: number | null
+          Área_Minima_do_Lote?: number | null
+          Área_Minima_do_Quarteirao?: string | null
+          Área_Publica___Equipamentos_Desmembramento_Tipo_1?: string | null
+          Área_Publica___Equipamentos_Desmembramento_Tipo_2?: string | null
+          Área_Publica___Equipamentos_Desmembramento_Tipo_3?: string | null
+          Área_Publica___Equipamentos_Loteamento?: number | null
+          Área_Publica___Malha_Viaria_Desmembramento_Tipo_1?: number | null
+          Área_Publica___Malha_Viaria_Desmembramento_Tipo_2?: number | null
+          Área_Publica___Malha_Viaria_Desmembramento_Tipo_3?: number | null
+          Área_Publica___Malha_Viaria_Loteamento?: number | null
+          Bairro: string
+          Categoria_Risco?: string | null
+          Coeficiente_de_Aproveitamento___Basico?: string | null
+          Coeficiente_de_Aproveitamento___Maximo?: string | null
+          "Coeficiente_de_Aproveitamento_Basico_+4D"?: string | null
+          "Coeficiente_de_Aproveitamento_Maximo_+4D"?: string | null
+          "Comercio_Atacadista_IA1___Restricao_/_Porte"?: string | null
+          "Comercio_Atacadista_IA2___Restricao_/_Porte"?: string | null
+          "Comercio_Atacadista_IA3___Restricao_/_Porte"?: string | null
+          "Comercio_Varejista_IA1___Restricao_/_Porte"?: string | null
+          "Comercio_Varejista_IA2___Restricao_/_Porte"?: string | null
+          "Comercio_Varejista_Inocuo___Restricao_/_Porte"?: string | null
+          Enquadramento_Desmembramento_Tipo_1?: string | null
+          Enquadramento_Desmembramento_Tipo_2?: string | null
+          Enquadramento_Desmembramento_Tipo_3?: string | null
+          Enquadramento_Fracionamento?: number | null
+          Enquadramento_Loteamento?: string | null
+          Face_Maxima_do_Quarteirao?: number | null
+          Fator_de_Conversao_da_Taxa_de_Permeabilidade?: string | null
+          id: number
+          "Industria_com_Interferência_Ambiental___Restricao_/_Porte"?:
+            | string
+            | null
+          "Industria_Inocua___Restricao_/_Porte"?: number | null
+          Modulo_de_Fracionamento?: number | null
+          Nivel_de_Controle_de_Polarizacao_de_Entretenimento_Noturno?:
+            | string
+            | null
+          Recuo_de_Jardim?: number | null
+          "Servico_IA1___Restricao_/_Porte"?: string | null
+          "Servico_IA2___Restricao_/_Porte"?: string | null
+          "Servico_IA3___Restricao_/_Porte"?: string | null
+          "Servico_Inocuo___Restricao_/_Porte"?: string | null
+          "Taxa_de_Permeabilidade_acima_de_1,500_m2"?: number | null
+          "Taxa_de_Permeabilidade_ate_1,500_m2"?: number | null
+          Testada_Minima_do_Lote?: number | null
+          Zona?: string | null
+        }
+        Update: {
+          Afastamentos___Frente?: string | null
+          Afastamentos___Fundos?: string | null
+          Afastamentos___Laterais?: string | null
+          Altura_Maxima___Edificacao_Isolada?: number | null
+          Área_de_Destinacao_Publica___Equipamentos_Fracionamento?:
+            | string
+            | null
+          Área_de_Destinacao_Publica___Malha_Viaria_Fracionamento?:
+            | string
+            | null
+          Área_Maxima_do_Quarteirao?: number | null
+          Área_Minima_do_Lote?: number | null
+          Área_Minima_do_Quarteirao?: string | null
+          Área_Publica___Equipamentos_Desmembramento_Tipo_1?: string | null
+          Área_Publica___Equipamentos_Desmembramento_Tipo_2?: string | null
+          Área_Publica___Equipamentos_Desmembramento_Tipo_3?: string | null
+          Área_Publica___Equipamentos_Loteamento?: number | null
+          Área_Publica___Malha_Viaria_Desmembramento_Tipo_1?: number | null
+          Área_Publica___Malha_Viaria_Desmembramento_Tipo_2?: number | null
+          Área_Publica___Malha_Viaria_Desmembramento_Tipo_3?: number | null
+          Área_Publica___Malha_Viaria_Loteamento?: number | null
+          Bairro?: string
+          Categoria_Risco?: string | null
+          Coeficiente_de_Aproveitamento___Basico?: string | null
+          Coeficiente_de_Aproveitamento___Maximo?: string | null
+          "Coeficiente_de_Aproveitamento_Basico_+4D"?: string | null
+          "Coeficiente_de_Aproveitamento_Maximo_+4D"?: string | null
+          "Comercio_Atacadista_IA1___Restricao_/_Porte"?: string | null
+          "Comercio_Atacadista_IA2___Restricao_/_Porte"?: string | null
+          "Comercio_Atacadista_IA3___Restricao_/_Porte"?: string | null
+          "Comercio_Varejista_IA1___Restricao_/_Porte"?: string | null
+          "Comercio_Varejista_IA2___Restricao_/_Porte"?: string | null
+          "Comercio_Varejista_Inocuo___Restricao_/_Porte"?: string | null
+          Enquadramento_Desmembramento_Tipo_1?: string | null
+          Enquadramento_Desmembramento_Tipo_2?: string | null
+          Enquadramento_Desmembramento_Tipo_3?: string | null
+          Enquadramento_Fracionamento?: number | null
+          Enquadramento_Loteamento?: string | null
+          Face_Maxima_do_Quarteirao?: number | null
+          Fator_de_Conversao_da_Taxa_de_Permeabilidade?: string | null
+          id?: number
+          "Industria_com_Interferência_Ambiental___Restricao_/_Porte"?:
+            | string
+            | null
+          "Industria_Inocua___Restricao_/_Porte"?: number | null
+          Modulo_de_Fracionamento?: number | null
+          Nivel_de_Controle_de_Polarizacao_de_Entretenimento_Noturno?:
+            | string
+            | null
+          Recuo_de_Jardim?: number | null
+          "Servico_IA1___Restricao_/_Porte"?: string | null
+          "Servico_IA2___Restricao_/_Porte"?: string | null
+          "Servico_IA3___Restricao_/_Porte"?: string | null
+          "Servico_Inocuo___Restricao_/_Porte"?: string | null
+          "Taxa_de_Permeabilidade_acima_de_1,500_m2"?: number | null
+          "Taxa_de_Permeabilidade_ate_1,500_m2"?: number | null
+          Testada_Minima_do_Lote?: number | null
+          Zona?: string | null
         }
         Relationships: []
       }
@@ -1458,6 +2042,48 @@ export type Database = {
         }
         Relationships: []
       }
+      session_memory: {
+        Row: {
+          agent_results: Json | null
+          confidence: number | null
+          context: Json | null
+          created_at: string | null
+          id: string
+          metadata: Json | null
+          query: string
+          response: string | null
+          session_id: string
+          turn_number: number
+          updated_at: string | null
+        }
+        Insert: {
+          agent_results?: Json | null
+          confidence?: number | null
+          context?: Json | null
+          created_at?: string | null
+          id?: string
+          metadata?: Json | null
+          query: string
+          response?: string | null
+          session_id: string
+          turn_number: number
+          updated_at?: string | null
+        }
+        Update: {
+          agent_results?: Json | null
+          confidence?: number | null
+          context?: Json | null
+          created_at?: string | null
+          id?: string
+          metadata?: Json | null
+          query?: string
+          response?: string | null
+          session_id?: string
+          turn_number?: number
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       sessions: {
         Row: {
           created_at: string | null
@@ -1479,6 +2105,72 @@ export type Database = {
           metadata?: Json | null
           updated_at?: string | null
           user_id?: string | null
+        }
+        Relationships: []
+      }
+      sql_validation_logs: {
+        Row: {
+          confidence: number | null
+          created_at: string | null
+          id: string
+          is_valid: boolean | null
+          issues: string[] | null
+          query_text: string
+          query_type: string | null
+          recommendations: string[] | null
+          record_count: number | null
+          should_alert: boolean | null
+          table_used: string | null
+        }
+        Insert: {
+          confidence?: number | null
+          created_at?: string | null
+          id?: string
+          is_valid?: boolean | null
+          issues?: string[] | null
+          query_text: string
+          query_type?: string | null
+          recommendations?: string[] | null
+          record_count?: number | null
+          should_alert?: boolean | null
+          table_used?: string | null
+        }
+        Update: {
+          confidence?: number | null
+          created_at?: string | null
+          id?: string
+          is_valid?: boolean | null
+          issues?: string[] | null
+          query_text?: string
+          query_type?: string | null
+          recommendations?: string[] | null
+          record_count?: number | null
+          should_alert?: boolean | null
+          table_used?: string | null
+        }
+        Relationships: []
+      }
+      table_coverage_reports: {
+        Row: {
+          alert_level: string | null
+          created_at: string | null
+          id: string
+          report_data: Json
+          total_queries: number | null
+        }
+        Insert: {
+          alert_level?: string | null
+          created_at?: string | null
+          id?: string
+          report_data: Json
+          total_queries?: number | null
+        }
+        Update: {
+          alert_level?: string | null
+          created_at?: string | null
+          id?: string
+          report_data?: Json
+          total_queries?: number | null
         }
         Relationships: []
       }
@@ -1675,68 +2367,58 @@ export type Database = {
         }
         Relationships: []
       }
-      zots_bairros: {
+      validation_cache: {
         Row: {
-          bairro: string
+          confidence: number | null
           created_at: string | null
-          id: number
-          tem_zona_especial: string | null
-          total_zonas_no_bairro: number | null
-          updated_at: string | null
-          zona: string
+          expires_at: string | null
+          id: string
+          query_hash: string
+          validation_result: Json
         }
         Insert: {
-          bairro: string
+          confidence?: number | null
           created_at?: string | null
-          id?: number
-          tem_zona_especial?: string | null
-          total_zonas_no_bairro?: number | null
-          updated_at?: string | null
-          zona: string
+          expires_at?: string | null
+          id?: string
+          query_hash: string
+          validation_result: Json
         }
         Update: {
-          bairro?: string
+          confidence?: number | null
           created_at?: string | null
-          id?: number
-          tem_zona_especial?: string | null
-          total_zonas_no_bairro?: number | null
-          updated_at?: string | null
-          zona?: string
-        }
-        Relationships: []
-      }
-      zots_bairros_backup: {
-        Row: {
-          bairro: string | null
-          created_at: string | null
-          id: number | null
-          tem_zona_especial: boolean | null
-          total_zonas_no_bairro: number | null
-          updated_at: string | null
-          zona: string | null
-        }
-        Insert: {
-          bairro?: string | null
-          created_at?: string | null
-          id?: number | null
-          tem_zona_especial?: boolean | null
-          total_zonas_no_bairro?: number | null
-          updated_at?: string | null
-          zona?: string | null
-        }
-        Update: {
-          bairro?: string | null
-          created_at?: string | null
-          id?: number | null
-          tem_zona_especial?: boolean | null
-          total_zonas_no_bairro?: number | null
-          updated_at?: string | null
-          zona?: string | null
+          expires_at?: string | null
+          id?: string
+          query_hash?: string
+          validation_result?: Json
         }
         Relationships: []
       }
     }
     Views: {
+      agent_performance_stats: {
+        Row: {
+          agent_type: string | null
+          avg_confidence: number | null
+          avg_execution_time: number | null
+          avg_records_processed: number | null
+          execution_date: string | null
+          success_rate: number | null
+          total_executions: number | null
+        }
+        Relationships: []
+      }
+      anexos_summary: {
+        Row: {
+          anexo_type: string | null
+          document_type: string | null
+          pending: number | null
+          percent_complete: number | null
+          processed: number | null
+          total: number | null
+        }
+        Relationships: []
+      }
       benchmark_analysis: {
         Row: {
           avg_cost_per_query: number | null
@@ -1751,14 +2433,16 @@ export type Database = {
         }
         Relationships: []
       }
-      cache_effectiveness: {
+      cache_statistics: {
         Row: {
-          active_last_hour: number | null
-          avg_hits_per_entry: number | null
-          categories: number | null
-          high_confidence_entries: number | null
+          active_entries: number | null
+          avg_hits: number | null
+          avg_response_time: number | null
+          cached_hits: number | null
+          expired_entries: number | null
+          max_hits: number | null
+          query_types: number | null
           total_entries: number | null
-          total_hits: number | null
         }
         Relationships: []
       }
@@ -1787,24 +2471,48 @@ export type Database = {
         }
         Relationships: []
       }
+      llm_models_public: {
+        Row: {
+          average_latency: number | null
+          created_at: string | null
+          id: number | null
+          is_active: boolean | null
+          max_tokens: number | null
+          model: string | null
+          provider: string | null
+          public_capabilities: Json | null
+          updated_at: string | null
+        }
+        Insert: {
+          average_latency?: number | null
+          created_at?: string | null
+          id?: number | null
+          is_active?: boolean | null
+          max_tokens?: number | null
+          model?: string | null
+          provider?: string | null
+          public_capabilities?: never
+          updated_at?: string | null
+        }
+        Update: {
+          average_latency?: number | null
+          created_at?: string | null
+          id?: number | null
+          is_active?: boolean | null
+          max_tokens?: number | null
+          model?: string | null
+          provider?: string | null
+          public_capabilities?: never
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       model_feedback_stats: {
         Row: {
           comments_count: number | null
           model: string | null
           satisfaction_rate: number | null
           total_feedback: number | null
-        }
-        Relationships: []
-      }
-      popular_queries: {
-        Row: {
-          category: string | null
-          confidence: number | null
-          hit_count: number | null
-          last_accessed: string | null
-          query: string | null
-          response: string | null
-          timestamp: string | null
         }
         Relationships: []
       }
@@ -1836,7 +2544,15 @@ export type Database = {
           total_tokens: number | null
           validation_run_id: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "qa_token_usage_validation_run_id_fkey"
+            columns: ["validation_run_id"]
+            isOneToOne: false
+            referencedRelation: "qa_validation_runs"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       quality_metrics_daily: {
         Row: {
@@ -1877,65 +2593,137 @@ export type Database = {
       }
     }
     Functions: {
+      add_to_cache: {
+        Args: { p_query_text: string; p_query_type: string; p_result: Json }
+        Returns: undefined
+      }
       binary_quantize: {
         Args: { "": string } | { "": unknown }
         Returns: unknown
       }
+      cache_regime_query: {
+        Args: { p_bairro?: string; p_zona?: string }
+        Returns: Json
+      }
       check_auth_rate_limit: {
-        Args: {
-          user_ip: unknown
-          max_attempts?: number
-          window_minutes?: number
-        }
+        Args: { max_attempts: number; user_ip: unknown; window_minutes: number }
         Returns: boolean
       }
       check_quality_thresholds: {
         Args: Record<PropertyKey, never>
         Returns: {
-          metric_name: string
           current_value: number
-          threshold_value: number
+          metric_name: string
           status: string
+          threshold_value: number
         }[]
       }
       clean_expired_cache: {
         Args: Record<PropertyKey, never>
+        Returns: number
+      }
+      cleanup_old_data: {
+        Args: Record<PropertyKey, never>
         Returns: undefined
+      }
+      cleanup_stuck_qa_runs: {
+        Args: Record<PropertyKey, never>
+        Returns: number
+      }
+      convert_string_to_vector: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
+      delete_chat_session_atomic: {
+        Args: { session_id_param: string }
+        Returns: Json
       }
       execute_sql_query: {
         Args: { query_text: string }
         Returns: Json
       }
-      get_best_model_for_query: {
-        Args: { query_type: string; priority?: string }
+      fix_content_duplications_v2: {
+        Args: Record<PropertyKey, never>
         Returns: {
-          provider: string
+          duplications_removed: number
+          id: number
+          new_length: number
+          original_length: number
+          patterns_found: string[]
+        }[]
+      }
+      get_article_context: {
+        Args: { art_num: number; doc_type: string }
+        Returns: string
+      }
+      get_best_model_for_query: {
+        Args: { priority?: string; query_type: string }
+        Returns: {
           model: string
+          provider: string
           score: number
         }[]
+      }
+      get_cached_response: {
+        Args: { p_query_hash: string }
+        Returns: {
+          confidence: number
+          final_response: string
+          hit_count: number
+          original_query: string
+          sources: Json
+        }[]
+      }
+      get_complete_hierarchy: {
+        Args: { art_num: number; doc_type: string }
+        Returns: string
       }
       get_current_user_role: {
         Args: Record<PropertyKey, never>
         Returns: string
       }
+      get_from_cache: {
+        Args: { p_query_text: string }
+        Returns: Json
+      }
       get_riscos_bairro: {
         Args: { nome_bairro: string }
         Returns: {
           bairro: string
-          riscos_ativos: string[]
-          nivel_risco: number
           descricao_riscos: string
+          nivel_risco: number
+          riscos_ativos: string[]
         }[]
       }
       get_session_feedback_summary: {
         Args: { p_session_id: string }
         Returns: {
-          total_messages: number
           messages_with_feedback: number
-          positive_feedback: number
           negative_feedback: number
+          positive_feedback: number
           satisfaction_rate: number
+          total_messages: number
         }[]
+      }
+      gtrgm_compress: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      gtrgm_decompress: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      gtrgm_in: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      gtrgm_options: {
+        Args: { "": unknown }
+        Returns: undefined
+      }
+      gtrgm_out: {
+        Args: { "": unknown }
+        Returns: unknown
       }
       halfvec_avg: {
         Args: { "": number[] }
@@ -1969,6 +2757,28 @@ export type Database = {
         Args: { "": unknown }
         Returns: unknown
       }
+      hybrid_search: {
+        Args:
+          | {
+              doc_type?: string
+              embedding_vector?: string
+              limit_results?: number
+              search_query: string
+            }
+          | {
+              match_count?: number
+              match_threshold?: number
+              query_embedding: string
+              query_text: string
+            }
+        Returns: {
+          content: string
+          id: string
+          metadata: Json
+          rank: number
+          similarity: number
+        }[]
+      }
       is_admin: {
         Args: Record<PropertyKey, never>
         Returns: boolean
@@ -1995,90 +2805,314 @@ export type Database = {
       }
       l2_normalize: {
         Args: { "": string } | { "": unknown } | { "": unknown }
-        Returns: unknown
+        Returns: string
+      }
+      log_agent_performance: {
+        Args: {
+          p_agent_type: string
+          p_confidence: number
+          p_data_sources_used?: string[]
+          p_error_message?: string
+          p_execution_time: number
+          p_query_context: Json
+          p_records_processed?: number
+          p_success: boolean
+        }
+        Returns: undefined
       }
       log_user_action: {
         Args: {
           action_name: string
-          table_name?: string
-          record_id?: string
-          old_values?: Json
-          new_values?: Json
+          new_values: Json
+          old_values: Json
+          record_id: string
+          table_name: string
         }
         Returns: undefined
       }
+      match_document_sections: {
+        Args: {
+          match_count?: number
+          match_threshold?: number
+          query_embedding: string
+        }
+        Returns: {
+          content: string
+          id: string
+          metadata: Json
+          similarity: number
+        }[]
+      }
       match_documents: {
         Args:
-          | { query_embedding: string; match_count: number }
-          | { query_embedding: string; match_count?: number; filter?: Json }
+          | { filter?: Json; match_count?: number; query_embedding: string }
+          | { match_count: number; query_embedding: string }
           | {
-              query_embedding: string
-              match_threshold?: number
               match_count?: number
+              match_threshold?: number
+              query_embedding: string
             }
         Returns: {
-          content_chunk: string
+          article_number: number
+          article_text: string
+          document_type: string
+          full_content: string
           similarity: number
-          document_id: number
-          chunk_metadata: Json
         }[]
       }
       match_embeddings: {
         Args: {
-          query_embedding: string
-          match_threshold?: number
           match_count?: number
+          match_threshold?: number
+          query_embedding: string
         }
         Returns: {
-          id: number
-          document_id: number
           content: string
+          document_id: number
+          id: number
           similarity: number
+        }[]
+      }
+      match_enhanced_documents: {
+        Args: {
+          article_filter?: number
+          document_type_filter?: string
+          hierarchy_filter?: number
+          match_count?: number
+          match_threshold?: number
+          query_embedding: string
+          tags_filter?: string[]
+        }
+        Returns: {
+          article_number: number
+          chunk_metadata: Json
+          content_chunk: string
+          document_type: string
+          hierarchy_level: number
+          id: string
+          similarity: number
+          tags: string[]
+          title: string
         }[]
       }
       match_hierarchical_documents: {
         Args: {
-          query_embedding: string
           match_count: number
+          query_embedding: string
           query_text?: string
         }
         Returns: {
-          content_chunk: string
-          similarity: number
-          chunk_metadata: Json
           boosted_score: number
+          chunk_metadata: Json
+          content_chunk: string
           document_id: number
+          similarity: number
+        }[]
+      }
+      match_knowledgebase: {
+        Args: {
+          match_count?: number
+          match_threshold?: number
+          query_embedding: string
+          tipo_documento_filter?: string
+        }
+        Returns: {
+          capitulo: string
+          id: string
+          parte: string
+          pergunta: string
+          resposta: string
+          secao: string
+          similarity: number
+          subsecao: string
+          texto: string
+          tipo_documento: string
+          titulo: string
+        }[]
+      }
+      match_legal_articles: {
+        Args: {
+          match_count?: number
+          match_threshold?: number
+          query_embedding: string
+        }
+        Returns: {
+          article_number: number
+          article_text: string
+          document_type: string
+          full_content: string
+          id: number
+          keywords: string[]
+          similarity: number
+        }[]
+      }
+      match_legal_articles_only: {
+        Args: {
+          match_count?: number
+          match_threshold?: number
+          query_embedding: string
+        }
+        Returns: {
+          article_number: number
+          article_text: string
+          document_type: string
+          full_content: string
+          id: number
+          keywords: string[]
+          similarity: number
+        }[]
+      }
+      match_legal_by_document: {
+        Args: {
+          doc_type: string
+          match_count?: number
+          match_threshold?: number
+          query_embedding: string
+        }
+        Returns: {
+          article_number: number
+          article_text: string
+          document_type: string
+          full_content: string
+          id: number
+          keywords: string[]
+          similarity: number
+        }[]
+      }
+      match_legal_hierarchy: {
+        Args: {
+          match_count?: number
+          match_threshold?: number
+          query_embedding: string
+        }
+        Returns: {
+          article_number: number
+          article_text: string
+          document_type: string
+          full_content: string
+          id: number
+          keywords: string[]
+          similarity: number
+        }[]
+      }
+      remove_content_duplications: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          duplications_removed: number
+          id: number
+          new_length: number
+          original_length: number
+        }[]
+      }
+      run_comprehensive_qa_test: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
+      save_to_cache: {
+        Args: {
+          p_agent_results: Json
+          p_confidence: number
+          p_execution_time: number
+          p_final_response: string
+          p_original_query: string
+          p_query_context: Json
+          p_query_hash: string
+          p_sources: Json
+        }
+        Returns: undefined
+      }
+      search_articles_knowledgebase: {
+        Args: { article_number_search: string; document_type_filter?: string }
+        Returns: {
+          article_number_extracted: number
+          id: string
+          texto: string
+          tipo_documento: string
+          titulo: string
+        }[]
+      }
+      search_articles_simple: {
+        Args: { doc_type?: string; search_term: string }
+        Returns: {
+          article_number: number
+          article_text: string
+          content: string
+          document_type: string
+          hierarchy: string
         }[]
       }
       search_content_by_similarity: {
-        Args: { search_query: string; match_count?: number }
+        Args: { match_count?: number; search_query: string }
         Returns: {
           content: string
-          similarity: number
           document_id: number
+          similarity: number
+        }[]
+      }
+      search_knowledgebase_by_content: {
+        Args: {
+          match_count?: number
+          search_text: string
+          tipo_documento_filter?: string
+        }
+        Returns: {
+          capitulo: string
+          id: string
+          parte: string
+          pergunta: string
+          relevance_score: number
+          resposta: string
+          secao: string
+          subsecao: string
+          texto: string
+          tipo_documento: string
+          titulo: string
         }[]
       }
       search_regime_urbanistico: {
         Args: { search_bairro?: string; search_zona?: string }
         Returns: {
-          id: number
-          bairro: string
-          zona: string
           altura_maxima: number
+          area_minima_lote: number
+          bairro: string
           coef_aproveitamento_basico: number
           coef_aproveitamento_maximo: number
-          area_minima_lote: number
+          id: number
           testada_minima_lote: number
+          zona: string
+        }[]
+      }
+      search_zots: {
+        Args: { bairro_query?: string; zot_query?: string }
+        Returns: {
+          altura_max: number
+          bairro: string
+          ca_basico: string
+          ca_max: string
+          taxa_permeabilidade_ate: number
+          zoneamento: string
         }[]
       }
       search_zots_by_bairro: {
         Args: { search_bairro: string }
         Returns: {
           bairro: string
-          zona: string
-          total_zonas_no_bairro: number
           tem_zona_especial: string
+          total_zonas_no_bairro: number
+          zona: string
         }[]
+      }
+      set_limit: {
+        Args: { "": number }
+        Returns: number
+      }
+      show_limit: {
+        Args: Record<PropertyKey, never>
+        Returns: number
+      }
+      show_trgm: {
+        Args: { "": string }
+        Returns: string[]
       }
       sparsevec_out: {
         Args: { "": unknown }
@@ -2095,6 +3129,18 @@ export type Database = {
       update_chunk_metadata: {
         Args: Record<PropertyKey, never>
         Returns: undefined
+      }
+      update_document_embedding: {
+        Args: { doc_id: string; new_embedding: number[] }
+        Returns: undefined
+      }
+      user_owns_session: {
+        Args: { session_id_param: string }
+        Returns: boolean
+      }
+      validate_qa_model: {
+        Args: { model_name: string }
+        Returns: boolean
       }
       vector_avg: {
         Args: { "": number[] }

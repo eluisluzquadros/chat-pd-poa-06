@@ -1,0 +1,9 @@
+
+### Capítulo II -  Do Comitê dos Estudos de Impacto de Vizinhança
+
+###### Art. 126
+O Comitê dos Estudos de Impacto de Vizinhança (CEIV) é responsável pela análise técnica dos projetos sujeitos à exigência de Estudo de Impacto de Vizinhança, nos termos do art. 163 desta Lei Complementar.
+
+**Parágrafo único** A composição, o funcionamento e as atribuições do CEIV serão definidos em regulamento.
+
+**Parágrafo único** A composição, o funcionamento e as atribuições do CEIV serão definidos em regulamento.

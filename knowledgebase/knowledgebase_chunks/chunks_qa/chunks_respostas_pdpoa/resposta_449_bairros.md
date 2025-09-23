@@ -1,0 +1,7 @@
+# Bairros - PDPOA 2025
+
+**Categoria:** bairros
+**Tags:** bairros, areas_risco
+**Origem:** Caso de teste #449 (Dificuldade: high)
+
+Considerando os impactos dos eventos climáticos extremos de 2024, propõe-se a seguinte divisão do território municipal para orientar políticas de adaptação: Áreas Protegidas pelo Sistema Atual: Regiões já abrangidas pela infraestrutura existente de proteção contra inundações. A prioridade nestas áreas é a recuperação, manutenção e eventual modernização dos sistemas de proteção, garantindo sua resiliência frente ao aumento da frequência e intensidade dos eventos climáticos. Áreas em Estudo: Territórios diretamente impactados pelas inundações e ainda não plenamente protegidos pelo sistema atual --- como ilhas e orla sul. Nestas áreas, estão em andamento estudos e projetos para definição de novas soluções de adaptação, incorporando inovação, soluções baseadas na natureza e a participação das comunidades locais. Áreas com Ocupação Urbana acima da Cota de Inundação de 2024: Bairros cuja urbanização se dá predominantemente acima da cota atingida pela inundação de 2024. Nessas áreas, a prioridade é a prevenção, o monitoramento permanente e a incorporação de estratégias de resiliência urbana, garantindo que futuros processos de urbanização e adensamento não ampliem o risco.

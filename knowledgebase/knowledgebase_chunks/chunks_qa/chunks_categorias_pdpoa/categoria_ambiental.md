@@ -1,0 +1,17 @@
+# Ambiental - PDPOA 2025
+
+**Categoria:** ambiental
+**Total de informações:** 2
+**Tipo:** Base de conhecimento consolidada
+
+## Informação 1 (Caso #427)
+
+**Tags relacionadas:** enchentes_2024
+
+A revisão chega em um momento crítico --- e por isso é ainda mais importante. Ela foi profundamente reformulada para responder aos desafios da mudança climática e ao esgotamento do modelo de crescimento disperso. A proposta incorpora sistemas de dados e governança permanente, como o CIT e o SGC, que garantem que o plano seja dinâmico, atualizado e vinculado a metas reais. Não é uma resposta pontual, mas uma base para decisões mais eficazes daqui em diante.
+
+---
+
+## Informação 2 (Caso #438)
+
+Sistema Ecológico O plano cria o Sistema Ecológico como uma nova estrutura de ordenamento ambiental. Ele organiza os ativos ambientais do território municipal, integrando: • Áreas de Preservação Permanente (APPs) • Unidades de Conservação • Áreas Verdes Públicas • Áreas de Risco • Corredores de Biodiversidade (ecológicos e verdes) Esse sistema é a base para orientar políticas de conservação, recuperação ambiental, drenagem urbana e adaptação às mudanças climáticas. Corredores de Biodiversidade Dentro do Sistema Ecológico, o plano define dois tipos de corredores: • Corredores Ecológicos: conectam áreas ambientalmente protegidas (ex: matas ciliares, morros). • Corredores Verdes: fazem a transição entre áreas densamente urbanizadas e as ecológicas, ajudando na absorção de água, na ventilação e na conectividade ambiental. Eles ajudam a formar uma malha contínua de preservação e adaptação urbana. Permeabilidade e infraestrutura verde O plano institui índices de permeabilidade obrigatórios, ampliando de 32% para até 45% a exigência de solo permeável em determinadas áreas, considerando o novo modelo de ocupação. Além disso, articula a drenagem urbana como parte dos sistemas estruturantes da cidade. Certificação de Edificação Sustentável O plano fortalece esse instrumento já existente, criando incentivos para edificações verdes e resilientes --- com uso racional de energia e água, melhor conforto térmico, e maior integração com o ambiente urbano. Integração com planejamento territorial A política ambiental não é tratada como algo apartado. Ela se integra ao zoneamento, aos planos locais e de pormenor, e ao Sistema de Inteligência Territorial (CIT), permitindo que o monitoramento e a aplicação dos instrumentos urbanísticos respeitem os limites ambientais do território.

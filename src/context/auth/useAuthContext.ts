@@ -1,5 +1,5 @@
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { User, Session } from "@supabase/supabase-js";
 import { AppRole } from "@/types/app";
 import { AuthService, setupAuthListener } from "@/services/authService";
@@ -17,27 +17,32 @@ export const useAuthContext = () => {
   const [isSupervisor, setIsSupervisor] = useState(false);
   const [isAnalyst, setIsAnalyst] = useState(false);
   
-  // Função para atualizar o estado de autenticação
+  // Refs para controle de rate limiting
+  const lastRefreshRef = useRef<number>(0);
+  const refreshInProgressRef = useRef<boolean>(false);
+  
+  // Função simplificada para atualizar o estado de autenticação
   const refreshAuthState = useCallback(async () => {
+    if (refreshInProgressRef.current) return;
+    
+    refreshInProgressRef.current = true;
+    
     try {
-      setIsLoading(true);
-      console.log("Atualizando estado de autenticação...");
-      
-      // Verificar se está em modo demo primeiro
+      // Verificar modo demo
       const isDemoMode = sessionStorage.getItem('demo-mode') === 'true';
       if (isDemoMode) {
         const demoSessionStr = sessionStorage.getItem('demo-session');
         if (demoSessionStr) {
           const demoSession = JSON.parse(demoSessionStr);
-          console.log("Modo demo detectado, configurando estado...");
           setSession(demoSession);
           setUser(demoSession.user);
           setUserId(demoSession.user.id);
           setIsAuthenticated(true);
-          setUserRole('supervisor' as AppRole);
-          setIsAdmin(false);
+          setUserRole('admin' as AppRole);
+          setIsAdmin(true);
           setIsSupervisor(true);
           setIsAnalyst(true);
+          setIsLoading(false);
           return;
         }
       }
@@ -47,24 +52,29 @@ export const useAuthContext = () => {
       setSession(currentSession);
       
       if (currentSession) {
-        // Autenticado
         const currentUser = currentSession.user;
         setUser(currentUser);
         setUserId(currentUser.id);
         setIsAuthenticated(true);
         
-        // Obter papel do usuário
-        const role = await AuthService.getUserRole(currentUser.id);
-        
-        // Atualizar estados baseados no papel
-        setUserRole(role as AppRole);
-        setIsAdmin(role === 'admin');
-        setIsSupervisor(role === 'supervisor' || role === 'admin');
-        setIsAnalyst(role === 'analyst' || role === 'supervisor' || role === 'admin');
-        
-        console.log("Usuário autenticado:", currentUser.id, "Papel:", role);
+        // Buscar role real do usuário no banco de dados
+        try {
+          const userRole = await AuthService.getUserRole(currentUser.id);
+          console.log("Papel do usuário:", userRole);
+          
+          setUserRole(userRole as AppRole);
+          setIsAdmin(userRole === 'admin');
+          setIsSupervisor(userRole === 'supervisor' || userRole === 'admin');
+          setIsAnalyst(userRole === 'analyst' || userRole === 'supervisor' || userRole === 'admin');
+        } catch (roleError) {
+          console.error("Erro ao buscar role do usuário:", roleError);
+          // Em caso de erro, assumir role mais restrito
+          setUserRole('user' as AppRole);
+          setIsAdmin(false);
+          setIsSupervisor(false);
+          setIsAnalyst(false);
+        }
       } else {
-        // Não autenticado - reseta estados
         setUser(null);
         setUserId(null);
         setIsAuthenticated(false);
@@ -72,12 +82,11 @@ export const useAuthContext = () => {
         setIsAdmin(false);
         setIsSupervisor(false);
         setIsAnalyst(false);
-        
-        console.log("Usuário não autenticado");
       }
+      
+      setIsLoading(false);
     } catch (error) {
       console.error("Erro ao atualizar estado de autenticação:", error);
-      // Reseta estados em caso de erro
       setUser(null);
       setUserId(null);
       setIsAuthenticated(false);
@@ -85,8 +94,9 @@ export const useAuthContext = () => {
       setIsAdmin(false);
       setIsSupervisor(false);
       setIsAnalyst(false);
-    } finally {
       setIsLoading(false);
+    } finally {
+      refreshInProgressRef.current = false;
     }
   }, []);
   

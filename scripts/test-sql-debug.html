@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>SQL Debug Test</title>
+</head>
+<body>
+    <h1>SQL Generator Debug Test</h1>
+    <button onclick="testDebug()">Test SQL Debug</button>
+    <pre id="result"></pre>
+
+    <script>
+        async function testDebug() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.textContent = 'Testing...';
+            
+            try {
+                const response = await fetch('https://ngrqwmvuhvjkeohesbxs.supabase.co/functions/v1/sql-generator-debug', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5ncnF3bXZ1aHZqa2VvaGVzYnhzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzE2Mjg0NDUsImV4cCI6MjA0NzIwNDQ0NX0.H16MDxqJyRX0Ul7oXVlvlawdhHgo8jPKXfKCGiQNMzg'
+                    },
+                    body: JSON.stringify({
+                        query: 'Qual é o índice de aproveitamento médio do bairro Cristal?'
+                    })
+                });
+                
+                const data = await response.json();
+                resultDiv.textContent = JSON.stringify(data, null, 2);
+            } catch (error) {
+                resultDiv.textContent = 'Error: ' + error.message;
+            }
+        }
+    </script>
+</body>
+</html>

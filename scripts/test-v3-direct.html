@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Teste Direto agentic-rag-v3</title>
+    <style>
+        body {
+            font-family: monospace;
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #1a1a1a;
+            color: #0f0;
+        }
+        .test {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #0f0;
+            background: #000;
+        }
+        .success { border-color: #0f0; background: #001100; }
+        .error { border-color: #f00; background: #110000; }
+        button {
+            background: #0f0;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            font-family: monospace;
+            font-weight: bold;
+        }
+        button:hover { background: #0a0; }
+        pre { white-space: pre-wrap; word-wrap: break-word; }
+    </style>
+</head>
+<body>
+    <h1>🔧 Teste Direto - agentic-rag-v3</h1>
+    
+    <button onclick="runTests()">▶ EXECUTAR TESTES</button>
+    
+    <div id="results"></div>
+
+    <script>
+        const SUPABASE_URL = 'https://ngrqwmvuhvjkeohesbxs.supabase.co';
+        const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5ncnF3bXZ1aHZqa2VvaGVzYnhzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM2MDkwMTcsImV4cCI6MjA2OTE4NTAxN30.K3uyyzjyAQ17ohQGCUFx_RiMufblLyQzvxEZHakqKrg';
+
+        const tests = [
+            { query: "Art. 1 da LUOS", expected: "normas de uso e ocupação do solo" },
+            { query: "Art. 119", expected: "Sistema de Gestão e Controle" },
+            { query: "Art. 3 princípios", expected: "função social" },
+            { query: "Art. 192", expected: "concessão urbanística" },
+            { query: "Alberta dos Morros", expected: "18m" },
+            { query: "Quantos bairros protegidos de enchentes", expected: "25" },
+            { query: "Art. 81", expected: "Certificação" },
+            { query: "Art. 75", expected: "volumétrico" },
+            { query: "altura máxima porto alegre", expected: "130" },
+            { query: "resumo plano diretor", expected: "desenvolvimento sustentável" }
+        ];
+
+        async function testFunction(functionName, query) {
+            try {
+                const response = await fetch(`${SUPABASE_URL}/functions/v1/${functionName}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${ANON_KEY}`,
+                        'apikey': ANON_KEY
+                    },
+                    body: JSON.stringify({ query })
+                });
+
+                if (!response.ok) {
+                    const error = await response.text();
+                    throw new Error(`HTTP ${response.status}: ${error}`);
+                }
+
+                const data = await response.json();
+                return data;
+            } catch (error) {
+                return { error: error.message };
+            }
+        }
+
+        async function runTests() {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '<h2>🔄 Executando testes...</h2>';
+            
+            let html = '';
+            let correct = 0;
+            
+            for (const test of tests) {
+                const result = await testFunction('agentic-rag-v3', test.query);
+                
+                const response = result.response || result.error || 'Sem resposta';
+                const isCorrect = response.toLowerCase().includes(test.expected.toLowerCase());
+                
+                if (isCorrect) correct++;
+                
+                html += `
+                    <div class="test ${isCorrect ? 'success' : 'error'}">
+                        <strong>${isCorrect ? '✅' : '❌'} ${test.query}</strong><br>
+                        Esperado: "${test.expected}"<br>
+                        Resposta: <pre>${response.substring(0, 200)}${response.length > 200 ? '...' : ''}</pre>
+                        ${result.confidence ? `Confiança: ${(result.confidence * 100).toFixed(1)}%` : ''}
+                    </div>
+                `;
+            }
+            
+            const accuracy = (correct / tests.length * 100).toFixed(1);
+            
+            resultsDiv.innerHTML = `
+                <h2>📊 Resultado: ${correct}/${tests.length} (${accuracy}%)</h2>
+                ${html}
+                <div class="test" style="margin-top: 20px; border-color: ${accuracy >= 90 ? '#0f0' : '#f00'}">
+                    <strong>ACURÁCIA FINAL: ${accuracy}%</strong><br>
+                    ${accuracy >= 90 ? '✅ Sistema funcionando corretamente!' : '❌ Sistema precisa de ajustes'}
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>

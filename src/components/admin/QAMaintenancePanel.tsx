@@ -41,10 +41,10 @@ export function QAMaintenancePanel() {
 
     try {
       // Delete all validation results
-      await supabase.from('qa_validation_results').delete().neq('id', '');
+      await (supabase.from('qa_validation_results') as any).delete().neq('id', '');
       
       // Delete all validation runs
-      await supabase.from('qa_validation_runs').delete().neq('id', '');
+      await (supabase.from('qa_validation_runs') as any).delete().neq('id', '');
       
       toast.success('Sistema QA resetado completamente');
       setLastCleanupStats(null);

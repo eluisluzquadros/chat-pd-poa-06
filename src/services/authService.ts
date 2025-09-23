@@ -5,9 +5,32 @@ import { toast } from 'sonner';
 // Flag para evitar múltiplas operações simultâneas
 let isAuthOperationInProgress = false;
 
+// Cache para roles de usuário para evitar múltiplas consultas
+const userRoleCache = new Map<string, { role: string; timestamp: number }>();
+const ROLE_CACHE_TTL = 60 * 60 * 1000; // 60 minutos - aumentado para maior persistência
+
+// Cache para sessões para evitar múltiplas consultas
+const sessionCache = new Map<string, { session: any; timestamp: number }>();
+const SESSION_CACHE_TTL = 30 * 60 * 1000; // 30 minutos - aumentado para maior persistência
+
+// Throttling para operações de auth - otimizado para balance entre performance e confiabilidade
+const authCallsThrottle = new Map<string, number>();
+const AUTH_THROTTLE_DELAY = 50; // 50ms entre chamadas do mesmo tipo - balanceado para evitar race conditions
+
+// Controle de refresh token removido para evitar bloqueios desnecessários
+
 // Função utilitária para limpeza completa de estado de autenticação
 const cleanupCompleteAuthState = () => {
   console.log("=== LIMPEZA COMPLETA DE ESTADO DE AUTENTICAÇÃO ===");
+  
+  // Limpar todos os caches de auth
+  userRoleCache.clear();
+  sessionCache.clear();
+  authCallsThrottle.clear();
+  
+  // Reset de caches realizado
+  
+  console.log("Caches de autenticação limpos");
   
   // Limpar localStorage
   const localKeys = Object.keys(localStorage);
@@ -32,7 +55,7 @@ const cleanupCompleteAuthState = () => {
 
 // Funções de autenticação centralizadas
 export const AuthService = {
-  // Obter a sessão atual
+  // Obter a sessão atual com cache agressivo e throttling
   getCurrentSession: async () => {
     try {
       // Verificar se está em modo demo
@@ -42,12 +65,54 @@ export const AuthService = {
         return demoSessionStr ? JSON.parse(demoSessionStr) : null;
       }
       
+      const cacheKey = 'current_session';
+      const now = Date.now();
+      
+      // Verificar cache primeiro
+      const cached = sessionCache.get(cacheKey);
+      if (cached && (now - cached.timestamp) < SESSION_CACHE_TTL) {
+        console.log("Sessão retornada do cache");
+        return cached.session;
+      }
+      
+      // Throttling otimizado para getCurrentSession
+      const throttleKey = 'getCurrentSession';
+      const lastCall = authCallsThrottle.get(throttleKey) || 0;
+      
+      if (now - lastCall < AUTH_THROTTLE_DELAY) {
+        console.log("getCurrentSession throttled - usando cache se disponível");
+        // Se temos cache válido, usar, senão permitir chamada
+        if (cached && (now - cached.timestamp) < SESSION_CACHE_TTL) {
+          return cached.session;
+        }
+        // Cache antigo mas ainda válido - usar para evitar chamadas desnecessárias
+        if (cached && (now - cached.timestamp) < SESSION_CACHE_TTL * 1.5) {
+          return cached.session;
+        }
+      }
+      
+      authCallsThrottle.set(throttleKey, now);
+      
+      console.log("Fazendo chamada real para getSession");
       const { data, error } = await supabase.auth.getSession();
-      if (error) throw error;
+      
+      if (error) {
+        console.error("Erro ao obter sessão:", error);
+        // Retornar cache em caso de erro se disponível
+        return cached?.session || null;
+      }
+      
+      // Atualizar cache apenas se bem-sucedido
+      sessionCache.set(cacheKey, { session: data.session, timestamp: now });
+      
+      // Cache atualizado com sucesso
+      
       return data.session;
     } catch (error) {
       console.error("Erro ao obter sessão:", error);
-      return null;
+      // Retornar cache em caso de erro
+      const cached = sessionCache.get('current_session');
+      return cached?.session || null;
     }
   },
 
@@ -97,6 +162,9 @@ export const AuthService = {
       
       if (data.user && data.session) {
         console.log("Login bem-sucedido para usuário:", data.user.id);
+        
+        // Atualizar cache de sessão imediatamente
+        sessionCache.set('current_session', { session: data.session, timestamp: Date.now() });
         
         // Armazenar informações básicas
         sessionStorage.setItem('lastAuthenticatedUserId', data.user.id);
@@ -183,13 +251,68 @@ export const AuthService = {
     }
   },
 
-  // Obter papel do usuário
+  // Obter papel do usuário com cache e throttling
   getUserRole: async (userId: string) => {
     try {
       // Se for usuário demo, retornar supervisor
       const isDemoMode = sessionStorage.getItem('demo-mode') === 'true';
       if (isDemoMode && userId === '00000000-0000-0000-0000-000000000001') {
         return 'supervisor';
+      }
+      
+      // Verificar cache primeiro - com backup em localStorage
+      const cached = userRoleCache.get(userId);
+      if (cached && (Date.now() - cached.timestamp) < ROLE_CACHE_TTL) {
+        console.log("Role retornado do cache:", cached.role);
+        // Atualizar também o sessionStorage para persistência
+        sessionStorage.setItem('urbanista-user-role', cached.role);
+        return cached.role;
+      }
+      
+      // Verificar cache em sessionStorage como backup
+      const sessionRole = sessionStorage.getItem('urbanista-user-role');
+      if (sessionRole && !cached) {
+        console.log("Role recuperado do sessionStorage:", sessionRole);
+        // Recriar cache com role do sessionStorage
+        userRoleCache.set(userId, { role: sessionRole, timestamp: Date.now() });
+        return sessionRole;
+      }
+      
+      // Throttling para evitar múltiplas chamadas rápidas
+      const throttleKey = `getUserRole_${userId}`;
+      const lastCall = authCallsThrottle.get(throttleKey) || 0;
+      const now = Date.now();
+      
+      if (now - lastCall < AUTH_THROTTLE_DELAY) {
+        console.log("⚡ getUserRole throttled - verificando cache válido");
+        // Se tem cache válido, usar, senão prosseguir com busca real
+        if (cached && (Date.now() - cached.timestamp) < ROLE_CACHE_TTL) {
+          console.log("Cache válido encontrado:", cached.role);
+          return cached.role;
+        }
+        // Cache inválido ou ausente - prosseguir com busca real apesar do throttle
+        console.log("Cache inválido/ausente - fazendo busca real mesmo com throttle");
+      }
+      
+      authCallsThrottle.set(throttleKey, now);
+      
+      // Primeiro, verificar metadados do usuário atual
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user?.id === userId) {
+        // Check app_metadata first (more reliable)
+        if (user.app_metadata?.role) {
+          const role = user.app_metadata.role;
+          console.log("Role from app_metadata:", role);
+          userRoleCache.set(userId, { role, timestamp: now });
+          return role;
+        }
+        // Then check user_metadata
+        if (user.user_metadata?.role) {
+          const role = user.user_metadata.role;
+          console.log("Role from user_metadata:", role);
+          userRoleCache.set(userId, { role, timestamp: now });
+          return role;
+        }
       }
       
       // Buscar todos os roles do usuário e pegar o de maior privilégio
@@ -207,10 +330,14 @@ export const AuthService = {
         const roles = roleData.map(r => r.role);
         
         // Ordem de prioridade: admin > supervisor > analyst > user
-        if (roles.includes('admin')) return 'admin';
-        if (roles.includes('supervisor')) return 'supervisor';  
-        if (roles.includes('analyst')) return 'analyst';
-        if (roles.includes('user')) return 'user';
+        let finalRole = 'citizen';
+        if (roles.includes('admin')) finalRole = 'admin';
+        else if (roles.includes('supervisor')) finalRole = 'supervisor';  
+        else if (roles.includes('analyst')) finalRole = 'analyst';
+        else if (roles.includes('user')) finalRole = 'user';
+        
+        userRoleCache.set(userId, { role: finalRole, timestamp: now });
+        return finalRole;
       }
       
       // Caso não encontre na user_roles, tentar na user_accounts
@@ -224,10 +351,25 @@ export const AuthService = {
         console.error("Erro ao buscar account:", accountError);
       }
       
-      return accountData?.role || 'citizen';
+      const finalRole = accountData?.role || 'citizen'; // Default para citizen
+      
+      // Atualizar cache e sessionStorage
+      userRoleCache.set(userId, { role: finalRole, timestamp: now });
+      sessionStorage.setItem('urbanista-user-role', finalRole);
+      
+      return finalRole;
     } catch (error) {
       console.error("Erro ao obter papel do usuário:", error);
-      return 'citizen';
+      // Em caso de erro, verificar se tem cache válido antes de fazer fallback
+      const cached = userRoleCache.get(userId);
+      if (cached && (Date.now() - cached.timestamp) < ROLE_CACHE_TTL) {
+        console.log("Usando cache válido em caso de erro:", cached.role);
+        return cached.role;
+      }
+      // Sem cache válido - assumir citizen (role mais restrito) 
+      const fallbackRole = 'citizen';
+      userRoleCache.set(userId, { role: fallbackRole, timestamp: Date.now() });
+      return fallbackRole;
     }
   },
 
@@ -328,6 +470,38 @@ export const AuthService = {
   // Limpeza completa de estado (função pública)
   cleanupAuthState: cleanupCompleteAuthState,
 
+  // Limpar apenas caches sem afetar localStorage/sessionStorage
+  clearAuthCache: () => {
+    console.log("Limpando caches de autenticação...");
+    userRoleCache.clear();
+    sessionCache.clear();
+    authCallsThrottle.clear();
+    console.log("Caches limpos");
+  },
+
+  // Verificar estado de saúde da autenticação
+  getAuthHealth: () => {
+    const now = Date.now();
+    return {
+      sessionCacheSize: sessionCache.size,
+      roleCacheSize: userRoleCache.size,
+      throttleMapSize: authCallsThrottle.size,
+      caches: {
+        session: Array.from(sessionCache.entries()).map(([key, value]) => ({
+          key,
+          age: now - value.timestamp,
+          valid: (now - value.timestamp) < SESSION_CACHE_TTL
+        })),
+        roles: Array.from(userRoleCache.entries()).map(([key, value]) => ({
+          key,
+          role: value.role,
+          age: now - value.timestamp,
+          valid: (now - value.timestamp) < ROLE_CACHE_TTL
+        }))
+      }
+    };
+  },
+
   // Logout
   signOut: async () => {
     if (isAuthOperationInProgress) {
@@ -368,9 +542,59 @@ export const AuthService = {
   }
 };
 
-// Configurar listener de mudanças de autenticação
+// Função para refresh seguro com retry - simplificada
+const safeTokenRefresh = async (retryCount = 0): Promise<any> => {
+  const maxRetries = 3;
+  const baseDelay = 1000; // 1 segundo
+  
+  try {
+    console.log(`Tentativa ${retryCount + 1} de refresh token`);
+    
+    const { data, error } = await supabase.auth.refreshSession();
+    
+    if (error) {
+      if (error.message?.includes('429') || error.message?.includes('Too Many Requests')) {
+        if (retryCount < maxRetries) {
+          const delay = baseDelay * Math.pow(2, retryCount); // Backoff exponencial
+          console.log(`Rate limit atingido, aguardando ${delay}ms antes de retry...`);
+          await new Promise(resolve => setTimeout(resolve, delay));
+          return safeTokenRefresh(retryCount + 1);
+        } else {
+          console.error("Max retries atingido para refresh token");
+          throw error;
+        }
+      }
+      throw error;
+    }
+    
+    // Atualizar cache com nova sessão
+    if (data.session) {
+      sessionCache.set('current_session', { session: data.session, timestamp: Date.now() });
+    }
+    
+    return data;
+  } catch (error) {
+    console.error("Erro no refresh token:", error);
+    throw error;
+  }
+};
+
+// Configurar listener de mudanças de autenticação com controle de rate limiting
 export const setupAuthListener = (callback: (session: any) => void) => {
-  return supabase.auth.onAuthStateChange((event, session) => {
+  let lastEventTime = 0;
+  const EVENT_THROTTLE_DELAY = 1000; // 1 segundo entre eventos
+  
+  return supabase.auth.onAuthStateChange(async (event, session) => {
+    const now = Date.now();
+    
+    // Throttling de eventos
+    if (now - lastEventTime < EVENT_THROTTLE_DELAY && event !== 'SIGNED_OUT') {
+      console.log("Auth event throttled:", event);
+      return;
+    }
+    
+    lastEventTime = now;
+    
     console.log("=== AUTH STATE CHANGE EVENT ===");
     console.log("Evento:", event);
     console.log("Session válida:", !!session);
@@ -378,10 +602,25 @@ export const setupAuthListener = (callback: (session: any) => void) => {
     console.log("User ID:", session?.user?.id);
     console.log("Email:", session?.user?.email);
     
-    // Processar sessão OAuth especialmente
+    // Processar eventos específicos
     if (event === 'SIGNED_IN' && session?.user?.app_metadata?.provider === 'google') {
       console.log("Google OAuth login detectado!");
       toast.success("Login com Google realizado com sucesso!");
+    }
+    
+    // Para TOKEN_REFRESHED, tentar fazer refresh seguro se necessário
+    if (event === 'TOKEN_REFRESHED' && !session) {
+      console.log("Token refresh falhou, tentando refresh seguro...");
+      try {
+        const refreshResult = await safeTokenRefresh();
+        if (refreshResult.session) {
+          session = refreshResult.session;
+          console.log("Refresh seguro bem-sucedido");
+        }
+      } catch (error) {
+        console.error("Refresh seguro falhou:", error);
+        // Não interromper o fluxo, deixar callback decidir
+      }
     }
     
     callback(session);

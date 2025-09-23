@@ -1,0 +1,7 @@
+# Bairros - PDPOA 2025
+
+**Categoria:** bairros
+**Tags:** bairros, centro
+**Origem:** Caso de teste #447 (Dificuldade: high)
+
+Sim. O novo Plano Diretor contempla os programas em andamento para o Centro Histórico e o 4º Distrito, integrando-os ao modelo territorial e às estratégias de requalificação urbana da cidade. Essas áreas estão inseridas em Zonas de Ordenamento Territorial (ZOTs) com alto potencial de transformação e estão vinculadas às Áreas de Requalificação Urbana (ARU), o que lhes confere prioridade para ações coordenadas de requalificação, adensamento e diversificação de usos. No caso do Centro, trata-se de consolidar sua função como centralidade metropolitana, promovendo a habitação, o uso misto e a qualificação dos espaços públicos. Já o 4º Distrito é reconhecido como território estratégico para o desenvolvimento econômico, inovação e revitalização urbana. Além disso, o plano prevê a possibilidade de elaboração de Planos de Pormenor para essas áreas, permitindo a articulação entre os projetos existentes --- como o Programa Centro+, o Programa de Reabilitação do 4º Distrito e os projetos financiados por organismos internacionais --- e os novos instrumentos e diretrizes do PDUS. Isso garante continuidade institucional e base normativa para sua implementação integrada.

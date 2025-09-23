@@ -1,0 +1,7 @@
+# Altura Maxima - PDPOA 2025
+
+**Categoria:** altura_maxima
+**Tags:** altura_maxima
+**Origem:** Caso de teste #454 (Dificuldade: high)
+
+A altura máxima permitida para construção de prédios em Porto Alegre depende exclusivamente da Zona de Ordenamento Territorial (ZOT) em que está localizado o terreno. Não existe um único valor para toda a cidade; cada ZOT tem uma altura máxima específica, estabelecida na proposta de revisão da Lei de Uso e Ocupação do Solo de Porto Alegre. Como funciona: Cada bairro pode ter mais de uma ZOT. Cada ZOT possui uma altura máxima definida na proposta. Para saber a altura máxima permitida em um local, é necessário primeiro identificar o bairro e depois consultar quais ZOTs existem nele. Só então é possível informar os valores. Exemplo prático: Se você informar o nome do bairro, posso listar todas as ZOTs presentes nele e informar a altura máxima proposta para cada uma delas. Regras importantes: Não há um valor único para toda Porto Alegre. A altura máxima é sempre definida por ZOT, não por endereço individual. A flexibilização de altura só é possível mediante Estudo de Impacto de Vizinhança (EIV), conforme previsto na proposta da LUOS. Em caso de dúvidas ou ausência de ZOT correspondente, é necessário consultar a base oficial. Esses parâmetros fazem parte da proposta de revisão da Lei de Uso e Ocupação do Solo de Porto Alegre. Se quiser saber a altura máxima para um bairro específico, por favor, informe o nome do bairro. Assim, trago as informações completas e atualizadas para você!

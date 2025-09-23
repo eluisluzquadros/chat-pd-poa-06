@@ -32,20 +32,20 @@ export function AdminDashboard({ startDate, endDate, onDateRangeChange }: AdminD
       
       if (error) throw error;
       
-      const totalFeedback = data.length;
-      const helpfulCount = data.filter(f => f.helpful === true).length;
-      const unhelpfulCount = data.filter(f => f.helpful === false).length;
+      const totalFeedback = data?.length || 0;
+      const helpfulCount = data?.filter((f: any) => f.helpful === true).length || 0;
+      const unhelpfulCount = data?.filter((f: any) => f.helpful === false).length || 0;
       const satisfactionRate = totalFeedback > 0 ? (helpfulCount / totalFeedback) * 100 : 0;
       
       // Feedback por modelo
-      const modelFeedback = data.reduce((acc, feedback) => {
+      const modelFeedback = data?.reduce((acc: any, feedback: any) => {
         if (!acc[feedback.model]) {
           acc[feedback.model] = { total: 0, helpful: 0 };
         }
         acc[feedback.model].total++;
         if (feedback.helpful) acc[feedback.model].helpful++;
         return acc;
-      }, {} as Record<string, { total: number; helpful: number }>);
+      }, {} as Record<string, { total: number; helpful: number }>) || {};
 
       return {
         totalFeedback,
@@ -69,25 +69,25 @@ export function AdminDashboard({ startDate, endDate, onDateRangeChange }: AdminD
       
       if (error) throw error;
       
-      const totalTokens = data.reduce((sum, usage) => sum + usage.total_tokens, 0);
-      const totalCost = data.reduce((sum, usage) => sum + Number(usage.estimated_cost), 0);
+      const totalTokens = data?.reduce((sum: number, usage: any) => sum + (usage.total_tokens || 0), 0) || 0;
+      const totalCost = data?.reduce((sum: number, usage: any) => sum + Number(usage.estimated_cost || 0), 0) || 0;
       
       // Uso por modelo
-      const modelUsage = data.reduce((acc, usage) => {
+      const modelUsage = data?.reduce((acc: any, usage: any) => {
         if (!acc[usage.model]) {
           acc[usage.model] = { tokens: 0, cost: 0, calls: 0 };
         }
-        acc[usage.model].tokens += usage.total_tokens;
-        acc[usage.model].cost += Number(usage.estimated_cost);
+        acc[usage.model].tokens += usage.total_tokens || 0;
+        acc[usage.model].cost += Number(usage.estimated_cost || 0);
         acc[usage.model].calls++;
         return acc;
-      }, {} as Record<string, { tokens: number; cost: number; calls: number }>);
+      }, {} as Record<string, { tokens: number; cost: number; calls: number }>) || {};
 
       return {
         totalTokens,
         totalCost,
         modelUsage,
-        totalCalls: data.length
+        totalCalls: data?.length || 0
       };
     }
   });
@@ -100,7 +100,7 @@ export function AdminDashboard({ startDate, endDate, onDateRangeChange }: AdminD
       const { data: runs, error } = await supabase
         .from('qa_validation_runs')
         .select('*')
-        .eq('status', 'completed')
+        .eq('status', 'completed' as any)
         .order('completed_at', { ascending: false })
         .limit(1);
       
@@ -112,19 +112,20 @@ export function AdminDashboard({ startDate, endDate, onDateRangeChange }: AdminD
       const { count: testCasesCount } = await supabase
         .from('qa_test_cases')
         .select('*', { count: 'exact', head: true })
-        .eq('is_active', true);
+        .eq('is_active', true as any);
       
       // Check for any running validations
       const { count: runningCount } = await supabase
         .from('qa_validation_runs')
         .select('*', { count: 'exact', head: true })
-        .eq('status', 'running');
+        .eq('status', 'running' as any);
       
+      const latestData = latestRun && !error ? latestRun : null;
       return {
-        lastValidationAccuracy: latestRun?.overall_accuracy ? (latestRun.overall_accuracy * 100) : null,
-        avgResponseTime: latestRun?.avg_response_time_ms || null,
+        lastValidationAccuracy: latestData ? ((latestData as any).overall_accuracy * 100) : null,
+        avgResponseTime: latestData ? (latestData as any)?.avg_response_time_ms : null,
         totalTestCases: testCasesCount || 0,
-        lastValidationStatus: latestRun?.status || 'never_run',
+        lastValidationStatus: latestData ? (latestData as any)?.status : 'never_run',
         hasRunningValidation: (runningCount || 0) > 0
       };
     }
@@ -305,11 +306,11 @@ export function AdminDashboard({ startDate, endDate, onDateRangeChange }: AdminD
                           </Badge>
                         </div>
                         <div className="text-sm text-muted-foreground">
-                          {stats.calls} chamadas • {stats.tokens.toLocaleString()} tokens
+                          {(stats as any).calls} chamadas • {((stats as any).tokens || 0).toLocaleString()} tokens
                         </div>
                       </div>
                       <div className="text-right">
-                        <div className="font-semibold">${stats.cost.toFixed(4)}</div>
+                        <div className="font-semibold">${((stats as any).cost || 0).toFixed(4)}</div>
                         <div className="text-sm text-muted-foreground">
                           {modelFeedback?.total || 0} avaliações
                         </div>
@@ -358,11 +359,11 @@ export function AdminDashboard({ startDate, endDate, onDateRangeChange }: AdminD
                     <div className="flex justify-between items-center mb-2">
                       <h3 className="font-semibold">{model}</h3>
                       <Badge variant="outline">
-                        {((feedback.helpful / feedback.total) * 100).toFixed(1)}%
+                        {(((feedback as any).helpful / (feedback as any).total) * 100).toFixed(1)}%
                       </Badge>
                     </div>
                     <div className="text-sm text-muted-foreground">
-                      {feedback.helpful} positivos de {feedback.total} total
+                      {(feedback as any).helpful} positivos de {(feedback as any).total} total
                     </div>
                   </div>
                 ))}

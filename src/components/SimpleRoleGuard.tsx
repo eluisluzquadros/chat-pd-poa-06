@@ -17,79 +17,195 @@ export const SimpleRoleGuard = ({
   children, 
   adminOnly = false,
   supervisorOnly = false,
-  redirectTo = "/" 
+  redirectTo = "/chat" 
 }: SimpleRoleGuardProps) => {
   const [isInitializing, setIsInitializing] = useState(true);
   const [hasAccess, setHasAccess] = useState(false);
+  const [userRole, setUserRole] = useState<string | null>(null);
   const location = useLocation();
   
-  // Efeito para verificar papel
+  // Log de inicialização sem limpeza de cache
   useEffect(() => {
-    console.log("SimpleRoleGuard: Verificando permissões");
-    console.log("adminOnly:", adminOnly);
-    console.log("supervisorOnly:", supervisorOnly);
+    console.log("🔍 SimpleRoleGuard: Iniciando verificação sem limpeza de cache");
+  }, []);
+  
+  // Verificação com retry logic e listener de auth state change
+  useEffect(() => {
+    let isActive = true;
+    let retryTimeout: NodeJS.Timeout;
     
-    const checkRole = async () => {
+    const checkAccess = async (isRetry = false) => {
       try {
-        // Verificar autenticação primeiro
+        console.log(`🔍 SimpleRoleGuard: Verificando acesso${isRetry ? ' (retry)' : ''}`, { adminOnly, supervisorOnly, location: location.pathname });
+        
+        // Verificar se tem sessão
         const session = await AuthService.getCurrentSession();
         
         if (!session) {
-          console.log("SimpleRoleGuard: Usuário não está autenticado");
-          setHasAccess(false);
-          setIsInitializing(false);
+          console.log("❌ Sem sessão detectada");
+          
+          // Se é primeira tentativa, aguardar auth state change por 500ms
+          if (!isRetry && isActive) {
+            console.log("🔄 Aguardando possível auth state change...");
+            retryTimeout = setTimeout(() => {
+              if (isActive) checkAccess(true);
+            }, 500);
+            return;
+          }
+          
+          // Segunda tentativa também falhou - redirecionar
+          console.log("❌ Definitivamente sem sessão - redirecionando para auth");
+          if (isActive) {
+            setHasAccess(false);
+            setIsInitializing(false);
+          }
           return;
         }
         
-        const userId = session.user.id;
-        console.log("SimpleRoleGuard: ID do usuário:", userId);
+        console.log("✅ Sessão encontrada:", session.user.email);
         
-        // Buscar papel do usuário
-        const role = await AuthService.getUserRole(userId);
-        console.log("SimpleRoleGuard: Papel do usuário:", role);
+        // Buscar role real do usuário com retry em caso de inconsistência
+        let realRole = await AuthService.getUserRole(session.user.id);
+        console.log("🔍 Role real do usuário:", realRole);
         
-        // Verificar papel explicitamente
-        const isAdmin = role === 'admin';
-        const isSupervisor = role === 'supervisor' || isAdmin;
-        
-        // Determinar acesso baseado nos requisitos da rota
-        const access = (adminOnly && isAdmin) || 
-                       (supervisorOnly && (isSupervisor || isAdmin)) || 
-                       (!adminOnly && !supervisorOnly);
-        
-        console.log("SimpleRoleGuard: Acesso concedido:", access);
-        
-        // Mostrar mensagem de erro se não tiver acesso
-        if (!access) {
-          if (adminOnly) {
-            toast.error("Você não tem permissão de administrador para acessar esta página.");
-          } else if (supervisorOnly) {
-            toast.error("Você não tem permissão de supervisor para acessar esta página.");
-          }
+        // Se role é 'user' ou 'citizen' mas usuário é admin conhecido, fazer retry
+        if ((realRole === 'user' || realRole === 'citizen') && 
+            session.user.email === 'admin@chat-pd-poa.org') {
+          console.log("🔄 Inconsistência detectada para admin - limpando cache e tentando novamente");
+          AuthService.clearAuthCache();
+          
+          // Aguardar um pouco e tentar novamente
+          await new Promise(resolve => setTimeout(resolve, 100));
+          realRole = await AuthService.getUserRole(session.user.id);
+          console.log("🔍 Role após retry:", realRole);
         }
         
-        setHasAccess(access);
+        // Verificar se tem acesso baseado no role real
+        let hasAccess = false;
+        
+        if (adminOnly && realRole === 'admin') {
+          hasAccess = true;
+        } else if (supervisorOnly && (realRole === 'supervisor' || realRole === 'admin')) {
+          hasAccess = true;
+        } else if (!adminOnly && !supervisorOnly) {
+          // Para componentes sem restrição específica, permitir todos os roles
+          hasAccess = true;
+        }
+        
+        if (isActive) {
+          setUserRole(realRole);
+          setHasAccess(hasAccess);
+          setIsInitializing(false);
+          console.log(`✅ Verificação completa - Role: ${realRole}, Acesso: ${hasAccess}`);
+        }
+        
       } catch (error) {
-        console.error("SimpleRoleGuard: Erro ao verificar papel:", error);
-        setHasAccess(false);
-      } finally {
-        setIsInitializing(false);
+        console.error("❌ Erro na verificação:", error);
+        
+        // Em caso de erro, tentar retry uma vez
+        if (!isRetry && isActive) {
+          console.log("🔄 Erro na primeira tentativa, tentando novamente...");
+          retryTimeout = setTimeout(() => {
+            if (isActive) checkAccess(true);
+          }, 200);
+          return;
+        }
+        
+        // Erro persistente - negar acesso
+        if (isActive) {
+          setHasAccess(false);
+          setIsInitializing(false);
+        }
       }
     };
     
-    // Verificar imediatamente
-    checkRole();
-    
-    // Verificar novamente quando a sessão mudar
-    const { data } = supabase.auth.onAuthStateChange(() => {
-      console.log("SimpleRoleGuard: Estado de autenticação alterado, verificando papel novamente");
-      checkRole();
+    // Listener para mudanças de auth state
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (!isActive) return;
+      
+      console.log("🔄 Auth state change no SimpleRoleGuard:", event);
+      
+      if (event === 'SIGNED_IN' && session) {
+        console.log("✅ Login detectado no SimpleRoleGuard");
+        // Buscar role real e verificar acesso
+        setTimeout(async () => {
+          if (!isActive) return;
+          
+          let realRole = await AuthService.getUserRole(session.user.id);
+          console.log("🔍 Role real no auth change:", realRole);
+          
+          // Retry logic para admin conhecido
+          if ((realRole === 'user' || realRole === 'citizen') && 
+              session.user.email === 'admin@chat-pd-poa.org') {
+            console.log("🔄 Retry para admin no auth change");
+            AuthService.clearAuthCache();
+            await new Promise(resolve => setTimeout(resolve, 100));
+            realRole = await AuthService.getUserRole(session.user.id);
+            console.log("🔍 Role após retry no auth change:", realRole);
+          }
+          
+          let hasAccess = false;
+          if (adminOnly && realRole === 'admin') {
+            hasAccess = true;
+          } else if (supervisorOnly && (realRole === 'supervisor' || realRole === 'admin')) {
+            hasAccess = true;
+          } else if (!adminOnly && !supervisorOnly) {
+            hasAccess = true;
+          }
+          
+          setUserRole(realRole);
+          setHasAccess(hasAccess);
+          setIsInitializing(false);
+        }, 100);
+      } else if (event === 'SIGNED_OUT') {
+        console.log("❌ Logout detectado no SimpleRoleGuard");
+        setHasAccess(false);
+        setIsInitializing(false);
+      }
     });
     
+    // Verificação inicial
+    checkAccess();
+    
+    // Timeout de segurança mais longo - só para casos extremos
+    const safetyTimeout = setTimeout(() => {
+      if (isActive && isInitializing) {
+        console.log("⏰ Timeout de segurança após 30s - verificando estado final");
+        
+        // Tentar usar role do sessionStorage como último recurso
+        const cachedRole = sessionStorage.getItem('urbanista-user-role');
+        if (cachedRole) {
+          console.log("✅ Usando role do cache como fallback:", cachedRole);
+          setUserRole(cachedRole);
+          
+          let finalAccess = false;
+          if (adminOnly && cachedRole === 'admin') {
+            finalAccess = true;
+          } else if (supervisorOnly && (cachedRole === 'supervisor' || cachedRole === 'admin')) {
+            finalAccess = true;
+          } else if (!adminOnly && !supervisorOnly) {
+            finalAccess = true;
+          }
+          
+          setHasAccess(finalAccess);
+          setIsInitializing(false);
+          console.log("✅ Acesso baseado em cache:", finalAccess);
+        } else {
+          console.log("❌ Timeout de segurança sem role - negando acesso");
+          setUserRole(null);
+          setHasAccess(false);
+          setIsInitializing(false);
+        }
+      }
+    }, 30000); // 30 segundos - muito mais tempo para evitar timeouts prematuros
+    
     return () => {
-      data.subscription.unsubscribe();
+      isActive = false;
+      if (retryTimeout) clearTimeout(retryTimeout);
+      if (safetyTimeout) clearTimeout(safetyTimeout);
+      subscription.unsubscribe();
     };
-  }, [adminOnly, supervisorOnly]);
+  }, [adminOnly, supervisorOnly, location.pathname]);
 
   // Mostrar spinner de carregamento durante inicialização
   if (isInitializing) {
@@ -105,6 +221,7 @@ export const SimpleRoleGuard = ({
 
   // Redirecionar se não tiver acesso
   if (!hasAccess) {
+    console.log("SimpleRoleGuard: Acesso negado. Role:", userRole, "AdminOnly:", adminOnly, "SupervisorOnly:", supervisorOnly);
     console.log("SimpleRoleGuard: Redirecionando de", location.pathname, "para", redirectTo);
     return <Navigate to={redirectTo} replace state={{ from: location }} />;
   }

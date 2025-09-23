@@ -42,12 +42,18 @@ export function useSessionHandling({
   const handleDeleteSession = useCallback(async (sessionId: string): Promise<void> => {
     try {
       setIsLoading(true);
+      console.log('🎯 Iniciando exclusão de sessão:', sessionId);
+      
+      // Se a sessão atual está sendo deletada, limpar primeiro
       if (currentSessionId === sessionId) {
         handleNewChat();
       }
+      
+      // Aguardar exclusão completa antes de continuar
       await deleteSession(sessionId);
+      console.log('✅ Sessão excluída com sucesso:', sessionId);
     } catch (error) {
-      console.error('Error in handleDeleteSession:', error);
+      console.error('❌ Error in handleDeleteSession:', error);
       throw error;
     } finally {
       setIsLoading(false);

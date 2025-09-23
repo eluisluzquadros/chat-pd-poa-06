@@ -1,0 +1,96 @@
+{
+  "timestamp": "2025-08-08T20:33:07.632Z",
+  "passed": true,
+  "overallAccuracy": 100,
+  "thresholds": {
+    "overall": 85,
+    "critical": 60,
+    "categories": {
+      "altura_maxima": 60,
+      "regime_urbanistico": 60,
+      "coeficiente_aproveitamento": 80,
+      "conceitual": 90,
+      "zot": 90
+    }
+  },
+  "categoryScores": {
+    "altura_maxima": {
+      "total": 1,
+      "passed": 1,
+      "scores": [
+        0.6666666666666666
+      ]
+    },
+    "coeficiente_aproveitamento": {
+      "total": 1,
+      "passed": 1,
+      "scores": [
+        0.6666666666666666
+      ]
+    },
+    "zot": {
+      "total": 1,
+      "passed": 1,
+      "scores": [
+        0.6666666666666666
+      ]
+    },
+    "conceitual": {
+      "total": 1,
+      "passed": 1,
+      "scores": [
+        1
+      ]
+    },
+    "regime_urbanistico": {
+      "total": 1,
+      "passed": 1,
+      "scores": [
+        1
+      ]
+    }
+  },
+  "failedCategories": [],
+  "details": [
+    {
+      "id": "altura_centro",
+      "category": "altura_maxima",
+      "passed": true,
+      "score": 0.6666666666666666,
+      "time": 11248,
+      "response": "\n| Bairro | Zona | Altura Máx | Coef. Básico | Coef. Máximo |\n|--------|------|------------|--------"
+    },
+    {
+      "id": "coef_aproveitamento",
+      "category": "coeficiente_aproveitamento",
+      "passed": true,
+      "score": 0.6666666666666666,
+      "time": 5406,
+      "response": "O coeficiente de aproveitamento é um índice urbanístico que determina a relação entre a área constru"
+    },
+    {
+      "id": "zot_definicao",
+      "category": "zot",
+      "passed": true,
+      "score": 0.6666666666666666,
+      "time": 4495,
+      "response": "ZOT corresponde a Zona de Ocupação Transicional. As características para ZOT são as seguintes:\n\n1. *"
+    },
+    {
+      "id": "plano_diretor",
+      "category": "conceitual",
+      "passed": true,
+      "score": 1,
+      "time": 4398,
+      "response": "O Plano Diretor é um instrumento legal que estabelece diretrizes para o desenvolvimento urbano de Po"
+    },
+    {
+      "id": "regime_centro",
+      "category": "regime_urbanistico",
+      "passed": true,
+      "score": 1,
+      "time": 11671,
+      "response": "O Centro de Porto Alegre possui o seguinte regime urbanístico:\n\n1. **Altura máxima**: 99 metros\n2. *"
+    }
+  ]
+}
