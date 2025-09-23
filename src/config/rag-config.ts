@@ -1,15 +1,13 @@
-// Enhanced RAG Configuration with Agent Support
-import { platformSettingsService } from '@/services/platformSettingsService';
+// Agent-Based RAG Configuration
 import { agentsService } from '@/services/agentsService';
 
 export const ragConfig = {
-  useDify: import.meta.env.VITE_USE_DIFY_RAG === 'true',
   difyEndpoint: 'agentic-rag-dify',
   localEndpoint: 'agentic-rag'
 } as const;
 
-// Cache para evitar múltiplas consultas
-let cachedMode: 'dify' | 'local' | null = null;
+// Cache para evitar múltiplas consultas de agentes
+let cachedAgent: any = null;
 let cacheTimestamp = 0;
 const CACHE_TTL = 60000; // 1 minuto
 
@@ -49,54 +47,42 @@ export const getEndpointFromAgentName = (agentName: string): string => {
 export const getRagEndpoint = async (): Promise<string> => {
   // Verificar cache primeiro
   const now = Date.now();
-  if (cachedMode && (now - cacheTimestamp) < CACHE_TTL) {
-    return cachedMode === 'dify' ? ragConfig.difyEndpoint : ragConfig.localEndpoint;
+  if (cachedAgent && (now - cacheTimestamp) < CACHE_TTL) {
+    return getEndpointFromAgentName(cachedAgent.name);
   }
 
   try {
-    // Primeiro, tentar buscar agente padrão
+    // Buscar agente padrão ativo
     const defaultAgent = await getDefaultAgent();
     if (defaultAgent) {
-      const endpoint = getEndpointFromAgentName(defaultAgent.name);
-      
-      // Atualizar cache baseado no endpoint
-      cachedMode = endpoint === 'agentic-rag-dify' ? 'dify' : 'local';
+      cachedAgent = defaultAgent;
       cacheTimestamp = now;
-      
-      return endpoint;
+      return getEndpointFromAgentName(defaultAgent.name);
     }
 
-    // Fallback para configuração tradicional
-    const mode = await platformSettingsService.getRagMode();
-    
-    // Atualizar cache
-    cachedMode = mode;
-    cacheTimestamp = now;
-    
-    return mode === 'dify' ? ragConfig.difyEndpoint : ragConfig.localEndpoint;
+    // Fallback se não houver agente padrão
+    console.warn('[RAG Config] Nenhum agente padrão encontrado, usando endpoint local');
+    return ragConfig.localEndpoint;
   } catch (error) {
-    console.error('Erro ao obter configuração RAG, usando fallback:', error);
-    
-    // Fallback para variável de ambiente
-    const useDify = import.meta.env.VITE_USE_DIFY_RAG === 'true';
-    return useDify ? ragConfig.difyEndpoint : ragConfig.localEndpoint;
+    console.error('Erro ao obter agente para RAG, usando fallback:', error);
+    return ragConfig.localEndpoint;
   }
 };
 
 // Função síncrona para compatibilidade com código existente
 export const getRagEndpointSync = () => {
   // Se existe cache válido, usar
-  if (cachedMode && (Date.now() - cacheTimestamp) < CACHE_TTL) {
-    return cachedMode === 'dify' ? ragConfig.difyEndpoint : ragConfig.localEndpoint;
+  if (cachedAgent && (Date.now() - cacheTimestamp) < CACHE_TTL) {
+    return getEndpointFromAgentName(cachedAgent.name);
   }
   
-  // Fallback para variável de ambiente
-  return ragConfig.useDify ? ragConfig.difyEndpoint : ragConfig.localEndpoint;
+  // Fallback para endpoint local
+  return ragConfig.localEndpoint;
 };
 
-// Limpar cache (útil após mudanças de configuração)
+// Limpar cache de agentes (útil após mudanças de configuração)
 export const clearRagConfigCache = () => {
-  cachedMode = null;
+  cachedAgent = null;
   cacheTimestamp = 0;
-  console.log('🧹 [RAG Config] Cache limpo - próxima consulta buscará configuração atualizada');
+  console.log('🧹 [RAG Config] Cache de agente limpo - próxima consulta buscará agente atualizado');
 };

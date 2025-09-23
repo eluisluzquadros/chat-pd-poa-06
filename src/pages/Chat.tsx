@@ -5,6 +5,7 @@ import { Header } from "@/components/Header";
 import { AppSidebar } from "@/components/chat/AppSidebar";
 import { ChatMain } from "@/components/chat/ChatMain";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
+import { useAgentSelection } from "@/hooks/chat/useAgentSelection";
 
 export default function Chat() {
   const {
@@ -19,9 +20,14 @@ export default function Chat() {
     handleSelectSession,
     handleDeleteSession,
     handleDeleteSessions,
-    selectedModel,
-    switchModel,
   } = useChat();
+
+  const {
+    selectedAgent,
+    switchAgent,
+    getSelectedAgentData,
+    isLoading: agentLoading
+  } = useAgentSelection();
 
   return (
     <SimpleAuthGuard>
@@ -40,8 +46,9 @@ export default function Chat() {
                 onDeleteSession={handleDeleteSession}
                 onDeleteSessions={handleDeleteSessions}
                 isLoading={chatLoading}
-                selectedModel={selectedModel}
-                onModelSelect={switchModel}
+                selectedAgent={selectedAgent}
+                onAgentSelect={switchAgent}
+                selectedAgentData={getSelectedAgentData()}
               />
               
               <SidebarInset className="flex-1 h-full">

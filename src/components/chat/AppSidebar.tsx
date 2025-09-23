@@ -7,7 +7,7 @@ import { SearchBar } from "./sidebar/SearchBar";
 import { SessionList } from "./sidebar/SessionList";
 import { DeleteSessionDialog } from "./sidebar/DeleteSessionDialog";
 import { SystemToggle } from "./SystemToggle";
-import { ModelSelector } from "./ModelSelector";
+import { AgentSelector } from "@/components/ui/agent-selector";
 
 import { useAuth } from "@/context/AuthContext";
 import {
@@ -28,8 +28,9 @@ interface AppSidebarProps {
   onDeleteSession: (sessionId: string) => void;
   onDeleteSessions?: (sessionIds: string[]) => void;
   isLoading?: boolean;
-  selectedModel?: string;
-  onModelSelect?: (model: string) => void;
+  selectedAgent?: string;
+  onAgentSelect?: (agentId: string) => void;
+  selectedAgentData?: any;
 }
 
 export function AppSidebar({
@@ -41,8 +42,9 @@ export function AppSidebar({
   onDeleteSession,
   onDeleteSessions,
   isLoading = false,
-  selectedModel,
-  onModelSelect,
+  selectedAgent,
+  onAgentSelect,
+  selectedAgentData,
 }: AppSidebarProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedSessions, setSelectedSessions] = useState<string[]>([]);
@@ -118,12 +120,13 @@ export function AppSidebar({
           <SidebarGroup>
             <SidebarGroupContent>
               <SystemToggle />
-              {isAdmin && selectedModel && onModelSelect && (
+              {isAdmin && selectedAgent && onAgentSelect && (
                 <div className="px-1 mb-3">
-                  <div className="text-xs font-medium text-muted-foreground mb-2 px-2">Modelo de IA</div>
-                  <ModelSelector 
-                    selectedModel={selectedModel} 
-                    onModelSelect={onModelSelect}
+                  <div className="text-xs font-medium text-muted-foreground mb-2 px-2">Agente Ativo</div>
+                  <AgentSelector 
+                    selectedAgent={selectedAgent} 
+                    onAgentChange={onAgentSelect}
+                    showDetails={false}
                   />
                 </div>
               )}
