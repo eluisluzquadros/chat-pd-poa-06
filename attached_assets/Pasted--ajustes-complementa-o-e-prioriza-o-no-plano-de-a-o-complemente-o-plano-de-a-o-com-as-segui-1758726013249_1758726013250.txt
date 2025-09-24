@@ -1,0 +1,31 @@
+# ajustes, complementação e priorização no plano de ação
+
+complemente o plano de ação com as seguintes considerações:
+
+priorização de aperfeiçoamento das funcionalidades críticas já desenvolvidas:
+
+## /admin/dashboard 
+### principalmente subabas (visão geral, tokens & Custos, Modelos)
+
+## /admin/quality e /admin/benchmark 
+### funcionalidades de análise de qualidade e benchmark de agentes: estas duas funcionalidades são complementares e poderiam ser unificadas em uma única página
+
+
+### subaba "casos de teste" (deve ser a primeira subaba)
+#### função exportar deve gerar tabela conforme schema usada no banco de dados
+#### criar função importar tabela conforme schema usada no banco de dados
+#### criar função update para ao importar atualizar os casos de teste no banco de dados
+#### deve manter os KPI's atuais "Melhor Qualidade", "Mais Rápido", "Mais Econômico", "Taxa de Sucesso", "Insights e Recomendações" sendo complementado por outros KPIs de negócio e financeiros já mapeados.
+
+### subaba "configuração"
+#### ao invés de usar multiplos modelos LLM's como proposta inicial deve usar os multiplos agentes cadastrados
+
+### subaba "visão geral"
+#### deve ser completamente repensada para o contexto atual
+
+### subaba "execuções"
+#### deve permitir acesso ao histórico de execuções e seus status e principais kpis
+#### deve permitir acesso a cada caso de teste de cada execução, onde para cada caso de teste validado deve permitir acesso principalmente a pergunta do caso de testes, a resposta esperada conforme cadastrada, a resposta obtida pelo agente, score de qualidade de similariade resposta esperada vs resposta obtida por ex. 95% e um texto justificando o score atribuindo e resumindo a análise de similaridade
+
+## subaba "análise cognitiva"
+### deve conter funcionalidades de análises para ser usadas como "aprendizagem por reforço" proporcionando insights relevantes sobre a distância cognitiva (gaps) e oportunidades visando o aperfeiçoamento da base de conhecimento e dos agentes frente às respostas esperadas cadastradas nos casos de teste, bem como a partir da análise do históricos de conversas dos usuários
