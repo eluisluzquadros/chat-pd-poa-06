@@ -206,20 +206,34 @@ export function useMessageSubmit({
         throw new Error('sessionId is not defined before user message insert');
       }
       
-      const { error: userMessageError } = await supabase
-        .from('chat_history')
-        .insert({
-          session_id: sessionId,
-          user_id: session.user.id,
-          message: {
-            content: currentInput,
-            role: 'user',
-            model: selectedModel,
-            timestamp: userMessage.timestamp.toISOString()
-          },
-        });
+      // Add fallback for chat_history insert similar to session creation
+      let userMessageError;
+      try {
+        const result = await supabase
+          .from('chat_history')
+          .insert({
+            session_id: sessionId,
+            user_id: session.user.id,
+            message: {
+              content: currentInput,
+              role: 'user',
+              model: selectedModel,
+              timestamp: userMessage.timestamp.toISOString()
+            },
+          });
+        userMessageError = result.error;
+      } catch (insertError) {
+        console.error('🔧 [DEBUG] chat_history insert failed with exception:', insertError);
+        userMessageError = insertError;
+      }
 
-      if (userMessageError) throw userMessageError;
+      if (userMessageError) {
+        console.error('🔧 [DEBUG] User message insert error:', userMessageError);
+        // For now, log the error but continue - the message is already in UI
+        console.log('⚠️ [DEBUG] Continuing despite user message insert failure - message already in UI');
+      } else {
+        console.log('✅ [DEBUG] User message saved to database successfully');
+      }
 
       // 🔥 NOVO: Incrementar contador para mensagem do usuário
       console.log('🔍 [DEBUG] About to increment user count with sessionId:', sessionId);
@@ -354,6 +368,7 @@ export function useMessageSubmit({
     } catch (error) {
       console.error('❌ [useMessageSubmit] Error in handleSubmit:', {
         error: error instanceof Error ? error.message : 'Unknown error',
+        errorObject: error, // Add full error object for debugging
         stack: error instanceof Error ? error.stack : undefined,
         userRole,
         selectedModel,
@@ -362,6 +377,9 @@ export function useMessageSubmit({
         userEmail: session?.user?.email,
         messageLength: currentInput.length
       });
+      
+      // Also log the error directly for easier debugging
+      console.error('🔧 [DEBUG] Full error object:', error);
       
       setInput(currentInput);
       
