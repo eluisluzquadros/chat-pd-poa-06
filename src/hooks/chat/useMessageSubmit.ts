@@ -16,7 +16,7 @@ interface UseMessageSubmitProps {
   currentSessionId: string | null;
   setCurrentSessionId: (sessionId: string | null) => void;
   addMessage: (message: Message) => void;
-  createSession: (userId: string, title: string, model: string, message: string) => Promise<string>;
+  createSession: (userId: string, title: string, model: string, message: string, agentId?: string) => Promise<string>;
   updateSession: (sessionId: string, lastMessage: string) => Promise<void>;
   selectedModel: string;
 }
@@ -61,10 +61,46 @@ export function useMessageSubmit({
     
     try {
       userRole = await AuthService.getUserRole(session.user.id);
+      
+      // 🔥 NOVO: Determinar agente ANTES de criar sessão
+      let selectedAgentId: string | undefined;
+      if (!currentSessionId) {
+        // Importar agentsService para determinar o agente
+        const { agentsService } = await import("@/services/agentsService");
+        
+        let selectedAgent = null;
+        
+        if (selectedModel) {
+          // Tentar buscar por ID, nome ou modelo (mesma lógica do chatService)
+          const allAgents = await agentsService.getAllAgents();
+          selectedAgent = allAgents.find(agent => agent.id === selectedModel) ||
+                          allAgents.find(agent => agent.name === selectedModel) ||
+                          allAgents.find(agent => agent.model === selectedModel);
+        }
+        
+        // Se não encontrou agente específico, usar o padrão
+        if (!selectedAgent) {
+          selectedAgent = await agentsService.getDefaultAgent();
+        }
+        
+        // Se ainda não tem agente, usar primeiro ativo disponível
+        if (!selectedAgent) {
+          const activeAgents = await agentsService.getActiveAgents();
+          selectedAgent = activeAgents[0];
+        }
+        
+        selectedAgentId = selectedAgent?.id;
+        console.log('🤖 Agent determined for new session:', {
+          agentId: selectedAgentId,
+          agentName: selectedAgent?.name,
+          model: selectedModel
+        });
+      }
+      
       let sessionId = currentSessionId;
       
       if (!sessionId) {
-        sessionId = await createSession(session.user.id, currentInput, selectedModel, currentInput);
+        sessionId = await createSession(session.user.id, currentInput, selectedModel, currentInput, selectedAgentId);
         setCurrentSessionId(sessionId);
       }
 
@@ -94,6 +130,16 @@ export function useMessageSubmit({
         });
 
       if (userMessageError) throw userMessageError;
+
+      // 🔥 NOVO: Incrementar contador para mensagem do usuário
+      const { error: userCountError } = await supabase
+        .rpc('increment_message_count', { 
+          session_id_param: sessionId 
+        });
+      
+      if (userCountError) {
+        console.error('Erro ao incrementar contador para mensagem do usuário:', userCountError);
+      }
 
       console.log(`🚀 [useMessageSubmit] Processing message via ${selectedModel}...`);
       console.log('📝 [useMessageSubmit] Message details:', {
@@ -151,6 +197,16 @@ export function useMessageSubmit({
         });
 
       if (assistantMessageError) throw assistantMessageError;
+
+      // 🔥 NOVO: Incrementar contador para resposta do assistente
+      const { error: assistantCountError } = await supabase
+        .rpc('increment_message_count', { 
+          session_id_param: sessionId 
+        });
+      
+      if (assistantCountError) {
+        console.error('Erro ao incrementar contador para resposta do assistente:', assistantCountError);
+      }
 
       await updateSession(sessionId, assistantMessage.content);
 

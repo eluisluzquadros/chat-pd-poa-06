@@ -19,14 +19,16 @@ export function useSessionManagement(refetchSessions: RefetchFunction) {
     return uuidRegex.test(str);
   };
 
-  const createSession = useCallback(async (userId: string, title: string, model: string, message: string) => {
+  const createSession = useCallback(async (userId: string, title: string, model: string, message: string, agentId?: string) => {
     const session = await getCurrentAuthenticatedSession();
     if (!session?.user) throw new Error("User not authenticated");
     
+    // Criar sessão no chat_sessions
     const { data: newSession, error } = await supabase
       .from('chat_sessions')
       .insert({
         user_id: session.user.id,
+        agent_id: agentId, // NOVO: Rastreamento de agente
         title: title.slice(0, 50),
         model,
         last_message: message,
@@ -35,6 +37,28 @@ export function useSessionManagement(refetchSessions: RefetchFunction) {
       .single();
 
     if (error) throw error;
+
+    // 🔥 CRÍTICO: SEMPRE criar registro em conversations para métricas
+    const { error: convError } = await supabase
+      .from('conversations')
+      .insert({
+        id: newSession.id, // Usar mesmo ID para relacionar
+        agent_id: agentId || null, // Permitir null mas sempre criar registro
+        user_id: session.user.id,
+        message_count: 0, // Começar em 0, incrementar para cada mensagem
+      });
+    
+    if (convError) {
+      console.error('Erro ao criar conversa para métricas:', convError);
+      // Não falhar a operação por causa do registro de métricas
+    } else {
+      console.log('✅ Conversa criada para rastreamento:', { 
+        sessionId: newSession.id, 
+        agentId: agentId || 'null',
+        userId: session.user.id 
+      });
+    }
+
     setCurrentSessionId(newSession.id);
     return newSession.id;
   }, []);
@@ -253,6 +277,7 @@ export function useSessionManagement(refetchSessions: RefetchFunction) {
 
   const updateSession = useCallback(async (sessionId: string, lastMessage: string) => {
     try {
+      // Atualizar chat_sessions
       await supabase
         .from('chat_sessions')
         .update({ 
@@ -260,6 +285,8 @@ export function useSessionManagement(refetchSessions: RefetchFunction) {
           updated_at: new Date().toISOString()
         })
         .eq('id', sessionId);
+
+      // Remover incremento duplicado - agora feito diretamente no useMessageSubmit
 
       await refetchSessions();
     } catch (error) {

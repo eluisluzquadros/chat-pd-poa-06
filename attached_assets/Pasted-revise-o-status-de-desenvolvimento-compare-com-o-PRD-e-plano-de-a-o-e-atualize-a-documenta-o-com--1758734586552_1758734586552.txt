@@ -1,0 +1,28 @@
+revise o status de desenvolvimento, compare com o PRD e plano de ação e atualize a documentação com relatório de status de desenvolvimento vs planejado pois talvez alguns pontos que listei a seguir estejam já planejadas em tarefas futuras
+# considerações para revisão/correção
+
+## /admin/dashboard:
+###  subaba"visão geral": todos os cards desse dashboard parecem precisar de atualização de seus dados
+#### subaba "Efetividade da Orquestração": não entendi bem o que significa isso
+#### Agentes Ativos: já existem 3 agentes cadastrados e ativos ativos
+
+### "tokens e custos"
+#### qual é o período selecionado? não existe funcionalidade para selecionar o período de análise (24h, 7dias, mês, ano) e deve ter
+#### compliance financeiro deve ser monitorado de forma geral mas também por cada agente o que não está implementado aparentemente
+#### Modelos/Agentes: alterar para Agentes e deve ter métrica de qualidade e tokens e custos além das que já foram implementadas. os dados sobre queries parecem fak pois o "Agentic fertilitat" com certeza não tem 264 conversas nas últimas 24horas e não tenho certeza de que o histórico de conversas esteja persistindo o agente que respondeu para que essa métrica possa ser realmente usada, se não precisa ser desenvolvido isso
+
+
+
+## /admin/dashboard:
+
+### subaba "Casos de Teste": deve ser possível buscar e acessar todos os caso de teste
+### subaba "Configuração": não entendi bem essa aba, apenas informa que temos 3 agentes seus nomes e que está ativo mas como apenas isso contribui para a avaliação de qualidade e benchmark?
+### subaba "Visão Geral": insigths estratégicos "pobres" com informações que não agregam muito valor ao administrador ou gestor da plataforma
+### subaba "Execuções": "Testes manuais via interface admin" NAO FORAM DESENVOLVIDOS. onde está o botão/função para executar os testes de qualidade ou benchmark?
+### subaba "Análise Cognitiva" parece que precisa dos demais ajustes para poder ter realmente insights que agregam valor ao contexto da plataforma e seu objetivo
+
+
+
+## /admin/playground: NAO DEVE SER REMOVIDO isso é uma funcionalidade crítica que pelo contrário DEVE SER APERFEIÇOADA
+
+
