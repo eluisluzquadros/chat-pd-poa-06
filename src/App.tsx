@@ -13,12 +13,7 @@ import Chat from "./pages/Chat";
 import NotFound from "./pages/NotFound";
 import UserManagement from "./pages/admin/UserManagement";
 import AdminDashboard from "./pages/admin/AdminDashboard";
-import QualityV2 from "./pages/admin/QualityV2";
-
-import QualityTest from "./pages/admin/QualityTest";
-import TestQA from "./pages/admin/TestQA";
-import TestQACases from "./pages/admin/TestQACases";
-import ManualQATest from "./pages/admin/ManualQATest";
+import QualityBenchmark from "./pages/admin/QualityBenchmark";
 import FeedbackManagement from "./pages/admin/FeedbackManagement";
 import AgentsConfig from "./pages/admin/AgentsConfig";
 import AdminPlayground from "./pages/admin/AdminPlayground";
@@ -105,36 +100,8 @@ function App() {
                 <SimpleAuthGuard>
                   <SimpleRoleGuard adminOnly={true}>
                     <AdminErrorBoundary>
-                      <QualityV2 />
+                      <QualityBenchmark />
                     </AdminErrorBoundary>
-                  </SimpleRoleGuard>
-                </SimpleAuthGuard>
-              } />
-              <Route path="/admin/quality-test" element={
-                <SimpleAuthGuard>
-                  <SimpleRoleGuard adminOnly={true}>
-                    <QualityTest />
-                  </SimpleRoleGuard>
-                </SimpleAuthGuard>
-              } />
-              <Route path="/admin/test-qa" element={
-                <SimpleAuthGuard>
-                  <SimpleRoleGuard adminOnly={true}>
-                    <TestQA />
-                  </SimpleRoleGuard>
-                </SimpleAuthGuard>
-              } />
-              <Route path="/admin/test-qa-cases" element={
-                <SimpleAuthGuard>
-                  <SimpleRoleGuard adminOnly={true}>
-                    <TestQACases />
-                  </SimpleRoleGuard>
-                </SimpleAuthGuard>
-              } />
-              <Route path="/admin/manual-qa-test" element={
-                <SimpleAuthGuard>
-                  <SimpleRoleGuard adminOnly={true}>
-                    <ManualQATest />
                   </SimpleRoleGuard>
                 </SimpleAuthGuard>
               } />
@@ -149,7 +116,7 @@ function App() {
                 <SimpleAuthGuard>
                   <SimpleRoleGuard adminOnly={true}>
                     <AdminErrorBoundary>
-                      <BenchmarkV2 />
+                      <QualityBenchmark />
                     </AdminErrorBoundary>
                   </SimpleRoleGuard>
                 </SimpleAuthGuard>
