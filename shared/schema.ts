@@ -81,7 +81,19 @@ export interface DomainRoutes {
 
 // Types removed - see consolidated export section below
 
-// Conversations table - CRÍTICO: Adicionar agent_id para rastrear orquestração
+// Chat Sessions table - CRÍTICO: Tabela principal para sessões de chat
+export const chatSessions = pgTable('chat_sessions', {
+  id: uuid('id').primaryKey().default(sql`gen_random_uuid()`),
+  user_id: uuid('user_id').notNull(),
+  agent_id: varchar('agent_id').references(() => agents.id), // Rastreamento de agente
+  title: text('title').notNull(),
+  model: text('model'),
+  last_message: text('last_message'),
+  created_at: timestamp('created_at').defaultNow(),
+  updated_at: timestamp('updated_at').defaultNow(),
+});
+
+// Conversations table - CRÍTICO: Tabela para métricas e rastreamento
 export const conversations = pgTable('conversations', {
   id: varchar('id').primaryKey().default(sql`gen_random_uuid()`),
   agent_id: varchar('agent_id').references(() => agents.id), // NOVO: Rastreamento de agente
@@ -212,6 +224,9 @@ export const domainConfigs = pgTable('domain_configs', {
 export type Agent = typeof agents.$inferSelect;
 export type InsertAgent = typeof agents.$inferInsert;
 
+export type ChatSession = typeof chatSessions.$inferSelect;
+export type InsertChatSession = typeof chatSessions.$inferInsert;
+
 export type Conversation = typeof conversations.$inferSelect;
 export type InsertConversation = typeof conversations.$inferInsert;
 
@@ -230,5 +245,5 @@ export type InsertQAValidationRun = typeof qaValidationRuns.$inferInsert;
 export type DomainConfig = typeof domainConfigs.$inferSelect;
 export type InsertDomainConfig = typeof domainConfigs.$inferInsert;
 
-// Export types for use in application
-export type { Json } from 'drizzle-orm';
+// Export Json type
+export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];

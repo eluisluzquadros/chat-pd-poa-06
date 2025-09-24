@@ -38,26 +38,13 @@ export function useSessionManagement(refetchSessions: RefetchFunction) {
 
     if (error) throw error;
 
-    // 🔥 CRÍTICO: SEMPRE criar registro em conversations para métricas
-    const { error: convError } = await supabase
-      .from('conversations')
-      .insert({
-        id: newSession.id, // Usar mesmo ID para relacionar
-        agent_id: agentId || null, // Permitir null mas sempre criar registro
-        user_id: session.user.id,
-        message_count: 0, // Começar em 0, incrementar para cada mensagem
-      });
-    
-    if (convError) {
-      console.error('Erro ao criar conversa para métricas:', convError);
-      // Não falhar a operação por causa do registro de métricas
-    } else {
-      console.log('✅ Conversa criada para rastreamento:', { 
-        sessionId: newSession.id, 
-        agentId: agentId || 'null',
-        userId: session.user.id 
-      });
-    }
+    // ✅ OTIMIZADO: chat_sessions já contém agent_id para rastreamento
+    // Não precisamos mais de registro duplicado em conversations
+    console.log('✅ Sessão criada com rastreamento de agente:', { 
+      sessionId: newSession.id, 
+      agentId: agentId || 'null',
+      userId: session.user.id 
+    });
 
     setCurrentSessionId(newSession.id);
     return newSession.id;

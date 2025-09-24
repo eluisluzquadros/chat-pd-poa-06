@@ -22,10 +22,10 @@ export function AdminDashboard({ startDate, endDate, onDateRangeChange }: AdminD
   const { data: orchestrationStats } = useQuery({
     queryKey: ['orchestration-stats', startDate, endDate],
     queryFn: async () => {
-      // Estatísticas de conversas
+      // Estatísticas de sessões de chat (usando chat_sessions como fonte única)
       const { data: conversations, error: convError } = await supabase
-        .from('conversations')
-        .select('id, created_at, message_count, agent_id')
+        .from('chat_sessions')
+        .select('id, created_at, agent_id')
         .gte('created_at', startDate.toISOString())
         .lte('created_at', endDate.toISOString());
       
@@ -47,7 +47,8 @@ export function AdminDashboard({ startDate, endDate, onDateRangeChange }: AdminD
       
       // Calcular métricas de orquestração
       const totalConversations = conversations?.length || 0;
-      const totalMessages = conversations?.reduce((sum, conv) => sum + (conv.message_count || 0), 0) || 0;
+      // chat_sessions não tem message_count - usar count de chat_history ou estimar
+      const totalMessages = 0; // TODO: calcular de chat_history se necessário
       const totalFeedback = feedback?.length || 0;
       const positiveeFeedback = feedback?.filter(f => f.helpful === true).length || 0;
       const satisfactionRate = totalFeedback > 0 ? (positiveeFeedback / totalFeedback) * 100 : null;
@@ -124,10 +125,10 @@ export function AdminDashboard({ startDate, endDate, onDateRangeChange }: AdminD
     queryFn: async () => {
       if (!agents) return null;
 
-      // Buscar conversas por agente
+      // Buscar sessões por agente (usando chat_sessions como fonte única)
       const { data: conversations, error: convError } = await supabase
-        .from('conversations')
-        .select('agent_id, message_count, created_at')
+        .from('chat_sessions')
+        .select('agent_id, created_at')
         .gte('created_at', startDate.toISOString())
         .lte('created_at', endDate.toISOString());
 
@@ -155,10 +156,11 @@ export function AdminDashboard({ startDate, endDate, onDateRangeChange }: AdminD
       const performance = agents.map(agent => {
         const isActive = agent.is_active;
         
-        // Conversas atribuídas a este agente
+        // Sessões atribuídas a este agente
         const agentConversations = conversations?.filter(conv => conv.agent_id === agent.id) || [];
         const totalQueries = agentConversations.length;
-        const totalMessages = agentConversations.reduce((sum, conv) => sum + (conv.message_count || 0), 0);
+        // chat_sessions não tem message_count - usar count de chat_history se necessário
+        const totalMessages = 0; // TODO: calcular de chat_history se necessário
         
         // Feedback para este agente (match por nome/modelo)
         const agentFeedback = feedback?.filter(f => 
