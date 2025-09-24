@@ -8,41 +8,59 @@ export class DirectDatabaseService {
    */
   static async createSession(userId: string, title: string, model: string, message: string, agentId?: string): Promise<string> {
     try {
-      console.log('🔧 [DirectDB] Creating session with raw INSERT bypassing cache');
+      console.log('🔧 [DirectDB] Creating session with SQL bypassing PostgREST cache');
       console.log('🔧 [DirectDB] Data:', { userId, title: title.slice(0, 50), model, agentId });
       
-      // Generate UUID manually to avoid database dependency
+      // Generate UUID manually
       const sessionId = crypto.randomUUID();
       
-      // Use raw SQL INSERT to bypass PostgREST cache completely
-      const { data, error } = await supabase
-        .from('chat_sessions')
-        .insert({
-          id: sessionId,
-          user_id: userId,
-          title: title.slice(0, 50),
-          model: model,
-          last_message: message,
-          agent_id: agentId || null,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        })
-        .select('id')
-        .single();
+      try {
+        // First attempt: Use PostgREST
+        const { data, error } = await supabase
+          .from('chat_sessions')
+          .insert({
+            id: sessionId,
+            user_id: userId,
+            title: title.slice(0, 50),
+            model: model,
+            last_message: message,
+            agent_id: agentId || null,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          })
+          .select('id')
+          .single();
 
-      if (error) {
-        console.error('❌ [DirectDB] Raw INSERT error:', error);
-        // If still cache issue, use the generated UUID anyway
+        if (!error) {
+          console.log('✅ [DirectDB] Session created via PostgREST:', data.id);
+          return data.id;
+        }
+
         if (error.code === 'PGRST204') {
-          console.log('🔧 [DirectDB] Still cache issue, using pre-generated UUID:', sessionId);
+          console.log('🔧 [DirectDB] PGRST204 detected, using direct SQL...');
+          
+          // Use direct SQL to bypass cache completely
+          const { data: sqlData, error: sqlError } = await supabase.sql`
+            INSERT INTO chat_sessions (id, user_id, title, model, last_message, agent_id, created_at, updated_at)
+            VALUES (${sessionId}, ${userId}, ${title.slice(0, 50)}, ${model}, ${message}, ${agentId || null}, NOW(), NOW())
+            RETURNING id;
+          `;
+          
+          if (sqlError) {
+            console.error('❌ [DirectDB] Direct SQL failed:', sqlError);
+            throw sqlError;
+          }
+          
+          console.log('✅ [DirectDB] Session created via direct SQL:', sessionId);
           return sessionId;
         }
+        
         throw error;
+        
+      } catch (insertError) {
+        console.error('❌ [DirectDB] Insert operation failed:', insertError);
+        throw insertError;
       }
-
-      const finalSessionId = data?.id || sessionId;
-      console.log('✅ [DirectDB] Session created successfully:', finalSessionId);
-      return finalSessionId;
       
     } catch (error) {
       console.error('❌ [DirectDB] Failed to create session:', error);
