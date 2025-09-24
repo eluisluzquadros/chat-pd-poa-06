@@ -109,11 +109,48 @@ export function useMessageSubmit({
         });
       }
       
+      // 🚀 SDK STRATEGY: Smart session routing based on agent capabilities
       let sessionId = currentSessionId;
       
       if (!sessionId) {
+        // Criar sessão local para UI (histórico, sidebar) e potencial uso por agentes
         sessionId = await createSession(session.user.id, currentInput, selectedModel, currentInput, selectedAgentId);
         setCurrentSessionId(sessionId);
+      }
+      
+      // 🎯 CAPABILITY-BASED ROUTING: Determine if agent needs sessionId
+      let routingSessionId = sessionId; // Default: use real sessionId for continuity
+      
+      // CONCRETE IMPLEMENTATION: Check agent capabilities for routing decision
+      try {
+        const { agentsService } = await import("@/services/agentsService");
+        const allAgents = await agentsService.getAllAgents();
+        const currentAgent = allAgents.find(agent => 
+          agent.id === selectedModel || 
+          agent.name === selectedModel || 
+          agent.model === selectedModel
+        );
+        
+        if (currentAgent?.capabilities) {
+          const capabilities = currentAgent.capabilities as any; // AgentCapabilities type
+          
+          // Route based on concrete capabilities
+          const isPlaygroundStyleAgent = capabilities.playgroundStyle === true ||
+                                       capabilities.sessionManagement === 'self-managed' ||
+                                       capabilities.requiresSessionId === false;
+          
+          if (isPlaygroundStyleAgent) {
+            routingSessionId = ''; // Let agent create/manage automatically
+            console.log('🎯 [SDK Routing] Using self-managed session for agent:', currentAgent.display_name);
+          } else {
+            console.log('🎯 [SDK Routing] Using platform session for agent:', currentAgent.display_name);
+          }
+        } else {
+          console.log('🎯 [SDK Routing] No capabilities defined, using platform session default');
+        }
+      } catch (error) {
+        console.error('⚠️ [SDK Routing] Error checking agent capabilities, using default:', error);
+        // Fall back to platform session on error
       }
 
       console.log('Creating user message...');
@@ -158,17 +195,20 @@ export function useMessageSubmit({
         message: currentInput.substring(0, 100) + (currentInput.length > 100 ? '...' : ''),
         model: selectedModel,
         userRole,
-        sessionId,
+        localSessionId: sessionId, // Local UI session
+        routingSessionId: routingSessionId, // Agent-specific routing
         userId: session.user.id,
         userEmail: session.user.email
       });
       
       console.log('📞 [useMessageSubmit] Calling ChatService.processMessage...');
       
+      // 🚀 SDK STRATEGY: Use routing sessionId based on agent capabilities
+      // Multi-turn conversations maintain context, playground-style agents self-manage
       const result = await chatService.processMessage(
         currentInput, 
         userRole, 
-        sessionId, 
+        routingSessionId, // Smart routing: real sessionId for continuity OR empty for self-managed
         selectedModel
       );
 
@@ -246,7 +286,7 @@ export function useMessageSubmit({
         stack: error instanceof Error ? error.stack : undefined,
         userRole,
         selectedModel,
-        sessionId: currentSessionId,
+        sessionId: sessionId, // Use local sessionId variable, not currentSessionId
         userId: session?.user?.id,
         userEmail: session?.user?.email,
         messageLength: currentInput.length

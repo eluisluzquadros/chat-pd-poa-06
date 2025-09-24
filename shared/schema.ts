@@ -11,6 +11,7 @@ export const agents = pgTable('dify_agents', {
   model: varchar('model', { length: 100 }).notNull(),
   dify_config: json('dify_config'),
   parameters: json('parameters'),
+  capabilities: json('capabilities'), // NOVO: Session routing capabilities
   is_active: boolean('is_active').notNull().default(true),
   is_default: boolean('is_default').notNull().default(false),
   created_at: timestamp('created_at').notNull().defaultNow(),
@@ -36,6 +37,15 @@ export interface ModelParameters {
   timeout?: number;
   max_retries?: number;
   response_format?: 'text' | 'json';
+}
+
+// Agent Capabilities for SDK routing
+export interface AgentCapabilities {
+  sessionManagement?: 'platform' | 'self-managed'; // How sessions are handled
+  requiresSessionId?: boolean; // Whether agent needs platform sessionId
+  contextPersistence?: 'stateless' | 'conversation' | 'long-term'; // Context handling
+  multiTurn?: boolean; // Supports multi-turn conversations
+  playgroundStyle?: boolean; // Self-contained testing agent
 }
 
 // Domain Configuration interfaces
