@@ -109,13 +109,41 @@ export function useMessageSubmit({
         });
       }
       
-      // 🚀 SDK STRATEGY: Smart session routing based on agent capabilities
+      // 🚀 SDK STRATEGY: Smart session routing with proper error handling
       let sessionId = currentSessionId;
       
       if (!sessionId) {
-        // Criar sessão local para UI (histórico, sidebar) e potencial uso por agentes
-        sessionId = await createSession(session.user.id, currentInput, selectedModel, currentInput, selectedAgentId);
-        setCurrentSessionId(sessionId);
+        console.log('🔄 [useMessageSubmit] Creating new session...');
+        try {
+          sessionId = await createSession(session.user.id, currentInput, selectedModel, currentInput, selectedAgentId);
+          if (!sessionId) {
+            throw new Error('createSession returned null/undefined');
+          }
+          setCurrentSessionId(sessionId);
+          console.log('✅ [useMessageSubmit] Session created successfully:', sessionId);
+        } catch (error) {
+          console.error('❌ [useMessageSubmit] Failed to create session:', error);
+          // 🛑 ABORT SUBMISSION: Surface error to user instead of phantom sessionId
+          toast({
+            title: "Erro de Sessão",
+            description: "Não foi possível criar uma nova sessão. Tente novamente.",
+            variant: "destructive",
+          });
+          setIsLoading(false);
+          return; // Abort submission cleanly
+        }
+      }
+      
+      // 🛡️ FINAL VALIDATION: Ensure we have a valid sessionId before proceeding
+      if (!sessionId) {
+        console.error('🚨 [useMessageSubmit] CRITICAL: No valid sessionId available');
+        toast({
+          title: "Erro de Sistema",
+          description: "Sistema indisponível. Contate o suporte.",
+          variant: "destructive",
+        });
+        setIsLoading(false);
+        return; // Abort submission
       }
       
       // 🎯 CAPABILITY-BASED ROUTING: Determine if agent needs sessionId
@@ -134,7 +162,7 @@ export function useMessageSubmit({
         if (currentAgent?.capabilities) {
           const capabilities = currentAgent.capabilities as any; // AgentCapabilities type
           
-          // Route based on concrete capabilities
+          // Route based on concrete capabilities with robust validation
           const isPlaygroundStyleAgent = capabilities.playgroundStyle === true ||
                                        capabilities.sessionManagement === 'self-managed' ||
                                        capabilities.requiresSessionId === false;
@@ -143,6 +171,8 @@ export function useMessageSubmit({
             routingSessionId = ''; // Let agent create/manage automatically
             console.log('🎯 [SDK Routing] Using self-managed session for agent:', currentAgent.display_name);
           } else {
+            // Ensure we always have a valid sessionId for platform-managed agents
+            routingSessionId = sessionId; // Guaranteed valid by earlier validation
             console.log('🎯 [SDK Routing] Using platform session for agent:', currentAgent.display_name);
           }
         } else {
