@@ -5,6 +5,7 @@ interface DomainContextType {
   currentDomain: DomainConfig | null;
   availableDomains: DomainConfig[];
   isLoading: boolean;
+  isReady: boolean; // NOVO: Guard para timing de inicialização
   switchDomain: (domainId: string) => void;
   refreshDomains: () => void;
 }
@@ -19,6 +20,7 @@ export function DomainProvider({ children }: DomainProviderProps) {
   const [currentDomain, setCurrentDomain] = useState<DomainConfig | null>(null);
   const [availableDomains, setAvailableDomains] = useState<DomainConfig[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isReady, setIsReady] = useState(false); // NOVO: Estado de ready
 
   // Mock domains para desenvolvimento - TODO: Substituir por API real
   const mockDomains: DomainConfig[] = [
@@ -96,8 +98,17 @@ export function DomainProvider({ children }: DomainProviderProps) {
         // Salvar no localStorage para persistência
         localStorage.setItem('currentDomain', defaultDomain.id);
       }
+      
+      // CRÍTICO: Marcar como ready apenas após domínio padrão carregado
+      setIsReady(true);
+      console.log('🚀 [DomainContext] Initialized successfully', {
+        domainsCount: domains.length,
+        defaultDomain: defaultDomain?.name,
+        ready: true
+      });
     } catch (error) {
       console.error('Error loading domains:', error);
+      setIsReady(false);
     } finally {
       setIsLoading(false);
     }
@@ -136,6 +147,7 @@ export function DomainProvider({ children }: DomainProviderProps) {
       currentDomain,
       availableDomains,
       isLoading,
+      isReady,
       switchDomain,
       refreshDomains
     }}>

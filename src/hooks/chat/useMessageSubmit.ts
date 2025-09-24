@@ -19,6 +19,7 @@ interface UseMessageSubmitProps {
   createSession: (userId: string, title: string, model: string, message: string, agentId?: string) => Promise<string>;
   updateSession: (sessionId: string, lastMessage: string) => Promise<void>;
   selectedModel: string;
+  isDomainReady?: boolean; // NOVO: Passado como prop para evitar hook violation
 }
 
 export function useMessageSubmit({
@@ -32,6 +33,7 @@ export function useMessageSubmit({
   createSession,
   updateSession,
   selectedModel,
+  isDomainReady = true, // NOVO: Default true, passado como prop
 }: UseMessageSubmitProps) {
   const { toast } = useToast();
   const chatService = new ChatService();
@@ -40,6 +42,16 @@ export function useMessageSubmit({
   const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim() || isLoading) return;
+
+    // CRÍTICO: Aguardar DomainContext estar ready antes de prosseguir
+    if (!isDomainReady) {
+      console.log('⏳ [useMessageSubmit] Waiting for DomainContext to be ready...');
+      toast({
+        title: "Carregando",
+        description: "Inicializando sistema, aguarde...",
+      });
+      return;
+    }
 
     const session = await getCurrentAuthenticatedSession();
     if (!session?.user) {
@@ -280,6 +292,7 @@ export function useMessageSubmit({
     currentSessionId,
     input,
     isLoading,
+    isDomainReady,
     toast,
     addMessage,
     createSession,
