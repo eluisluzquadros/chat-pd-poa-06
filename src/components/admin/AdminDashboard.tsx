@@ -25,7 +25,7 @@ export function AdminDashboard({ startDate, endDate, onDateRangeChange }: AdminD
       // Estatísticas de conversas
       const { data: conversations, error: convError } = await supabase
         .from('conversations')
-        .select('id, created_at, message_count')
+        .select('id, created_at, message_count, agent_id')
         .gte('created_at', startDate.toISOString())
         .lte('created_at', endDate.toISOString());
       
@@ -50,7 +50,21 @@ export function AdminDashboard({ startDate, endDate, onDateRangeChange }: AdminD
       const totalMessages = conversations?.reduce((sum, conv) => sum + (conv.message_count || 0), 0) || 0;
       const totalFeedback = feedback?.length || 0;
       const positiveeFeedback = feedback?.filter(f => f.helpful === true).length || 0;
-      const satisfactionRate = totalFeedback > 0 ? (positiveeFeedback / totalFeedback) * 100 : 0;
+      const satisfactionRate = totalFeedback > 0 ? (positiveeFeedback / totalFeedback) * 100 : null;
+
+      // Calcular efetividade da orquestração baseada em dados reais
+      const conversationsWithAgents = conversations?.filter(conv => conv.agent_id) || [];
+      const orchestrationEffectiveness = totalConversations > 0 
+        ? (conversationsWithAgents.length / totalConversations) * 100 
+        : null;
+
+      // Tempo de resposta: usar dados reais ou reportar null (sem dados sintéticos)
+      const avgResponseTime = null; // TODO: Implementar com timestamps reais de chat_history
+
+      // Saúde do sistema: usar componentes reais sem boosts artificiais
+      const systemHealth = activeAgentCount > 0 && orchestrationEffectiveness !== null && satisfactionRate !== null
+        ? Math.min(100, (orchestrationEffectiveness + satisfactionRate) / 2)
+        : null;
 
       return {
         totalConversations,
@@ -58,9 +72,9 @@ export function AdminDashboard({ startDate, endDate, onDateRangeChange }: AdminD
         activeAgents: activeAgentCount,
         totalAgents,
         satisfactionRate,
-        orchestrationEffectiveness: activeAgentCount > 0 ? 95 : 0, // Simulado - seria calculado baseado em métricas reais
-        avgResponseTime: 2.3, // Simulado
-        systemHealth: 99.2 // Simulado
+        orchestrationEffectiveness,
+        avgResponseTime,
+        systemHealth
       };
     },
     enabled: !agentsLoading
@@ -80,7 +94,7 @@ export function AdminDashboard({ startDate, endDate, onDateRangeChange }: AdminD
       
       const totalTokens = data?.reduce((sum, usage) => sum + (usage.total_tokens || 0), 0) || 0;
       const totalCost = data?.reduce((sum, usage) => sum + Number(usage.estimated_cost || 0), 0) || 0;
-      const avgCostPerQuery = data && data.length > 0 ? totalCost / data.length : 0;
+      const avgCostPerQuery = data && data.length > 0 ? totalCost / data.length : null;
       
       // Custo por agente/modelo
       const costByAgent = data?.reduce((acc, usage) => {
@@ -98,32 +112,95 @@ export function AdminDashboard({ startDate, endDate, onDateRangeChange }: AdminD
         totalCost,
         avgCostPerQuery,
         totalQueries: data?.length || 0,
-        costByAgent,
-        projectedMonthlyCost: totalCost * 30 // Simulado baseado no período
+        costByAgent
+        // Removido projectedMonthlyCost - era simulado
       };
     }
   });
 
-  // Query para performance dos agentes
+  // Query para performance dos agentes com dados reais
   const { data: agentPerformance } = useQuery({
     queryKey: ['agent-performance', startDate, endDate],
     queryFn: async () => {
       if (!agents) return null;
 
-      // Simulação de métricas por agente (em implementação real viria de métricas coletadas)
+      // Buscar conversas por agente
+      const { data: conversations, error: convError } = await supabase
+        .from('conversations')
+        .select('agent_id, message_count, created_at')
+        .gte('created_at', startDate.toISOString())
+        .lte('created_at', endDate.toISOString());
+
+      if (convError) throw convError;
+
+      // Buscar feedback por agente (via join com conversations)
+      const { data: feedback, error: feedError } = await supabase
+        .from('message_feedback')
+        .select('helpful, model, created_at')
+        .gte('created_at', startDate.toISOString())
+        .lte('created_at', endDate.toISOString());
+
+      if (feedError) throw feedError;
+
+      // Buscar custos por agente
+      const { data: tokenUsage, error: tokenError } = await supabase
+        .from('token_usage')
+        .select('model, total_tokens, estimated_cost, created_at')
+        .gte('created_at', startDate.toISOString())
+        .lte('created_at', endDate.toISOString());
+
+      if (tokenError) throw tokenError;
+
+      // Calcular métricas reais por agente
       const performance = agents.map(agent => {
         const isActive = agent.is_active;
+        
+        // Conversas atribuídas a este agente
+        const agentConversations = conversations?.filter(conv => conv.agent_id === agent.id) || [];
+        const totalQueries = agentConversations.length;
+        const totalMessages = agentConversations.reduce((sum, conv) => sum + (conv.message_count || 0), 0);
+        
+        // Feedback para este agente (match por nome/modelo)
+        const agentFeedback = feedback?.filter(f => 
+          f.model === agent.name || f.model === agent.display_name || f.model === agent.model
+        ) || [];
+        const positiveFeedback = agentFeedback.filter(f => f.helpful === true).length;
+        const successRate = agentFeedback.length > 0 ? (positiveFeedback / agentFeedback.length) * 100 : 0;
+        
+        // Custos para este agente
+        const agentTokens = tokenUsage?.filter(tu => 
+          tu.model === agent.name || tu.model === agent.display_name || tu.model === agent.model
+        ) || [];
+        const totalCost = agentTokens.reduce((sum, tu) => sum + Number(tu.estimated_cost || 0), 0);
+        const totalTokensUsed = agentTokens.reduce((sum, tu) => sum + (tu.total_tokens || 0), 0);
+        // Eficiência de custo: ratio real sem escalas arbitrárias
+        const costEfficiency = totalCost > 0 ? totalQueries / totalCost : null;
+
+        // Disponibilidade: sem dados reais de uptime, reportar null
+        const availability = null; // TODO: usar logs de status real ou health checks
+
+        // Taxa de sucesso: apenas dados reais, sem defaults sintéticos
+        const realSuccessRate = agentFeedback.length > 0 ? successRate : null;
+
+        // Erros: apenas contagem real de feedbacks negativos
+        const errors24h = agentFeedback.length > 0 
+          ? agentFeedback.length - positiveFeedback
+          : null;
+
+        // Tempo de resposta: usar dados reais (TODO: implementar com timestamps)
+        const avgResponseTime = null; // Sem dados sintéticos
+
         const baseMetrics = {
           id: agent.id,
           name: agent.display_name,
           provider: agent.provider,
           isActive,
-          availability: isActive ? Math.random() * 10 + 90 : 0, // 90-100% se ativo
-          avgResponseTime: isActive ? Math.random() * 2 + 1 : 0, // 1-3s se ativo
-          successRate: isActive ? Math.random() * 5 + 95 : 0, // 95-100% se ativo
-          costEfficiency: isActive ? Math.random() * 20 + 80 : 0, // 80-100% se ativo
-          totalQueries: isActive ? Math.floor(Math.random() * 1000) + 100 : 0,
-          errors24h: isActive ? Math.floor(Math.random() * 5) : 0,
+          availability,
+          avgResponseTime,
+          successRate: realSuccessRate,
+          costEfficiency,
+          totalQueries,
+          errors24h,
         };
         return baseMetrics;
       });
@@ -191,11 +268,9 @@ export function AdminDashboard({ startDate, endDate, onDateRangeChange }: AdminD
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             <MetricCard
               title="Efetividade da Orquestração"
-              value={`${orchestrationStats?.orchestrationEffectiveness || 0}%`}
+              value={orchestrationStats && orchestrationStats.orchestrationEffectiveness !== null ? `${orchestrationStats.orchestrationEffectiveness.toFixed(1)}%` : "Sem dados"}
               icon={Target}
-              trend={5}
               description="Consultas resolvidas pelo agente ideal"
-              status="healthy"
             />
             <MetricCard
               title="Agentes Ativos"
@@ -205,17 +280,15 @@ export function AdminDashboard({ startDate, endDate, onDateRangeChange }: AdminD
             />
             <MetricCard
               title="Satisfação do Usuário"
-              value={`${orchestrationStats?.satisfactionRate?.toFixed(1) || 0}%`}
+              value={orchestrationStats && orchestrationStats.satisfactionRate !== null ? `${orchestrationStats.satisfactionRate.toFixed(1)}%` : "Sem dados"}
               icon={TrendingUp}
-              trend={2}
               description="Net Promoter Score"
             />
             <MetricCard
               title="Tempo de Resposta"
-              value={`${orchestrationStats?.avgResponseTime || 0}s`}
+              value={orchestrationStats && orchestrationStats.avgResponseTime !== null ? `${orchestrationStats.avgResponseTime}s` : "Sem dados"}
               icon={Activity}
               description="Latência média (P95)"
-              status="healthy"
             />
           </div>
 
@@ -233,7 +306,9 @@ export function AdminDashboard({ startDate, endDate, onDateRangeChange }: AdminD
               <CardContent className="space-y-4">
                 <div className="flex justify-between items-center">
                   <span className="text-sm font-medium">Saúde do Sistema</span>
-                  <Badge variant="default">{orchestrationStats?.systemHealth || 0}%</Badge>
+                  <Badge variant="default">
+                    {orchestrationStats && orchestrationStats.systemHealth !== null ? `${orchestrationStats.systemHealth.toFixed(1)}%` : "Sem dados"}
+                  </Badge>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-sm font-medium">Total de Conversas</span>
@@ -257,17 +332,10 @@ export function AdminDashboard({ startDate, endDate, onDateRangeChange }: AdminD
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm">Sistema operando normalmente</span>
-                  <Badge variant="default">✓</Badge>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm">Todos os agentes ativos</span>
-                  <Badge variant="default">✓</Badge>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm">Custos dentro do orçamento</span>
-                  <Badge variant="default">✓</Badge>
+                <div className="text-sm text-muted-foreground">
+                  Nenhum alerta ativo no momento.
+                  <br />
+                  TODO: Implementar alertas baseados em dados reais.
                 </div>
               </CardContent>
             </Card>
@@ -291,15 +359,15 @@ export function AdminDashboard({ startDate, endDate, onDateRangeChange }: AdminD
             />
             <MetricCard
               title="Custo por Consulta"
-              value={`$${costStats?.avgCostPerQuery?.toFixed(3) || '0.000'}`}
+              value={costStats && costStats.avgCostPerQuery !== null ? `$${costStats.avgCostPerQuery.toFixed(3)}` : "Sem dados"}
               icon={Target}
               description="Média por query"
             />
             <MetricCard
-              title="Projeção Mensal"
-              value={`$${costStats?.projectedMonthlyCost?.toFixed(2) || '0.00'}`}
+              title="Queries Executadas"
+              value={costStats?.totalQueries || 0}
               icon={TrendingUp}
-              description="Baseado no uso atual"
+              description="Total no período selecionado"
             />
           </div>
 
@@ -358,15 +426,21 @@ export function AdminDashboard({ startDate, endDate, onDateRangeChange }: AdminD
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                               <div>
                                 <span className="font-medium">Disponibilidade</span>
-                                <p className="text-muted-foreground">{agent.availability.toFixed(1)}%</p>
+                                <p className="text-muted-foreground">
+                                  {agent.availability !== null ? `${agent.availability.toFixed(1)}%` : "Sem dados"}
+                                </p>
                               </div>
                               <div>
                                 <span className="font-medium">Tempo Resposta</span>
-                                <p className="text-muted-foreground">{agent.avgResponseTime.toFixed(1)}s</p>
+                                <p className="text-muted-foreground">
+                                  {agent.avgResponseTime !== null ? `${agent.avgResponseTime.toFixed(1)}s` : "Sem dados"}
+                                </p>
                               </div>
                               <div>
                                 <span className="font-medium">Taxa Sucesso</span>
-                                <p className="text-muted-foreground">{agent.successRate.toFixed(1)}%</p>
+                                <p className="text-muted-foreground">
+                                  {agent.successRate !== null ? `${agent.successRate.toFixed(1)}%` : "Sem dados"}
+                                </p>
                               </div>
                               <div>
                                 <span className="font-medium">Queries 24h</span>
