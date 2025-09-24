@@ -71,6 +71,9 @@ export function useMessageSubmit({
     const { AuthService } = await import("@/services/authService");
     let userRole: string = 'user'; // default fallback
     
+    // 🔧 CRITICAL FIX: Declare sessionId OUTSIDE try block to avoid scope issues in catch
+    let sessionId = currentSessionId;
+    
     try {
       userRole = await AuthService.getUserRole(session.user.id);
       
@@ -110,7 +113,6 @@ export function useMessageSubmit({
       }
       
       // 🚀 SDK STRATEGY: Smart session routing with proper error handling
-      let sessionId = currentSessionId;
       
       if (!sessionId) {
         console.log('🔄 [useMessageSubmit] Creating new session...');
