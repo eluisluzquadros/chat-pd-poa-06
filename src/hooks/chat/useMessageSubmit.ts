@@ -220,6 +220,11 @@ export function useMessageSubmit({
       if (userMessageError) throw userMessageError;
 
       // 🔥 NOVO: Incrementar contador para mensagem do usuário
+      console.log('🔍 [DEBUG] About to increment user count with sessionId:', sessionId);
+      if (!sessionId) {
+        console.error('🚨 [DEBUG] sessionId undefined at increment_message_count user!');
+        throw new Error('sessionId undefined at increment_message_count user');
+      }
       const { error: userCountError } = await supabase
         .rpc('increment_message_count', { 
           session_id_param: sessionId 
@@ -271,6 +276,11 @@ export function useMessageSubmit({
       addMessage(assistantMessage);
 
       console.log('Saving assistant message to database...');
+      console.log('🔍 [DEBUG] About to save assistant message with sessionId:', sessionId);
+      if (!sessionId) {
+        console.error('🚨 [DEBUG] sessionId undefined at assistant message insert!');
+        throw new Error('sessionId undefined at assistant message insert');
+      }
       const { error: assistantMessageError } = await supabase
         .from('chat_history')
         .insert({
@@ -290,6 +300,11 @@ export function useMessageSubmit({
       if (assistantMessageError) throw assistantMessageError;
 
       // 🔥 NOVO: Incrementar contador para resposta do assistente
+      console.log('🔍 [DEBUG] About to increment assistant count with sessionId:', sessionId);
+      if (!sessionId) {
+        console.error('🚨 [DEBUG] sessionId undefined at increment_message_count assistant!');
+        throw new Error('sessionId undefined at increment_message_count assistant');
+      }
       const { error: assistantCountError } = await supabase
         .rpc('increment_message_count', { 
           session_id_param: sessionId 
@@ -299,6 +314,11 @@ export function useMessageSubmit({
         console.error('Erro ao incrementar contador para resposta do assistente:', assistantCountError);
       }
 
+      console.log('🔍 [DEBUG] About to updateSession with sessionId:', sessionId);
+      if (!sessionId) {
+        console.error('🚨 [DEBUG] sessionId undefined at updateSession!');
+        throw new Error('sessionId undefined at updateSession');
+      }
       await updateSession(sessionId, assistantMessage.content);
 
       // Track token usage
@@ -306,6 +326,11 @@ export function useMessageSubmit({
         const inputTokens = estimateTokens(currentInput);
         const outputTokens = estimateTokens(result.response);
         
+        console.log('🔍 [DEBUG] About to trackTokenUsage with sessionId:', sessionId);
+        if (!sessionId) {
+          console.error('🚨 [DEBUG] sessionId undefined at trackTokenUsage!');
+          throw new Error('sessionId undefined at trackTokenUsage');
+        }
         await trackTokenUsage({
           model: selectedModel,
           input_tokens: inputTokens,
