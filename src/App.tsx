@@ -3,6 +3,7 @@ import { Toaster } from "sonner";
 import { ThemeProvider } from "./components/ui/theme-provider";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AuthProvider } from "./context/AuthContext";
+import { DomainProvider } from "./context/DomainContext";
 import React from "react";
 
 // Pages
@@ -56,7 +57,8 @@ function App() {
     <ThemeProvider defaultTheme="light" attribute="class" enableSystem={false} storageKey="urbanista-theme">
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
-          <BrowserRouter>
+          <DomainProvider>
+            <BrowserRouter>
             
             <Routes>
               {/* Redirecionar a rota inicial para a autenticação */}
@@ -194,7 +196,8 @@ function App() {
             </Routes>
             
             <Toaster position="top-right" />
-          </BrowserRouter>
+            </BrowserRouter>
+          </DomainProvider>
         </AuthProvider>
       </QueryClientProvider>
     </ThemeProvider>
