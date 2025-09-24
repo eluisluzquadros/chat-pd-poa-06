@@ -120,7 +120,7 @@ export default function RegimeUrbanisticoDashboard() {
             <div>
               <h1 className="text-4xl font-bold text-foreground mb-2">Explorar Dados</h1>
               <p className="text-muted-foreground text-lg">
-                Navegue pelos parâmetros construtivos por bairro e zona urbanística de Porto Alegre
+                Navegue pelos dados estruturados e parâmetros organizados por região e classificação
               </p>
             </div>
             <div className="ml-auto">
