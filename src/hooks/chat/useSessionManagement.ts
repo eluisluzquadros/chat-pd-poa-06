@@ -60,8 +60,11 @@ export function useSessionManagement(refetchSessions: RefetchFunction) {
         console.log('🔧 [createSession] Using direct database fallback...');
         
         try {
-          const { DirectDatabaseService } = await import('@/services/directDatabaseService');
-          const sessionId = await DirectDatabaseService.createSession(userId, title, model, message, agentId);
+          console.log('🔧 [createSession] Importing DirectDatabaseService...');
+          const directModule = await import('@/services/directDatabaseService');
+          console.log('🔧 [createSession] Module imported:', directModule);
+          
+          const sessionId = await directModule.DirectDatabaseService.createSession(userId, title, model, message, agentId);
           
           console.log('✅ [createSession] Direct database fallback succeeded');
           setCurrentSessionId(sessionId);

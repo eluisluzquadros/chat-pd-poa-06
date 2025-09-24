@@ -1,5 +1,4 @@
 // Direct database service to bypass PostgREST cache issues
-import { db } from "../../server/db";
 import { chatSessions } from "../../shared/schema";
 import { eq } from "drizzle-orm";
 
@@ -12,6 +11,10 @@ export class DirectDatabaseService {
     try {
       console.log('🔧 [DirectDB] Creating session with direct database connection');
       console.log('🔧 [DirectDB] Data:', { userId, title: title.slice(0, 50), model, agentId });
+      
+      // Import database dynamically to avoid module loading issues
+      const dbModule = await import("../../server/db");
+      const db = dbModule.db;
       
       const sessionData = {
         user_id: userId,
@@ -40,6 +43,10 @@ export class DirectDatabaseService {
    */
   static async updateSession(sessionId: string, lastMessage: string): Promise<void> {
     try {
+      // Import database dynamically to avoid module loading issues
+      const dbModule = await import("../../server/db");
+      const db = dbModule.db;
+      
       await db
         .update(chatSessions)
         .set({ 
