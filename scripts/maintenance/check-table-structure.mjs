@@ -2,111 +2,93 @@
 
 import { createClient } from '@supabase/supabase-js';
 import dotenv from 'dotenv';
-import { readFileSync } from 'fs';
-import { fileURLToPath } from 'url';
-import { dirname, join } from 'path';
+import chalk from 'chalk';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+dotenv.config({ path: '.env' });
 
-// Load environment variables
-try {
-  const envContent = readFileSync(join(__dirname, '.env.local'), 'utf8');
-  const envVars = {};
-  envContent.split('\n').forEach(line => {
-    const [key, value] = line.split('=');
-    if (key && value) {
-      envVars[key.trim()] = value.trim();
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://ngrqwmvuhvjkeohesbxs.supabase.co';
+const ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+const supabase = createClient(SUPABASE_URL, SERVICE_KEY || ANON_KEY);
+
+async function checkTables() {
+  console.log(chalk.cyan.bold('\n🔍 VERIFICANDO ESTRUTURA DAS TABELAS\n'));
+  
+  // Check legal_articles structure
+  console.log(chalk.cyan('1. ESTRUTURA DA TABELA legal_articles'));
+  
+  const { data: sample, error } = await supabase
+    .from('legal_articles')
+    .select('*')
+    .limit(1);
+  
+  if (error) {
+    console.log(chalk.red('Erro:', error.message));
+  } else if (sample && sample[0]) {
+    console.log(chalk.green('Colunas disponíveis:'));
+    Object.keys(sample[0]).forEach(col => {
+      console.log(chalk.white(`  • ${col}`));
+    });
+  }
+  
+  // Check actual articles
+  console.log(chalk.cyan('\n2. ARTIGOS ESPECÍFICOS'));
+  
+  const articles = [1, 3, 5, 38, 75, 119];
+  for (const num of articles) {
+    const { data, error } = await supabase
+      .from('legal_articles')
+      .select('*')
+      .eq('article_number', num)
+      .limit(1);
+    
+    if (data && data[0]) {
+      console.log(chalk.green(`Art. ${num} (${data[0].document_type}):`));
+      const content = data[0].full_content || data[0].article_text || data[0].content || '';
+      console.log(chalk.white(`   ${content.substring(0, 100)}...`));
+    } else {
+      console.log(chalk.yellow(`Art. ${num} não encontrado`));
     }
+  }
+  
+  // Check count
+  console.log(chalk.cyan('\n3. CONTAGEM DE REGISTROS'));
+  
+  const { count: totalArticles } = await supabase
+    .from('legal_articles')
+    .select('*', { count: 'exact', head: true });
+  
+  console.log(chalk.green(`Total de artigos: ${totalArticles}`));
+  
+  // Check regime_urbanistico_consolidado
+  console.log(chalk.cyan('\n4. BAIRROS DISPONÍVEIS'));
+  
+  const { data: bairros } = await supabase
+    .from('regime_urbanistico_consolidado')
+    .select('Bairro, Zona');
+  
+  const uniqueBairros = [...new Set(bairros?.map(b => b.Bairro))].sort();
+  console.log(chalk.green(`Total de bairros únicos: ${uniqueBairros.length}`));
+  console.log(chalk.white('Primeiros 20 bairros:'));
+  uniqueBairros.slice(0, 20).forEach(b => {
+    console.log(chalk.white(`  • ${b}`));
   });
   
-  Object.assign(process.env, envVars);
-} catch (error) {
-  console.error('Error loading .env.local:', error.message);
-}
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
-);
-
-async function checkTableStructure() {
-  console.log('🔍 Checking table structures...\n');
-
-  try {
-    // Check documents table
-    const { data: docs, error: docsError } = await supabase
-      .from('documents')
-      .select('*')
-      .limit(1);
-
-    if (docsError) {
-      console.error('Error checking documents table:', docsError);
-    } else {
-      console.log('📄 Documents table columns:');
-      if (docs.length > 0) {
-        Object.keys(docs[0]).forEach(col => console.log(`  - ${col}`));
-      }
-    }
-
-    // Check document_embeddings table
-    const { data: embeddings, error: embError } = await supabase
-      .from('document_embeddings')
-      .select('*')
-      .limit(1);
-
-    if (embError) {
-      console.error('\n❌ Error checking document_embeddings table:', embError.message);
-      console.log('This suggests the table structure needs to be updated or created.');
-    } else {
-      console.log('\n🧠 Document_embeddings table columns:');
-      if (embeddings.length > 0) {
-        Object.keys(embeddings[0]).forEach(col => console.log(`  - ${col}`));
-      } else {
-        console.log('  (Table exists but is empty)');
-      }
-    }
-
-    // Try to check for any embeddings-related tables
-    const { data: allEmbeddings, error: allEmbError } = await supabase
-      .rpc('get_table_names');
-
-    if (!allEmbError && allEmbeddings) {
-      console.log('\n📊 Available tables containing "embedding":');
-      allEmbeddings
-        .filter(table => table.name.includes('embedding'))
-        .forEach(table => console.log(`  - ${table.name}`));
-    }
-
-    // Check if there are any embeddings stored somewhere
-    console.log('\n🔍 Searching for existing embeddings data...');
-
-    // Try different possible table names
-    const possibleTables = ['document_embeddings', 'embeddings', 'chunk_embeddings', 'vector_embeddings'];
-    
-    for (const tableName of possibleTables) {
-      try {
-        const { data, error } = await supabase
-          .from(tableName)
-          .select('*')
-          .limit(1);
-        
-        if (!error && data) {
-          console.log(`✅ Found table: ${tableName}`);
-          if (data.length > 0) {
-            console.log(`   Columns: ${Object.keys(data[0]).join(', ')}`);
-          } else {
-            console.log(`   (Empty table)`);
-          }
-        }
-      } catch (e) {
-        // Table doesn't exist, continue
-      }
-    }
-
-  } catch (error) {
-    console.error('Error checking table structure:', error);
+  // Check if "Aberta dos Morros" exists
+  const abertaDosMorros = uniqueBairros.find(b => 
+    b?.toLowerCase().includes('aberta') || 
+    b?.toLowerCase().includes('morros')
+  );
+  
+  if (abertaDosMorros) {
+    console.log(chalk.green(`\nEncontrado: ${abertaDosMorros}`));
+  } else {
+    console.log(chalk.yellow('\n"Aberta dos Morros" não encontrado'));
   }
 }
 
-checkTableStructure().catch(console.error);
+checkTables().catch(error => {
+  console.error(chalk.red('Erro:', error));
+  process.exit(1);
+});
