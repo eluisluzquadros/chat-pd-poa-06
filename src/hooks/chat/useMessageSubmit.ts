@@ -235,6 +235,11 @@ export function useMessageSubmit({
       }
 
       console.log(`🚀 [useMessageSubmit] Processing message via ${selectedModel}...`);
+      console.log('🔍 [DEBUG] About to log message details with sessionId:', sessionId);
+      if (!sessionId) {
+        console.error('🚨 [DEBUG] sessionId undefined at message details log!');
+        throw new Error('sessionId undefined at message details log');
+      }
       console.log('📝 [useMessageSubmit] Message details:', {
         message: currentInput.substring(0, 100) + (currentInput.length > 100 ? '...' : ''),
         model: selectedModel,
