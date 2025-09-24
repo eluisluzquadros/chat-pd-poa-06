@@ -195,6 +195,15 @@ export function useMessageSubmit({
       addMessage(userMessage);
 
       console.log('Saving user message to database...');
+      console.log('🔍 [DEBUG] About to save user message with sessionId:', sessionId);
+      console.log('🔍 [DEBUG] sessionId type:', typeof sessionId);
+      console.log('🔍 [DEBUG] sessionId value:', sessionId);
+      
+      if (!sessionId) {
+        console.error('🚨 [DEBUG] sessionId is undefined/null before database insert!');
+        throw new Error('sessionId is not defined before user message insert');
+      }
+      
       const { error: userMessageError } = await supabase
         .from('chat_history')
         .insert({
