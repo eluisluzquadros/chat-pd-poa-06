@@ -1,8 +1,8 @@
-# Chat PD-POA: Sistema de Consulta do Plano Diretor
+# Chat PD-POA: Plataforma Orquestradora de Agentes Urbanos
 
 ## Overview
 
-Chat PD-POA é um sistema de consulta inteligente para o Plano Diretor de Porto Alegre (PDPOA 2025). O sistema utiliza técnicas de Retrieval-Augmented Generation (RAG) para permitir consultas em linguagem natural sobre normativas urbanísticas, zoneamento, e regulamentações da cidade. A aplicação combina uma interface web moderna com processamento avançado de documentos e múltiplos provedores de LLM.
+Chat PD-POA é uma plataforma inteligente que **orquestra múltiplos agentes de IA especializados** para planejamento urbano. Transformou de um sistema RAG tradicional para um **hub centralizador** que gerencia, conecta, monitora, valida e serve diferentes agentes externos (Dify, Langflow, CrewAI) através de uma interface unificada para consultas sobre o Plano Diretor de Porto Alegre.
 
 ## User Preferences
 
@@ -15,13 +15,19 @@ A aplicação frontend é construída com React e TypeScript usando Vite como bu
 
 A arquitetura de estado é gerenciada através de hooks customizados que encapsulam a lógica de negócio, especialmente para autenticação (AuthUtils) e comunicação com APIs. O sistema suporta múltiplos tipos de usuário (admin, regular) com diferentes níveis de acesso.
 
-### Backend Architecture
-O backend utiliza Supabase como plataforma principal, combinando PostgreSQL para persistência de dados com Edge Functions para processamento serverless. A arquitetura segue o padrão de microserviços através de funções especializadas:
+### Backend Architecture - Orquestração de Agentes
+O backend funciona como um **hub orquestrador** que utiliza Supabase como plataforma principal. A nova arquitetura implementa **5 pilares de orquestração**:
 
-- **query-analyzer**: Analisa queries do usuário e determina a estratégia de resposta
-- **sql-generator**: Gera consultas SQL dinâmicas baseadas na análise
-- **agentic-rag**: Orquestra o fluxo completo de RAG com múltiplos agentes
-- **chat**: Gerencia conversas e integração com provedores de LLM
+1. **ORQUESTRA E GERENCIA**: Sistema CRUD completo para agentes via `AgentsConfig.tsx`
+2. **CONECTA E INTEGRA**: Adapters especializados (`difyAdapter.ts`, `langflowAdapter.ts`, `crewaiAdapter.ts`) 
+3. **MONITORA E OBSERVA**: Dashboards de métricas e performance em tempo real
+4. **VALIDA E GOVERNA**: Suite de QA automatizada com compliance financeiro/negócio  
+5. **SERVE E ENTREGA**: Interface unificada com roteamento inteligente de agentes
+
+- **External Agent Gateway**: Orquestra múltiplos provedores de IA externos
+- **Agent Selection Engine**: Seleciona automaticamente o melhor agente por contexto
+- **Conversation Mapping**: Mantém contexto entre diferentes agentes
+- **Quality Monitoring**: Valida compliance e performance continuamente
 
 ### Data Storage Solutions
 O sistema utiliza PostgreSQL como base de dados principal com extensões específicas para vector search (pgvector). A estrutura de dados inclui:
@@ -43,23 +49,25 @@ A autenticação é gerenciada pelo Supabase Auth com suporte a múltiplos prove
 
 A autorização é validada tanto no frontend (AuthUtils) quanto nas Edge Functions, garantindo segurança em múltiplas camadas.
 
-### Hybrid RAG Architecture
-O sistema implementa uma arquitetura RAG híbrida que combina:
+### Agent Orchestration Architecture
+O sistema implementa uma **arquitetura de orquestração** que coordena múltiplos agentes externos:
 
-1. **Busca Estruturada**: Para dados tabulares como regime urbanístico e zoneamento
-2. **Busca Vetorial**: Para documentos conceituais e normativas
-3. **Cache Inteligente**: Sistema de cache baseado em similarity para otimizar respostas
-4. **Multi-Agent Processing**: Diferentes agentes especializados por tipo de consulta
+1. **Agent Discovery**: Registro automático e descoberta de novos agentes
+2. **Intelligent Routing**: Seleção automática do agente ideal baseada em contexto
+3. **Session Management**: Mapeamento inteligente entre sessões da plataforma e conversações dos agentes
+4. **Multi-Agent Synthesis**: Combinação de respostas de múltiplos agentes quando necessário
+5. **Fallback Orchestration**: Sistema de fallbacks automáticos entre agentes
 
-O processamento de queries segue um pipeline de análise → geração de SQL → busca vetorial → síntese de resposta, com fallbacks e validações em cada etapa.
+O processamento segue: **Análise de Contexto** → **Seleção de Agente** → **Roteamento Inteligente** → **Síntese de Resposta** → **Validação de Qualidade**.
 
 ## External Dependencies
 
-### AI/LLM Providers
-- **OpenAI GPT Models**: Processamento principal de linguagem natural e geração de embeddings
-- **Anthropic Claude**: Modelo alternativo para síntese de respostas complexas
-- **Dify Platform**: Orquestração de agentes externos através de API
-- **Groq**: Processamento de alta velocidade para casos específicos
+### External Agent Platforms (Orquestrados)
+- **Dify Platform**: Agentes low-code para workflows complexos via API REST
+- **Langflow**: Agentes visuais baseado em fluxos drag-and-drop  
+- **CrewAI**: Agentes colaborativos especializados em tarefas específicas
+- **OpenAI Assistants**: Agentes nativos OpenAI com ferramentas personalizadas
+- **Extensibilidade**: Arquitetura permite integração com qualquer plataforma de IA
 
 ### Development & Deployment
 - **Supabase**: Plataforma principal (database, auth, edge functions, storage)
@@ -84,4 +92,4 @@ O processamento de queries segue um pipeline de análise → geração de SQL �
 - **Query Analytics**: Análise de padrões de uso e otimização
 - **Error Tracking**: Sistema de logs e monitoramento de erros
 
-O sistema foi projetado para alta disponibilidade e escalabilidade, com redundância em provedores de LLM e cache inteligente para otimizar custos e performance.
+O sistema foi projetado como **plataforma orquestradora** com alta disponibilidade, escalabilidade automática de agentes, balanceamento de carga inteligente entre provedores, e otimização contínua de custos através de métricas de performance por agente.
