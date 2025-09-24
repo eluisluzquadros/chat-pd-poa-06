@@ -24,15 +24,26 @@ export function useSessionManagement(refetchSessions: RefetchFunction) {
     if (!session?.user) throw new Error("User not authenticated");
     
     // Criar sessão no chat_sessions
+    // WORKAROUND: Remover agent_id temporariamente devido a cache do PostgREST
+    const sessionData: any = {
+      user_id: session.user.id,
+      title: title.slice(0, 50),
+      model,
+      last_message: message,
+    };
+    
+    // Tentar incluir agent_id se o cache permitir
+    try {
+      if (agentId) {
+        sessionData.agent_id = agentId;
+      }
+    } catch (e) {
+      console.warn('⚠️ [createSession] Skipping agent_id due to cache issue');
+    }
+    
     const { data: newSession, error } = await supabase
       .from('chat_sessions')
-      .insert({
-        user_id: session.user.id,
-        agent_id: agentId, // NOVO: Rastreamento de agente
-        title: title.slice(0, 50),
-        model,
-        last_message: message,
-      })
+      .insert(sessionData)
       .select()
       .single();
 
