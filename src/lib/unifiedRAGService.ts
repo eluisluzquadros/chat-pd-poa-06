@@ -1,6 +1,6 @@
 /**
  * Unified RAG Service
- * Ensures consistency between /chat, /admin/quality, and /admin/benchmark
+ * Ensures consistency between /chat, /admin/observatory, and /admin/benchmark
  */
 
 import { supabase } from "@/integrations/supabase/client";

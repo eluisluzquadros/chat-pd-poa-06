@@ -1,0 +1,18 @@
+considere os seguintes aspectos
+
+## /admin/quality:
+### agora que as funcionalidades de quality e benchmark foram integradas penso que seja mais apropriado renomear a rota "/admin/quality" para "/admin/observatory"
+
+
+## /settings
+### deve ser ajustado para funcionar de acordo com o novo contexto e status da plataforma
+
+
+
+## evoluir a plataforma atual para uma "espécie" de SDK Agent para alcançarmos a viabilidade/capacidade/valor de oferecer valor agredado real de ecossistema e marketplace.
+### visão atual: a plataforma está apenas focada em um único nicho, o urbanismo.
+
+### visão de futuro: a plataforma pode ser aplicada em multiplos nichos oferecendo as mesmas funcionalidades mas de modo agnóstico ao domínio em si, por ex. pode ser direcionada para ser usada individualmente para monitamento de risco climático e gestão de desastres, ou ainda agregar multiplos domínios ao oferecer na mesma plataforma agentes para o domínio urbanístico e de risco climático.
+
+### "Secrect Sauce" -o real diferencial competitivo de negócio: se for possível se tornar um SDK poderia resultar na capacidade de acelear o desenvolvimento da própria "web ui" especializadas/individualizadas para diferentes domínios. por exemplo os usuários não admins mais básicos do Chat PD-POA apenas acessam uma interface com páginas para Assitente (/chat), Explorar dados (/explorar-dados) que poderia ser renomeada para dashboard e configurações (/settings). Então, como HUB SDK ECOSSISTEM a plataforma poderia oferecer como serviço/solução a configuração de uma ou multiplas "web ui" customizadas caso sejam desenvolvidos agentes para multiplos domínios de conhecimento. entende? desse modo avançariamos no sentido de promover agilidade no desenvolvimento e implementação de backend & frontend necessária para suportar/subsidiar demandas especificas para multiplas temáticas, usando respectivo agente e até identidade visual customizada.
+por exemplo /chat atual se trata de RAG que foi chamado de Chat PD-POA sendo uma interface que trata especificamente de servir um Assistente digital especializado no plano diretor de porto alegre que opera por meio de RAG, mas se a prefeitura de porto alegre desejar desenvolver e implementar um sistema similar para o domínio de ambiental/sustentabilidade/esg ou climático, ou ambos? A questão é como usar a mesma arquiterura, infraestrutura, soluções e capacidades para acelerar esse tipo de desenvolvimento e reduzir ainda mais fricções???

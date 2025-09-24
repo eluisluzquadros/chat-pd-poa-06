@@ -52,7 +52,7 @@ export function CrossValidationPanelV2() {
     setSummary(null);
 
     try {
-      console.log('Starting cross-validation between /chat and /admin/quality interfaces...');
+      console.log('Starting cross-validation between /chat and /admin/observatory interfaces...');
       
       // Pre-validation checks
       if (!testQueries.length || testQueries.some(q => !q.trim())) {

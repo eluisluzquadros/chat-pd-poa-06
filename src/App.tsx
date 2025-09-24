@@ -96,7 +96,7 @@ function App() {
                   </SimpleRoleGuard>
                 </SimpleAuthGuard>
               } />
-              <Route path="/admin/quality" element={
+              <Route path="/admin/observatory" element={
                 <SimpleAuthGuard>
                   <SimpleRoleGuard adminOnly={true}>
                     <AdminErrorBoundary>
@@ -105,6 +105,8 @@ function App() {
                   </SimpleRoleGuard>
                 </SimpleAuthGuard>
               } />
+              {/* Legacy redirect for bookmarks */}
+              <Route path="/admin/quality" element={<Navigate to="/admin/observatory" replace />} />
               <Route path="/admin/feedback" element={
                 <SimpleAuthGuard>
                   <SimpleRoleGuard adminOnly={true}>
