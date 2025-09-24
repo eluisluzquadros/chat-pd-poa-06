@@ -1,0 +1,25 @@
+🔄 [useMessageSubmit] Creating new session...
+Sessão retornada do cache
+🔍 AuthUtils - Session retrieved: 
+Object {hasSession: true, hasUser: true, userId: "d430b2b5-130a-4e02-a8aa-35ee4e8362d5", isDemoMode: false}
+🔄 [createSession] Attempting Supabase client...
+🔧 [createSession] PGRST204 detected, falling back to direct database...
+🔧 [createSession] Using direct database fallback...
+🔧 [createSession] Importing DirectDatabaseService...
+🔧 [createSession] Module imported: 
+Module {DirectDatabaseService: ƒ}
+🔧 [DirectDB] Creating session with direct SQL query
+🔧 [DirectDB] Data: 
+Object {userId: "d430b2b5-130a-4e02-a8aa-35ee4e8362d5", title: "oi", model: "71951dfc-1d78-47ca-8fd6-ac1d9a790602", agentId: "71951dfc-1d78-47ca-8fd6-ac1d9a790602"}
+❌ [DirectDB] SQL RPC error: 
+Object {code: "PGRST202", details: "Searched for the function public.create_chat_session_direct with parameters p_agent_id,…", hint: "Perhaps you meant to call the function public.delete_chat_session_atomic", message: "Could not find the function public.create_chat_session_direct(p_agent_id, p_last_message, p_model,…"}
+
+❌ [DirectDB] Failed to create session: 
+Object {code: "PGRST202", details: "Searched for the function public.create_chat_session_direct with parameters p_agent_id,…", hint: "Perhaps you meant to call the function public.delete_chat_session_atomic", message: "Could not find the function public.create_chat_session_direct(p_agent_id, p_last_message, p_model,…"}
+
+❌ [createSession] Direct database fallback failed: 
+Object {code: "PGRST202", details: "Searched for the function public.create_chat_session_direct with parameters p_agent_id,…", hint: "Perhaps you meant to call the function public.delete_chat_session_atomic", message: "Could not find the function public.create_chat_session_direct(p_agent_id, p_last_message, p_model,…"}
+
+❌ [useMessageSubmit] Failed to create session: 
+Object {code: "PGRST202", details: "Searched for the function public.create_chat_session_direct with parameters p_agent_id,…", hint: "Perhaps you meant to call the function public.delete_chat_session_atomic", message: "Could not find the function public.create_chat_session_direct(p_agent_id, p_last_message, p_model,…"}
+
