@@ -23,42 +23,59 @@ export function useSessionManagement(refetchSessions: RefetchFunction) {
     const session = await getCurrentAuthenticatedSession();
     if (!session?.user) throw new Error("User not authenticated");
     
-    // Criar sessão no chat_sessions
-    // WORKAROUND: Remover agent_id temporariamente devido a cache do PostgREST
-    const sessionData: any = {
-      user_id: session.user.id,
-      title: title.slice(0, 50),
-      model,
-      last_message: message,
-    };
-    
-    // Tentar incluir agent_id se o cache permitir
+    // 🎯 STRATEGY: Try Supabase first, fallback to direct DB on PGRST204
     try {
-      if (agentId) {
-        sessionData.agent_id = agentId;
+      console.log('🔄 [createSession] Attempting Supabase client...');
+      
+      const sessionData: any = {
+        user_id: session.user.id,
+        title: title.slice(0, 50),
+        model,
+        last_message: message,
+        agent_id: agentId || null, // Always include agent_id
+      };
+      
+      const { data: newSession, error } = await supabase
+        .from('chat_sessions')
+        .insert(sessionData)
+        .select()
+        .single();
+
+      if (error) {
+        // Check if it's the specific cache error
+        if (error.code === 'PGRST204' && error.message?.includes("Could not find the 'agent_id' column")) {
+          console.log('🔧 [createSession] PGRST204 detected, falling back to direct database...');
+          throw new Error('PGRST204_CACHE_ISSUE'); // Trigger fallback
+        }
+        throw error;
       }
-    } catch (e) {
-      console.warn('⚠️ [createSession] Skipping agent_id due to cache issue');
+      
+      console.log('✅ [createSession] Supabase client succeeded');
+      setCurrentSessionId(newSession.id);
+      return newSession.id;
+      
+    } catch (error) {
+      // 🛡️ FALLBACK: Use direct database connection for PGRST204 errors
+      if (error instanceof Error && (error.message === 'PGRST204_CACHE_ISSUE' || error.message.includes('PGRST204'))) {
+        console.log('🔧 [createSession] Using direct database fallback...');
+        
+        try {
+          const { DirectDatabaseService } = await import('@/services/directDatabaseService');
+          const sessionId = await DirectDatabaseService.createSession(userId, title, model, message, agentId);
+          
+          console.log('✅ [createSession] Direct database fallback succeeded');
+          setCurrentSessionId(sessionId);
+          return sessionId;
+          
+        } catch (fallbackError) {
+          console.error('❌ [createSession] Direct database fallback failed:', fallbackError);
+          throw fallbackError;
+        }
+      }
+      
+      // Re-throw other errors
+      throw error;
     }
-    
-    const { data: newSession, error } = await supabase
-      .from('chat_sessions')
-      .insert(sessionData)
-      .select()
-      .single();
-
-    if (error) throw error;
-
-    // ✅ OTIMIZADO: chat_sessions já contém agent_id para rastreamento
-    // Não precisamos mais de registro duplicado em conversations
-    console.log('✅ Sessão criada com rastreamento de agente:', { 
-      sessionId: newSession.id, 
-      agentId: agentId || 'null',
-      userId: session.user.id 
-    });
-
-    setCurrentSessionId(newSession.id);
-    return newSession.id;
   }, []);
 
   const deleteSession = useCallback(async (sessionId: string, showToast: boolean = true) => {
