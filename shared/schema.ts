@@ -38,6 +38,37 @@ export interface ModelParameters {
   response_format?: 'text' | 'json';
 }
 
+// Domain Configuration interfaces
+export interface DomainUIConfig {
+  theme?: {
+    primaryColor?: string;
+    secondaryColor?: string;
+    logoUrl?: string;
+  };
+  layout?: {
+    showDataExplorer?: boolean;
+    showInsights?: boolean;
+    customNavigation?: boolean;
+  };
+  features?: {
+    enabledModules?: string[];
+    hiddenSections?: string[];
+  };
+  branding?: {
+    title?: string;
+    subtitle?: string;
+    favicon?: string;
+  };
+}
+
+export interface DomainRoutes {
+  chat?: string;
+  explorer?: string;
+  insights?: string;
+  dashboard?: string;
+  customRoutes?: Record<string, string>;
+}
+
 // Types removed - see consolidated export section below
 
 // Conversations table - CRÍTICO: Adicionar agent_id para rastrear orquestração
@@ -147,6 +178,26 @@ export const queryCache = pgTable('query_cache', {
   expires_at: timestamp('expires_at'),
 });
 
+// Domain Configurations table - Sistema multi-domínio
+export const domainConfigs = pgTable('domain_configs', {
+  id: varchar('id').primaryKey().default(sql`gen_random_uuid()`),
+  slug: varchar('slug', { length: 50 }).unique().notNull(), // 'plano-diretor', 'plac', 'licenciamento-ambiental'
+  name: varchar('name', { length: 100 }).notNull(), // 'Plano Diretor', 'PLAC', 'Licenciamento Ambiental'
+  display_name: varchar('display_name', { length: 150 }).notNull(),
+  description: text('description'),
+  icon: varchar('icon', { length: 50 }), // Lucide icon name
+  primary_color: varchar('primary_color', { length: 7 }).default('#29625D'), // Hex color
+  secondary_color: varchar('secondary_color', { length: 7 }).default('#1A4D47'),
+  logo_url: text('logo_url'),
+  is_active: boolean('is_active').notNull().default(true),
+  is_default: boolean('is_default').notNull().default(false),
+  ui_config: json('ui_config').default({}), // Custom UI configurations
+  agent_ids: text('agent_ids').array().default([]), // Array of associated agent IDs
+  routes: json('routes').default({}), // Custom route configurations
+  created_at: timestamp('created_at').notNull().defaultNow(),
+  updated_at: timestamp('updated_at').notNull().defaultNow(),
+});
+
 // Export all types
 export type Agent = typeof agents.$inferSelect;
 export type InsertAgent = typeof agents.$inferInsert;
@@ -165,6 +216,9 @@ export type InsertQATestCase = typeof qaTestCases.$inferInsert;
 
 export type QAValidationRun = typeof qaValidationRuns.$inferSelect;
 export type InsertQAValidationRun = typeof qaValidationRuns.$inferInsert;
+
+export type DomainConfig = typeof domainConfigs.$inferSelect;
+export type InsertDomainConfig = typeof domainConfigs.$inferInsert;
 
 // Export types for use in application
 export type { Json } from 'drizzle-orm';
