@@ -207,15 +207,18 @@ export const AuthService = {
     }
   },
 
-  // Validar acesso do usuário para OAuth usando função do banco
+  // Validar acesso do usuário para OAuth com auto-provisionamento
   validateUserAccess: async (email: string, userId: string) => {
     try {
       console.log("=== VALIDANDO ACESSO USUÁRIO ===");
       console.log("Email:", email);
       console.log("User ID:", userId);
       
-      // Usar a função do banco para validar acesso
-      const { data, error } = await supabase.rpc('get_current_user_role');
+      // Primeiro, verificar se o usuário existe na tabela user_accounts
+      const { data, error } = await supabase.rpc('validate_oauth_access', {
+        user_email: email,
+        user_id: userId
+      });
       
       if (error) {
         console.error("Erro ao validar acesso:", error);
@@ -233,6 +236,75 @@ export const AuthService = {
           hasAccess: true,
           userData: result.user_data
         };
+      } else if (result.reason === 'user_not_found') {
+        console.log("Usuário não encontrado - auto-provisionando para Google OAuth...");
+        
+        // Auto-provisionar usuário para Google OAuth
+        try {
+          const { data: userData } = await supabase.auth.getUser();
+          if (!userData.user) {
+            throw new Error("Usuário não autenticado");
+          }
+          
+          const userName = userData.user.user_metadata?.full_name || 
+                          userData.user.user_metadata?.name || 
+                          email.split('@')[0];
+          
+          // Criar registro em user_accounts
+          const { error: insertAccountError } = await supabase
+            .from('user_accounts')
+            .insert({
+              user_id: userId,
+              email: email,
+              full_name: userName,
+              role: 'citizen',
+              is_active: true,
+              created_at: new Date().toISOString()
+            });
+          
+          if (insertAccountError) {
+            console.error("Erro ao criar user_account:", insertAccountError);
+            throw insertAccountError;
+          }
+          
+          // Criar registro em user_roles
+          const { error: insertRoleError } = await supabase
+            .from('user_roles')
+            .insert({
+              user_id: userId,
+              role: 'citizen'
+            });
+          
+          if (insertRoleError) {
+            console.error("Erro ao criar user_role:", insertRoleError);
+            // Não falhar se role já existe
+            if (!insertRoleError.message?.includes('duplicate key')) {
+              throw insertRoleError;
+            }
+          }
+          
+          console.log("✅ Usuário auto-provisionado com sucesso:", userName);
+          
+          // Retornar dados do usuário recém-criado
+          return {
+            hasAccess: true,
+            userData: {
+              id: userId,
+              email: email,
+              full_name: userName,
+              role: 'citizen',
+              active: true
+            }
+          };
+          
+        } catch (provisionError) {
+          console.error("Erro ao auto-provisionar usuário:", provisionError);
+          return {
+            hasAccess: false,
+            reason: 'provision_failed',
+            message: 'Erro ao criar conta. Tente novamente ou entre em contato com o suporte.'
+          };
+        }
       } else {
         console.log("Acesso negado:", result.reason);
         return {
