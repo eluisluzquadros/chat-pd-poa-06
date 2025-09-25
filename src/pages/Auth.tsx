@@ -4,6 +4,7 @@ import { useAuth } from '@/context/AuthContext';
 import { AuthHeader } from '@/components/auth/AuthHeader';
 import { SecureAuthForm } from '@/components/auth/SecureAuthForm';
 import { GoogleAuthButton } from '@/components/auth/GoogleAuthButton';
+import { GoogleAuthTest } from '@/components/auth/GoogleAuthTest';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { InterestForm } from '@/components/auth/InterestForm';
 import { Card, CardContent } from '@/components/ui/card';
@@ -72,10 +73,8 @@ const AuthPage = () => {
               
               <GoogleAuthButton />
               
-              
               {isDevelopment && (
-                <>
-                </>
+                <GoogleAuthTest />
               )}
               
               <div className="relative">
