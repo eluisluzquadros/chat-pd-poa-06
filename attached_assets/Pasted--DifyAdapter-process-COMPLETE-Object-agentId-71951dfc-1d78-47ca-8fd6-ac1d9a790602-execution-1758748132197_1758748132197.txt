@@ -1,0 +1,24 @@
+✅ DifyAdapter.process COMPLETE: 
+Object {agentId: "71951dfc-1d78-47ca-8fd6-ac1d9a790602", executionTime: 13727, hasResponse: true, responseLength: 188, conversationId: "d887b97f-044a-4105-b2c1-a8585eec9b34", …}
+✅ ExternalAgentGateway.processMessage COMPLETE: 
+Object {agentId: "71951dfc-1d78-47ca-8fd6-ac1d9a790602", platform: "dify", executionTime: 13727, success: true, responseLength: 188, …}
+✅ ChatService.processMessage COMPLETE: 
+Object {success: true, executionTime: 13786, hasResponse: true, responseLength: 188, confidence: 0.85, …}
+✅ [useMessageSubmit] 71951dfc-1d78-47ca-8fd6-ac1d9a790602 response received: 
+Object {hasResponse: true, responseLength: 188, confidence: 0.85, executionTime: 13727}
+📝 [useMessageSubmit] Response preview: Olá! Como posso ajudar você com informações sobre o Plano Diretor de Desenvolvimento Urbano Ambiental (PDDUA) de Porto Alegre? Por favor, me diga sua dúvida ou o tema que deseja consultar.
+Creating assistant message...
+Saving assistant message to database...
+🔍 [DEBUG] About to save assistant message with sessionId: d7dc332e-3f0f-4181-aed6-ae7bceb9b82a
+🔍 [DEBUG] About to increment assistant count with sessionId: d7dc332e-3f0f-4181-aed6-ae7bceb9b82a
+Erro ao incrementar contador para resposta do assistente: 
+Object {code: "PGRST202", details: "Searched for the function public.increment_message_count with parameter session_id_param or with a…", hint: "Perhaps you meant to call the function public.user_owns_session", message: "Could not find the function public.increment_message_count(session_id_param) in the schema cache"}
+
+🔍 [DEBUG] About to updateSession with sessionId: d7dc332e-3f0f-4181-aed6-ae7bceb9b82a
+Sessão retornada do cache
+🔍 AuthUtils - Session retrieved: 
+Object {hasSession: true, hasUser: true, userId: "d430b2b5-130a-4e02-a8aa-35ee4e8362d5", isDemoMode: false}
+🔍 [DEBUG] About to trackTokenUsage with sessionId: d7dc332e-3f0f-4181-aed6-ae7bceb9b82a
+Sessão retornada do cache
+🔍 AuthUtils - Session retrieved: 
+Object {hasSession: true, hasUser: true, userId: "d430b2b5-130a-4e02-a8aa-35ee4e8362d5", isDemoMode: false}
