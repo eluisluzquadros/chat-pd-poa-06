@@ -1,29 +1,33 @@
-# PRD: Plataforma Orquestradora de Agentes Urbanos
-## Product Requirements Document v2.0
+# PRD: SDK Universal de Orquestração de Agentes - White-Label Multi-Tenant
+## Product Requirements Document v3.0
 
 ---
 
-## 🎯 **VISÃO ESTRATÉGICA**
+## 🎯 **VISÃO ESTRATÉGICA EXPANDIDA**
 
 ### Objetivo Principal
-**Transformar Chat PD-POA na plataforma líder de orquestração de agentes de IA para planejamento urbano**, posicionando-se como o **centro de comando inteligente** que governa, monitora e serve múltiplos agentes especializados.
+**Criar a SDK líder para orquestração de agentes de IA multi-tenant que permite qualquer organização ter sua própria plataforma white-label**, posicionando-se como o **centro de comando universal** que governa, monitora e serve agentes especializados para qualquer setor.
+
+### Visão de Mercado
+**Porto Alegre é apenas o estudo de caso piloto** - a SDK serve governo, empresas, saúde, educação, finanças e qualquer organização que precise de agentes especializados.
 
 ### North Star Metric
-**"Orquestração Efetiva"**: 95% das consultas resolvidas pelo agente mais adequado com <3s de latência e >90% de satisfação do usuário.
+**"Adoption Multi-Tenant"**: 100+ organizações usando a SDK com 95% das consultas resolvidas pelo agente ideal, <3s latência e >90% satisfação por tenant.
 
 ---
 
-## 🎼 **CONCEITO DE ORQUESTRAÇÃO**
+## 🎼 **CONCEITO DE ORQUESTRAÇÃO MULTI-TENANT**
 
 ### Definição
-**Orquestração** = Coordenação inteligente, automática e governada de múltiplos agentes de IA, onde cada agente contribui com sua especialização para uma experiência unificada e otimizada.
+**Orquestração Multi-Tenant** = Coordenação inteligente de agentes de IA onde cada organização (tenant) tem sua experiência isolada, personalizada e branded, mas compartilha a infraestrutura otimizada da SDK.
 
-### Princípios Norteadores
-1. **Transparência**: Usuário não percebe múltiplos agentes
-2. **Inteligência**: Roteamento automático para agente ideal
-3. **Governança**: Controle total sobre qualidade e custos
-4. **Elasticidade**: Escala dinâmica conforme demanda
-5. **Observabilidade**: Visibilidade completa de todas as operações
+### Princípios Norteadores Multi-Tenant
+1. **Isolamento Total**: Cada tenant parece ter sua própria plataforma
+2. **White-Label Completo**: Branding e customização total por organização
+3. **Agnóstico de Setor**: Funciona para qualquer domínio ou indústria
+4. **Escalabilidade Infinita**: Adicionar tenants sem degradar performance
+5. **Compliance Específico**: Atende regulamentações por setor (GDPR, HIPAA, SOX)
+6. **Monetização SaaS**: Revenue modelo baseado em usage por tenant
 
 ---
 
@@ -197,33 +201,37 @@ Para que eu entregue informação mais completa
 
 ## 🛠️ **ROADMAP TÉCNICO**
 
-### **Fase 1: Consolidação (Atual - Q4 2024)**
-**Objetivo**: Estabilizar orquestração básica
-- [x] Adapters para Dify, Langflow, CrewAI
-- [x] Sistema CRUD de agentes
-- [x] Monitoramento básico de métricas
-- [x] Interface unificada de chat
+### **Fase 1: Fundações Multi-Tenant (Q1 2025)**
+**Objetivo**: SDK multi-tenant funcional
+- [ ] Modelo de tenancy com isolamento total
+- [ ] Dynamic theming system por tenant
+- [ ] Domain routing (subdomains + custom domains)
+- [ ] Tenant management panel
+- [ ] Proof of concept: POA + 2 outros setores
 
-### **Fase 2: Inteligência (Q1 2025)**
-**Objetivo**: Automação inteligente de orquestração
-- [ ] Roteamento automático baseado em contexto
-- [ ] Auto-scaling dinâmico de agentes
-- [ ] Predição de demanda por ML
-- [ ] Otimização automática de custos
+### **Fase 2: White-Label Production (Q2 2025)**
+**Objetivo**: White-label completo e escalável
+- [ ] Asset management personalizado
+- [ ] DNS automático + SSL management
+- [ ] Tenant creation wizard
+- [ ] Preview system antes de publicar
+- [ ] Billing integration por tenant
 
-### **Fase 3: Ecossistema (Q2 2025)**
-**Objetivo**: Plataforma aberta e extensível
-- [ ] Marketplace de agentes especializados
+### **Fase 3: SDK Universal (Q3 2025)**
+**Objetivo**: Marketplace e extensibilidade
+- [ ] Webhooks dedicados por tenant
+- [ ] Widget JavaScript embedável
 - [ ] APIs públicas para terceiros
-- [ ] SDK para criação de adapters
-- [ ] Certificação automática de agentes
+- [ ] Marketplace de agentes especializados
+- [ ] Certificação automática por setor
 
-### **Fase 4: IA Avançada (Q3 2025)**
-**Objetivo**: Orquestração generativa
-- [ ] Criação automática de agentes especializados
-- [ ] Síntese colaborativa multi-agente
-- [ ] Reasoning distribuído
-- [ ] Auto-otimização do sistema
+### **Fase 4: IA Enterprise (Q4 2025)**
+**Objetivo**: Features enterprise e compliance
+- [ ] SSO integration por tenant
+- [ ] Compliance automático (GDPR, HIPAA, SOX)
+- [ ] Audit trails imutáveis
+- [ ] SLA monitoring por tenant
+- [ ] Enterprise deployment options
 
 ---
 
@@ -269,13 +277,20 @@ Para que eu entregue informação mais completa
 
 ---
 
-## 💰 **MODELO DE NEGÓCIO**
+## 💰 **MODELO DE NEGÓCIO MULTI-TENANT**
 
 ### Fontes de Receita:
-1. **SaaS Subscription**: Mensalidade por usuário/agente
-2. **API Calls**: Pay-per-use para APIs públicas
-3. **Professional Services**: Consultoria e customização
-4. **Marketplace**: Comissão sobre agentes de terceiros
+1. **SaaS Multi-Tenant**: Mensalidade por tenant + usage-based
+2. **White-Label Licensing**: Taxa anual por tenant enterprise
+3. **Professional Services**: Setup e customização por setor
+4. **Marketplace Revenue Share**: Comissão sobre agentes especializados
+5. **Compliance Add-ons**: Features regulatórias por setor
+
+### Estrutura de Pricing:
+- **Starter**: $99/mês (até 1k queries, 1 domínio)
+- **Professional**: $499/mês (até 10k queries, custom domain)
+- **Enterprise**: $2k+/mês (unlimited, compliance, SSO)
+- **White-Label**: $10k+ setup + revenue share
 
 ### Estrutura de Custos:
 - **Infraestrutura**: Supabase, hosting, CDN
@@ -300,10 +315,10 @@ Para que eu entregue informação mais completa
 - [ ] Certificações de segurança SOC 2
 
 ### Longo Prazo (180 dias):
-- [ ] Expandir para outras cidades brasileiras
-- [ ] Integrar com sistemas governamentais
-- [ ] Lançar versão white-label
-- [ ] IPO ou aquisição estratégica
+- [ ] 100+ tenants ativos na plataforma
+- [ ] Expansion internacional (LATAM, Europa)
+- [ ] IPO como líder em Agent Orchestration
+- [ ] Acquisition por BigTech ou Enterprise vendor
 
 ---
 

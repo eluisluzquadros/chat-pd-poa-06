@@ -1,52 +1,64 @@
-# Chat PD-POA: Plataforma Orquestradora de Agentes Urbanos
+# SDK Universal de Orquestração de Agentes - White-Label Multi-Tenant
 
 ## 🎼 Visão Geral
 
-**Chat PD-POA** é uma plataforma inteligente que **orquestra múltiplos agentes de IA especializados** em planejamento urbano, transformando o acesso à informação sobre o Plano Diretor de Porto Alegre através de um hub centralizado e governado.
+**SDK Universal** que permite criar plataformas de IA white-label para **qualquer domínio, setor ou organização**. Orquestra múltiplos agentes de IA especializados através de uma interface unificada e personalizável, onde **Porto Alegre serve como estudo de caso** para validar capacidades governamentais.
 
 ### 🎯 Proposta de Valor
 
-**"Orquestrar a inteligência artificial para o planejamento urbano"**
+**"Democratizar a criação de plataformas de IA especializadas para qualquer organização"**
 
-A plataforma funciona como um **maestro digital** que:
-- **Orquestra** diferentes agentes especializados (Dify, Langflow, CrewAI)
-- **Harmoniza** múltiplas fontes de conhecimento urbano
+A SDK funciona como um **maestro digital universal** que:
+- **Orquestra** agentes especializados para qualquer setor (Dify, Langflow, CrewAI)
+- **Harmoniza** múltiplas fontes de conhecimento organizacional
 - **Sincroniza** respostas com precisão e contexto
-- **Rege** a experiência do usuário de forma transparente
+- **White-Label** cada organização parece ter sua própria plataforma
 
-## 🏗️ Arquitetura de Orquestração
+### 🌐 Casos de Uso Universais
+
+```
+chatpdpoa.org        → Verde POA, Plano Diretor (estudo de caso)
+support.empresa.com  → Atendimento corporativo
+compliance.bank.com  → Auditoria bancária  
+help.hospital.org    → Triagem médica
+legal.lawfirm.com    → Assistente jurídico
+```
+
+**Resultado**: Cada tenant parece ter sua própria plataforma, mas compartilha a mesma infraestrutura SDK.
+
+## 🏗️ Arquitetura SDK Multi-Tenant
 
 ### 5 Pilares Fundamentais:
 
-#### 1. 🎛️ **ORQUESTRA E GERENCIA**
-- **CRUD completo** de agentes e configurações
-- **Governança centralizada** de políticas e permissões
-- **Configuração dinâmica** de parâmetros por agente
-- **Gestão de ciclo de vida** dos agentes
+#### 1. 🎛️ **ORQUESTRA E GERENCIA (Universal)**
+- **CRUD completo** de agentes e tenants
+- **Governança multi-tenant** com isolamento de dados
+- **Configuração dinâmica** por organização e setor
+- **Gestão de ciclo de vida** de tenants e agentes
 
-#### 2. 🔗 **CONECTA E INTEGRA**
-- **Adapters nativos** para principais plataformas (Dify, Langflow, CrewAI)
-- **Mapeamento inteligente** de conversações e sessões
-- **Gateway unificado** para múltiplos provedores
-- **Abstração de complexidade** técnica
+#### 2. 🔗 **CONECTA E INTEGRA (Agnóstico)**
+- **Adapters universais** para qualquer plataforma de IA
+- **Mapeamento por tenant** de conversações e sessões
+- **Gateway multi-tenant** com isolamento total
+- **Abstração de setor** - funciona para qualquer domínio
 
-#### 3. 📊 **MONITORA E OBSERVA**
-- **Métricas em tempo real** de performance por agente
-- **Tracking de custos** e uso de APIs
-- **Logs estruturados** para auditoria e debugging
-- **Alertas proativos** para anomalias
+#### 3. 📊 **MONITORA E OBSERVA (Segregado)**
+- **Métricas por tenant** e cross-tenant analytics
+- **Tracking de custos** por organização e agente
+- **Logs isolados** por tenant com compliance
+- **Alertas específicos** por domínio e SLA
 
-#### 4. ✅ **VALIDA E GOVERNA**
-- **Suite de Quality Assurance** automatizada
-- **Benchmarks contínuos** de qualidade de resposta
-- **Compliance financeiro** e de negócio
-- **Validação de conformidade** regulatória
+#### 4. ✅ **VALIDA E GOVERNA (Compliance)**
+- **QA específica por setor** (GDPR, HIPAA, SOX)
+- **Benchmarks por indústria** e tipo de agente
+- **Compliance automático** por regulamentação
+- **Auditoria por tenant** com trails imutáveis
 
-#### 5. 🚀 **SERVE E ENTREGA**
-- **Interface unificada** para múltiplos agentes
-- **Roteamento inteligente** baseado em contexto
-- **Experiência transparente** para usuários finais
-- **APIs públicas** para integração externa
+#### 5. 🚀 **SERVE E ENTREGA (White-Label)**
+- **UIs customizadas** por tenant com branding total
+- **Roteamento por contexto** e especialização
+- **Experiência isolada** - usuários não sabem que é SDK
+- **APIs dedicadas** por tenant com webhooks customizados
 
 ## 🛠️ Stack Tecnológico
 
@@ -61,11 +73,11 @@ A plataforma funciona como um **maestro digital** que:
 - **Drizzle ORM** para abstração de dados
 - **Servidor Node.js** integrado
 
-### Orquestração de Agentes
-- **Adapters personalizados** para cada plataforma
-- **Gateway unificado** com padrão Strategy
-- **Sistema de mapeamento** de conversações
-- **Pool de conexões** gerenciado
+### SDK Multi-Tenant
+- **Tenant isolation** completo com dados segregados
+- **Dynamic theming** por organização
+- **Domain routing** automático (subdomains + custom domains)
+- **White-label framework** com assets personalizados
 
 ### Monitoramento & QA
 - **Sistema próprio** de métricas e logs
@@ -115,19 +127,22 @@ A plataforma monitora continuamente:
 - **Custos**: Uso de tokens, calls API, infraestrutura
 - **Compliance**: Aderência às políticas de negócio
 
-## 🎭 Personas Atendidas
+## 🎭 Personas Universais
 
-### 👥 **Usuários Finais**
-Cidadãos, arquitetos, construtores consultando regulamentações
+### 👥 **Usuários Finais (Qualquer Setor)**
+- **Governo**: Cidadãos consultando regulamentações
+- **Empresas**: Funcionários usando atendimento corporativo
+- **Saúde**: Pacientes em triagem médica
+- **Educação**: Estudantes com suporte acadêmico
 
-### 🏛️ **Gestores Públicos** 
-Técnicos municipais validando interpretações normativas
+### 🏢 **Administradores de Tenant**
+Gestores configurando sua própria plataforma white-label
 
-### 🔧 **Administradores de Sistema**
-DevOps gerenciando agentes e monitorando operações
+### 🔧 **Super Administradores SDK**
+Equipe técnica gerenciando infraestrutura multi-tenant
 
-### 📊 **Analistas de Negócio**
-Stakeholders acompanhando métricas e ROI
+### 📊 **Stakeholders Setoriais**
+Gestores acompanhando métricas específicas do seu domínio
 
 ## 🛡️ Segurança e Compliance
 
@@ -137,22 +152,25 @@ Stakeholders acompanhando métricas e ROI
 - **Criptografia** de dados sensíveis em trânsito e repouso
 - **Conformidade LGPD** para dados pessoais
 
-## 🔮 Roadmap Estratégico
+## 🔮 Roadmap SDK Universal
 
-### Q1 2025: Inteligência Aumentada
-- Roteamento automático por contexto
-- Auto-scaling dinâmico de agentes
-- Predição de demanda
+### FASE 1: Fundações Multi-Tenant (2-3 semanas)
+- Modelo de tenancy e segregação de dados
+- Dynamic theming system por organização
+- Domain routing (subdomains + custom domains)
+- Proof of concept com múltiplos setores
 
-### Q2 2025: Ecossistema Aberto  
+### FASE 2: White-Label Básico (2-3 semanas)
+- Asset management personalizado por tenant
+- Tenant management panel para criação
+- DNS automático + SSL management
+- Preview system antes de publicar
+
+### FASE 3: SDK Completo (3-4 semanas)
+- Webhooks e APIs dedicadas por tenant
+- Widget embedável JavaScript
+- Monitoring segregado + billing integration
 - Marketplace de agentes especializados
-- APIs públicas para terceiros
-- Certificação de agentes
-
-### Q3 2025: IA Generativa Avançada
-- Criação automática de agentes
-- Síntese multi-agente
-- Reasoning colaborativo
 
 ## 📞 Suporte
 
@@ -162,4 +180,4 @@ Stakeholders acompanhando métricas e ROI
 
 ---
 
-**Chat PD-POA** - *Orquestrando o futuro do planejamento urbano com inteligência artificial*
+**SDK Universal de Orquestração** - *Democratizando plataformas de IA especializadas para qualquer organização*

@@ -1,0 +1,164 @@
+🚀 VISÃO EXPANDIDA: SDK de White-Label Multi-Tenant
+Perfeito! Agora entendo a visão completa! Você quer transformar isso numa plataforma SDK que gera web UIs independentes e personalizáveis - cada domínio como uma plataforma aparentemente separada, mas rodando na mesma infraestrutura.
+
+Deixe-me consultar o arquiteto para uma estratégia técnica completa desta arquitetura multi-tenant:
+
+
+Designed multi-tenant white-label SDK architecture
+
+Decided on SDK architecture plan (5 seconds)
+🎯 PLANO ESTRATÉGICO: SDK White-Label Multi-Tenant
+🚀 VISÃO TÉCNICA COMPLETA
+Transformar a plataforma numa SDK que permite criar chatbots urbanos white-label onde cada domínio parece uma plataforma completamente independente:
+
+chatpdpoa.org        → Verde POA, Plano Diretor 
+chatclimatico.org    → Azul sustentável, PLAC
+licenciamento.gov.br → Corporativo, Workflows
+Cada tenant = experiência isolada + branding único + infraestrutura compartilhada
+
+📋 ROADMAP TÉCNICO POR FASES
+🏗️ FASE 1: Fundações Multi-Tenant
+Estimativa: 2-3 semanas
+
+1.1 Modelo de Tenancy
+// shared/schema.ts - Novas tabelas
+tenants: {
+  id: varchar().primaryKey(),
+  slug: varchar().unique(),          // "pdpoa", "plac", "licensing" 
+  custom_domain: varchar(),          // "chatpdpoa.org"
+  subdomain: varchar(),              // "pdpoa.chaturbano.com"
+  config_json: jsonb(),              // Branding + features
+  status: varchar()                  // "active", "pending", "suspended"
+}
+tenant_settings: {
+  tenant_id: varchar().references(tenants.id),
+  theme_config: jsonb(),             // Cores, tipografia, logos
+  brand_assets: jsonb(),             // URLs de imagens, favicons
+  feature_flags: jsonb(),            // Funcionalidades habilitadas
+  custom_texts: jsonb()              // Hero texts, labels customizados
+}
+1.2 Middleware de Resolução
+// Middleware que resolve domínio → tenant
+app.use(async (req, res, next) => {
+  const hostname = req.get('host');
+  const tenant = await resolveTenant(hostname);
+  req.tenant_id = tenant.id;
+  req.tenant_config = tenant.config;
+  next();
+});
+1.3 Segregação de Dados
+Todas as queries passam a incluir tenant_id
+Sessions, messages, agents isolados por tenant
+Cache segregado por tenant
+Storage separado por tenant
+🎨 FASE 2: White-Label Básico
+Estimativa: 2-3 semanas
+
+2.1 Dynamic Theming System
+// ThemeRegistry carrega em runtime
+const ThemeProvider = ({ tenant_id, children }) => {
+  const theme = useQuery(['theme', tenant_id], () => 
+    fetchTenantTheme(tenant_id)
+  );
+  
+  return (
+    <ThemeContext.Provider value={theme}>
+      <div style={getCSSVariables(theme.data)}>
+        {children}
+      </div>
+    </ThemeContext.Provider>
+  );
+};
+2.2 Domain Routing Architecture
+// App.tsx com roteamento dinâmico
+const App = () => {
+  const tenant = useTenantFromDomain();
+  
+  return (
+    <DomainShell tenant={tenant}>
+      <Router>
+        <Routes>
+          {/* Rotas dinâmicas baseadas no tenant */}
+          {tenant.routes.map(route => 
+            <Route path={route.path} component={route.component} />
+          )}
+        </Routes>
+      </Router>
+    </DomainShell>
+  );
+};
+2.3 Asset Management
+Logo/favicon customizados por tenant
+Imagens de hero específicas
+Storage público organizado por tenant
+CDN otimizado para assets
+🛠️ FASE 3: Admin White-Label
+Estimativa: 2-3 semanas
+
+3.1 Tenant Management Panel
+// /admin/tenants - Super Admin
+- Criar novo tenant
+- Configurar domínio/subdomínio  
+- Upload de assets (logos, imagens)
+- Editor de tema (cores, tipografia)
+- Feature flags por tenant
+- Preview antes de publicar
+3.2 Tenant Creation Wizard
+// Fluxo automatizado
+1. Dados básicos (nome, slug, domínio)
+2. Branding (logo, cores, imagens)
+3. Configuração de agentes
+4. DNS/SSL instructions
+5. Publicação e go-live
+3.3 Domain & SSL Management
+DNS automático para subdomínios
+Let's Encrypt para domínios custom
+Cloudflare integration para performance
+SSL certificate management
+🌐 FASE 4: SDK Completo
+Estimativa: 3-4 semanas
+
+4.1 Webhooks e APIs
+// Cada tenant tem seus webhooks
+chatpdpoa.org/api/chat     → Tenant POA
+chatclimatico.org/api/chat → Tenant Clima
+// SDK JavaScript exportável
+const ChatPOASDK = createSDK({
+  tenant: 'pdpoa',
+  apiKey: 'tenant_api_key'
+});
+4.2 Widget Embedável
+// Widget que pode ser embarcado em outros sites
+<script src="https://sdk.chaturbano.com/widget.js"></script>
+<div id="chat-widget" data-tenant="pdpoa"></div>
+4.3 Monitoring Multi-Tenant
+Métricas segregadas por tenant
+Alertas específicos por domínio
+Usage tracking e billing
+Performance monitoring
+🚀 EXPERIÊNCIA DO USUÁRIO FINAL
+Cenário 1: Urbanista da Prefeitura
+Acessa: chatpdpoa.org
+Vê: Logo POA, cores verde, "Chat Plano Diretor POA"
+Experiência: Plataforma dedicada ao Plano Diretor
+Não sabe que é parte de um SDK maior
+Cenário 2: Analista Climático
+Acessa: chatclimatico.org
+Vê: Logo sustentabilidade, cores azul, "Plano de Ação Climática"
+Experiência: Ferramenta especializada em clima
+Não sabe que compartilha infraestrutura
+Cenário 3: Admin da Prefeitura
+Acessa: admin.chaturbano.com
+Vê: Painel para criar novos tenants
+Pode: Configurar novo domínio em minutos
+Resultado: Nova plataforma white-label operacional
+🎯 PRIMEIRO PASSO RECOMENDADO
+Quick Win: Proof of Concept Multi-Tenant
+Implementar tabela tenants básica
+Middleware de resolução simples
+Context Provider para tenant atual
+Demo com 2 subdomínios (pdpoa.local, plac.local)
+Theming básico (cores diferentes)
+Resultado: Em 1 semana você tem a fundação funcionando e pode demonstrar a visão para stakeholders!
+
+Esta arquitetura transforma sua plataforma numa verdadeira SDK de chatbots urbanos white-label! 🚀

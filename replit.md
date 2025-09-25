@@ -1,8 +1,21 @@
-# Chat PD-POA: Plataforma Orquestradora de Agentes Urbanos
+# SDK Universal de Orquestração de Agentes - White-Label Multi-Tenant
 
 ## Overview
 
-Chat PD-POA é uma plataforma inteligente que **orquestra múltiplos agentes de IA especializados** para planejamento urbano. Transformou de um sistema RAG tradicional para um **hub centralizador** que gerencia, conecta, monitora, valida e serve diferentes agentes externos (Dify, Langflow, CrewAI) através de uma interface unificada para consultas sobre o Plano Diretor de Porto Alegre.
+**SDK Universal** que permite criar plataformas de IA white-label para **qualquer domínio, setor ou organização**. Transformou de uma aplicação específica para uma **SDK agnóstica** que orquestra múltiplos agentes de IA especializados através de uma interface unificada e personalizável.
+
+**Porto Alegre (POA) serve como estudo de caso guarda-chuva** para validar as capacidades governamentais, mas a plataforma é totalmente agnóstica e pode servir governo, empresas, ONGs, universidades, saúde, finanças, e qualquer outro setor.
+
+### Visão Expandida: Multi-Tenant White-Label
+
+Cada organização recebe uma **plataforma aparentemente independente** com branding completo:
+- `chatpdpoa.org` → Verde POA, Plano Diretor (estudo de caso)
+- `support.empresa.com` → Atendimento corporativo
+- `compliance.bank.com` → Auditoria bancária  
+- `help.hospital.org` → Triagem médica
+- `legal.lawfirm.com` → Assistente jurídico
+
+**Resultado**: Cada tenant parece ter sua própria plataforma, mas compartilha a mesma infraestrutura SDK.
 
 ## User Preferences
 
