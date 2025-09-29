@@ -103,8 +103,17 @@ export default function AgentsConfig() {
     }
 
     // Validação de configuração da API
-    if (!formData.api_config.base_url || !formData.api_config.service_api_endpoint || 
-        !formData.api_config.api_key || !formData.api_config.app_id) {
+    const isCrewAI = formData.provider === 'crewai';
+    
+    // Service endpoint e app_id são opcionais para CrewAI
+    const requiredFields = ['base_url', 'api_key'];
+    if (!isCrewAI) {
+      requiredFields.push('service_api_endpoint', 'app_id');
+    }
+    
+    const missingFields = requiredFields.filter(field => !formData.api_config[field as keyof typeof formData.api_config]);
+    
+    if (missingFields.length > 0) {
       setActiveTab('api');
       return;
     }
@@ -173,10 +182,12 @@ export default function AgentsConfig() {
           break;
         case 'crewai':
           newApiConfig = {
-            base_url: 'https://api.crewai.com/v1',
+            base_url: 'https://your-crew-id.crewai.com',
+            service_api_endpoint: '', // Opcional para CrewAI
             api_key: '',
+            app_id: '', // Opcional para CrewAI (pode ser usado como workflow_id)
             workflow_id: '',
-            server_url: 'https://api.crewai.com'
+            server_url: 'https://your-crew-id.crewai.com'
           };
           newModel = 'crewai-crew';
           break;
@@ -273,11 +284,14 @@ export default function AgentsConfig() {
   };
 
   const handleTestConnection = async () => {
+    const isCrewAI = formData.provider === 'crewai';
+    
     await testConnection({
       base_url: formData.api_config.base_url,
       api_key: formData.api_config.api_key,
-      service_api_endpoint: formData.api_config.service_api_endpoint,
-      app_id: formData.api_config.app_id,
+      service_api_endpoint: formData.api_config.service_api_endpoint || (isCrewAI ? '' : undefined),
+      app_id: formData.api_config.app_id || (isCrewAI ? formData.api_config.workflow_id : undefined),
+      provider: formData.provider, // Passar provedor para teste usar adaptador correto
     });
   };
 
@@ -618,9 +632,11 @@ export default function AgentsConfig() {
                   showValidation={showValidation}
                   validationRules={[
                     { field: 'api_config.base_url', label: 'Base URL', required: true },
-                    { field: 'api_config.service_api_endpoint', label: 'Service API Endpoint', required: true },
+                    ...(formData.provider !== 'crewai' ? [
+                      { field: 'api_config.service_api_endpoint', label: 'Service API Endpoint', required: true },
+                      { field: 'api_config.app_id', label: 'App ID', required: true }
+                    ] : []),
                     { field: 'api_config.api_key', label: 'API Key', required: true },
-                    { field: 'api_config.app_id', label: 'App ID', required: true },
                   ]}
                 />
                 
@@ -690,34 +706,45 @@ export default function AgentsConfig() {
                       </div>
                     </TooltipProvider>
 
-                    <TooltipProvider>
-                      <div className="space-y-2">
-                        <div className="flex items-center gap-2">
-                          <Label htmlFor="service_api_endpoint">Service API Endpoint *</Label>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <AlertCircle className="h-4 w-4 text-muted-foreground" />
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>Caminho relativo da API (ex: /chat-messages ou /v1/chat-messages)</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </div>
-                        <Input
-                          id="service_api_endpoint"
-                          value={formData.api_config.service_api_endpoint}
-                          onChange={(e) => updateApiConfig('service_api_endpoint', e.target.value)}
-                          placeholder="/chat-messages"
-                          required
-                          className={!formData.api_config.service_api_endpoint && showValidation ? 'border-destructive' : ''}
-                        />
-                        {formData.api_config.service_api_endpoint && formData.api_config.service_api_endpoint.includes('://') && (
-                          <div className="text-xs text-orange-600 mt-1">
-                            ⚠️ Detectada URL completa. Use apenas o caminho (ex: /chat-messages)
+                    {formData.provider !== 'crewai' && (
+                      <TooltipProvider>
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-2">
+                            <Label htmlFor="service_api_endpoint">Service API Endpoint *</Label>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <AlertCircle className="h-4 w-4 text-muted-foreground" />
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>Caminho relativo da API (ex: /chat-messages ou /v1/chat-messages)</p>
+                              </TooltipContent>
+                            </Tooltip>
                           </div>
-                        )}
+                          <Input
+                            id="service_api_endpoint"
+                            value={formData.api_config.service_api_endpoint}
+                            onChange={(e) => updateApiConfig('service_api_endpoint', e.target.value)}
+                            placeholder="/chat-messages"
+                            required
+                            className={!formData.api_config.service_api_endpoint && showValidation ? 'border-destructive' : ''}
+                          />
+                          {formData.api_config.service_api_endpoint && formData.api_config.service_api_endpoint.includes('://') && (
+                            <div className="text-xs text-orange-600 mt-1">
+                              ⚠️ Detectada URL completa. Use apenas o caminho (ex: /chat-messages)
+                            </div>
+                          )}
+                        </div>
+                      </TooltipProvider>
+                    )}
+
+                    {formData.provider === 'crewai' && (
+                      <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                        <div className="text-sm text-blue-700">
+                          <strong>ℹ️ CrewAI:</strong> O Service API Endpoint não é necessário. 
+                          O sistema usa automaticamente os endpoints padrão (/inputs, /kickoff, /status).
+                        </div>
                       </div>
-                    </TooltipProvider>
+                    )}
                   </div>
 
                   <TooltipProvider>
@@ -748,13 +775,20 @@ export default function AgentsConfig() {
                   <TooltipProvider>
                     <div className="space-y-2">
                       <div className="flex items-center gap-2">
-                        <Label htmlFor="app_id">App ID *</Label>
+                        <Label htmlFor="app_id">
+                          {formData.provider === 'crewai' ? 'Workflow ID (Opcional)' : 'App ID *'}
+                        </Label>
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <AlertCircle className="h-4 w-4 text-muted-foreground" />
                           </TooltipTrigger>
                           <TooltipContent>
-                            <p>Identificador único da aplicação no Dify</p>
+                            <p>
+                              {formData.provider === 'crewai' 
+                                ? 'ID do workflow do CrewAI (opcional para referência)'
+                                : 'Identificador único da aplicação no Dify'
+                              }
+                            </p>
                           </TooltipContent>
                         </Tooltip>
                       </div>
@@ -762,9 +796,12 @@ export default function AgentsConfig() {
                         id="app_id"
                         value={formData.api_config.app_id}
                         onChange={(e) => updateApiConfig('app_id', e.target.value)}
-                        placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-                        required
-                        className={!formData.api_config.app_id && showValidation ? 'border-destructive' : ''}
+                        placeholder={formData.provider === 'crewai' 
+                          ? 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx (opcional)'
+                          : 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'
+                        }
+                        required={formData.provider !== 'crewai'}
+                        className={!formData.api_config.app_id && showValidation && formData.provider !== 'crewai' ? 'border-destructive' : ''}
                       />
                     </div>
                   </TooltipProvider>
