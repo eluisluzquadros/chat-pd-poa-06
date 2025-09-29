@@ -10,6 +10,7 @@ interface AgentPreviewProps {
     name: string;
     display_name: string;
     description: string;
+    provider: string;
     model: string;
     is_active: boolean;
     is_default: boolean;
@@ -20,8 +21,18 @@ interface AgentPreviewProps {
 
 export function AgentPreview({ formData }: AgentPreviewProps) {
   const formatApiUrl = () => {
-    if (!formData.api_config.base_url || !formData.api_config.service_api_endpoint) {
+    if (!formData.api_config.base_url) {
       return 'URL não configurada';
+    }
+    
+    // Para CrewAI, não precisa de service_api_endpoint
+    if (formData.provider === 'crewai') {
+      return formData.api_config.base_url;
+    }
+    
+    // Para outros provedores, precisa de service_api_endpoint
+    if (!formData.api_config.service_api_endpoint) {
+      return 'Service endpoint não configurado';
     }
     
     try {
@@ -91,7 +102,12 @@ export function AgentPreview({ formData }: AgentPreviewProps) {
             </div>
             <div>
               <h4 className="text-sm font-medium text-muted-foreground mb-1">Provedor</h4>
-              <p className="text-sm">🤖 API Externa</p>
+              <p className="text-sm">
+                {formData.provider === 'crewai' ? '🤖 CrewAI' : 
+                 formData.provider === 'dify' ? '🔧 Dify' : 
+                 formData.provider === 'langflow' ? '🌊 Langflow' : 
+                 '🤖 API Externa'}
+              </p>
             </div>
           </div>
 
@@ -110,8 +126,13 @@ export function AgentPreview({ formData }: AgentPreviewProps) {
                     <p className="font-mono text-xs break-all">{formatApiUrl()}</p>
                   </div>
                   <div>
-                    <span className="text-muted-foreground">App ID:</span>
-                    <p className="font-mono text-xs">{formData.api_config.app_id || 'Não configurado'}</p>
+                    <span className="text-muted-foreground">
+                      {formData.provider === 'crewai' ? 'Workflow ID:' : 'App ID:'}
+                    </span>
+                    <p className="font-mono text-xs">
+                      {formData.api_config.app_id || 
+                       (formData.provider === 'crewai' ? 'Opcional' : 'Não configurado')}
+                    </p>
                   </div>
                 </div>
                 
