@@ -195,8 +195,8 @@ export class CrewAIAdapter implements IExternalAgentAdapter {
    */
   private async pollForResult(baseUrl: string, kickoffId: string, headers: any): Promise<string> {
     const statusUrl = `${baseUrl}/status/${kickoffId}`;
-    const maxAttempts = 20; // Total: ~3 minutos max
-    const intervals = [1000, 2000, 3000, 5000, 10000]; // Progressivo até 10s
+    const maxAttempts = 30; // Aumentar para 30 tentativas
+    const intervals = [500, 1000, 2000, 3000, 5000, 8000]; // Mais agressivo no início
     
     console.log('🔄 CrewAI polling started for kickoff:', kickoffId);
     
@@ -225,18 +225,26 @@ export class CrewAIAdapter implements IExternalAgentAdapter {
         }
         
         const statusData = await statusResponse.json();
+        
+        // Log detalhado da resposta completa para debug
         console.log(`📊 CrewAI status (attempt ${attempt + 1}):`, {
           status: statusData.status,
-          hasResult: !!(statusData.result || statusData.output),
-          hasError: !!statusData.error_message
+          hasResult: !!(statusData.result || statusData.output || statusData.response),
+          hasError: !!statusData.error_message,
+          rawData: statusData // Log completo para debug
         });
         
-        // Verificar status da task
-        if (statusData.status === 'completed') {
-          const result = statusData.result || statusData.output || statusData.response;
-          if (result) {
+        // Extrair possíveis resultados
+        const possibleResult = statusData.result || statusData.output || statusData.response || statusData.data;
+        
+        // Verificar status da task - INCLUIR status null com resultado
+        if (statusData.status === 'completed' || 
+            (statusData.status === null && possibleResult)) {
+          
+          if (possibleResult) {
             console.log('✅ CrewAI task completed successfully');
-            return result;
+            console.log('📋 Result extracted:', typeof possibleResult, possibleResult?.length ? `(${possibleResult.length} chars)` : '');
+            return possibleResult;
           } else {
             console.warn('⚠️ CrewAI completed but no result found');
             return 'CrewAI execution completed but no result was returned';
@@ -272,8 +280,9 @@ export class CrewAIAdapter implements IExternalAgentAdapter {
     }
     
     // Timeout - task não completou no tempo esperado
-    console.warn('⏰ CrewAI polling timeout - task taking too long');
-    return 'CrewAI task is taking longer than expected. The crew is still working on your request. Please try again in a few minutes.';
+    console.warn('⏰ CrewAI polling timeout after', maxAttempts, 'attempts');
+    console.warn('💡 CrewAI Debug: Task may have completed but status is inconsistent. Try checking the CrewAI dashboard directly.');
+    return 'CrewAI task is taking longer than expected. The crew is still working on your request. If this persists, please check your CrewAI dashboard or try again in a few minutes.';
   }
 
   validateConfig(apiConfig: any): boolean {
