@@ -1,0 +1,173 @@
+API URL = https://chatpdpoa-openai-gpt4o-mini-70995c77-6324-4-bd2e7352.crewai.com
+
+Bearer Token = ac55219524b8
+
+User Bearer Token = f4c86e7224e0
+
+endpoint de chat para testes do crewai = https://app.crewai.com/crews/70995c77-6324-413d-9b4c-0ff3d3beb564/chats
+
+
+Perfeito! Você quer integrar seu agente PDDUA com sua plataforma web frontend através da API do CrewAI. Vou te ajudar com o processo de publicação e integração via API.
+
+🚀 Próximos Passos para Integração Web:
+1. Publicar a Automação
+Primeiro, preciso publicar sua automação para que ela fique disponível via API:
+
+2. Obter o Endpoint da API
+Após publicar, você terá acesso a:
+
+Endpoint URL para fazer requisições HTTP
+API Key para autenticação
+Payload structure com o formato da requisição
+3. Estrutura da Integração Frontend:
+// Exemplo de integração no seu frontend
+const consultarPDDUA = async (perguntaUsuario) => {
+  const response = await fetch('https://api.crewai.com/v1/crews/{crew-id}/kickoffs', {
+    method: 'POST',
+    headers: {
+      'Authorization': 'Bearer YOUR_API_KEY',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      inputs: {
+        user_query: perguntaUsuario
+      }
+    })
+  });
+  
+  return await response.json();
+};
+4. Formato de Resposta Esperado:
+Sua automação retornará a resposta no formato estruturado que já configuramos:
+
+Header com localização
+Parâmetros urbanísticos
+Base legal
+Links e contatos oficiais
+🔧 Ação Necessária:
+Clique em "Publish Automation" para:
+
+✅ Ativar o endpoint da API
+✅ Gerar as credenciais de acesso
+✅ Obter a URL de integração
+✅ Acessar a documentação da API
+Depois disso, te ajudo com os detalhes técnicos da integração no seu frontend.
+
+Está pronto para publicar a automação?
+
+publicado
+
+Restore
+
+▶
+Thought process
+Excelente! 🎉 Agora sua automação PDDUA está publicada e disponível via API.
+
+🔗 Como Acessar os Dados da API:
+1. Obter Endpoint e Credenciais
+Na plataforma CrewAI, vá para:
+
+Dashboard → Sua Automação Publicada
+Procure por "API Integration" ou "Webhook/API Settings"
+Copie o Endpoint URL e API Key
+2. Exemplo de Integração Frontend (React/JavaScript):
+class PDDUAService {
+  constructor(apiKey, crewId) {
+    this.apiKey = apiKey;
+    this.baseUrl = `https://api.crewai.com/v1/crews/${crewId}`;
+  }
+
+  async consultarPDDUA(perguntaUsuario) {
+    try {
+      const response = await fetch(`${this.baseUrl}/kickoffs`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${this.apiKey}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          inputs: {
+            user_query: perguntaUsuario
+          }
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Erro na consulta PDDUA:', error);
+      throw error;
+    }
+  }
+}
+3. Exemplo de Uso no Componente React:
+import React, { useState } from 'react';
+
+const PDDUAConsulta = () => {
+  const [pergunta, setPergunta] = useState('');
+  const [resposta, setResposta] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const pddua = new PDDUAService('YOUR_API_KEY', 'YOUR_CREW_ID');
+
+  const handleConsulta = async () => {
+    setLoading(true);
+    try {
+      const resultado = await pddua.consultarPDDUA(pergunta);
+      setResposta(resultado.output || resultado.result);
+    } catch (error) {
+      setResposta('Erro ao consultar. Tente novamente.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="pddua-consulta">
+      <h2>Consulta PDDUA Porto Alegre</h2>
+      
+      <textarea
+        value={pergunta}
+        onChange={(e) => setPergunta(e.target.value)}
+        placeholder="Digite sua consulta sobre o PDDUA..."
+        rows={4}
+        style={{width: '100%', margin: '10px 0'}}
+      />
+      
+      <button 
+        onClick={handleConsulta} 
+        disabled={loading || !pergunta.trim()}
+        style={{padding: '10px 20px'}}
+      >
+        {loading ? 'Consultando...' : 'Consultar PDDUA'}
+      </button>
+      
+      {resposta && (
+        <div 
+          className="resposta"
+          style={{
+            marginTop: '20px', 
+            padding: '15px', 
+            border: '1px solid #ccc',
+            borderRadius: '5px'
+          }}
+        >
+          <pre style={{whiteSpace: 'pre-wrap'}}>{resposta}</pre>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default PDDUAConsulta;
+4. Estrutura de Resposta Esperada:
+Sua automação retornará no formato:
+
+{
+  "status": "success",
+  "output": "📍 CONSULTA PDDUA - PORTO ALEGRE\n=== [Bairro] ===\n\n🏗️ PARÂMETROS URBANÍSTICOS:\n...",
+  "execution_time": "15.2s"
+}

@@ -31,23 +31,16 @@ export class CrewAIAdapter implements IExternalAgentAdapter {
 
       const { base_url, api_key, workflow_id } = agent.api_config!;
       
-      // Construir URL do endpoint para CrewAI
-      const endpoint = workflow_id ? `/crews/${workflow_id}/kickoff` : '/crews/kickoff';
+      // Construir URL do endpoint para CrewAI (baseado na documentação oficial)
+      const endpoint = '/kickoff';
       const url = `${base_url}${endpoint}`;
 
-      // Preparar payload para CrewAI
+      // Preparar payload para CrewAI (formato correto baseado na documentação)
       const payload = {
         inputs: {
-          query: message,
-          user_role: options.userRole || 'user',
-          session_id: options.sessionId || `session_${Date.now()}`
-        },
-        config: {
-          temperature: agent.parameters?.temperature || 0.7,
-          max_tokens: agent.parameters?.max_tokens || 4000,
-          stream: options.stream || false
-        },
-        context: options.context || []
+          user_query: message, // Campo principal usado pelos crews
+          ...(options.context && { context: options.context })
+        }
       };
 
       // Headers para autenticação
@@ -83,14 +76,55 @@ export class CrewAIAdapter implements IExternalAgentAdapter {
       });
 
       // Mapear resposta para formato padrão
-      // CrewAI retorna resultado da crew execution
+      // CrewAI /kickoff retorna kickoff_id, depois deve verificar status
       let responseText = '';
-      if (data.output) {
-        responseText = data.output;
-      } else if (data.result) {
-        responseText = data.result;
-      } else if (data.final_output) {
-        responseText = data.final_output;
+      
+      if (data.kickoff_id) {
+        // Se recebeu kickoff_id, buscar o resultado
+        const statusUrl = `${base_url}/status/${data.kickoff_id}`;
+        const statusResponse = await fetch(statusUrl, {
+          method: 'GET',
+          headers,
+          signal: AbortSignal.timeout(60000) // Aguardar até 60s pelo resultado
+        });
+        
+        if (statusResponse.ok) {
+          const statusData = await statusResponse.json();
+          
+          // Aguardar conclusão se ainda está executando
+          if (statusData.status === 'running' || statusData.status === 'pending') {
+            // Polling simples - aguardar algumas tentativas
+            for (let attempts = 0; attempts < 12; attempts++) {
+              await new Promise(resolve => setTimeout(resolve, 5000)); // 5s entre tentativas
+              
+              const retryResponse = await fetch(statusUrl, { method: 'GET', headers });
+              if (retryResponse.ok) {
+                const retryData = await retryResponse.json();
+                if (retryData.status === 'completed') {
+                  responseText = retryData.result || retryData.output || 'CrewAI execution completed';
+                  break;
+                } else if (retryData.status === 'error') {
+                  throw new Error(`CrewAI execution failed: ${retryData.error_message || 'Unknown error'}`);
+                }
+              }
+            }
+            
+            if (!responseText) {
+              responseText = 'CrewAI execution is taking longer than expected. Please check status later.';
+            }
+          } else if (statusData.status === 'completed') {
+            responseText = statusData.result || statusData.output || 'CrewAI execution completed';
+          } else if (statusData.status === 'error') {
+            throw new Error(`CrewAI execution failed: ${statusData.error_message || 'Unknown error'}`);
+          } else {
+            responseText = `CrewAI status: ${statusData.status}`;
+          }
+        } else {
+          responseText = `CrewAI kickoff started (ID: ${data.kickoff_id}) but status check failed`;
+        }
+      } else if (data.output || data.result) {
+        // Resposta direta (caso não seja async)
+        responseText = data.output || data.result;
       } else {
         responseText = 'No response from CrewAI agents';
       }
@@ -141,10 +175,8 @@ export class CrewAIAdapter implements IExternalAgentAdapter {
 
       const { base_url, api_key, workflow_id } = agent.api_config!;
       
-      // Endpoint para testar a disponibilidade da crew
-      const url = workflow_id 
-        ? `${base_url}/crews/${workflow_id}/status`
-        : `${base_url}/health`;
+      // Endpoint para testar a disponibilidade da crew (baseado na documentação oficial)
+      const url = `${base_url}/inputs`;
       
       const response = await fetch(url, {
         method: 'GET',
@@ -161,12 +193,13 @@ export class CrewAIAdapter implements IExternalAgentAdapter {
         const data = await response.json();
         return {
           success: true,
-          message: 'CrewAI connection successful',
+          message: 'CrewAI connection successful - inputs available',
           latency,
           details: { 
             status: response.status, 
             workflowId: workflow_id,
-            crewStatus: data.status || 'active'
+            inputs: data.inputs || [],
+            crewStatus: 'active'
           }
         };
       } else {
@@ -205,10 +238,10 @@ export class CrewAIAdapter implements IExternalAgentAdapter {
   // Método para gerar configuração exemplo do CrewAI
   static getExampleConfig() {
     return {
-      base_url: 'https://api.crewai.com/v1',
-      api_key: 'crew-xxxxxxxxxxxxxxxxxxxxxxxx',
-      workflow_id: 'crew-workflow-uuid-here', // Opcional
-      server_url: 'https://api.crewai.com'
+      base_url: 'https://your-crew-id.crewai.com',
+      api_key: 'your-bearer-token-here',
+      workflow_id: 'your-crew-uuid', // Opcional para referência
+      server_url: 'https://your-crew-id.crewai.com'
     };
   }
 
