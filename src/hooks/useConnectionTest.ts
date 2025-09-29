@@ -41,8 +41,8 @@ export const useConnectionTest = () => {
       setTesting(true);
       toast.loading('Testando conexão...', { id: 'connection-test' });
 
-      // Detectar se é CrewAI pelo provider ou URL
-      const isCrewAI = params.provider === 'crewai' || 
+      // Detectar se é CrewAI pelo provider ou URL (case-insensitive)
+      const isCrewAI = params.provider?.toLowerCase() === 'crewai' || 
                        params.base_url?.toLowerCase().includes('crewai');
 
       console.log('🔍 Detecção CrewAI:', {
