@@ -57,7 +57,7 @@ export class CrewAIAdapter implements IExternalAgentAdapter {
         method: 'POST',
         headers,
         body: JSON.stringify(payload),
-        signal: AbortSignal.timeout(options.maxTokens || 45000) // CrewAI pode demorar mais por usar múltiplos agentes
+        signal: AbortSignal.timeout(30000) // 30s para kickoff inicial (apenas para iniciar a task)
       });
 
       if (!response.ok) {
@@ -79,54 +79,20 @@ export class CrewAIAdapter implements IExternalAgentAdapter {
       // CrewAI /kickoff retorna kickoff_id, depois deve verificar status
       let responseText = '';
       
-      if (data.kickoff_id) {
-        // Se recebeu kickoff_id, buscar o resultado
-        const statusUrl = `${base_url}/status/${data.kickoff_id}`;
-        const statusResponse = await fetch(statusUrl, {
-          method: 'GET',
-          headers,
-          signal: AbortSignal.timeout(60000) // Aguardar até 60s pelo resultado
-        });
+      if (data.kickoff_id && typeof data.kickoff_id === 'string') {
+        const kickoffId = data.kickoff_id;
+        console.log('🎯 CrewAI kickoff_id received:', kickoffId);
         
-        if (statusResponse.ok) {
-          const statusData = await statusResponse.json();
-          
-          // Aguardar conclusão se ainda está executando
-          if (statusData.status === 'running' || statusData.status === 'pending') {
-            // Polling simples - aguardar algumas tentativas
-            for (let attempts = 0; attempts < 12; attempts++) {
-              await new Promise(resolve => setTimeout(resolve, 5000)); // 5s entre tentativas
-              
-              const retryResponse = await fetch(statusUrl, { method: 'GET', headers });
-              if (retryResponse.ok) {
-                const retryData = await retryResponse.json();
-                if (retryData.status === 'completed') {
-                  responseText = retryData.result || retryData.output || 'CrewAI execution completed';
-                  break;
-                } else if (retryData.status === 'error') {
-                  throw new Error(`CrewAI execution failed: ${retryData.error_message || 'Unknown error'}`);
-                }
-              }
-            }
-            
-            if (!responseText) {
-              responseText = 'CrewAI execution is taking longer than expected. Please check status later.';
-            }
-          } else if (statusData.status === 'completed') {
-            responseText = statusData.result || statusData.output || 'CrewAI execution completed';
-          } else if (statusData.status === 'error') {
-            throw new Error(`CrewAI execution failed: ${statusData.error_message || 'Unknown error'}`);
-          } else {
-            responseText = `CrewAI status: ${statusData.status}`;
-          }
-        } else {
-          responseText = `CrewAI kickoff started (ID: ${data.kickoff_id}) but status check failed`;
-        }
+        // Aguardar resultado com polling inteligente
+        responseText = await this.pollForResult(base_url, kickoffId as string, headers);
+        
       } else if (data.output || data.result) {
         // Resposta direta (caso não seja async)
         responseText = data.output || data.result;
+        console.log('✅ CrewAI direct response received');
       } else {
         responseText = 'No response from CrewAI agents';
+        console.log('⚠️ CrewAI no response data');
       }
 
       return {
@@ -221,6 +187,93 @@ export class CrewAIAdapter implements IExternalAgentAdapter {
         error: error instanceof Error ? error.message : 'Unknown error'
       };
     }
+  }
+
+  /**
+   * Polling inteligente para aguardar resultado do CrewAI
+   * Usa intervalos progressivos: 1s → 2s → 3s → 5s → 10s
+   */
+  private async pollForResult(baseUrl: string, kickoffId: string, headers: any): Promise<string> {
+    const statusUrl = `${baseUrl}/status/${kickoffId}`;
+    const maxAttempts = 20; // Total: ~3 minutos max
+    const intervals = [1000, 2000, 3000, 5000, 10000]; // Progressivo até 10s
+    
+    console.log('🔄 CrewAI polling started for kickoff:', kickoffId);
+    
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      try {
+        // Calcular intervalo (usar o último se exceder array)
+        const intervalIndex = Math.min(attempt, intervals.length - 1);
+        const waitTime = intervals[intervalIndex];
+        
+        // Aguardar antes da tentativa (exceto primeira)
+        if (attempt > 0) {
+          console.log(`⏰ CrewAI waiting ${waitTime}ms before attempt ${attempt + 1}/${maxAttempts}`);
+          await new Promise(resolve => setTimeout(resolve, waitTime));
+        }
+        
+        // Fazer requisição de status
+        const statusResponse = await fetch(statusUrl, {
+          method: 'GET',
+          headers,
+          signal: AbortSignal.timeout(10000) // 10s por requisição
+        });
+        
+        if (!statusResponse.ok) {
+          console.warn(`⚠️ CrewAI status check failed (attempt ${attempt + 1}):`, statusResponse.status);
+          continue; // Tentar novamente
+        }
+        
+        const statusData = await statusResponse.json();
+        console.log(`📊 CrewAI status (attempt ${attempt + 1}):`, {
+          status: statusData.status,
+          hasResult: !!(statusData.result || statusData.output),
+          hasError: !!statusData.error_message
+        });
+        
+        // Verificar status da task
+        if (statusData.status === 'completed') {
+          const result = statusData.result || statusData.output || statusData.response;
+          if (result) {
+            console.log('✅ CrewAI task completed successfully');
+            return result;
+          } else {
+            console.warn('⚠️ CrewAI completed but no result found');
+            return 'CrewAI execution completed but no result was returned';
+          }
+        }
+        
+        if (statusData.status === 'error' || statusData.status === 'failed') {
+          const errorMsg = statusData.error_message || statusData.error || 'Unknown error';
+          console.error('❌ CrewAI task failed:', errorMsg);
+          throw new Error(`CrewAI execution failed: ${errorMsg}`);
+        }
+        
+        // Status ainda em execução (running, pending, etc.)
+        if (statusData.status === 'running' || statusData.status === 'pending' || statusData.status === 'processing') {
+          console.log(`🔄 CrewAI still ${statusData.status}, continuing polling...`);
+          continue; // Continuar polling
+        }
+        
+        // Status desconhecido mas não é erro - continuar
+        console.log(`🤔 CrewAI unknown status: ${statusData.status}, continuing polling...`);
+        
+      } catch (error) {
+        console.error(`❌ CrewAI polling error (attempt ${attempt + 1}):`, error);
+        
+        // Se for timeout ou rede, continuar tentando
+        if (attempt < maxAttempts - 1) {
+          continue;
+        }
+        
+        // Última tentativa - lançar erro
+        throw new Error(`CrewAI polling failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      }
+    }
+    
+    // Timeout - task não completou no tempo esperado
+    console.warn('⏰ CrewAI polling timeout - task taking too long');
+    return 'CrewAI task is taking longer than expected. The crew is still working on your request. Please try again in a few minutes.';
   }
 
   validateConfig(apiConfig: any): boolean {
