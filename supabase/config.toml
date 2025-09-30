@@ -1,25 +1,28 @@
 project_id = "ngrqwmvuhvjkeohesbxs"
 
-[functions.agentic-rag]
-verify_jwt = true
+# Edge Functions temporariamente comentadas para permitir remix
+# Depois do remix, descomente estas configurações
 
-[functions.agentic-rag-dify]
-verify_jwt = true
+# [functions.agentic-rag]
+# verify_jwt = true
 
-[functions.chat]
-verify_jwt = true
+# [functions.agentic-rag-dify]
+# verify_jwt = true
 
-[functions.create-admin-user]
-verify_jwt = true
+# [functions.chat]
+# verify_jwt = true
 
-[functions.multiLLMService]
-verify_jwt = true
+# [functions.create-admin-user]
+# verify_jwt = true
 
-[functions.set-user-role]
-verify_jwt = true
+# [functions.multiLLMService]
+# verify_jwt = true
 
-[functions.test-connection]
-verify_jwt = false
+# [functions.set-user-role]
+# verify_jwt = true
 
-[functions.test-rag-config]
-verify_jwt = false
+# [functions.test-connection]
+# verify_jwt = false
+
+# [functions.test-rag-config]
+# verify_jwt = false
