@@ -220,9 +220,35 @@ export const domainConfigs = pgTable('domain_configs', {
   updated_at: timestamp('updated_at').notNull().defaultNow(),
 });
 
+// User Accounts table - para gerenciar contas de usuário
+export const userAccounts = pgTable('user_accounts', {
+  id: uuid('id').primaryKey().default(sql`gen_random_uuid()`),
+  user_id: uuid('user_id').notNull().unique(),
+  email: text('email').notNull().unique(),
+  full_name: text('full_name').notNull(),
+  role: varchar('role', { length: 50 }).notNull().default('citizen'),
+  is_active: boolean('is_active').notNull().default(true),
+  created_at: timestamp('created_at').notNull().defaultNow(),
+  updated_at: timestamp('updated_at').notNull().defaultNow(),
+});
+
+// User Roles table - para roles adicionais de usuário
+export const userRoles = pgTable('user_roles', {
+  id: uuid('id').primaryKey().default(sql`gen_random_uuid()`),
+  user_id: uuid('user_id').notNull(),
+  role: varchar('role', { length: 50 }).notNull(),
+  created_at: timestamp('created_at').notNull().defaultNow(),
+});
+
 // Export all types
 export type Agent = typeof agents.$inferSelect;
 export type InsertAgent = typeof agents.$inferInsert;
+
+export type UserAccount = typeof userAccounts.$inferSelect;
+export type InsertUserAccount = typeof userAccounts.$inferInsert;
+
+export type UserRole = typeof userRoles.$inferSelect;
+export type InsertUserRole = typeof userRoles.$inferInsert;
 
 export type ChatSession = typeof chatSessions.$inferSelect;
 export type InsertChatSession = typeof chatSessions.$inferInsert;
