@@ -71,9 +71,24 @@ SELECT validate_oauth_access('admin@chat-pd-poa.org', 'd430b2b5-130a-4e02-a8aa-3
 6. ✅ Insere usuário admin inicial
 7. ✅ Define permissões adequadas
 
-## Após Aplicar:
+## ⚠️ IMPORTANTE: Aplicar AMBAS as Migrações
+
+**Você precisa aplicar DUAS migrações nesta ordem:**
+
+### 1️⃣ Primeira Migração (OBRIGATÓRIA)
+Arquivo: `20250930_create_user_tables_and_fix_oauth.sql`
+- Cria tabelas e função
+- Configura RLS básico
+
+### 2️⃣ Segunda Migração (OBRIGATÓRIA) 
+Arquivo: `20250930_fix_oauth_insert_policies.sql`
+- **ESSENCIAL**: Adiciona políticas de INSERT
+- **SEM ISSO**: OAuth não funciona (usuários não conseguem se auto-provisionar)
+
+## Após Aplicar AMBAS:
 
 O Google OAuth deve funcionar corretamente:
-- Usuários novos serão auto-provisionados com role 'citizen'
-- Usuários existentes serão validados corretamente
-- Não mais erro "Could not find the function public.validate_oauth_acr"
+- ✅ Usuários novos serão auto-provisionados com role 'citizen'
+- ✅ Usuários existentes serão validados corretamente
+- ✅ Não mais erro "Could not find the function public.validate_oauth_acr"
+- ✅ RLS permite INSERTs para auto-provisionamento
