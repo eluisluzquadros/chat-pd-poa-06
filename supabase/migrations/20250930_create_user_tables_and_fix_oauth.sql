@@ -120,28 +120,6 @@ CREATE POLICY "Users can view their own roles" ON public.user_roles
 CREATE POLICY "Service role can manage all roles" ON public.user_roles
   FOR ALL USING (auth.role() = 'service_role');
 
--- Insert admin user if it doesn't exist (update with your actual admin email)
-INSERT INTO public.user_accounts (user_id, email, full_name, role, is_active)
-VALUES (
-  'ADMIN_USER_ID_PLACEHOLDER'::uuid,
-  'admin@chat-pd-poa.org',
-  'Administrator',
-  'admin',
-  true
-)
-ON CONFLICT (email) DO NOTHING;
-
--- Insert admin role (idempotent - only if doesn't exist)
-INSERT INTO public.user_roles (user_id, role)
-SELECT 
-  'ADMIN_USER_ID_PLACEHOLDER'::uuid,
-  'admin'
-WHERE NOT EXISTS (
-  SELECT 1 FROM public.user_roles 
-  WHERE user_id = 'ADMIN_USER_ID_PLACEHOLDER'::uuid 
-  AND role = 'admin'
-);
-
 -- Add comment to explain the tables
 COMMENT ON TABLE public.user_accounts IS 'Stores user account information for OAuth and manual login';
 COMMENT ON TABLE public.user_roles IS 'Stores additional roles for users (many-to-many relationship)';
