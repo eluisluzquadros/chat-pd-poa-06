@@ -3,6 +3,13 @@
 ## Arquivo de Migração
 `20250930_create_user_tables_and_fix_oauth.sql`
 
+## ✨ Migração Idempotente
+Esta migração pode ser executada **múltiplas vezes sem erro**. Ela:
+- Não cria objetos duplicados
+- Remove policies existentes antes de recriar
+- Ignora inserções duplicadas
+- É segura para re-executar
+
 ## Passos para Aplicar:
 
 ### Opção 1: Via Supabase Dashboard (Recomendado)

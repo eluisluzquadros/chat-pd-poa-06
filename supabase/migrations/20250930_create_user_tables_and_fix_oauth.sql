@@ -76,13 +76,35 @@ BEGIN
 END;
 $function$;
 
--- Grant execute permission to authenticated users
-GRANT EXECUTE ON FUNCTION public.validate_oauth_access(text, uuid) TO authenticated;
-GRANT EXECUTE ON FUNCTION public.validate_oauth_access(text, uuid) TO anon;
+-- Grant execute permission to authenticated users (idempotent)
+DO $$
+BEGIN
+  GRANT EXECUTE ON FUNCTION public.validate_oauth_access(text, uuid) TO authenticated;
+  GRANT EXECUTE ON FUNCTION public.validate_oauth_access(text, uuid) TO anon;
+EXCEPTION WHEN OTHERS THEN
+  NULL;
+END $$;
 
--- Enable RLS on user tables
-ALTER TABLE public.user_accounts ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.user_roles ENABLE ROW LEVEL SECURITY;
+-- Enable RLS on user tables (idempotent)
+DO $$
+BEGIN
+  ALTER TABLE public.user_accounts ENABLE ROW LEVEL SECURITY;
+EXCEPTION WHEN OTHERS THEN
+  NULL;
+END $$;
+
+DO $$
+BEGIN
+  ALTER TABLE public.user_roles ENABLE ROW LEVEL SECURITY;
+EXCEPTION WHEN OTHERS THEN
+  NULL;
+END $$;
+
+-- Drop existing RLS policies before recreating (idempotent)
+DROP POLICY IF EXISTS "Users can view their own account" ON public.user_accounts;
+DROP POLICY IF EXISTS "Service role can manage all accounts" ON public.user_accounts;
+DROP POLICY IF EXISTS "Users can view their own roles" ON public.user_roles;
+DROP POLICY IF EXISTS "Service role can manage all roles" ON public.user_roles;
 
 -- Create RLS policies for user_accounts
 CREATE POLICY "Users can view their own account" ON public.user_accounts
@@ -100,20 +122,25 @@ CREATE POLICY "Service role can manage all roles" ON public.user_roles
 
 -- Insert admin user if it doesn't exist (update with your actual admin email)
 INSERT INTO public.user_accounts (user_id, email, full_name, role, is_active)
-SELECT 
+VALUES (
   'ADMIN_USER_ID_PLACEHOLDER'::uuid,
   'admin@chat-pd-poa.org',
   'Administrator',
   'admin',
   true
+)
 ON CONFLICT (email) DO NOTHING;
 
--- Insert admin role
+-- Insert admin role (idempotent - only if doesn't exist)
 INSERT INTO public.user_roles (user_id, role)
 SELECT 
   'ADMIN_USER_ID_PLACEHOLDER'::uuid,
   'admin'
-ON CONFLICT DO NOTHING;
+WHERE NOT EXISTS (
+  SELECT 1 FROM public.user_roles 
+  WHERE user_id = 'ADMIN_USER_ID_PLACEHOLDER'::uuid 
+  AND role = 'admin'
+);
 
 -- Add comment to explain the tables
 COMMENT ON TABLE public.user_accounts IS 'Stores user account information for OAuth and manual login';
