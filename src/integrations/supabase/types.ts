@@ -3138,6 +3138,10 @@ export type Database = {
         Args: { session_id_param: string }
         Returns: boolean
       }
+      validate_oauth_access: {
+        Args: { user_email: string; user_id: string }
+        Returns: Json
+      }
       validate_qa_model: {
         Args: { model_name: string }
         Returns: boolean
