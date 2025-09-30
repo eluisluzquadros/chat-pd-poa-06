@@ -15,13 +15,24 @@
 
 ### ✅ **CONQUISTAS ALCANÇADAS**
 
-#### 🎛️ **Pilar 1: Orquestração e Gerenciamento - 85% Completo**
+#### 🎛️ **Pilar 1: Orquestração e Gerenciamento - 90% Completo**
 - [x] Sistema CRUD completo de agentes via interface admin
 - [x] Configuração dinâmica de parâmetros por agente
 - [x] Definição de agentes padrão e políticas básicas
 - [x] Gestão de status (ativo/inativo) por agente
+- [x] **Google OAuth Completo** (Set 2025): Auto-provisionamento seguro funcionando
+- [x] **Autenticação Multi-Provider**: Google + Email/Password no Supabase
+- [x] **Segurança RLS**: Políticas impedem auto-promoção a admin
 - [ ] **Pendente**: Versionamento de configurações
 - [ ] **Pendente**: Rollback automático de configurações
+
+##### 🔐 Conquista Recente (Set 2025): Autenticação Production-Ready
+- ✅ Tabelas `user_accounts` e `user_roles` criadas no Supabase
+- ✅ Função `validate_oauth_access` corrigida (aliases SQL)
+- ✅ Políticas INSERT restritas a role 'citizen' (segurança)
+- ✅ Auto-provisionamento OAuth sem vulnerabilidades
+- ✅ Validação dupla (email + user_id) previne impersonação
+- ✅ Migrações SQL aplicadas com sucesso em produção
 
 #### 🔗 **Pilar 2: Conexão e Integração - 90% Completo**
 - [x] Adapters funcionais para Dify, Langflow, CrewAI

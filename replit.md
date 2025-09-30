@@ -17,6 +17,23 @@ Cada organização recebe uma **plataforma aparentemente independente** com bran
 
 **Resultado**: Cada tenant parece ter sua própria plataforma, mas compartilha a mesma infraestrutura SDK.
 
+## Recent Changes
+
+### 2025-09-30: Google OAuth Authentication - Production Ready ✅
+- **Problema Resolvido**: Google OAuth falhava com erro "Could not find the function public.validate_oauth_acr"
+- **Causa Raiz**: Tabelas `user_accounts` e `user_roles` não existiam no Supabase (apenas em banco local)
+- **Solução Implementada**:
+  - Criadas tabelas `user_accounts` e `user_roles` no Supabase (produção)
+  - Corrigida função `validate_oauth_access` com aliases SQL para eliminar ambiguidade de nomes
+  - Implementadas políticas RLS (Row Level Security) com INSERT restrito a role 'citizen'
+  - Prevenção de escalação de privilégios: usuários não podem se auto-promover a admin
+  - Auto-provisionamento OAuth funcionando: novos usuários cadastrados automaticamente com role 'citizen'
+- **Migrações SQL Aplicadas**:
+  - `20250930_create_user_tables_and_fix_oauth.sql` - Estrutura base de usuários
+  - `20250930_fix_oauth_insert_policies.sql` - Políticas de segurança INSERT
+- **Segurança**: Validação dupla (email + user_id) previne impersonação, RLS garante isolamento
+- **Status**: Google OAuth 100% funcional em produção
+
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.

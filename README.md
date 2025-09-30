@@ -146,11 +146,19 @@ Gestores acompanhando métricas específicas do seu domínio
 
 ## 🛡️ Segurança e Compliance
 
-- **Autenticação multi-fator** via Supabase Auth
+- **Autenticação multi-provider** via Supabase Auth (Google OAuth, Email/Password)
+- **Auto-provisionamento seguro** com restrição de roles (novos usuários = 'citizen')
+- **RLS (Row Level Security)** previne escalação de privilégios e auto-promoção
 - **Autorização granular** baseada em roles (Admin/User/Demo)
+- **Validação dupla** (email + user_id) previne impersonação
 - **Auditoria completa** de todas as interações
 - **Criptografia** de dados sensíveis em trânsito e repouso
 - **Conformidade LGPD** para dados pessoais
+
+### ✅ Recentes (Set 2025):
+- Google OAuth 100% funcional com auto-provisionamento
+- Políticas RLS impedem usuários de se auto-promoverem a admin
+- Tabelas de usuários segregadas no Supabase (produção)
 
 ## 🔮 Roadmap SDK Universal
 

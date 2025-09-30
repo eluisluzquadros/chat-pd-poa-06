@@ -54,10 +54,17 @@ Para que novos provedores sejam integrados automaticamente
 ```
 
 #### Acceptance Criteria:
-- [ ] CRUD completo de agentes via UI
-- [ ] Configuração de parâmetros sem redeploy
+- [x] CRUD completo de agentes via UI
+- [x] Configuração de parâmetros sem redeploy
 - [ ] Versionamento de configurações
 - [ ] Rollback automático em falhas
+
+#### Autenticação e Autorização (Set 2025):
+- [x] Google OAuth funcionando com auto-provisionamento
+- [x] Tabelas `user_accounts` e `user_roles` no Supabase
+- [x] Políticas RLS com restrição de roles (citizen only)
+- [x] Prevenção de escalação de privilégios
+- [x] Validação dupla (email + user_id) contra impersonação
 
 ---
 
