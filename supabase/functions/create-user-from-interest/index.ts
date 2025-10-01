@@ -44,6 +44,23 @@ serve(async (req) => {
 
     console.log('Creating user from interest:', interest.id)
 
+    // Check if this interest manifestation has already been converted
+    const { data: existingInterest, error: interestLookupError } = await supabaseAdmin
+      .from('interest_manifestations')
+      .select('account_created, status')
+      .eq('id', interest.id)
+      .single()
+
+    if (interestLookupError) {
+      console.error('Error checking interest manifestation:', interestLookupError)
+      throw new Error('Manifestação de interesse não encontrada')
+    }
+
+    if (existingInterest?.account_created === true) {
+      console.log('Interest manifestation already converted:', interest.id)
+      throw new Error('Esta manifestação de interesse já foi convertida em conta de usuário')
+    }
+
     // Check if user already exists in auth system
     const { data: authUsersData, error: authCheckError } = await supabaseAdmin.auth.admin.listUsers()
     
