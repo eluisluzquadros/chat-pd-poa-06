@@ -241,37 +241,51 @@ export const AuthService = {
           userData: result.user_data
         };
       } else if (result.reason === 'user_not_found') {
-        console.log("⚠️ Usuário não encontrado - iniciando auto-provisionamento para Google OAuth...");
+        console.log("⚠️ Usuário não encontrado - iniciando auto-provisionamento via edge function...");
         
-        // Auto-provisionar usuário para Google OAuth
         try {
-          console.log("📥 Buscando dados do usuário autenticado...");
+          // Obter sessão atual
+          const { data: sessionData } = await supabase.auth.getSession();
+          if (!sessionData?.session?.access_token) {
+            throw new Error('Sessão inválida');
+          }
+
+          // Buscar dados do usuário
           const { data: userData, error: userError } = await supabase.auth.getUser();
-          
-          if (userError) {
-            console.error("❌ Erro ao buscar usuário:", userError);
-            throw userError;
+          if (userError || !userData.user) {
+            throw new Error('Usuário não autenticado');
           }
-          
-          if (!userData.user) {
-            console.error("❌ Usuário não autenticado");
-            throw new Error("Usuário não autenticado");
-          }
-          
-          console.log("👤 Dados do usuário:", {
-            id: userData.user.id,
-            email: userData.user.email,
-            metadata: userData.user.user_metadata
-          });
-          
+
           const userName = userData.user.user_metadata?.full_name || 
                           userData.user.user_metadata?.name || 
                           normalizedEmail.split('@')[0];
+
+          console.log("🚀 Chamando edge function oauth-provision...");
           
-          console.log("📝 Nome para criação:", userName);
-          
-          // Criar registro em profiles primeiro
-          console.log("📝 Criando perfil...");
+          // Chamar edge function que usa service role para bypassar RLS
+          const { data: provisionData, error: provisionError } = await supabase.functions.invoke('oauth-provision', {
+            body: { 
+              email: normalizedEmail, 
+              userId,
+              fullName: userName
+            },
+            headers: {
+              Authorization: `Bearer ${sessionData.session.access_token}`
+            }
+          });
+
+          if (provisionError) {
+            console.error("❌ Erro ao provisionar via edge function:", provisionError);
+            throw provisionError;
+          }
+
+          if (!provisionData?.success) {
+            throw new Error(provisionData?.error || 'Falha no provisionamento');
+          }
+
+          console.log("✅ Usuário provisionado com sucesso:", provisionData.account);
+
+          // Criar profile também
           const { error: profileError } = await supabase
             .from('profiles')
             .insert({
@@ -279,63 +293,11 @@ export const AuthService = {
               email: normalizedEmail,
               full_name: userName
             });
-          
-          if (profileError) {
-            console.error("❌ Erro ao criar profile:", profileError);
-            // Não falhar se profile já existe
-            if (!profileError.message?.includes('duplicate key')) {
-              throw profileError;
-            } else {
-              console.log("ℹ️ Profile já existe, continuando...");
-            }
-          } else {
-            console.log("✅ Profile criado com sucesso");
+
+          if (profileError && !profileError.message?.includes('duplicate key')) {
+            console.error("⚠️ Erro ao criar profile:", profileError);
           }
-          
-          // Criar registro em user_accounts
-          console.log("📝 Criando user_account...");
-          const { error: insertAccountError } = await supabase
-            .from('user_accounts')
-            .insert({
-              user_id: userId,
-              email: normalizedEmail,
-              full_name: userName,
-              role: 'citizen',
-              is_active: true,
-              created_at: new Date().toISOString()
-            });
-          
-          if (insertAccountError) {
-            console.error("❌ Erro ao criar user_account:", insertAccountError);
-            throw insertAccountError;
-          }
-          
-          console.log("✅ User account criado com sucesso");
-          
-          // Criar registro em user_roles
-          console.log("📝 Criando user_role...");
-          const { error: insertRoleError } = await supabase
-            .from('user_roles')
-            .insert({
-              user_id: userId,
-              role: 'citizen'
-            });
-          
-          if (insertRoleError) {
-            console.error("❌ Erro ao criar user_role:", insertRoleError);
-            // Não falhar se role já existe
-            if (!insertRoleError.message?.includes('duplicate key')) {
-              throw insertRoleError;
-            } else {
-              console.log("ℹ️ Role já existe, continuando...");
-            }
-          } else {
-            console.log("✅ User role criado com sucesso");
-          }
-          
-          console.log("🎉 Usuário auto-provisionado com sucesso:", userName);
-          
-          // Retornar dados do usuário recém-criado
+
           return {
             hasAccess: true,
             userData: {
@@ -349,11 +311,6 @@ export const AuthService = {
           
         } catch (provisionError: any) {
           console.error("💥 Erro ao auto-provisionar usuário:", provisionError);
-          console.error("Detalhes do erro:", {
-            message: provisionError.message,
-            code: provisionError.code,
-            details: provisionError.details
-          });
           return {
             hasAccess: false,
             reason: 'provision_failed',

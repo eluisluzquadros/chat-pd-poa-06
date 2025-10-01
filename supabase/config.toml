@@ -23,3 +23,6 @@ verify_jwt = false
 
 [functions.test-rag-config]
 verify_jwt = false
+
+[functions.oauth-provision]
+verify_jwt = true
