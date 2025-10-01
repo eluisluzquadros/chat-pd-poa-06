@@ -40,7 +40,11 @@ serve(async (req) => {
     )
 
     const requestData: RequestBody = await req.json()
-    const { interest, password, role } = requestData
+    const { password, role } = requestData
+    const interest = {
+      ...requestData.interest,
+      email: requestData.interest.email.toLowerCase().trim() // Normalize email
+    }
 
     console.log('🚀 Creating user from interest:', {
       interestId: interest.id,
@@ -79,35 +83,42 @@ serve(async (req) => {
     }
 
     console.log('📊 Total auth users found:', authUsersData?.users?.length || 0)
-    const existingAuthUser = authUsersData?.users?.find((user: any) => 
-      user && typeof user === 'object' && 'email' in user && user.email === interest.email
+    const existingAuthUser = authUsersData?.users?.find((user: any) =>
+      user && typeof user === 'object' && 'email' in user && user.email?.toLowerCase() === interest.email
     )
-    
+
     if (existingAuthUser) {
       console.log('⚠️ User already exists in auth:', interest.email)
       console.log('🔍 Checking if user exists in user_accounts...')
-      
+
       // Check if user exists in user_accounts
       const { data: existingAccount, error: accountCheckError } = await supabaseAdmin
         .from('user_accounts')
         .select('id')
         .eq('email', interest.email)
-        .single()
-      
-      if (accountCheckError && accountCheckError.code !== 'PGRST116') {
+        .maybeSingle()
+
+      if (accountCheckError) {
         console.error('❌ Error checking user_accounts:', accountCheckError)
+        throw new Error('Erro ao verificar conta de usuário existente')
       }
-      
+
       if (existingAccount) {
         console.log('✅ User exists in user_accounts, complete account detected')
         throw new Error('Este email já está registrado no sistema de autenticação e tem conta de usuário')
       } else {
-        console.log('⚠️ Orphaned auth user detected (exists in auth but not in user_accounts)')
-        throw new Error('Este email já está registrado no sistema de autenticação mas não tem conta completa. Entre em contato com o suporte.')
+        console.log('⚠️ Orphaned auth user detected, cleaning up...')
+        // Delete the orphaned auth user
+        const { error: deleteError } = await supabaseAdmin.auth.admin.deleteUser(existingAuthUser.id)
+        if (deleteError) {
+          console.error('❌ Error deleting orphaned user:', deleteError)
+          throw new Error('Erro ao limpar usuário órfão do sistema')
+        }
+        console.log('✅ Orphaned user cleaned up, proceeding with creation')
       }
+    } else {
+      console.log('✅ User does not exist in auth, proceeding with creation')
     }
-    
-    console.log('✅ User does not exist in auth, proceeding with creation')
 
     // Check if user already exists in user accounts
     const { data: existingUsers, error: checkError } = await supabaseAdmin

@@ -31,7 +31,8 @@ serve(async (req) => {
     )
 
     const requestData: RequestBody = await req.json()
-    const { fullName, email, password, role } = requestData
+    const { fullName, password, role } = requestData
+    const email = requestData.email.toLowerCase().trim() // Normalize email
 
     console.log('Creating new user:', email)
 
@@ -42,10 +43,29 @@ serve(async (req) => {
       console.error('Error checking auth system:', authCheckError)
     } else {
       const existingAuthUser = authUsersData?.users?.find((user: any) => 
-        user && typeof user === 'object' && 'email' in user && user.email === email
+        user && typeof user === 'object' && 'email' in user && user.email?.toLowerCase() === email
       )
       if (existingAuthUser) {
-        throw new Error('Este email já está registrado no sistema de autenticação')
+        console.log('Found existing auth user, checking if orphaned...')
+        // Check if this is an orphaned user (exists in auth but not in user_accounts)
+        const { data: existingAccount } = await supabaseAdmin
+          .from('user_accounts')
+          .select('id')
+          .eq('email', email)
+          .maybeSingle()
+        
+        if (!existingAccount) {
+          console.log('Orphaned auth user detected, cleaning up...')
+          // Delete the orphaned auth user
+          const { error: deleteError } = await supabaseAdmin.auth.admin.deleteUser(existingAuthUser.id)
+          if (deleteError) {
+            console.error('Error deleting orphaned user:', deleteError)
+            throw new Error('Erro ao limpar usuário órfão do sistema')
+          }
+          console.log('Orphaned user cleaned up, proceeding with creation')
+        } else {
+          throw new Error('Este email já está registrado no sistema de autenticação')
+        }
       }
     }
 
