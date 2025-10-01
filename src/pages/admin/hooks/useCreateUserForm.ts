@@ -144,7 +144,6 @@ export function useCreateUserForm(onSuccess: () => void, onOpenChange: (open: bo
           user_id: authData.user.id,
           email: formValues.email,
           full_name: formValues.fullName,
-          newsletter: formValues.newsletter,
           role: formValues.role,
           is_active: true
         });
