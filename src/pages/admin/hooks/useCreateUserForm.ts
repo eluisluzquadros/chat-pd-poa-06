@@ -65,123 +65,29 @@ export function useCreateUserForm(onSuccess: () => void, onOpenChange: (open: bo
     setIsSubmitting(true);
 
     try {
-      console.log("Checking if user already exists...");
+      console.log("Calling create-user edge function...");
       
-      // Check if user already exists in auth system
-      const { data: authUsersData, error: authCheckError } = await supabase.auth.admin.listUsers();
-      
-      if (authCheckError) {
-        console.error("Error checking auth system:", authCheckError);
-      } else {
-        // Manually filter to find users with matching email
-        const existingAuthUser = authUsersData?.users?.find((user: any) => 
-          user && typeof user === 'object' && 'email' in user && user.email === formValues.email
-        );
-        if (existingAuthUser) {
-          throw new Error("Este email já está registrado no sistema de autenticação");
-        }
-      }
-      
-      // Check if user already exists in user accounts
-      const { data: existingUsers, error: checkError } = await supabase
-        .from("user_accounts")
-        .select("email")
-        .eq("email", formValues.email)
-        .limit(1);
-
-      if (checkError) {
-        console.error("Error checking existing user:", checkError);
-      } else if (existingUsers && existingUsers.length > 0) {
-        throw new Error("Este email já está registrado no sistema");
-      }
-
-      // Check if user already exists in interest manifestations
-      const { data: existingInterests, error: interestCheckError } = await supabase
-        .from("interest_manifestations")
-        .select("email")
-        .eq("email", formValues.email)
-        .limit(1);
-        
-      if (interestCheckError) {
-        console.error("Error checking existing interest:", interestCheckError);
-      } else if (existingInterests && existingInterests.length > 0) {
-        throw new Error("Este email já possui uma manifestação de interesse registrada");
-      }
-
-      console.log("Creating auth user...");
-      
-      // Create auth user
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email: formValues.email,
-        password: formValues.password,
-        options: {
-          data: {
-            full_name: formValues.fullName,
-          },
-          emailRedirectTo: window.location.origin + '/auth',
-        }
-      });
-
-      if (authError) {
-        console.error("Auth error:", authError);
-        if (authError.message.includes("User already registered")) {
-          throw new Error("Este email já está registrado no sistema de autenticação");
-        }
-        throw authError;
-      }
-
-      if (!authData?.user) {
-        throw new Error("Falha ao criar usuário de autenticação");
-      }
-
-      console.log("Auth user created, ID:", authData.user.id);
-      console.log("Creating user account...");
-      
-      // Create user account with the auth user's ID
-      const { error: accountError } = await supabase
-        .from("user_accounts")
-        .insert({
-          user_id: authData.user.id,
-          email: formValues.email,
-          full_name: formValues.fullName,
-          role: formValues.role,
-          is_active: true
-        });
-
-      if (accountError) {
-        console.error("Error creating account:", accountError);
-        throw accountError;
-      }
-
-      console.log("User account created, creating profile...");
-      
-      // Create profile
-      const { error: profileError } = await supabase
-        .from("profiles")
-        .insert({
-          id: authData.user.id,
-          full_name: formValues.fullName,
-        });
-
-      if (profileError) {
-        console.error("Error creating profile:", profileError);
-        // Continue anyway - profile might be created by trigger
-      }
-
-      console.log("Setting user role...");
-      
-      // To avoid RLS policy violations, we'll use a Supabase Function to set the user role
-      // instead of directly inserting into the user_roles table
-      const { data: userRoleData, error: userRoleError } = await supabase.functions.invoke('set-user-role', {
+      // Call the edge function to create the user with elevated privileges
+      const { data, error: functionError } = await supabase.functions.invoke('create-user', {
         body: {
-          userId: authData.user.id,
+          fullName: formValues.fullName,
+          email: formValues.email,
+          password: formValues.password,
           role: formValues.role
         }
       });
 
-      if (userRoleError) {
-        console.error("Error setting role:", userRoleError);
-        throw userRoleError;
+      if (functionError) {
+        console.error("Edge function error:", functionError);
+        throw new Error(functionError.message || 'Erro ao criar usuário');
+      }
+
+      if (!data) {
+        throw new Error('Resposta vazia do servidor');
+      }
+
+      if (data.error) {
+        throw new Error(data.error);
       }
 
       console.log("User creation complete!");
