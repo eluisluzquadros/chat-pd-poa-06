@@ -11,6 +11,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useTheme } from "@/components/ui/theme-provider";
+import { PasswordStrengthIndicator } from './PasswordStrengthIndicator';
 
 interface SecureAuthFormProps {
   mode: 'login' | 'signup';
@@ -286,6 +287,7 @@ export const SecureAuthForm = ({ mode, onModeChange }: SecureAuthFormProps) => {
             {errors.password && (
               <p className="text-sm text-destructive">{errors.password}</p>
             )}
+            {mode === 'signup' && <PasswordStrengthIndicator password={password} />}
           </div>
 
           {/* Confirm Password - only for signup */}
