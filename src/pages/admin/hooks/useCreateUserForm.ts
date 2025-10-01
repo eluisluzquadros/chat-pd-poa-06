@@ -146,7 +146,7 @@ export function useCreateUserForm(onSuccess: () => void, onOpenChange: (open: bo
           full_name: formValues.fullName,
           newsletter: formValues.newsletter,
           role: formValues.role,
-          active: true
+          is_active: true
         });
 
       if (accountError) {

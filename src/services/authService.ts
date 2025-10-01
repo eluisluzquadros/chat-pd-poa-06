@@ -293,7 +293,7 @@ export const AuthService = {
               email: email,
               full_name: userName,
               role: 'citizen',
-              active: true
+              is_active: true
             }
           };
           

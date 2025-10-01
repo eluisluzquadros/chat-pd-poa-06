@@ -41,7 +41,7 @@ const EditUserDialog = ({
     fullName: "",
     email: "",
     role: "",
-    active: true,
+    is_active: true,
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -51,7 +51,7 @@ const EditUserDialog = ({
         fullName: user.full_name,
         email: user.email,
         role: user.role,
-        active: user.is_active,
+        is_active: user.is_active,
       });
     }
   }, [user]);
@@ -66,7 +66,7 @@ const EditUserDialog = ({
   };
 
   const handleActiveChange = (checked: boolean) => {
-    setFormValues({ ...formValues, active: checked });
+    setFormValues({ ...formValues, is_active: checked });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -87,7 +87,7 @@ const EditUserDialog = ({
           full_name: formValues.fullName,
           email: formValues.email,
           role: formValues.role,
-          is_active: formValues.active,
+          is_active: formValues.is_active,
         })
         .eq("id", user.id);
 
@@ -183,11 +183,11 @@ const EditUserDialog = ({
           </div>
           <div className="flex items-center space-x-2">
             <Switch
-              id="active"
-              checked={formValues.active}
+              id="is_active"
+              checked={formValues.is_active}
               onCheckedChange={handleActiveChange}
             />
-            <Label htmlFor="active">Usuário Ativo</Label>
+            <Label htmlFor="is_active">Usuário Ativo</Label>
           </div>
 
           <DialogFooter className="pt-4">
