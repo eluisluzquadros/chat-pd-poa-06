@@ -1,29 +1,30 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
-import { AuthHeader } from '@/components/auth/AuthHeader';
-import { SecureAuthForm } from '@/components/auth/SecureAuthForm';
-import { GoogleAuthButton } from '@/components/auth/GoogleAuthButton';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { InterestForm } from '@/components/auth/InterestForm';
 import { Card, CardContent } from '@/components/ui/card';
-import { Loader2, UserPlus } from 'lucide-react';
+import { Loader2, UserPlus, Lock, Mail } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { SecureAuthService } from '@/services/secureAuthService';
 import { toast } from 'sonner';
-
-
+import { useTheme } from "@/components/ui/theme-provider";
+import { supabase } from '@/integrations/supabase/client';
 
 const AuthPage = () => {
   const { isAuthenticated, refreshAuthState } = useAuth();
   const [isInterestModalOpen, setIsInterestModalOpen] = useState(false);
   const [authMode, setAuthMode] = useState<'login' | 'signup'>('login');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [fullName, setFullName] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const [loaded, setLoaded] = useState(false);
   const navigate = useNavigate();
-
-  // Verificar se está em ambiente de desenvolvimento
-  const isDevelopment = window.location.hostname === 'localhost' || 
-                        window.location.hostname.includes('lovable') ||
-                        window.location.hostname.includes('127.0.0.1');
+  const { theme } = useTheme();
 
   // Redirecionar se o usuário já estiver autenticado
   useEffect(() => {
@@ -33,7 +34,14 @@ const AuthPage = () => {
       });
     }
   }, [isAuthenticated, navigate]);
-  
+
+  // Animação de entrada
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setLoaded(true);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, []);
   
   const handleOpenInterestModal = () => {
     setIsInterestModalOpen(true);
@@ -43,7 +51,80 @@ const AuthPage = () => {
     setIsInterestModalOpen(false);
   };
 
-  
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+
+    try {
+      if (authMode === 'signup') {
+        if (!fullName.trim()) {
+          toast.error('Por favor, preencha seu nome completo');
+          return;
+        }
+        const result = await SecureAuthService.signUp(email, password, fullName);
+        
+        if (result.success) {
+          toast.success('Conta criada com sucesso! Você já está logado.');
+          await refreshAuthState();
+          navigate('/chat');
+        } else {
+          toast.error(result.error || 'Erro ao criar conta');
+        }
+      } else {
+        const result = await SecureAuthService.signIn(email, password);
+        
+        if (result.success) {
+          toast.success('Login realizado com sucesso!');
+          await refreshAuthState();
+          navigate('/chat');
+        } else {
+          toast.error(result.error || 'Erro ao fazer login');
+        }
+      }
+    } catch (error: any) {
+      console.error('Erro na autenticação:', error);
+      toast.error(error.message || 'Erro ao processar autenticação');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleGoogleLogin = async () => {
+    if (isGoogleLoading) return;
+
+    setIsGoogleLoading(true);
+    
+    try {
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent'
+          }
+        }
+      });
+      
+      if (error) {
+        console.error("Erro OAuth:", error);
+        
+        if (error.message?.includes('popup')) {
+          toast.error("Popup bloqueado. Permita popups e tente novamente.");
+        } else {
+          toast.error(`Erro ao conectar com Google: ${error.message}`);
+        }
+      } else {
+        toast.success("Redirecionando para Google...");
+      }
+    } catch (error: any) {
+      console.error("Erro crítico ao conectar com Google:", error);
+      toast.error("Erro ao conectar com Google. Tente novamente.");
+    } finally {
+      setIsGoogleLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen flex flex-col" style={{
       backgroundImage: "url('/lovable-uploads/fa2fb874-6389-4e4d-8e5d-0fb551bdbce0.png')",
@@ -52,55 +133,181 @@ const AuthPage = () => {
       backgroundRepeat: "no-repeat"
     }}>
       <div className="flex-grow flex items-center justify-center py-12 px-4">
-        <div className="w-full max-w-md space-y-6">
-          <SecureAuthForm 
-            mode={authMode}
-            onModeChange={setAuthMode}
-          />
-          
-          <Card className="border-0 shadow-elegant overflow-hidden transition-all duration-300 hover:shadow-lg bg-white/90 dark:bg-card/90 backdrop-blur-sm">
-            <CardContent className="p-6 space-y-4">
-              
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-gray-300 dark:border-gray-600"></div>
+        <Card className={`w-full max-w-md border-0 shadow-elegant overflow-hidden transition-all duration-500 bg-white/90 dark:bg-card/90 backdrop-blur-sm ${loaded ? 'opacity-100' : 'opacity-0'}`}>
+          <CardContent className="p-8 space-y-6">
+            {/* Logo */}
+            <div className="flex items-center justify-center mb-4">
+              {!loaded ? (
+                <Loader2 className="h-12 w-12 animate-spin text-dark-green" />
+              ) : (
+                <div className="w-full max-w-[300px]">
+                  <img 
+                    src={theme === 'dark' 
+                      ? "/lovable-uploads/9138fd22-514b-41ba-9317-fecb0bacad7d.png" 
+                      : "/lovable-uploads/9c959472-19d4-4cc4-9f30-354a6c05be72.png"
+                    } 
+                    alt="Plano Diretor de Porto Alegre" 
+                    className="w-full"
+                  />
                 </div>
-                <div className="relative flex justify-center text-xs">
-                  <span className="px-2 bg-card text-muted-foreground">ou</span>
+              )}
+            </div>
+            
+            <p className="text-muted-foreground text-center text-sm">
+              Entre com suas credenciais para acessar o Chatbot do Plano Diretor
+            </p>
+
+            {/* Formulário de Login/Signup */}
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {authMode === 'signup' && (
+                <div className="space-y-2">
+                  <Label htmlFor="fullName">Nome Completo*</Label>
+                  <Input
+                    id="fullName"
+                    type="text"
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    placeholder="Seu nome completo"
+                    required
+                    disabled={isLoading}
+                  />
+                </div>
+              )}
+              
+              <div className="space-y-2">
+                <Label htmlFor="email">Email*</Label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="pl-9"
+                    placeholder="seu@email.com"
+                    required
+                    disabled={isLoading}
+                  />
                 </div>
               </div>
-              
-              <GoogleAuthButton />
-              
-              
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-gray-300 dark:border-gray-600"></div>
-                </div>
-                <div className="relative flex justify-center text-xs">
-                  <span className="px-2 bg-card text-muted-foreground">interessado no sistema?</span>
+
+              <div className="space-y-2">
+                <Label htmlFor="password">Senha*</Label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="password"
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="pl-9"
+                    placeholder="••••••••"
+                    required
+                    disabled={isLoading}
+                  />
                 </div>
               </div>
-              
+
               <Button 
-                type="button" 
-                variant="outline" 
-                onClick={handleOpenInterestModal} 
-                className="w-full flex items-center justify-center gap-2 bg-[#E08C37] text-white hover:bg-[#E08C37]/80 border-[#E08C37]"
+                type="submit" 
+                className="w-full"
+                disabled={isLoading}
               >
-                <UserPlus size={18} />
-                Cadastrar Interesse
+                {isLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Processando...
+                  </>
+                ) : (
+                  authMode === 'login' ? 'Entrar' : 'Criar Conta'
+                )}
               </Button>
-              
-              <div className="text-center text-xs text-muted-foreground">
-                <p>@ 2025 ChatPDPOA - Plano Diretor de Porto Alegre </p>
+
+              <Button
+                type="button"
+                variant="ghost"
+                className="w-full"
+                onClick={() => setAuthMode(authMode === 'login' ? 'signup' : 'login')}
+                disabled={isLoading}
+              >
+                {authMode === 'login' 
+                  ? 'Não tem conta? Cadastre-se' 
+                  : 'Já tem conta? Faça login'}
+              </Button>
+            </form>
+
+            {/* Divisor */}
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-300 dark:border-gray-600"></div>
               </div>
-            </CardContent>
-          </Card>
-        </div>
+              <div className="relative flex justify-center text-xs">
+                <span className="px-2 bg-white dark:bg-card text-muted-foreground">ou</span>
+              </div>
+            </div>
+
+            {/* Botão Google */}
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleGoogleLogin}
+              disabled={isGoogleLoading || isLoading}
+              className="w-full flex items-center justify-center gap-3 bg-white hover:bg-gray-50 text-gray-700 border-gray-300 font-medium py-6"
+            >
+              {isGoogleLoading ? (
+                <Loader2 className="h-5 w-5 animate-spin" />
+              ) : (
+                <svg className="h-5 w-5" viewBox="0 0 24 24">
+                  <path
+                    fill="#4285F4"
+                    d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                  />
+                  <path
+                    fill="#34A853"
+                    d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                  />
+                  <path
+                    fill="#FBBC05"
+                    d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+                  />
+                  <path
+                    fill="#EA4335"
+                    d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                  />
+                </svg>
+              )}
+              {isGoogleLoading ? 'Conectando...' : 'Continuar com Google'}
+            </Button>
+
+            {/* Divisor */}
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-300 dark:border-gray-600"></div>
+              </div>
+              <div className="relative flex justify-center text-xs">
+                <span className="px-2 bg-white dark:bg-card text-muted-foreground">interessado no sistema?</span>
+              </div>
+            </div>
+
+            {/* Botão Manifestar Interesse */}
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={handleOpenInterestModal} 
+              className="w-full flex items-center justify-center gap-2 bg-[#E08C37] text-white hover:bg-[#E08C37]/80 border-[#E08C37]"
+              disabled={isLoading}
+            >
+              <UserPlus size={18} />
+              Cadastrar Interesse
+            </Button>
+
+            {/* Copyright */}
+            <div className="text-center text-xs text-muted-foreground pt-4">
+              <p>© 2025 ChatPDPOA - Plano Diretor de Porto Alegre</p>
+            </div>
+          </CardContent>
+        </Card>
       </div>
-      
-      
 
       {/* Modal para Manifestar Interesse */}
       <Dialog open={isInterestModalOpen} onOpenChange={setIsInterestModalOpen}>

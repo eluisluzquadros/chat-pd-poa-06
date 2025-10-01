@@ -210,52 +210,95 @@ export const AuthService = {
   // Validar acesso do usuário para OAuth com auto-provisionamento
   validateUserAccess: async (email: string, userId: string) => {
     try {
-      console.log("=== VALIDANDO ACESSO USUÁRIO ===");
-      console.log("Email:", email);
-      console.log("User ID:", userId);
+      console.log("🔐 === VALIDANDO ACESSO USUÁRIO (Google OAuth) ===");
+      console.log("📧 Email:", email);
+      console.log("🆔 User ID:", userId);
+      
+      // Normalizar email
+      const normalizedEmail = email.toLowerCase().trim();
+      console.log("📧 Email normalizado:", normalizedEmail);
       
       // Primeiro, verificar se o usuário existe na tabela user_accounts
       const { data, error } = await supabase.rpc('validate_oauth_access', {
-        user_email: email,
+        user_email: normalizedEmail,
         user_id: userId
       });
       
       if (error) {
-        console.error("Erro ao validar acesso:", error);
+        console.error("❌ Erro ao validar acesso via RPC:", error);
         throw error;
       }
       
-      console.log("Resultado da validação:", data);
+      console.log("✅ Resultado da validação RPC:", data);
       
       // Fazer type assertion para acessar as propriedades do JSON
       const result = data as any;
       
       if (result.has_access) {
-        console.log("Usuário validado com sucesso:", result.user_data?.full_name);
+        console.log("✅ Usuário validado com sucesso:", result.user_data?.full_name);
         return {
           hasAccess: true,
           userData: result.user_data
         };
       } else if (result.reason === 'user_not_found') {
-        console.log("Usuário não encontrado - auto-provisionando para Google OAuth...");
+        console.log("⚠️ Usuário não encontrado - iniciando auto-provisionamento para Google OAuth...");
         
         // Auto-provisionar usuário para Google OAuth
         try {
-          const { data: userData } = await supabase.auth.getUser();
+          console.log("📥 Buscando dados do usuário autenticado...");
+          const { data: userData, error: userError } = await supabase.auth.getUser();
+          
+          if (userError) {
+            console.error("❌ Erro ao buscar usuário:", userError);
+            throw userError;
+          }
+          
           if (!userData.user) {
+            console.error("❌ Usuário não autenticado");
             throw new Error("Usuário não autenticado");
           }
           
+          console.log("👤 Dados do usuário:", {
+            id: userData.user.id,
+            email: userData.user.email,
+            metadata: userData.user.user_metadata
+          });
+          
           const userName = userData.user.user_metadata?.full_name || 
                           userData.user.user_metadata?.name || 
-                          email.split('@')[0];
+                          normalizedEmail.split('@')[0];
+          
+          console.log("📝 Nome para criação:", userName);
+          
+          // Criar registro em profiles primeiro
+          console.log("📝 Criando perfil...");
+          const { error: profileError } = await supabase
+            .from('profiles')
+            .insert({
+              id: userId,
+              email: normalizedEmail,
+              full_name: userName
+            });
+          
+          if (profileError) {
+            console.error("❌ Erro ao criar profile:", profileError);
+            // Não falhar se profile já existe
+            if (!profileError.message?.includes('duplicate key')) {
+              throw profileError;
+            } else {
+              console.log("ℹ️ Profile já existe, continuando...");
+            }
+          } else {
+            console.log("✅ Profile criado com sucesso");
+          }
           
           // Criar registro em user_accounts
+          console.log("📝 Criando user_account...");
           const { error: insertAccountError } = await supabase
             .from('user_accounts')
             .insert({
               user_id: userId,
-              email: email,
+              email: normalizedEmail,
               full_name: userName,
               role: 'citizen',
               is_active: true,
@@ -263,11 +306,14 @@ export const AuthService = {
             });
           
           if (insertAccountError) {
-            console.error("Erro ao criar user_account:", insertAccountError);
+            console.error("❌ Erro ao criar user_account:", insertAccountError);
             throw insertAccountError;
           }
           
+          console.log("✅ User account criado com sucesso");
+          
           // Criar registro em user_roles
+          console.log("📝 Criando user_role...");
           const { error: insertRoleError } = await supabase
             .from('user_roles')
             .insert({
@@ -276,45 +322,59 @@ export const AuthService = {
             });
           
           if (insertRoleError) {
-            console.error("Erro ao criar user_role:", insertRoleError);
+            console.error("❌ Erro ao criar user_role:", insertRoleError);
             // Não falhar se role já existe
             if (!insertRoleError.message?.includes('duplicate key')) {
               throw insertRoleError;
+            } else {
+              console.log("ℹ️ Role já existe, continuando...");
             }
+          } else {
+            console.log("✅ User role criado com sucesso");
           }
           
-          console.log("✅ Usuário auto-provisionado com sucesso:", userName);
+          console.log("🎉 Usuário auto-provisionado com sucesso:", userName);
           
           // Retornar dados do usuário recém-criado
           return {
             hasAccess: true,
             userData: {
               id: userId,
-              email: email,
+              email: normalizedEmail,
               full_name: userName,
               role: 'citizen',
               is_active: true
             }
           };
           
-        } catch (provisionError) {
-          console.error("Erro ao auto-provisionar usuário:", provisionError);
+        } catch (provisionError: any) {
+          console.error("💥 Erro ao auto-provisionar usuário:", provisionError);
+          console.error("Detalhes do erro:", {
+            message: provisionError.message,
+            code: provisionError.code,
+            details: provisionError.details
+          });
           return {
             hasAccess: false,
             reason: 'provision_failed',
-            message: 'Erro ao criar conta. Tente novamente ou entre em contato com o suporte.'
+            message: `Erro ao criar conta: ${provisionError.message || 'Erro desconhecido'}. Tente novamente ou entre em contato com o suporte.`
           };
         }
       } else {
-        console.log("Acesso negado:", result.reason);
+        console.log("🚫 Acesso negado:", result.reason);
         return {
           hasAccess: false,
           reason: result.reason,
           message: result.message
         };
       }
-    } catch (error) {
-      console.error("Erro ao validar acesso do usuário:", error);
+    } catch (error: any) {
+      console.error("💥 Erro crítico ao validar acesso do usuário:", error);
+      console.error("Detalhes:", {
+        message: error.message,
+        code: error.code,
+        details: error.details
+      });
       return {
         hasAccess: false,
         reason: 'validation_error',
