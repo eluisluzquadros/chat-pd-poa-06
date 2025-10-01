@@ -32,21 +32,17 @@ const DeleteUserDialog = ({
   const handleDelete = async () => {
     setIsDeleting(true);
     try {
-      // First delete from user_accounts (this will cascade to user_roles)
-      const { error: accountError } = await supabase
-        .from("user_accounts")
-        .delete()
-        .eq("id", user.id);
+      const { data, error } = await supabase.functions.invoke('delete-user', {
+        body: { userId: user.id }
+      });
 
-      if (accountError) throw accountError;
+      if (error) {
+        console.error("Error from delete-user function:", error);
+        throw new Error(error.message || "Erro ao excluir usuário");
+      }
 
-      // Then delete the auth user if we have a user_id
-      if (user.user_id) {
-        const { error: authError } = await supabase.auth.admin.deleteUser(
-          user.user_id
-        );
-
-        if (authError) throw authError;
+      if (!data?.success) {
+        throw new Error(data?.error || "Erro ao excluir usuário");
       }
 
       toast.success("Usuário excluído com sucesso");

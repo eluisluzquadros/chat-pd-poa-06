@@ -42,9 +42,15 @@ serve(async (req) => {
     const requestData: RequestBody = await req.json()
     const { interest, password, role } = requestData
 
-    console.log('Creating user from interest:', interest.id)
+    console.log('🚀 Creating user from interest:', {
+      interestId: interest.id,
+      email: interest.email,
+      fullName: interest.full_name,
+      timestamp: new Date().toISOString()
+    })
 
     // Check if this interest manifestation has already been converted
+    console.log('🔍 Checking if interest manifestation was already converted...')
     const { data: existingInterest, error: interestLookupError } = await supabaseAdmin
       .from('interest_manifestations')
       .select('account_created, status')
@@ -52,16 +58,19 @@ serve(async (req) => {
       .single()
 
     if (interestLookupError) {
-      console.error('Error checking interest manifestation:', interestLookupError)
+      console.error('❌ Error checking interest manifestation:', interestLookupError)
       throw new Error('Manifestação de interesse não encontrada')
     }
 
+    console.log('📋 Interest manifestation status:', existingInterest)
+
     if (existingInterest?.account_created === true) {
-      console.log('Interest manifestation already converted:', interest.id)
+      console.log('⚠️ Interest manifestation already converted:', interest.id)
       throw new Error('Esta manifestação de interesse já foi convertida em conta de usuário')
     }
 
     // Check if user already exists in auth system
+    console.log('🔍 Checking if user exists in auth system...')
     const { data: authUsersData, error: authCheckError } = await supabaseAdmin.auth.admin.listUsers()
     
     if (authCheckError) {
