@@ -219,6 +219,8 @@ export const AuthService = {
       console.log("📧 Email normalizado:", normalizedEmail);
       
       // Primeiro, verificar se o usuário existe na tabela user_accounts
+      console.log("🔍 Chamando RPC validate_oauth_access com:", { user_email: normalizedEmail, user_id: userId });
+      
       const { data, error } = await supabase.rpc('validate_oauth_access', {
         user_email: normalizedEmail,
         user_id: userId
@@ -226,10 +228,12 @@ export const AuthService = {
       
       if (error) {
         console.error("❌ Erro ao validar acesso via RPC:", error);
+        console.error("❌ Detalhes do erro:", { message: error.message, code: error.code, details: error.details, hint: error.hint });
         throw error;
       }
       
       console.log("✅ Resultado da validação RPC:", data);
+      console.log("✅ Tipo do resultado:", typeof data);
       
       // Fazer type assertion para acessar as propriedades do JSON
       const result = data as any;
@@ -261,6 +265,7 @@ export const AuthService = {
                           normalizedEmail.split('@')[0];
 
           console.log("🚀 Chamando edge function oauth-provision...");
+          console.log("📤 Dados enviados:", { email: normalizedEmail, userId, fullName: userName });
           
           // Chamar edge function que usa service role para bypassar RLS
           const { data: provisionData, error: provisionError } = await supabase.functions.invoke('oauth-provision', {
@@ -274,16 +279,21 @@ export const AuthService = {
             }
           });
 
+          console.log("📥 Resposta da edge function:", { data: provisionData, error: provisionError });
+
           if (provisionError) {
             console.error("❌ Erro ao provisionar via edge function:", provisionError);
+            console.error("❌ Detalhes do erro:", { message: provisionError.message, context: provisionError.context });
             throw provisionError;
           }
 
           if (!provisionData?.success) {
+            console.error("❌ Provisionamento retornou falha:", provisionData);
             throw new Error(provisionData?.error || 'Falha no provisionamento');
           }
 
-          console.log("✅ Usuário provisionado com sucesso:", provisionData.account);
+          console.log("✅ Usuário provisionado com sucesso!");
+          console.log("✅ Detalhes da conta:", provisionData.account);
 
           // Criar profile também
           const { error: profileError } = await supabase

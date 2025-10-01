@@ -2247,8 +2247,10 @@ export type Database = {
       }
       user_accounts: {
         Row: {
+          auth_provider: string | null
           created_at: string
           email: string
+          email_verified: boolean | null
           full_name: string | null
           id: string
           is_active: boolean
@@ -2257,8 +2259,10 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          auth_provider?: string | null
           created_at?: string
           email: string
+          email_verified?: boolean | null
           full_name?: string | null
           id?: string
           is_active?: boolean
@@ -2267,8 +2271,10 @@ export type Database = {
           user_id: string
         }
         Update: {
+          auth_provider?: string | null
           created_at?: string
           email?: string
+          email_verified?: boolean | null
           full_name?: string | null
           id?: string
           is_active?: boolean

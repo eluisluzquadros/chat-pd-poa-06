@@ -46,14 +46,18 @@ const AuthCallback = () => {
           throw new Error("Usuário não encontrado após OAuth");
         }
         
-        console.log(`Validando acesso para usuário: ${user.email}`);
+        console.log(`✅ Validando acesso para usuário: ${user.email} [ID: ${user.id}]`);
+        console.log(`📧 User metadata:`, user.user_metadata);
         
         // Validar se o usuário tem acesso à plataforma
         const { AuthService } = await import('@/services/authService');
+        
+        console.log(`🔍 Iniciando validateUserAccess...`);
         const accessValidation = await AuthService.validateUserAccess(user.email, user.id);
+        console.log(`📊 Resultado da validação:`, accessValidation);
         
         if (!accessValidation.hasAccess) {
-          console.log(`Acesso negado: ${accessValidation.reason}`);
+          console.error(`❌ Acesso negado: ${accessValidation.reason}`);
           
           // Limpeza completa antes do logout
           AuthService.cleanupAuthState();
