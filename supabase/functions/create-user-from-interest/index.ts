@@ -74,15 +74,40 @@ serve(async (req) => {
     const { data: authUsersData, error: authCheckError } = await supabaseAdmin.auth.admin.listUsers()
     
     if (authCheckError) {
-      console.error('Error checking auth system:', authCheckError)
-    } else {
-      const existingAuthUser = authUsersData?.users?.find((user: any) => 
-        user && typeof user === 'object' && 'email' in user && user.email === interest.email
-      )
-      if (existingAuthUser) {
-        throw new Error('Este email já está registrado no sistema de autenticação')
+      console.error('❌ Error checking auth users:', authCheckError)
+      throw new Error('Erro ao verificar usuários existentes')
+    }
+
+    console.log('📊 Total auth users found:', authUsersData?.users?.length || 0)
+    const existingAuthUser = authUsersData?.users?.find((user: any) => 
+      user && typeof user === 'object' && 'email' in user && user.email === interest.email
+    )
+    
+    if (existingAuthUser) {
+      console.log('⚠️ User already exists in auth:', interest.email)
+      console.log('🔍 Checking if user exists in user_accounts...')
+      
+      // Check if user exists in user_accounts
+      const { data: existingAccount, error: accountCheckError } = await supabaseAdmin
+        .from('user_accounts')
+        .select('id')
+        .eq('email', interest.email)
+        .single()
+      
+      if (accountCheckError && accountCheckError.code !== 'PGRST116') {
+        console.error('❌ Error checking user_accounts:', accountCheckError)
+      }
+      
+      if (existingAccount) {
+        console.log('✅ User exists in user_accounts, complete account detected')
+        throw new Error('Este email já está registrado no sistema de autenticação e tem conta de usuário')
+      } else {
+        console.log('⚠️ Orphaned auth user detected (exists in auth but not in user_accounts)')
+        throw new Error('Este email já está registrado no sistema de autenticação mas não tem conta completa. Entre em contato com o suporte.')
       }
     }
+    
+    console.log('✅ User does not exist in auth, proceeding with creation')
 
     // Check if user already exists in user accounts
     const { data: existingUsers, error: checkError } = await supabaseAdmin

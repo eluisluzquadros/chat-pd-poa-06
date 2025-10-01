@@ -446,6 +446,30 @@ export type Database = {
         }
         Relationships: []
       }
+      data_consistency_log: {
+        Row: {
+          check_type: string
+          created_at: string | null
+          details: Json
+          id: string
+          resolved: boolean | null
+        }
+        Insert: {
+          check_type: string
+          created_at?: string | null
+          details: Json
+          id?: string
+          resolved?: boolean | null
+        }
+        Update: {
+          check_type?: string
+          created_at?: string | null
+          details?: Json
+          id?: string
+          resolved?: boolean | null
+        }
+        Relationships: []
+      }
       dify_agents: {
         Row: {
           created_at: string
