@@ -85,51 +85,12 @@ export const useUserRole = () => {
         return;
       }
 
-      // If no role found in user_roles, check if user is in user_accounts with role
+      // If no role found in user_roles, default to citizen
       if (!data || !data.role) {
-        console.log("No role found in user_roles table, checking user_accounts...");
-        
-        const { data: accountData, error: accountError } = await supabase
-          .from('user_accounts')
-          .select('role')
-          .eq('user_id', userId)
-          .maybeSingle();
-          
-        if (accountError) {
-          console.error('Error fetching user account:', accountError);
-          // Still don't reset roles here
-          return;
-        }
-        
-        if (accountData && accountData.role) {
-          const accountRole = accountData.role as AppRole;
-          console.log("Found role in user_accounts:", accountRole);
-          
-          applyRole(accountRole);
-          lastFetchedIdRef.current = userId;
-          
-          // Cache this role in user_roles
-          try {
-            console.log("Creating entry in user_roles for user:", userId);
-            await supabase.functions.invoke('set-user-role', {
-              body: {
-                userId: userId,
-                role: accountRole
-              }
-            });
-          } catch (roleError) {
-            console.error('Error setting user role:', roleError);
-            // Continue anyway - at least we set the local state correctly
-          }
-          
-          return;
-        } else {
-          console.log("No role found in user_accounts either, setting default role");
-          // Default to citizen if no role found
-          applyRole('citizen');
-          lastFetchedIdRef.current = userId;
-          return;
-        }
+        console.log("No role found in user_roles table, setting default role to citizen");
+        applyRole('citizen');
+        lastFetchedIdRef.current = userId;
+        return;
       }
 
       const role = data?.role as AppRole | null;

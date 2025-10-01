@@ -112,47 +112,29 @@ export function ConversationsAnalytics({ timeRange }: ConversationsAnalyticsProp
           citizen: 0 
         };
         
-        // If we have sessions, get user roles from both user_accounts and user_roles tables
+        // If we have sessions, get user roles from user_roles table only
         if (chatSessions && chatSessions.length > 0) {
           const userIds = chatSessions.map(session => session.user_id);
           
-          // Query both user_accounts and user_roles tables
-          const [accountsResult, rolesResult] = await Promise.all([
-            supabase
-              .from("user_accounts")
-              .select("role, user_id")
-              .in("user_id", userIds),
-            supabase
-              .from("user_roles")
-              .select("role, user_id")
-              .in("user_id", userIds)
-          ]);
+          // Query user_roles table
+          const { data: rolesData, error: rolesError } = await supabase
+            .from("user_roles")
+            .select("role, user_id")
+            .in("user_id", userIds);
           
-          if (accountsResult.error) throw accountsResult.error;
-          if (rolesResult.error) throw rolesResult.error;
+          if (rolesError) throw rolesError;
           
-          // Create a map of user roles, prioritizing user_accounts over user_roles
+          // Create a map of user roles
           const userRoleMap = new Map();
-          
-          // First, add roles from user_roles table
-          rolesResult.data?.forEach(user => {
+          rolesData?.forEach(user => {
             userRoleMap.set(user.user_id, user.role as AppRole);
           });
           
-          // Then, override with user_accounts roles (higher priority)
-          accountsResult.data?.forEach(user => {
-            if (user.role) {
-              userRoleMap.set(user.user_id, user.role as AppRole);
-            }
-          });
-          
-          // Count conversations by user role, excluding users without defined roles
+          // Count conversations by user role, using 'citizen' as default for users without defined roles
           chatSessions.forEach(session => {
-            const role = userRoleMap.get(session.user_id);
-            if (role && userRoles[role] !== undefined) {
+            const role = (userRoleMap.get(session.user_id) || 'citizen') as AppRole;
+            if (userRoles[role] !== undefined) {
               userRoles[role] = (userRoles[role] || 0) + 1;
-            } else {
-              console.log(`User ${session.user_id} has no defined role, excluding from stats`);
             }
           });
         }

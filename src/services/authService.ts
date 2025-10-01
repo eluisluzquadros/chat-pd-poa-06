@@ -439,18 +439,8 @@ export const AuthService = {
         return finalRole;
       }
       
-      // Caso não encontre na user_roles, tentar na user_accounts
-      const { data: accountData, error: accountError } = await supabase
-        .from('user_accounts')
-        .select('role')
-        .eq('user_id', userId)
-        .maybeSingle();
-      
-      if (accountError) {
-        console.error("Erro ao buscar account:", accountError);
-      }
-      
-      const finalRole = accountData?.role || 'citizen'; // Default para citizen
+      // Se não encontrou em user_roles, usar 'citizen' como padrão
+      const finalRole = 'citizen';
       
       // Atualizar cache e sessionStorage
       userRoleCache.set(userId, { role: finalRole, timestamp: now });
