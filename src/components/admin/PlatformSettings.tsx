@@ -7,9 +7,10 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
-import { Loader2, Save, RotateCcw, Settings, Brain, MessageSquare, Zap } from 'lucide-react';
+import { Loader2, Save, RotateCcw, Settings, Brain, MessageSquare, Zap, Globe } from 'lucide-react';
 import { platformSettingsService, PlatformSetting } from '@/services/platformSettingsService';
 import { UPDATED_MODEL_CONFIGS } from '@/config/llm-models-2025';
+import { TenantManagement } from './TenantManagement';
 
 interface PlatformSettingsProps {
   onSettingsChange?: () => void;
@@ -112,7 +113,7 @@ export function PlatformSettings({ onSettingsChange }: PlatformSettingsProps) {
       </div>
 
       <Tabs defaultValue="llm" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="llm" className="flex items-center gap-2">
             <Brain className="h-4 w-4" />
             Modelos LLM
@@ -124,6 +125,10 @@ export function PlatformSettings({ onSettingsChange }: PlatformSettingsProps) {
           <TabsTrigger value="performance" className="flex items-center gap-2">
             <Zap className="h-4 w-4" />
             Performance
+          </TabsTrigger>
+          <TabsTrigger value="domains" className="flex items-center gap-2">
+            <Globe className="h-4 w-4" />
+            Domínios
           </TabsTrigger>
           <TabsTrigger value="general" className="flex items-center gap-2">
             <Settings className="h-4 w-4" />
@@ -221,6 +226,11 @@ export function PlatformSettings({ onSettingsChange }: PlatformSettingsProps) {
               ))}
             </CardContent>
           </Card>
+        </TabsContent>
+
+        {/* Gerenciamento de Domínios */}
+        <TabsContent value="domains" className="space-y-4">
+          <TenantManagement />
         </TabsContent>
 
         {/* Outras categorias */}

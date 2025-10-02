@@ -2,7 +2,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
-import { DomainSelector } from '@/components/domains/DomainSelector';
 import { Users, FileText, MessageCircle, BarChart3, Shield, Database, Settings } from 'lucide-react';
 
 export const MainNavigation = () => {
@@ -12,10 +11,6 @@ export const MainNavigation = () => {
   return (
     <nav>
       <ul className="flex items-center space-x-4">
-        {/* Domain Selector - Available to all authenticated users */}
-        <li>
-          <DomainSelector />
-        </li>
         <li>
           <button 
             onClick={() => navigate('/chat')} 
