@@ -5,18 +5,20 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { AlertCircle, CheckCircle2, Settings, TestTube, Loader2, Bot, Target } from "lucide-react";
+import { AlertCircle, CheckCircle2, Settings, TestTube, Loader2, Bot, Target, Settings2 } from "lucide-react";
 import { useRAGConfig } from "@/hooks/useRAGConfig";
 import { useAgents } from "@/hooks/useAgents";
 import { useState, useEffect } from "react";
 import { agentsService } from "@/services/agentsService";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
 
 const RAGConfigurationTab = () => {
   const { status, loading, updating, switchRAGMode, testConfiguration } = useRAGConfig();
   const { agents, loading: agentsLoading } = useAgents();
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   
   // Estados para seleção de agente default
   const [defaultAgent, setDefaultAgent] = useState<string>('');
@@ -338,6 +340,31 @@ const RAGConfigurationTab = () => {
               um agente preferido ou quando o sistema precisa fazer fallback.
             </p>
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Card Informativo: Link para Configurações da Plataforma */}
+      <Card className="border-primary/20 bg-primary/5">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <Settings2 className="h-5 w-5" />
+            Configurações da Plataforma
+          </CardTitle>
+          <CardDescription>
+            Você é administrador e tem acesso às configurações globais da plataforma
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-muted-foreground mb-4">
+            Gerencie modelos LLM, domínios ativos, permissões globais e outras configurações que afetam toda a plataforma.
+          </p>
+          <Button 
+            onClick={() => navigate('/admin/settings')}
+            variant="default"
+          >
+            <Settings2 className="h-4 w-4 mr-2" />
+            Ir para Configurações da Plataforma
+          </Button>
         </CardContent>
       </Card>
     </div>

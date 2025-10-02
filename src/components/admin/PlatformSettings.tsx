@@ -103,7 +103,7 @@ export function PlatformSettings({ onSettingsChange }: PlatformSettingsProps) {
         <div>
           <h2 className="text-2xl font-bold tracking-tight">Configurações da Plataforma</h2>
           <p className="text-muted-foreground">
-            Configure o comportamento padrão da plataforma
+            Configure comportamentos globais, modelos LLM, domínios e outras definições da plataforma
           </p>
         </div>
         <Button variant="outline" onClick={loadSettings} disabled={isLoading}>
