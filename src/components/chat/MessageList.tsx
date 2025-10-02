@@ -118,21 +118,18 @@ export const MessageList = memo(function MessageList({
 
                    {/* Conteúdo da mensagem */}
                    <div className="pr-8">
-                      {message.role === "assistant" && effectiveConfig.ragMode === 'dify' ? (
+                      {message.role === "assistant" ? (
                         <AgenticV2ResponseRenderer 
                           content={message.content} 
                           isAgenticV2={true}
                           isAdmin={isAdmin}
-                          isTestMode={effectiveConfig.isTestMode}
+                          isTestMode={false}
                           agentName={getAgentDisplayName(message.model)}
                         />
                      ) : (
                         <MessageContent 
                           content={message.content} 
                           role={message.role}
-                          messageId={message.role === "assistant" ? message.id : undefined}
-                          sessionId={message.role === "assistant" && currentSessionId ? currentSessionId : undefined}
-                          model={message.role === "assistant" ? message.model : undefined}
                         />
                      )}
                    </div>
