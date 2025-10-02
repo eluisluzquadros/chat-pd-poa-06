@@ -1,14 +1,12 @@
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Bot, Zap } from 'lucide-react';
-
 export function SystemToggle() {
-  return (
-    <div className="px-1 py-2 mb-3">
+  return <div className="px-1 py-2 mb-3">
       <div className="flex items-center gap-2 p-2 rounded-lg bg-accent/30 border border-accent/50">
         <div className="flex items-center gap-1.5">
           <Zap className="h-3.5 w-3.5 text-primary" />
-          <span className="text-xs font-medium text-foreground">Agente IA Ativo</span>
+          <span className="text-xs font-medium text-foreground">Agente IA</span>
         </div>
         <Badge variant="default" className="text-[10px] px-1.5 py-0.5 h-auto flex items-center gap-1">
           <Bot className="h-2.5 w-2.5" />
@@ -27,6 +25,5 @@ export function SystemToggle() {
           </ul>
         </div>
       </div>
-    </div>
-  );
+    </div>;
 }
