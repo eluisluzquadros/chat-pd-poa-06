@@ -7,9 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { MessageContent } from "./MessageContent";
 import { AgenticV2ResponseRenderer } from "./AgenticV2ResponseRenderer";
 import { cn } from "@/lib/utils";
-import { useRAGMode } from "@/hooks/useRAGMode";
 import { useAgents } from "@/hooks/useAgents";
-
 import { useAuth } from "@/context/AuthContext";
 
 interface MessageListProps {
@@ -24,12 +22,8 @@ export const MessageList = memo(function MessageList({
   currentSessionId
 }: MessageListProps) {
   const { toast } = useToast();
-  const { ragMode } = useRAGMode();
   const { isAdmin } = useAuth();
   const { agents } = useAgents(); // Para buscar nomes dos agentes
-  
-  // Always use external AI agents now
-  const effectiveConfig = { ragMode: 'dify', isTestMode: false };
 
   // Função para buscar nome do agente pelo ID/model
   const getAgentDisplayName = (model?: string) => {

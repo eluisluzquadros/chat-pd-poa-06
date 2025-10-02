@@ -3,7 +3,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { UPDATED_MODEL_CONFIGS } from '@/config/llm-models-2025';
-import { useRAGMode } from '@/hooks/useRAGMode';
 import { agentsService, Agent } from '@/services/agentsService';
 interface ModelSelectorProps {
   selectedModel?: string;
@@ -30,7 +29,6 @@ export function ModelSelector({
   selectedModel = 'anthropic/claude-3-5-sonnet-20241022',
   onModelSelect
 }: ModelSelectorProps) {
-  const { ragMode, loading } = useRAGMode();
   const [agents, setAgents] = useState<Agent[]>([]);
   const [agentsLoading, setAgentsLoading] = useState(true);
   
