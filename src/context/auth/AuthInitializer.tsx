@@ -59,7 +59,7 @@ export const AuthInitializer = ({
           setSession(session);
           setIsAuthenticated(true);
           
-          // Obter papel do usuário de forma assíncrona e com throttling
+          // Obter papel do usuário de forma assíncrona com debounce inteligente
           setTimeout(async () => {
             try {
               const { AuthService } = await import('@/services/authService');
@@ -78,7 +78,7 @@ export const AuthInitializer = ({
               setIsSupervisor(false);
               setIsAnalyst(false);
             }
-          }, 200); // Delay para evitar rate limiting
+          }, 100); // Reduzido para 100ms - login mais rápido
         } else {
           // Logout - limpar todos os estados
           setUser(null);

@@ -15,7 +15,7 @@ const SESSION_CACHE_TTL = 30 * 60 * 1000; // 30 minutos - aumentado para maior p
 
 // Throttling para operações de auth - otimizado para balance entre performance e confiabilidade
 const authCallsThrottle = new Map<string, number>();
-const AUTH_THROTTLE_DELAY = 50; // 50ms entre chamadas do mesmo tipo - balanceado para evitar race conditions
+const AUTH_THROTTLE_DELAY = 20; // 20ms entre chamadas do mesmo tipo - otimizado para login rápido
 
 // Controle de refresh token removido para evitar bloqueios desnecessários
 

@@ -30,14 +30,18 @@ const AuthCallback = () => {
         
         console.log(`Processando callback OAuth [${sessionId}]`);
         
-        // Aguardar um pouco para o Supabase processar
-        await new Promise(resolve => setTimeout(resolve, 1500));
+        setMessage('Verificando credenciais...');
+        
+        // Aguardar apenas o necessário para o Supabase processar
+        await new Promise(resolve => setTimeout(resolve, 300));
+        
+        setMessage('Validando acesso...');
         
         // Atualizar estado de autenticação
         await refreshAuthState();
         
-        // Aguardar mais um pouco para garantir que o estado foi atualizado
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        // Aguardar confirmação rápida de atualização
+        await new Promise(resolve => setTimeout(resolve, 200));
         
         // Verificar se há usuário autenticado
         const { data: { user } } = await supabase.auth.getUser();
@@ -51,6 +55,8 @@ const AuthCallback = () => {
         
         // Validar se o usuário tem acesso à plataforma
         const { AuthService } = await import('@/services/authService');
+        
+        setMessage('Configurando conta...');
         
         console.log(`🔍 Iniciando validateUserAccess...`);
         const accessValidation = await AuthService.validateUserAccess(user.email, user.id);
@@ -88,14 +94,16 @@ const AuthCallback = () => {
         }
         
         console.log(`Usuário validado com sucesso: ${accessValidation.userData?.full_name}`);
+        
+        setMessage('Redirecionando...');
         setStatus('success');
         setMessage('Login realizado com sucesso!');
         toast.success("Login com Google realizado com sucesso!");
         
-        // Redirecionar para chat
+        // Redirecionar para chat rapidamente
         setTimeout(() => {
           navigate('/chat', { replace: true });
-        }, 1000);
+        }, 500);
         
       } catch (error: any) {
         console.error("Erro ao processar callback OAuth:", error);
