@@ -11,7 +11,6 @@ import AccountDeletion from "@/components/profile/AccountDeletion";
 import AccountInfoTab from "@/components/account/AccountInfoTab";
 import TutorialsTab from "@/components/account/TutorialsTab";
 import AppearanceTab from "@/components/profile/AppearanceTab";
-import RAGConfigurationTab from "@/components/admin/RAGConfigurationTab";
 
 
 const UserSettings = () => {
@@ -59,9 +58,6 @@ const UserSettings = () => {
               <TabsTrigger value="security">Segurança</TabsTrigger>
               <TabsTrigger value="appearance">Aparência</TabsTrigger>
               <TabsTrigger value="tutorials">Tutoriais</TabsTrigger>
-              {isAdmin && (
-                <TabsTrigger value="advanced">Configurações Avançadas</TabsTrigger>
-              )}
             </TabsList>
             
             <TabsContent value="personal">
@@ -102,12 +98,6 @@ const UserSettings = () => {
             <TabsContent value="tutorials">
               <TutorialsTab />
             </TabsContent>
-
-            {isAdmin && (
-              <TabsContent value="advanced">
-                <RAGConfigurationTab />
-              </TabsContent>
-            )}
           </Tabs>
         )}
       </div>

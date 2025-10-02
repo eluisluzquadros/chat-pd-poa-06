@@ -342,31 +342,6 @@ const RAGConfigurationTab = () => {
           </div>
         </CardContent>
       </Card>
-
-      {/* Card Informativo: Link para Configurações da Plataforma */}
-      <Card className="border-primary/20 bg-primary/5">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
-            <Settings2 className="h-5 w-5" />
-            Configurações da Plataforma
-          </CardTitle>
-          <CardDescription>
-            Você é administrador e tem acesso às configurações globais da plataforma
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm text-muted-foreground mb-4">
-            Gerencie modelos LLM, domínios ativos, permissões globais e outras configurações que afetam toda a plataforma.
-          </p>
-          <Button 
-            onClick={() => navigate('/admin/settings')}
-            variant="default"
-          >
-            <Settings2 className="h-4 w-4 mr-2" />
-            Ir para Configurações da Plataforma
-          </Button>
-        </CardContent>
-      </Card>
     </div>
   );
 };
