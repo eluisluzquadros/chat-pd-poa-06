@@ -53,14 +53,14 @@ const cleanupCompleteAuthState = () => {
   console.log("Limpeza completa de estado concluída");
 };
 
+// Funções de autenticação centralizadas
+export const AuthService = {
   // Limpar cache de sessão (útil após login/logout)
   clearSessionCache: () => {
     console.log("🧹 Limpando cache de sessão");
     sessionCache.clear();
   },
 
-// Funções de autenticação centralizadas
-export const AuthService = {
   // Obter a sessão atual com cache agressivo e throttling
   getCurrentSession: async () => {
     try {
