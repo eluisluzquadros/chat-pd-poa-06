@@ -56,6 +56,7 @@ export const useAuthContext = () => {
         setUser(currentUser);
         setUserId(currentUser.id);
         setIsAuthenticated(true);
+        console.log("✅ isAuthenticated atualizado para TRUE - redirecionamento deve ocorrer");
         
         // Buscar role real do usuário no banco de dados
         try {

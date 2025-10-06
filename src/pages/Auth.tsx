@@ -77,12 +77,10 @@ const AuthPage = () => {
           toast.success('Login realizado com sucesso!');
           await refreshAuthState();
           
-          // Timeout de segurança caso o useEffect não dispare automaticamente
+          // Navegação imperativa como fallback
           setTimeout(() => {
-            if (isAuthenticated) {
-              navigate('/chat', { replace: true });
-            }
-          }, 1500);
+            navigate('/chat', { replace: true });
+          }, 500);
         } else {
           toast.error(result.error || 'Erro ao fazer login');
         }
