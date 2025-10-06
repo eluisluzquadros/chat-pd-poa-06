@@ -28,6 +28,8 @@ export const useAuthContext = () => {
     refreshInProgressRef.current = true;
     
     try {
+      console.log("🔄 Iniciando refreshAuthState");
+      
       // Verificar modo demo
       const isDemoMode = sessionStorage.getItem('demo-mode') === 'true';
       if (isDemoMode) {
@@ -47,12 +49,18 @@ export const useAuthContext = () => {
         }
       }
       
+      // Forçar atualização da sessão no Supabase client
+      console.log("🔄 Forçando refresh da sessão via Supabase");
+      const { data: freshSession } = await supabase.auth.getSession();
+      
       // Obter sessão atual
-      const currentSession = await AuthService.getCurrentSession();
+      const currentSession = freshSession?.session || await AuthService.getCurrentSession();
+      console.log("📥 Sessão obtida:", { hasSession: !!currentSession, userId: currentSession?.user?.id });
       setSession(currentSession);
       
       if (currentSession) {
         const currentUser = currentSession.user;
+        console.log("👤 Atualizando estado do usuário:", currentUser.id);
         setUser(currentUser);
         setUserId(currentUser.id);
         setIsAuthenticated(true);

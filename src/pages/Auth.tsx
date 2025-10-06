@@ -75,12 +75,14 @@ const AuthPage = () => {
         
         if (result.success) {
           toast.success('Login realizado com sucesso!');
-          await refreshAuthState();
           
-          // Navegação imperativa como fallback
-          setTimeout(() => {
-            navigate('/chat', { replace: true });
-          }, 500);
+          console.log("🔄 Chamando refreshAuthState após login");
+          await refreshAuthState();
+          console.log("✅ refreshAuthState concluído");
+          
+          // Usar window.location.href para garantir navegação absoluta
+          console.log("🚀 Redirecionando para /chat via window.location");
+          window.location.href = '/chat';
         } else {
           toast.error(result.error || 'Erro ao fazer login');
         }

@@ -53,6 +53,12 @@ const cleanupCompleteAuthState = () => {
   console.log("Limpeza completa de estado concluída");
 };
 
+  // Limpar cache de sessão (útil após login/logout)
+  clearSessionCache: () => {
+    console.log("🧹 Limpando cache de sessão");
+    sessionCache.clear();
+  },
+
 // Funções de autenticação centralizadas
 export const AuthService = {
   // Obter a sessão atual com cache agressivo e throttling
@@ -161,10 +167,15 @@ export const AuthService = {
       }
       
       if (data.user && data.session) {
-        console.log("Login bem-sucedido para usuário:", data.user.id);
+        console.log("✅ Login bem-sucedido para usuário:", data.user.id);
+        
+        // Limpar cache antigo primeiro
+        sessionCache.clear();
+        console.log("🧹 Cache limpo após login bem-sucedido");
         
         // Atualizar cache de sessão imediatamente
         sessionCache.set('current_session', { session: data.session, timestamp: Date.now() });
+        console.log("💾 Cache de sessão atualizado");
         
         // Armazenar informações básicas
         sessionStorage.setItem('lastAuthenticatedUserId', data.user.id);
