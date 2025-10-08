@@ -34,25 +34,25 @@ export function RegimeCardV2({ data }: RegimeCardV2Props) {
     {
       icon: Building2,
       label: 'Altura Máxima',
-      value: data['Altura_Maxima___Edificacao_Isolada'] || 'N/D',
+      value: data['altura máxima para edificação isolada'] || 'N/D',
       unit: 'm',
-      progress: getProgressPercentage(data['Altura_Maxima___Edificacao_Isolada'], 100),
+      progress: getProgressPercentage(data['altura máxima para edificação isolada'], 100),
       color: 'text-blue-600 dark:text-blue-400'
     },
     {
       icon: Ruler,
       label: 'Área Mín. Lote',
-      value: data['Área_Minima_do_Lote'] || 'N/D',
+      value: data['área mínima do lote'] || 'N/D',
       unit: 'm²',
-      progress: getProgressPercentage(data['Área_Minima_do_Lote'], 1000),
+      progress: getProgressPercentage(data['área mínima do lote'], 1000),
       color: 'text-green-600 dark:text-green-400'
     },
     {
       icon: TreePine,
       label: 'Taxa Permeabilidade',
-      value: data['Taxa_de_Permeabilidade_ate_1,500_m2'] || data['Taxa_de_Permeabilidade_acima_de_1,500_m2'] || 'N/D',
+      value: data['taxa de permeabilidade até 1500 m2'] || data['taxa de permeabilidade acima de 1500 m2'] || 'N/D',
       unit: '%',
-      progress: getProgressPercentage(data['Taxa_de_Permeabilidade_ate_1,500_m2'] || data['Taxa_de_Permeabilidade_acima_de_1,500_m2'], 100),
+      progress: getProgressPercentage(data['taxa de permeabilidade até 1500 m2'] || data['taxa de permeabilidade acima de 1500 m2'], 100),
       color: 'text-emerald-600 dark:text-emerald-400'
     }
   ];
@@ -66,14 +66,14 @@ export function RegimeCardV2({ data }: RegimeCardV2Props) {
             <div className="flex items-center gap-2">
               <MapPin className="h-4 w-4 text-primary" />
               <h3 className="font-semibold text-lg text-foreground leading-tight">
-                {data.Bairro || 'Bairro não informado'}
+                {data.bairro || 'Bairro não informado'}
               </h3>
             </div>
             <Badge 
               variant="secondary" 
-              className={`${getZoneBadgeColor(data.Zona)} font-medium`}
+              className={`${getZoneBadgeColor(data.zona || '')} font-medium`}
             >
-              {data.Zona || 'Zona não informada'}
+              {data.zona || 'Zona não informada'}
             </Badge>
           </div>
           <Dialog>
@@ -90,7 +90,7 @@ export function RegimeCardV2({ data }: RegimeCardV2Props) {
               <DialogHeader>
                 <DialogTitle className="flex items-center gap-2">
                   <Building2 className="h-5 w-5 text-primary" />
-                  Detalhes Completos - {data.Bairro} / {data.Zona}
+                  Detalhes Completos - {data.bairro} / {data.zona}
                 </DialogTitle>
               </DialogHeader>
               <div className="grid gap-4 py-4">
@@ -142,12 +142,12 @@ export function RegimeCardV2({ data }: RegimeCardV2Props) {
           <div className="space-y-3 animate-fade-in">
             <div className="grid grid-cols-2 gap-3 text-sm">
               {[
-                { label: 'CA Básico', value: data['Coeficiente_de_Aproveitamento___Basico'] },
-                { label: 'CA Máximo', value: data['Coeficiente_de_Aproveitamento___Maximo'] },
-                { label: 'Afastamento Lateral', value: data['Afastamentos___Laterais'] },
-                { label: 'Afastamento Frente', value: data['Afastamentos___Frente'] },
-                { label: 'Recuo de Jardim', value: data['Recuo_de_Jardim'] },
-                { label: 'Afastamento Fundos', value: data['Afastamentos___Fundos'] }
+                { label: 'CA Básico', value: data['coeficiente de aproveitamento básico'] },
+                { label: 'CA Máximo', value: data['coeficiente de aproveitamento máximo'] },
+                { label: 'Afastamento Lateral', value: data['afastamentos - laterais'] },
+                { label: 'Afastamento Frente', value: data['afastamentos - frente'] },
+                { label: 'Recuo de Jardim', value: data['recuo de jardim'] },
+                { label: 'Afastamento Fundos', value: data['afastamentos - fundos'] }
               ].slice(0, 4).map((item, index) => (
                 <div key={index} className="p-2 bg-muted/10 rounded border border-muted/20">
                   <p className="text-xs text-muted-foreground font-medium">{item.label}</p>

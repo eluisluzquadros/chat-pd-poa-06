@@ -29,26 +29,7 @@ function AdminDataImport() {
   const [logs, setLogs] = useState<string[]>([]);
   const [completed, setCompleted] = useState(false);
 
-  // Valid database columns for validation
-  const VALID_DB_COLUMNS = new Set([
-    'Zona', 'Bairro', 'Categoria_Risco', 'Área_Minima_do_Lote',
-    'Testada_Minima', 'Taxa_de_Ocupacao_ate_1,500_m2',
-    'Taxa_de_Ocupacao_acima_de_1,500_m2', 'Altura_Maxima___Edificacao_Isolada',
-    'Altura_Maxima___Edificacao_Geminada', 'Coeficiente_de_Aproveitamento___Basico',
-    'Coeficiente_de_Aproveitamento___Maximo', 'Taxa_de_Permeabilidade_ate_1,500_m2',
-    'Taxa_de_Permeabilidade_acima_de_1,500_m2', 'Recuos_de_Frente',
-    'Recuos_de_Frente___Observacoes', 'Recuos_de_Fundos', 'Recuos_de_Fundos___Observacoes',
-    'Subsolo', 'Subsolo___Observacoes', 'Afastamentos___Frente', 'Afastamentos___Fundos',
-    'Afastamentos___Laterais', 'Comercio_Atacadista', 'Comercio_Atacadista___IA1',
-    'Comercio_Atacadista___IA2', 'Comercio_Atacadista___IA3', 'Comercio_Varejista',
-    'Comercio_Varejista___IA1', 'Comercio_Varejista___IA2', 'Comercio_Varejista___IA3',
-    'Servicos___Inocuo', 'Servicos___IA1', 'Servicos___IA2', 'Servicos___IA3',
-    'Industria___Inocua', 'Industria___IA1', 'Industria___IA2', 'Industria___IA3',
-    'Enquadramento___Loteamento', 'Enquadramento___Fracionamento', 'Enquadramento___Desmembramento',
-    'Area_Publica___Sistema_Viario', 'Area_Publica___Pracas', 'Area_Publica___Equipamentos_Comunitarios',
-    'Taxa_de_Ocupacao___Lote_menor_que_360m2', 'Taxa_de_Ocupacao___Lote_de_360m2_a_1500m2',
-    'Taxa_de_Ocupacao___Lote_maior_que_1500m2'
-  ]);
+  // Colunas agora são lowercase e mantêm espaços/caracteres especiais conforme o CSV original
 
   const addLog = (message: string) => {
     setLogs(prev => [...prev, `${new Date().toLocaleTimeString()}: ${message}`]);
@@ -63,68 +44,9 @@ function AdminDataImport() {
     return value;
   };
 
-  // Map CSV column names to database column names
+  // Retorna o nome da coluna sem alteração (já está no formato correto do banco)
   const mapColumnName = (csvColumn: string): string => {
-    const columnMap: Record<string, string> = {
-      'zona': 'Zona',
-      'bairro': 'Bairro',
-      'categoria_risco': 'Categoria_Risco',
-      'área mínima do lote': 'Área_Minima_do_Lote',
-      'testada mínima': 'Testada_Minima',
-      'testada mínima do lote': 'Testada_Minima',
-      'taxa de ocupação até 1.500 m²': 'Taxa_de_Ocupacao_ate_1,500_m2',
-      'taxa de ocupação acima de 1.500 m²': 'Taxa_de_Ocupacao_acima_de_1,500_m2',
-      'taxa de permeabilidade até 1.500 m²': 'Taxa_de_Permeabilidade_ate_1,500_m2',
-      'taxa de permeabilidade acima de 1.500 m²': 'Taxa_de_Permeabilidade_acima_de_1,500_m2',
-      'coeficiente de aproveitamento - básico': 'Coeficiente_de_Aproveitamento___Basico',
-      'coeficiente de aproveitamento - máximo': 'Coeficiente_de_Aproveitamento___Maximo',
-      'altura máxima - edificação isolada': 'Altura_Maxima___Edificacao_Isolada',
-      'altura máxima para edificação isolada': 'Altura_Maxima___Edificacao_Isolada',
-      'altura máxima - edificação contínua': 'Altura_Maxima___Edificacao_Continua',
-      'altura máxima - edificação geminada': 'Altura_Maxima___Edificacao_Geminada',
-      'recuos de frente': 'Recuos_de_Frente',
-      'recuos de frente - observações': 'Recuos_de_Frente___Observacoes',
-      'recuos laterais': 'Recuos_Laterais',
-      'recuos laterais - observações': 'Recuos_Laterais___Observacoes',
-      'recuos de fundos': 'Recuos_de_Fundos',
-      'recuos de fundos - observações': 'Recuos_de_Fundos___Observacoes',
-      'subsolo': 'Subsolo',
-      'subsolo - observações': 'Subsolo___Observacoes',
-      'afastamentos - frente': 'Afastamentos___Frente',
-      'afastamentos - fundos': 'Afastamentos___Fundos',
-      'afastamentos - laterais': 'Afastamentos___Laterais',
-      'comércio atacadista': 'Comercio_Atacadista',
-      'comércio atacadista - ia1': 'Comercio_Atacadista___IA1',
-      'comércio atacadista - ia2': 'Comercio_Atacadista___IA2',
-      'comércio atacadista - ia3': 'Comercio_Atacadista___IA3',
-      'comércio varejista': 'Comercio_Varejista',
-      'comércio varejista - ia1': 'Comercio_Varejista___IA1',
-      'comércio varejista - ia2': 'Comercio_Varejista___IA2',
-      'comércio varejista - ia3': 'Comercio_Varejista___IA3',
-      'serviços - inócuo': 'Servicos___Inocuo',
-      'serviços - ia1': 'Servicos___IA1',
-      'serviços - ia2': 'Servicos___IA2',
-      'serviços - ia3': 'Servicos___IA3',
-      'indústria - inócua': 'Industria___Inocua',
-      'indústria - ia1': 'Industria___IA1',
-      'indústria - ia2': 'Industria___IA2',
-      'indústria - ia3': 'Industria___IA3',
-      'enquadramento - loteamento': 'Enquadramento___Loteamento',
-      'enquadramento - fracionamento': 'Enquadramento___Fracionamento',
-      'enquadramento - desmembramento': 'Enquadramento___Desmembramento',
-      'área pública - sistema viário': 'Area_Publica___Sistema_Viario',
-      'área pública - praças': 'Area_Publica___Pracas',
-      'área pública - equipamentos comunitários': 'Area_Publica___Equipamentos_Comunitarios',
-      'taxa de ocupação - lote menor que 360m²': 'Taxa_de_Ocupacao___Lote_menor_que_360m2',
-      'taxa de ocupação - lote de 360m² a 1500m²': 'Taxa_de_Ocupacao___Lote_de_360m2_a_1500m2',
-      'taxa de ocupação - lote maior que 1500m²': 'Taxa_de_Ocupacao___Lote_maior_que_1500m2'
-    };
-    
-    const normalized = csvColumn.toLowerCase().trim();
-    const mapped = columnMap[normalized];
-    
-    // If column is not in the map, return original (will be filtered later)
-    return mapped || csvColumn;
+    return csvColumn.trim();
   };
 
   const recordsAreEqual = (record1: any, record2: any) => {
@@ -205,17 +127,14 @@ function AdminDataImport() {
         const normalizedRecord: any = {};
         for (const [csvKey, value] of Object.entries(record)) {
           const dbKey = mapColumnName(csvKey);
-          // Only include columns that exist in the database schema
-          if (VALID_DB_COLUMNS.has(dbKey)) {
-            normalizedRecord[dbKey] = normalizeValue(value);
-          }
+          normalizedRecord[dbKey] = normalizeValue(value);
         }
 
-        // Check if record exists (CSV columns are lowercase)
+        // Check if record exists
         const existing = currentData?.find(
           (r: any) => 
-            normalizeValue(r.Bairro) === normalizeValue(record.bairro) && 
-            normalizeValue(r.Zona) === normalizeValue(record.zona)
+            normalizeValue(r.bairro) === normalizeValue(record.bairro) && 
+            normalizeValue(r.zona) === normalizeValue(record.zona)
         );
 
         try {
@@ -228,12 +147,12 @@ function AdminDataImport() {
                 processed: prev.processed + 1
               }));
             } else {
-              // Update existing record (CSV columns are lowercase)
+              // Update existing record
               const { error } = await supabase
                 .from('regime_urbanistico_consolidado')
                 .update(normalizedRecord)
-                .eq('Bairro', normalizedRecord.Bairro)
-                .eq('Zona', normalizedRecord.Zona);
+                .eq('bairro', normalizedRecord.bairro)
+                .eq('zona', normalizedRecord.zona);
 
               if (error) throw error;
               
