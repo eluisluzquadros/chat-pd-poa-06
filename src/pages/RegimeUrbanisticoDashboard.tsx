@@ -6,7 +6,7 @@ import { FilterChips } from '@/components/regime/FilterChips';
 import { RegimeCardV2 } from '@/components/regime/RegimeCardV2';
 import { RegimeListView } from '@/components/regime/RegimeListView';
 import { StatsCounter } from '@/components/regime/StatsCounter';
-import { ExportButton } from '@/components/regime/ExportButton';
+
 import { SkeletonGrid } from '@/components/regime/SkeletonLoader';
 import { EmptyState } from '@/components/regime/EmptyState';
 import { SortControls, SortField, SortDirection } from '@/components/regime/SortControls';
