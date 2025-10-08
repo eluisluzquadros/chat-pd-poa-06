@@ -97,6 +97,25 @@ export function ExportButton({ data, filters, isDisabled }: ExportButtonProps) {
     }
   };
 
-  // Button temporarily hidden - uncomment to re-enable export functionality
-  return null;
+  return (
+    <Button
+      variant="outline"
+      size="sm"
+      onClick={handleExport}
+      disabled={isDisabled || isExporting}
+      className="gap-2 hover:bg-primary/10 hover:text-primary hover:border-primary/30 transition-all"
+    >
+      {isExporting ? (
+        <>
+          <Loader2 className="h-4 w-4 animate-spin" />
+          Exportando...
+        </>
+      ) : (
+        <>
+          <Download className="h-4 w-4" />
+          Exportar CSV
+        </>
+      )}
+    </Button>
+  );
 }

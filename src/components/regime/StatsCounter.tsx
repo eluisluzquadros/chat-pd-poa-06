@@ -1,4 +1,5 @@
 import React from 'react';
+import { TrendingUp } from 'lucide-react';
 import { Building2, MapPin, Map, Database } from 'lucide-react';
 
 interface StatsCounterProps {
