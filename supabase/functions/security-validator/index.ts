@@ -169,6 +169,10 @@ serve(async (req) => {
         // Chamar diretamente a API externa do agente configurado (mesmo fluxo de /chat)
         const apiConfig = defaultAgent.dify_config;
         
+        console.log(`📋 Debug apiConfig:`, JSON.stringify(apiConfig, null, 2));
+        console.log(`📋 base_url: ${apiConfig?.base_url}`);
+        console.log(`📋 api_key: ${apiConfig?.api_key ? '***' : 'MISSING'}`);
+        
         if (!apiConfig?.base_url || !apiConfig?.api_key) {
           throw new Error(`Agente ${defaultAgent.display_name} não possui configuração de API válida`);
         }
