@@ -18,6 +18,7 @@ interface RegimeListViewProps {
 
 export function RegimeListView({ data }: RegimeListViewProps) {
   const getZoneBadgeColor = (zona: string) => {
+    if (!zona) return 'bg-muted text-muted-foreground border-border';
     if (zona.includes('ZOT')) return 'bg-primary/10 text-primary border-primary/20';
     if (zona.includes('ZR')) return 'bg-blue-500/10 text-blue-600 border-blue-500/20';
     if (zona.includes('ZC')) return 'bg-amber-500/10 text-amber-600 border-amber-500/20';
