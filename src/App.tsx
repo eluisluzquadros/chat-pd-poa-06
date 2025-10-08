@@ -21,6 +21,7 @@ import AdminPlayground from "./pages/admin/AdminPlayground";
 import UserSettings from "./pages/UserSettings";
 import Reports from "./pages/Reports";
 import BenchmarkV2 from "./pages/admin/BenchmarkV2";
+import SecurityValidation from "./pages/admin/SecurityValidation";
 
 import RegimeUrbanisticoDashboard from "./pages/RegimeUrbanisticoDashboard";
 import Metrics from "./pages/admin/Metrics";
@@ -173,6 +174,15 @@ function App() {
                     <React.Suspense fallback={null}>
                       <KnowledgeBaseAdminLazy />
                     </React.Suspense>
+                  </SimpleRoleGuard>
+                </SimpleAuthGuard>
+              } />
+              <Route path="/admin/security" element={
+                <SimpleAuthGuard>
+                  <SimpleRoleGuard adminOnly={true}>
+                    <AdminErrorBoundary>
+                      <SecurityValidation />
+                    </AdminErrorBoundary>
                   </SimpleRoleGuard>
                 </SimpleAuthGuard>
               } />
