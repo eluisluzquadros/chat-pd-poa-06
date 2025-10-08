@@ -313,8 +313,8 @@ serve(async (req) => {
           console.log(`⚠️ Teste #${testCase.test_number} PARCIAL`);
         }
 
-        // Pequeno delay entre testes
-        await new Promise(resolve => setTimeout(resolve, 500));
+        // Delay de 3 segundos entre testes para evitar rate limit da API Dify
+        await new Promise(resolve => setTimeout(resolve, 3000));
 
       } catch (error) {
         console.error(`💥 Exceção no teste #${testCase.test_number}:`, error);
