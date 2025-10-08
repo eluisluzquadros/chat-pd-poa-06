@@ -65,6 +65,15 @@ export const MainNavigation = () => {
             </li>
             <li>
               <button 
+                onClick={() => navigate('/admin/security')} 
+                className="hover:underline flex items-center cursor-pointer"
+              >
+                <Shield className="h-4 w-4 mr-1" />
+                Segurança
+              </button>
+            </li>
+            <li>
+              <button 
                 onClick={() => navigate('/admin/settings')} 
                 className="hover:underline flex items-center cursor-pointer"
               >
