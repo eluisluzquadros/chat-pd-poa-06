@@ -89,7 +89,7 @@ export default function SecurityRunDetails() {
           </Button>
 
           {/* Header do Relatório */}
-          <SecurityRunHeader run={run} />
+          <SecurityRunHeader run={run} results={results || []} />
 
           {/* Score Geral e Métricas */}
           <SecurityMetricsGrid run={run} />
