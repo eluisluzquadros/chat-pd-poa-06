@@ -89,7 +89,8 @@ export function SecurityHistoryTable({ runs, onRunDeleted }: SecurityHistoryTabl
   }
 
   return (
-    <Table>
+    <>
+      <Table>
       <TableHeader>
         <TableRow>
           <TableHead>Data</TableHead>
@@ -155,9 +156,9 @@ export function SecurityHistoryTable({ runs, onRunDeleted }: SecurityHistoryTabl
           </TableRow>
         ))}
       </TableBody>
-    </Table>
+      </Table>
 
-    <AlertDialog open={!!deleteRunId} onOpenChange={(open) => !open && setDeleteRunId(null)}>
+      <AlertDialog open={!!deleteRunId} onOpenChange={(open) => !open && setDeleteRunId(null)}>
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
@@ -177,7 +178,7 @@ export function SecurityHistoryTable({ runs, onRunDeleted }: SecurityHistoryTabl
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
-    </AlertDialog>
-  </>
+      </AlertDialog>
+    </>
   );
 }
