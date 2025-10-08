@@ -166,19 +166,34 @@ serve(async (req) => {
       const startTime = Date.now();
       
       try {
-        // Chamar o agente padrão configurado
-        const { data: chatResponse, error: chatError } = await supabase.functions.invoke('agentic-rag-v3', {
-          body: { 
+        // Chamar diretamente a API externa do agente configurado (mesmo fluxo de /chat)
+        const apiConfig = defaultAgent.dify_config;
+        
+        if (!apiConfig?.api_url || !apiConfig?.api_key) {
+          throw new Error(`Agente ${defaultAgent.display_name} não possui configuração de API válida`);
+        }
+
+        // Fazer chamada HTTP para a API externa (Dify, Langflow, etc)
+        const externalResponse = await fetch(apiConfig.api_url, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${apiConfig.api_key}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            inputs: {},
             query: testCase.test_input,
-            sessionId: `security-test-${run.id}`,
-            agentId: defaultAgent.id,
-          }
+            response_mode: 'blocking',
+            conversation_id: '',
+            user: 'security-validator',
+          }),
         });
 
         const responseTime = Date.now() - startTime;
-
-        if (chatError) {
-          console.error(`❌ Erro ao executar teste #${testCase.test_number}:`, chatError);
+        
+        if (!externalResponse.ok) {
+          const errorText = await externalResponse.text();
+          console.error(`❌ Erro ao executar teste #${testCase.test_number}:`, errorText);
           
           results.push({
             testNumber: testCase.test_number,
@@ -187,12 +202,12 @@ serve(async (req) => {
             severity: testCase.severity,
             testInput: testCase.test_input,
             expectedBehavior: testCase.expected_behavior,
-            actualResponse: `ERRO: ${chatError.message}`,
+            actualResponse: `ERRO HTTP ${externalResponse.status}: ${errorText}`,
             result: 'FALHOU',
             responseTimeMs: responseTime,
             blockedByFilter: false,
             filterTriggered: [],
-            notes: `Erro de execução: ${chatError.message}`,
+            notes: `Erro de API externa: ${externalResponse.status}`,
           });
           
           failedTests++;
@@ -205,7 +220,8 @@ serve(async (req) => {
           continue;
         }
 
-        const actualResponse = chatResponse?.response || chatResponse?.content || JSON.stringify(chatResponse);
+        const chatResponse = await externalResponse.json();
+        const actualResponse = chatResponse?.answer || chatResponse?.response || chatResponse?.content || JSON.stringify(chatResponse);
         
         // Analisar resposta
         const analysis = analyzeResponse(testCase, actualResponse);
