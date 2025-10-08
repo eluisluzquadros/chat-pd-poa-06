@@ -1865,359 +1865,205 @@ export type Database = {
       }
       regime_urbanistico_consolidado: {
         Row: {
-          Afastamentos___Frente: string | null
-          Afastamentos___Fundos: string | null
-          Afastamentos___Laterais: string | null
-          Altura_Maxima___Edificacao_Isolada: number | null
-          Área_de_Destinacao_Publica___Equipamentos_Fracionamento: string | null
-          Área_de_Destinacao_Publica___Malha_Viaria_Fracionamento: string | null
-          Área_Maxima_do_Quarteirao: number | null
-          Área_Minima_do_Lote: number | null
-          Área_Minima_do_Quarteirao: string | null
-          Área_Publica___Equipamentos_Desmembramento_Tipo_1: string | null
-          Área_Publica___Equipamentos_Desmembramento_Tipo_2: string | null
-          Área_Publica___Equipamentos_Desmembramento_Tipo_3: string | null
-          Área_Publica___Equipamentos_Loteamento: number | null
-          Área_Publica___Malha_Viaria_Desmembramento_Tipo_1: number | null
-          Área_Publica___Malha_Viaria_Desmembramento_Tipo_2: number | null
-          Área_Publica___Malha_Viaria_Desmembramento_Tipo_3: number | null
-          Área_Publica___Malha_Viaria_Loteamento: number | null
-          Bairro: string
-          Categoria_Risco: string | null
-          Coeficiente_de_Aproveitamento___Basico: string | null
-          Coeficiente_de_Aproveitamento___Maximo: string | null
-          "Coeficiente_de_Aproveitamento_Basico_+4D": string | null
-          "Coeficiente_de_Aproveitamento_Maximo_+4D": string | null
-          "Comercio_Atacadista_IA1___Restricao_/_Porte": string | null
-          "Comercio_Atacadista_IA2___Restricao_/_Porte": string | null
-          "Comercio_Atacadista_IA3___Restricao_/_Porte": string | null
-          "Comercio_Varejista_IA1___Restricao_/_Porte": string | null
-          "Comercio_Varejista_IA2___Restricao_/_Porte": string | null
-          "Comercio_Varejista_Inocuo___Restricao_/_Porte": string | null
-          Enquadramento_Desmembramento_Tipo_1: string | null
-          Enquadramento_Desmembramento_Tipo_2: string | null
-          Enquadramento_Desmembramento_Tipo_3: string | null
-          Enquadramento_Fracionamento: number | null
-          Enquadramento_Loteamento: string | null
-          Face_Maxima_do_Quarteirao: number | null
-          Fator_de_Conversao_da_Taxa_de_Permeabilidade: string | null
-          id: number
-          "Industria_com_Interferência_Ambiental___Restricao_/_Porte":
+          "afastamentos - frente": string | null
+          "afastamentos - fundos": string | null
+          "afastamentos - laterais": string | null
+          "altura máxima para edificação isolada": string | null
+          "área de destinação pública – equipamentos fracionamento":
             | string
             | null
-          "Industria_Inocua___Restricao_/_Porte": number | null
-          Modulo_de_Fracionamento: number | null
-          Nivel_de_Controle_de_Polarizacao_de_Entretenimento_Noturno:
+          "área de destinação pública – malha viária fracionamento":
             | string
             | null
-          Recuo_de_Jardim: number | null
-          "Servico_IA1___Restricao_/_Porte": string | null
-          "Servico_IA2___Restricao_/_Porte": string | null
-          "Servico_IA3___Restricao_/_Porte": string | null
-          "Servico_Inocuo___Restricao_/_Porte": string | null
-          "Taxa_de_Permeabilidade_acima_de_1,500_m2": number | null
-          "Taxa_de_Permeabilidade_ate_1,500_m2": number | null
-          Testada_Minima_do_Lote: number | null
-          Zona: string | null
+          "área máxima do quarteirão": string | null
+          "área mínima do lote": string | null
+          "área mínima do quarteirão": string | null
+          "área pública – equipamentos desmembramento tipo 1": string | null
+          "área pública – equipamentos desmembramento tipo 2": string | null
+          "área pública – equipamentos desmembramento tipo 3": string | null
+          "área pública – equipamentos loteamento": string | null
+          "área pública – malha viária desmembramento tipo 1": string | null
+          "área pública – malha viária desmembramento tipo 2": string | null
+          "área pública – malha viária desmembramento tipo 3": string | null
+          "área pública – malha viária loteamento": string | null
+          atividades: string | null
+          bairro: string | null
+          caracteristicas: string | null
+          categoria_risco: string | null
+          cod: string | null
+          "coeficiente de aproveitamento básico": string | null
+          "coeficiente de aproveitamento básico 4d": string | null
+          "coeficiente de aproveitamento máximo": string | null
+          "coeficiente de aproveitamento máximo 4d": string | null
+          "comércio atacadista ia1 – restrição porte": string | null
+          "comércio atacadista ia2 – restrição porte": string | null
+          "comércio atacadista ia3 – restrição porte": string | null
+          "comércio varejista ia1 – restrição porte": string | null
+          "comércio varejista ia2 – restrição porte": string | null
+          "comércio varejista inócuo – restrição porte": string | null
+          "comparativo entre planos": string | null
+          edificações: string | null
+          "enquadramento desmembramento tipo 1": string | null
+          "enquadramento desmembramento tipo 2": string | null
+          "enquadramento desmembramento tipo 3": string | null
+          "enquadramento fracionamento": string | null
+          "enquadramento loteamento": string | null
+          "face máxima do quarteirão": string | null
+          "fator de conversão da taxa de permeabilidade": string | null
+          final: string | null
+          "indústria com interferência ambiental – restrição porte":
+            | string
+            | null
+          "indústria inócua – restrição porte": string | null
+          "módulo de fracionamento": string | null
+          "nível de controle de polarização de entretenimento noturno":
+            | string
+            | null
+          ocupacao: string | null
+          "parcelamento do solo": string | null
+          "recuo de jardim": string | null
+          "serviço ia1 – restrição porte": string | null
+          "serviço ia2 – restrição porte": string | null
+          "serviço ia3 – restrição porte": string | null
+          "serviço inócuo – restrição porte": string | null
+          "taxa de permeabilidade acima de 1500 m2": string | null
+          "taxa de permeabilidade até 1500 m2": string | null
+          "testada mínima do lote": string | null
+          zona: string | null
         }
         Insert: {
-          Afastamentos___Frente?: string | null
-          Afastamentos___Fundos?: string | null
-          Afastamentos___Laterais?: string | null
-          Altura_Maxima___Edificacao_Isolada?: number | null
-          Área_de_Destinacao_Publica___Equipamentos_Fracionamento?:
+          "afastamentos - frente"?: string | null
+          "afastamentos - fundos"?: string | null
+          "afastamentos - laterais"?: string | null
+          "altura máxima para edificação isolada"?: string | null
+          "área de destinação pública – equipamentos fracionamento"?:
             | string
             | null
-          Área_de_Destinacao_Publica___Malha_Viaria_Fracionamento?:
+          "área de destinação pública – malha viária fracionamento"?:
             | string
             | null
-          Área_Maxima_do_Quarteirao?: number | null
-          Área_Minima_do_Lote?: number | null
-          Área_Minima_do_Quarteirao?: string | null
-          Área_Publica___Equipamentos_Desmembramento_Tipo_1?: string | null
-          Área_Publica___Equipamentos_Desmembramento_Tipo_2?: string | null
-          Área_Publica___Equipamentos_Desmembramento_Tipo_3?: string | null
-          Área_Publica___Equipamentos_Loteamento?: number | null
-          Área_Publica___Malha_Viaria_Desmembramento_Tipo_1?: number | null
-          Área_Publica___Malha_Viaria_Desmembramento_Tipo_2?: number | null
-          Área_Publica___Malha_Viaria_Desmembramento_Tipo_3?: number | null
-          Área_Publica___Malha_Viaria_Loteamento?: number | null
-          Bairro: string
-          Categoria_Risco?: string | null
-          Coeficiente_de_Aproveitamento___Basico?: string | null
-          Coeficiente_de_Aproveitamento___Maximo?: string | null
-          "Coeficiente_de_Aproveitamento_Basico_+4D"?: string | null
-          "Coeficiente_de_Aproveitamento_Maximo_+4D"?: string | null
-          "Comercio_Atacadista_IA1___Restricao_/_Porte"?: string | null
-          "Comercio_Atacadista_IA2___Restricao_/_Porte"?: string | null
-          "Comercio_Atacadista_IA3___Restricao_/_Porte"?: string | null
-          "Comercio_Varejista_IA1___Restricao_/_Porte"?: string | null
-          "Comercio_Varejista_IA2___Restricao_/_Porte"?: string | null
-          "Comercio_Varejista_Inocuo___Restricao_/_Porte"?: string | null
-          Enquadramento_Desmembramento_Tipo_1?: string | null
-          Enquadramento_Desmembramento_Tipo_2?: string | null
-          Enquadramento_Desmembramento_Tipo_3?: string | null
-          Enquadramento_Fracionamento?: number | null
-          Enquadramento_Loteamento?: string | null
-          Face_Maxima_do_Quarteirao?: number | null
-          Fator_de_Conversao_da_Taxa_de_Permeabilidade?: string | null
-          id: number
-          "Industria_com_Interferência_Ambiental___Restricao_/_Porte"?:
+          "área máxima do quarteirão"?: string | null
+          "área mínima do lote"?: string | null
+          "área mínima do quarteirão"?: string | null
+          "área pública – equipamentos desmembramento tipo 1"?: string | null
+          "área pública – equipamentos desmembramento tipo 2"?: string | null
+          "área pública – equipamentos desmembramento tipo 3"?: string | null
+          "área pública – equipamentos loteamento"?: string | null
+          "área pública – malha viária desmembramento tipo 1"?: string | null
+          "área pública – malha viária desmembramento tipo 2"?: string | null
+          "área pública – malha viária desmembramento tipo 3"?: string | null
+          "área pública – malha viária loteamento"?: string | null
+          atividades?: string | null
+          bairro?: string | null
+          caracteristicas?: string | null
+          categoria_risco?: string | null
+          cod?: string | null
+          "coeficiente de aproveitamento básico"?: string | null
+          "coeficiente de aproveitamento básico 4d"?: string | null
+          "coeficiente de aproveitamento máximo"?: string | null
+          "coeficiente de aproveitamento máximo 4d"?: string | null
+          "comércio atacadista ia1 – restrição porte"?: string | null
+          "comércio atacadista ia2 – restrição porte"?: string | null
+          "comércio atacadista ia3 – restrição porte"?: string | null
+          "comércio varejista ia1 – restrição porte"?: string | null
+          "comércio varejista ia2 – restrição porte"?: string | null
+          "comércio varejista inócuo – restrição porte"?: string | null
+          "comparativo entre planos"?: string | null
+          edificações?: string | null
+          "enquadramento desmembramento tipo 1"?: string | null
+          "enquadramento desmembramento tipo 2"?: string | null
+          "enquadramento desmembramento tipo 3"?: string | null
+          "enquadramento fracionamento"?: string | null
+          "enquadramento loteamento"?: string | null
+          "face máxima do quarteirão"?: string | null
+          "fator de conversão da taxa de permeabilidade"?: string | null
+          final?: string | null
+          "indústria com interferência ambiental – restrição porte"?:
             | string
             | null
-          "Industria_Inocua___Restricao_/_Porte"?: number | null
-          Modulo_de_Fracionamento?: number | null
-          Nivel_de_Controle_de_Polarizacao_de_Entretenimento_Noturno?:
+          "indústria inócua – restrição porte"?: string | null
+          "módulo de fracionamento"?: string | null
+          "nível de controle de polarização de entretenimento noturno"?:
             | string
             | null
-          Recuo_de_Jardim?: number | null
-          "Servico_IA1___Restricao_/_Porte"?: string | null
-          "Servico_IA2___Restricao_/_Porte"?: string | null
-          "Servico_IA3___Restricao_/_Porte"?: string | null
-          "Servico_Inocuo___Restricao_/_Porte"?: string | null
-          "Taxa_de_Permeabilidade_acima_de_1,500_m2"?: number | null
-          "Taxa_de_Permeabilidade_ate_1,500_m2"?: number | null
-          Testada_Minima_do_Lote?: number | null
-          Zona?: string | null
+          ocupacao?: string | null
+          "parcelamento do solo"?: string | null
+          "recuo de jardim"?: string | null
+          "serviço ia1 – restrição porte"?: string | null
+          "serviço ia2 – restrição porte"?: string | null
+          "serviço ia3 – restrição porte"?: string | null
+          "serviço inócuo – restrição porte"?: string | null
+          "taxa de permeabilidade acima de 1500 m2"?: string | null
+          "taxa de permeabilidade até 1500 m2"?: string | null
+          "testada mínima do lote"?: string | null
+          zona?: string | null
         }
         Update: {
-          Afastamentos___Frente?: string | null
-          Afastamentos___Fundos?: string | null
-          Afastamentos___Laterais?: string | null
-          Altura_Maxima___Edificacao_Isolada?: number | null
-          Área_de_Destinacao_Publica___Equipamentos_Fracionamento?:
+          "afastamentos - frente"?: string | null
+          "afastamentos - fundos"?: string | null
+          "afastamentos - laterais"?: string | null
+          "altura máxima para edificação isolada"?: string | null
+          "área de destinação pública – equipamentos fracionamento"?:
             | string
             | null
-          Área_de_Destinacao_Publica___Malha_Viaria_Fracionamento?:
+          "área de destinação pública – malha viária fracionamento"?:
             | string
             | null
-          Área_Maxima_do_Quarteirao?: number | null
-          Área_Minima_do_Lote?: number | null
-          Área_Minima_do_Quarteirao?: string | null
-          Área_Publica___Equipamentos_Desmembramento_Tipo_1?: string | null
-          Área_Publica___Equipamentos_Desmembramento_Tipo_2?: string | null
-          Área_Publica___Equipamentos_Desmembramento_Tipo_3?: string | null
-          Área_Publica___Equipamentos_Loteamento?: number | null
-          Área_Publica___Malha_Viaria_Desmembramento_Tipo_1?: number | null
-          Área_Publica___Malha_Viaria_Desmembramento_Tipo_2?: number | null
-          Área_Publica___Malha_Viaria_Desmembramento_Tipo_3?: number | null
-          Área_Publica___Malha_Viaria_Loteamento?: number | null
-          Bairro?: string
-          Categoria_Risco?: string | null
-          Coeficiente_de_Aproveitamento___Basico?: string | null
-          Coeficiente_de_Aproveitamento___Maximo?: string | null
-          "Coeficiente_de_Aproveitamento_Basico_+4D"?: string | null
-          "Coeficiente_de_Aproveitamento_Maximo_+4D"?: string | null
-          "Comercio_Atacadista_IA1___Restricao_/_Porte"?: string | null
-          "Comercio_Atacadista_IA2___Restricao_/_Porte"?: string | null
-          "Comercio_Atacadista_IA3___Restricao_/_Porte"?: string | null
-          "Comercio_Varejista_IA1___Restricao_/_Porte"?: string | null
-          "Comercio_Varejista_IA2___Restricao_/_Porte"?: string | null
-          "Comercio_Varejista_Inocuo___Restricao_/_Porte"?: string | null
-          Enquadramento_Desmembramento_Tipo_1?: string | null
-          Enquadramento_Desmembramento_Tipo_2?: string | null
-          Enquadramento_Desmembramento_Tipo_3?: string | null
-          Enquadramento_Fracionamento?: number | null
-          Enquadramento_Loteamento?: string | null
-          Face_Maxima_do_Quarteirao?: number | null
-          Fator_de_Conversao_da_Taxa_de_Permeabilidade?: string | null
-          id?: number
-          "Industria_com_Interferência_Ambiental___Restricao_/_Porte"?:
+          "área máxima do quarteirão"?: string | null
+          "área mínima do lote"?: string | null
+          "área mínima do quarteirão"?: string | null
+          "área pública – equipamentos desmembramento tipo 1"?: string | null
+          "área pública – equipamentos desmembramento tipo 2"?: string | null
+          "área pública – equipamentos desmembramento tipo 3"?: string | null
+          "área pública – equipamentos loteamento"?: string | null
+          "área pública – malha viária desmembramento tipo 1"?: string | null
+          "área pública – malha viária desmembramento tipo 2"?: string | null
+          "área pública – malha viária desmembramento tipo 3"?: string | null
+          "área pública – malha viária loteamento"?: string | null
+          atividades?: string | null
+          bairro?: string | null
+          caracteristicas?: string | null
+          categoria_risco?: string | null
+          cod?: string | null
+          "coeficiente de aproveitamento básico"?: string | null
+          "coeficiente de aproveitamento básico 4d"?: string | null
+          "coeficiente de aproveitamento máximo"?: string | null
+          "coeficiente de aproveitamento máximo 4d"?: string | null
+          "comércio atacadista ia1 – restrição porte"?: string | null
+          "comércio atacadista ia2 – restrição porte"?: string | null
+          "comércio atacadista ia3 – restrição porte"?: string | null
+          "comércio varejista ia1 – restrição porte"?: string | null
+          "comércio varejista ia2 – restrição porte"?: string | null
+          "comércio varejista inócuo – restrição porte"?: string | null
+          "comparativo entre planos"?: string | null
+          edificações?: string | null
+          "enquadramento desmembramento tipo 1"?: string | null
+          "enquadramento desmembramento tipo 2"?: string | null
+          "enquadramento desmembramento tipo 3"?: string | null
+          "enquadramento fracionamento"?: string | null
+          "enquadramento loteamento"?: string | null
+          "face máxima do quarteirão"?: string | null
+          "fator de conversão da taxa de permeabilidade"?: string | null
+          final?: string | null
+          "indústria com interferência ambiental – restrição porte"?:
             | string
             | null
-          "Industria_Inocua___Restricao_/_Porte"?: number | null
-          Modulo_de_Fracionamento?: number | null
-          Nivel_de_Controle_de_Polarizacao_de_Entretenimento_Noturno?:
+          "indústria inócua – restrição porte"?: string | null
+          "módulo de fracionamento"?: string | null
+          "nível de controle de polarização de entretenimento noturno"?:
             | string
             | null
-          Recuo_de_Jardim?: number | null
-          "Servico_IA1___Restricao_/_Porte"?: string | null
-          "Servico_IA2___Restricao_/_Porte"?: string | null
-          "Servico_IA3___Restricao_/_Porte"?: string | null
-          "Servico_Inocuo___Restricao_/_Porte"?: string | null
-          "Taxa_de_Permeabilidade_acima_de_1,500_m2"?: number | null
-          "Taxa_de_Permeabilidade_ate_1,500_m2"?: number | null
-          Testada_Minima_do_Lote?: number | null
-          Zona?: string | null
-        }
-        Relationships: []
-      }
-      regime_urbanistico_consolidado_backup_20251008: {
-        Row: {
-          Afastamentos___Frente: string | null
-          Afastamentos___Fundos: string | null
-          Afastamentos___Laterais: string | null
-          Altura_Maxima___Edificacao_Isolada: number | null
-          Área_de_Destinacao_Publica___Equipamentos_Fracionamento: string | null
-          Área_de_Destinacao_Publica___Malha_Viaria_Fracionamento: string | null
-          Área_Maxima_do_Quarteirao: number | null
-          Área_Minima_do_Lote: number | null
-          Área_Minima_do_Quarteirao: string | null
-          Área_Publica___Equipamentos_Desmembramento_Tipo_1: string | null
-          Área_Publica___Equipamentos_Desmembramento_Tipo_2: string | null
-          Área_Publica___Equipamentos_Desmembramento_Tipo_3: string | null
-          Área_Publica___Equipamentos_Loteamento: number | null
-          Área_Publica___Malha_Viaria_Desmembramento_Tipo_1: number | null
-          Área_Publica___Malha_Viaria_Desmembramento_Tipo_2: number | null
-          Área_Publica___Malha_Viaria_Desmembramento_Tipo_3: number | null
-          Área_Publica___Malha_Viaria_Loteamento: number | null
-          Bairro: string | null
-          Categoria_Risco: string | null
-          Coeficiente_de_Aproveitamento___Basico: string | null
-          Coeficiente_de_Aproveitamento___Maximo: string | null
-          "Coeficiente_de_Aproveitamento_Basico_+4D": string | null
-          "Coeficiente_de_Aproveitamento_Maximo_+4D": string | null
-          "Comercio_Atacadista_IA1___Restricao_/_Porte": string | null
-          "Comercio_Atacadista_IA2___Restricao_/_Porte": string | null
-          "Comercio_Atacadista_IA3___Restricao_/_Porte": string | null
-          "Comercio_Varejista_IA1___Restricao_/_Porte": string | null
-          "Comercio_Varejista_IA2___Restricao_/_Porte": string | null
-          "Comercio_Varejista_Inocuo___Restricao_/_Porte": string | null
-          Enquadramento_Desmembramento_Tipo_1: string | null
-          Enquadramento_Desmembramento_Tipo_2: string | null
-          Enquadramento_Desmembramento_Tipo_3: string | null
-          Enquadramento_Fracionamento: number | null
-          Enquadramento_Loteamento: string | null
-          Face_Maxima_do_Quarteirao: number | null
-          Fator_de_Conversao_da_Taxa_de_Permeabilidade: string | null
-          id: number | null
-          "Industria_com_Interferência_Ambiental___Restricao_/_Porte":
-            | string
-            | null
-          "Industria_Inocua___Restricao_/_Porte": number | null
-          Modulo_de_Fracionamento: number | null
-          Nivel_de_Controle_de_Polarizacao_de_Entretenimento_Noturno:
-            | string
-            | null
-          Recuo_de_Jardim: number | null
-          "Servico_IA1___Restricao_/_Porte": string | null
-          "Servico_IA2___Restricao_/_Porte": string | null
-          "Servico_IA3___Restricao_/_Porte": string | null
-          "Servico_Inocuo___Restricao_/_Porte": string | null
-          "Taxa_de_Permeabilidade_acima_de_1,500_m2": number | null
-          "Taxa_de_Permeabilidade_ate_1,500_m2": number | null
-          Testada_Minima_do_Lote: number | null
-          Zona: string | null
-        }
-        Insert: {
-          Afastamentos___Frente?: string | null
-          Afastamentos___Fundos?: string | null
-          Afastamentos___Laterais?: string | null
-          Altura_Maxima___Edificacao_Isolada?: number | null
-          Área_de_Destinacao_Publica___Equipamentos_Fracionamento?:
-            | string
-            | null
-          Área_de_Destinacao_Publica___Malha_Viaria_Fracionamento?:
-            | string
-            | null
-          Área_Maxima_do_Quarteirao?: number | null
-          Área_Minima_do_Lote?: number | null
-          Área_Minima_do_Quarteirao?: string | null
-          Área_Publica___Equipamentos_Desmembramento_Tipo_1?: string | null
-          Área_Publica___Equipamentos_Desmembramento_Tipo_2?: string | null
-          Área_Publica___Equipamentos_Desmembramento_Tipo_3?: string | null
-          Área_Publica___Equipamentos_Loteamento?: number | null
-          Área_Publica___Malha_Viaria_Desmembramento_Tipo_1?: number | null
-          Área_Publica___Malha_Viaria_Desmembramento_Tipo_2?: number | null
-          Área_Publica___Malha_Viaria_Desmembramento_Tipo_3?: number | null
-          Área_Publica___Malha_Viaria_Loteamento?: number | null
-          Bairro?: string | null
-          Categoria_Risco?: string | null
-          Coeficiente_de_Aproveitamento___Basico?: string | null
-          Coeficiente_de_Aproveitamento___Maximo?: string | null
-          "Coeficiente_de_Aproveitamento_Basico_+4D"?: string | null
-          "Coeficiente_de_Aproveitamento_Maximo_+4D"?: string | null
-          "Comercio_Atacadista_IA1___Restricao_/_Porte"?: string | null
-          "Comercio_Atacadista_IA2___Restricao_/_Porte"?: string | null
-          "Comercio_Atacadista_IA3___Restricao_/_Porte"?: string | null
-          "Comercio_Varejista_IA1___Restricao_/_Porte"?: string | null
-          "Comercio_Varejista_IA2___Restricao_/_Porte"?: string | null
-          "Comercio_Varejista_Inocuo___Restricao_/_Porte"?: string | null
-          Enquadramento_Desmembramento_Tipo_1?: string | null
-          Enquadramento_Desmembramento_Tipo_2?: string | null
-          Enquadramento_Desmembramento_Tipo_3?: string | null
-          Enquadramento_Fracionamento?: number | null
-          Enquadramento_Loteamento?: string | null
-          Face_Maxima_do_Quarteirao?: number | null
-          Fator_de_Conversao_da_Taxa_de_Permeabilidade?: string | null
-          id?: number | null
-          "Industria_com_Interferência_Ambiental___Restricao_/_Porte"?:
-            | string
-            | null
-          "Industria_Inocua___Restricao_/_Porte"?: number | null
-          Modulo_de_Fracionamento?: number | null
-          Nivel_de_Controle_de_Polarizacao_de_Entretenimento_Noturno?:
-            | string
-            | null
-          Recuo_de_Jardim?: number | null
-          "Servico_IA1___Restricao_/_Porte"?: string | null
-          "Servico_IA2___Restricao_/_Porte"?: string | null
-          "Servico_IA3___Restricao_/_Porte"?: string | null
-          "Servico_Inocuo___Restricao_/_Porte"?: string | null
-          "Taxa_de_Permeabilidade_acima_de_1,500_m2"?: number | null
-          "Taxa_de_Permeabilidade_ate_1,500_m2"?: number | null
-          Testada_Minima_do_Lote?: number | null
-          Zona?: string | null
-        }
-        Update: {
-          Afastamentos___Frente?: string | null
-          Afastamentos___Fundos?: string | null
-          Afastamentos___Laterais?: string | null
-          Altura_Maxima___Edificacao_Isolada?: number | null
-          Área_de_Destinacao_Publica___Equipamentos_Fracionamento?:
-            | string
-            | null
-          Área_de_Destinacao_Publica___Malha_Viaria_Fracionamento?:
-            | string
-            | null
-          Área_Maxima_do_Quarteirao?: number | null
-          Área_Minima_do_Lote?: number | null
-          Área_Minima_do_Quarteirao?: string | null
-          Área_Publica___Equipamentos_Desmembramento_Tipo_1?: string | null
-          Área_Publica___Equipamentos_Desmembramento_Tipo_2?: string | null
-          Área_Publica___Equipamentos_Desmembramento_Tipo_3?: string | null
-          Área_Publica___Equipamentos_Loteamento?: number | null
-          Área_Publica___Malha_Viaria_Desmembramento_Tipo_1?: number | null
-          Área_Publica___Malha_Viaria_Desmembramento_Tipo_2?: number | null
-          Área_Publica___Malha_Viaria_Desmembramento_Tipo_3?: number | null
-          Área_Publica___Malha_Viaria_Loteamento?: number | null
-          Bairro?: string | null
-          Categoria_Risco?: string | null
-          Coeficiente_de_Aproveitamento___Basico?: string | null
-          Coeficiente_de_Aproveitamento___Maximo?: string | null
-          "Coeficiente_de_Aproveitamento_Basico_+4D"?: string | null
-          "Coeficiente_de_Aproveitamento_Maximo_+4D"?: string | null
-          "Comercio_Atacadista_IA1___Restricao_/_Porte"?: string | null
-          "Comercio_Atacadista_IA2___Restricao_/_Porte"?: string | null
-          "Comercio_Atacadista_IA3___Restricao_/_Porte"?: string | null
-          "Comercio_Varejista_IA1___Restricao_/_Porte"?: string | null
-          "Comercio_Varejista_IA2___Restricao_/_Porte"?: string | null
-          "Comercio_Varejista_Inocuo___Restricao_/_Porte"?: string | null
-          Enquadramento_Desmembramento_Tipo_1?: string | null
-          Enquadramento_Desmembramento_Tipo_2?: string | null
-          Enquadramento_Desmembramento_Tipo_3?: string | null
-          Enquadramento_Fracionamento?: number | null
-          Enquadramento_Loteamento?: string | null
-          Face_Maxima_do_Quarteirao?: number | null
-          Fator_de_Conversao_da_Taxa_de_Permeabilidade?: string | null
-          id?: number | null
-          "Industria_com_Interferência_Ambiental___Restricao_/_Porte"?:
-            | string
-            | null
-          "Industria_Inocua___Restricao_/_Porte"?: number | null
-          Modulo_de_Fracionamento?: number | null
-          Nivel_de_Controle_de_Polarizacao_de_Entretenimento_Noturno?:
-            | string
-            | null
-          Recuo_de_Jardim?: number | null
-          "Servico_IA1___Restricao_/_Porte"?: string | null
-          "Servico_IA2___Restricao_/_Porte"?: string | null
-          "Servico_IA3___Restricao_/_Porte"?: string | null
-          "Servico_Inocuo___Restricao_/_Porte"?: string | null
-          "Taxa_de_Permeabilidade_acima_de_1,500_m2"?: number | null
-          "Taxa_de_Permeabilidade_ate_1,500_m2"?: number | null
-          Testada_Minima_do_Lote?: number | null
-          Zona?: string | null
+          ocupacao?: string | null
+          "parcelamento do solo"?: string | null
+          "recuo de jardim"?: string | null
+          "serviço ia1 – restrição porte"?: string | null
+          "serviço ia2 – restrição porte"?: string | null
+          "serviço ia3 – restrição porte"?: string | null
+          "serviço inócuo – restrição porte"?: string | null
+          "taxa de permeabilidade acima de 1500 m2"?: string | null
+          "taxa de permeabilidade até 1500 m2"?: string | null
+          "testada mínima do lote"?: string | null
+          zona?: string | null
         }
         Relationships: []
       }
