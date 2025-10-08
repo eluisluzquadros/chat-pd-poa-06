@@ -8,23 +8,35 @@ Deno.serve(async (req) => {
   }
 
   try {
-    // Create Supabase client with user's authentication
+    // Create Supabase client for user authentication
     const authHeader = req.headers.get('Authorization')!
-    const supabase = createClient(
+    const supabaseAuth = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-      { global: { headers: { Authorization: authHeader } } }
+      {
+        global: { headers: { Authorization: authHeader } },
+        auth: {
+          persistSession: false,
+          autoRefreshToken: false
+        }
+      }
     )
 
     // Verify authentication
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    const { data: { user }, error: authError } = await supabaseAuth.auth.getUser()
     if (authError || !user) {
       console.error('❌ Authentication error:', authError)
       throw new Error('Não autenticado')
     }
 
-    // Verify admin role
-    const { data: roles } = await supabase
+    // Create admin client with service role (bypasses RLS)
+    const supabaseAdmin = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    )
+
+    // Verify admin role using admin client
+    const { data: roles } = await supabaseAdmin
       .from('user_roles')
       .select('role')
       .eq('user_id', user.id)
@@ -44,8 +56,8 @@ Deno.serve(async (req) => {
 
     console.log('🗑️  Deletando security run:', runId)
 
-    // Delete test results first (foreign key constraint)
-    const { error: resultsError } = await supabase
+    // Delete test results first (foreign key constraint) - using admin client
+    const { error: resultsError } = await supabaseAdmin
       .from('security_test_results')
       .delete()
       .eq('run_id', runId)
@@ -57,8 +69,8 @@ Deno.serve(async (req) => {
 
     console.log('✅ Resultados deletados')
 
-    // Delete validation run
-    const { error: runError } = await supabase
+    // Delete validation run - using admin client
+    const { error: runError } = await supabaseAdmin
       .from('security_validation_runs')
       .delete()
       .eq('id', runId)
