@@ -5,7 +5,7 @@ import { Progress } from '@/components/ui/progress';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { supabase } from '@/integrations/supabase/client';
 import { Upload, CheckCircle2, XCircle, AlertCircle } from 'lucide-react';
-import { parse } from 'csv-parse/sync';
+import Papa from 'papaparse';
 
 interface ImportStats {
   total: number;
@@ -81,13 +81,18 @@ export default function AdminDataImport() {
       const csvText = await csvResponse.text();
 
       // Parse CSV
-      const records = parse(csvText, {
-        columns: true,
-        skip_empty_lines: true,
-        trim: true,
-        bom: true,
-        relax_column_count: true
+      const parseResult = Papa.parse(csvText, {
+        header: true,
+        skipEmptyLines: true,
+        transformHeader: (header) => header.trim(),
+        dynamicTyping: false
       });
+
+      if (parseResult.errors.length > 0) {
+        throw new Error(`Erro ao fazer parse do CSV: ${parseResult.errors[0].message}`);
+      }
+
+      const records = parseResult.data;
 
       addLog(`✅ CSV carregado: ${records.length} registros encontrados`);
       setStats(prev => ({ ...prev, total: records.length }));
