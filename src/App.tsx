@@ -22,6 +22,7 @@ import UserSettings from "./pages/UserSettings";
 import Reports from "./pages/Reports";
 import BenchmarkV2 from "./pages/admin/BenchmarkV2";
 import SecurityValidation from "./pages/admin/SecurityValidation";
+import SecurityRunDetails from "./pages/admin/SecurityRunDetails";
 
 import RegimeUrbanisticoDashboard from "./pages/RegimeUrbanisticoDashboard";
 import Metrics from "./pages/admin/Metrics";
@@ -182,6 +183,15 @@ function App() {
                   <SimpleRoleGuard adminOnly={true}>
                     <AdminErrorBoundary>
                       <SecurityValidation />
+                    </AdminErrorBoundary>
+                  </SimpleRoleGuard>
+                </SimpleAuthGuard>
+              } />
+              <Route path="/admin/security/runs/:runId" element={
+                <SimpleAuthGuard>
+                  <SimpleRoleGuard adminOnly={true}>
+                    <AdminErrorBoundary>
+                      <SecurityRunDetails />
                     </AdminErrorBoundary>
                   </SimpleRoleGuard>
                 </SimpleAuthGuard>
