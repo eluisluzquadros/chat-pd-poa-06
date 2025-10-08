@@ -42,6 +42,34 @@ function AdminDataImport() {
     return value;
   };
 
+  // Map CSV column names to database column names
+  const mapColumnName = (csvColumn: string): string => {
+    const columnMap: Record<string, string> = {
+      'zona': 'Zona',
+      'bairro': 'Bairro',
+      'categoria_risco': 'Categoria_Risco',
+      'área mínima do lote': 'Área_Minima_do_Lote',
+      'testada mínima': 'Testada_Minima',
+      'taxa de ocupação até 1.500 m²': 'Taxa_de_Ocupacao_ate_1,500_m2',
+      'taxa de ocupação acima de 1.500 m²': 'Taxa_de_Ocupacao_acima_de_1,500_m2',
+      'taxa de permeabilidade até 1.500 m²': 'Taxa_de_Permeabilidade_ate_1,500_m2',
+      'taxa de permeabilidade acima de 1.500 m²': 'Taxa_de_Permeabilidade_acima_de_1,500_m2',
+      'coeficiente de aproveitamento - básico': 'Coeficiente_de_Aproveitamento___Basico',
+      'coeficiente de aproveitamento - máximo': 'Coeficiente_de_Aproveitamento___Maximo',
+      'altura máxima - edificação isolada': 'Altura_Maxima___Edificacao_Isolada',
+      'altura máxima - edificação contínua': 'Altura_Maxima___Edificacao_Continua',
+      'recuos de frente': 'Recuos_de_Frente',
+      'recuos de frente - observações': 'Recuos_de_Frente___Observacoes',
+      'recuos laterais': 'Recuos_Laterais',
+      'recuos laterais - observações': 'Recuos_Laterais___Observacoes',
+      'recuos de fundos': 'Recuos_de_Fundos',
+      'recuos de fundos - observações': 'Recuos_de_Fundos___Observacoes',
+      'subsolo': 'Subsolo',
+      'subsolo - observações': 'Subsolo___Observacoes'
+    };
+    return columnMap[csvColumn.toLowerCase().trim()] || csvColumn;
+  };
+
   const recordsAreEqual = (record1: any, record2: any) => {
     const keys = Object.keys(record1).filter(key => 
       key !== 'created_at' && key !== 'updated_at'
@@ -84,9 +112,8 @@ function AdminDataImport() {
       const parseResult = Papa.parse(csvText, {
         header: true,
         skipEmptyLines: true,
-        delimiter: ';',
+        delimiter: ',',
         encoding: 'UTF-8',
-        transformHeader: (header) => header.trim(),
         dynamicTyping: false
       });
 
@@ -117,10 +144,14 @@ function AdminDataImport() {
       for (let i = 0; i < records.length; i++) {
         const record = records[i];
         
-        // Normalize all values
+        // Map CSV columns to database columns and normalize values
         const normalizedRecord: any = {};
-        for (const [key, value] of Object.entries(record)) {
-          normalizedRecord[key] = normalizeValue(value);
+        for (const [csvKey, value] of Object.entries(record)) {
+          const dbKey = mapColumnName(csvKey);
+          // Skip 'ocupacao' column as it doesn't exist in database
+          if (dbKey.toLowerCase() !== 'ocupacao') {
+            normalizedRecord[dbKey] = normalizeValue(value);
+          }
         }
 
         // Check if record exists
