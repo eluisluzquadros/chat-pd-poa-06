@@ -125,8 +125,23 @@ export default function RegimeUrbanisticoDashboard() {
     }
   };
   const handlePresetFilter = (preset: PresetFilter) => {
-    if (preset.filters.bairro) setSelectedBairro(preset.filters.bairro);
-    if (preset.filters.zona) setSelectedZona(preset.filters.zona);
+    // For 'bairro', use searchTerm for partial matching
+    if (preset.filters.bairro) {
+      setSearchTerm(preset.filters.bairro);
+      setSelectedBairro('todos');
+    }
+    
+    // For 'zona', use partial matching (contains)
+    if (preset.filters.zona) {
+      const matchingZona = zonas.find(z => z.includes(preset.filters.zona || ''));
+      if (matchingZona) {
+        setSelectedZona(matchingZona);
+      } else {
+        setSearchTerm(preset.filters.zona);
+        setSelectedZona('todos');
+      }
+    }
+    
     if (preset.filters.alturaMin !== undefined) {
       setAlturaRange([preset.filters.alturaMin, alturaRange[1]]);
     }

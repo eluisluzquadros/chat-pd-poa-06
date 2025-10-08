@@ -113,10 +113,9 @@ export function RegimeCardV2({ data }: RegimeCardV2Props) {
               </DialogHeader>
               
               <Tabs defaultValue="formatted" className="flex-1 overflow-hidden flex flex-col">
-                <TabsList className="grid w-full grid-cols-3">
+                <TabsList className="grid w-full grid-cols-2">
                   <TabsTrigger value="formatted">Formatado</TabsTrigger>
                   <TabsTrigger value="metrics">Métricas</TabsTrigger>
-                  <TabsTrigger value="raw">Dados Brutos</TabsTrigger>
                 </TabsList>
                 
                 <TabsContent value="formatted" className="flex-1 overflow-y-auto mt-4 space-y-4">
@@ -178,12 +177,6 @@ export function RegimeCardV2({ data }: RegimeCardV2Props) {
                       )}
                     </div>
                   ))}
-                </TabsContent>
-                
-                <TabsContent value="raw" className="flex-1 overflow-y-auto mt-4">
-                  <pre className="text-xs bg-muted p-4 rounded-lg overflow-x-auto border border-border">
-                    {JSON.stringify(data, null, 2)}
-                  </pre>
                 </TabsContent>
               </Tabs>
             </DialogContent>
