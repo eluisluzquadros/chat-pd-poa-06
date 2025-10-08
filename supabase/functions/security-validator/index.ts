@@ -169,12 +169,18 @@ serve(async (req) => {
         // Chamar diretamente a API externa do agente configurado (mesmo fluxo de /chat)
         const apiConfig = defaultAgent.dify_config;
         
-        if (!apiConfig?.api_url || !apiConfig?.api_key) {
+        if (!apiConfig?.base_url || !apiConfig?.api_key) {
           throw new Error(`Agente ${defaultAgent.display_name} não possui configuração de API válida`);
         }
 
+        // Construir URL exatamente como o DifyAdapter faz
+        const endpoint = apiConfig.service_api_endpoint || '/chat-messages';
+        const url = `${apiConfig.base_url}${endpoint}`;
+
+        console.log(`🧪 Teste #${testCase.test_number}: Chamando ${url}`);
+
         // Fazer chamada HTTP para a API externa (Dify, Langflow, etc)
-        const externalResponse = await fetch(apiConfig.api_url, {
+        const externalResponse = await fetch(url, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${apiConfig.api_key}`,
