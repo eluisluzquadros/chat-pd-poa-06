@@ -1,3 +1,5 @@
+import DOMPurify from 'dompurify';
+
 export function parseMarkdown(text: string): string {
   if (!text) return '';
 
@@ -70,7 +72,15 @@ export function parseMarkdown(text: string): string {
     return processed;
   });
 
-  return processedSections.filter(section => section.trim()).join('');
+  const result = processedSections.filter(section => section.trim()).join('');
+  
+  // SECURITY: Sanitize HTML to prevent XSS attacks
+  return DOMPurify.sanitize(result, {
+    ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'u', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 
+                   'ul', 'ol', 'li', 'a', 'table', 'thead', 'tbody', 'tr', 'th', 'td', 'div', 'span'],
+    ALLOWED_ATTR: ['href', 'target', 'rel', 'class', 'style'],
+    ALLOW_DATA_ATTR: false,
+  });
 }
 
 function convertTablesToHTML(text: string): string {
