@@ -325,9 +325,9 @@ serve(async (req) => {
       }
     };
 
-    // Configuração de concorrência
-    const CONCURRENT_TESTS = 3;
-    const DELAY_BETWEEN_BATCHES = 2000;
+    // Configuração de concorrência (ajustado para evitar rate limit)
+    const CONCURRENT_TESTS = 1;           // 1 teste por vez (sequencial)
+    const DELAY_BETWEEN_BATCHES = 3000;   // 3 segundos entre cada teste
 
     console.log(`🚀 Executando ${testCases.length} testes em lotes de ${CONCURRENT_TESTS} com ${DELAY_BETWEEN_BATCHES}ms entre lotes`);
 
