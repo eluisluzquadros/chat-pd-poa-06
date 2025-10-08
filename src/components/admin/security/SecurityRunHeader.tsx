@@ -17,6 +17,31 @@ interface SecurityRunHeaderProps {
 export function SecurityRunHeader({ run, results }: SecurityRunHeaderProps) {
   const [generatingPDF, setGeneratingPDF] = useState(false);
 
+  // Helper functions for ASCII symbols
+  const getStatusSymbol = (status: string) => {
+    const symbols: Record<string, string> = {
+      'PASSOU': '[ OK ]',
+      'FALHOU': '[FALHA]',
+      'PARCIAL': '[PARC]',
+    };
+    return symbols[status] || status;
+  };
+
+  const getSeveritySymbol = (severity: string) => {
+    const symbols: Record<string, string> = {
+      'Alta': '[CRITICA]',
+      'Média': '[MEDIA]',
+      'Baixa': '[BAIXA]',
+    };
+    return symbols[severity] || severity;
+  };
+
+  const normalizeText = (text: string) => {
+    return text
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '');
+  };
+
   const handleExportPDF = () => {
     setGeneratingPDF(true);
     try {
@@ -209,7 +234,7 @@ export function SecurityRunHeader({ run, results }: SecurityRunHeaderProps) {
         // 1. Visão Geral
         doc.setFontSize(12);
         doc.setFont("helvetica", "bold");
-        doc.text("VISÃO GERAL", 20, currentTestY);
+        doc.text(normalizeText("VISAO GERAL"), 20, currentTestY);
         currentTestY += 8;
         
         doc.setFontSize(10);
@@ -217,12 +242,12 @@ export function SecurityRunHeader({ run, results }: SecurityRunHeaderProps) {
         doc.text(`Categoria: ${test.category}`, 25, currentTestY);
         currentTestY += 6;
         
-        const severityEmoji = test.severity === 'Alta' ? '🔴' : test.severity === 'Média' ? '🟡' : '🟢';
-        doc.text(`Severidade: ${severityEmoji} ${test.severity}`, 25, currentTestY);
+        const severitySymbol = getSeveritySymbol(test.severity);
+        doc.text(`Severidade: ${severitySymbol}`, 25, currentTestY);
         currentTestY += 6;
         
-        const resultEmoji = test.result === 'PASSOU' ? '✅' : test.result === 'FALHOU' ? '❌' : '⚠️';
-        doc.text(`Resultado: ${resultEmoji} ${test.result}`, 25, currentTestY);
+        const resultSymbol = getStatusSymbol(test.result);
+        doc.text(`Resultado: ${resultSymbol}`, 25, currentTestY);
         currentTestY += 6;
         
         doc.text(`Tempo de Resposta: ${test.response_time_ms || 0}ms`, 25, currentTestY);
@@ -293,35 +318,36 @@ export function SecurityRunHeader({ run, results }: SecurityRunHeaderProps) {
         // 4. Análise de Segurança
         doc.setFontSize(12);
         doc.setFont("helvetica", "bold");
-        doc.text("ANÁLISE DE SEGURANÇA", 20, currentTestY);
+        doc.text(normalizeText("ANALISE DE SEGURANCA"), 20, currentTestY);
         currentTestY += 8;
         
         doc.setFontSize(10);
         doc.setFont("helvetica", "normal");
-        doc.text("Filtros Acionados:", 25, currentTestY);
+        doc.text(normalizeText("Filtros Acionados:"), 25, currentTestY);
         currentTestY += 6;
         
         if (test.filter_triggered && test.filter_triggered.length > 0) {
           test.filter_triggered.forEach((filter: string) => {
-            const filterLines = doc.splitTextToSize(`🛡️ ${filter}`, 155);
+            const normalizedFilter = normalizeText(filter);
+            const filterLines = doc.splitTextToSize(`[FILTRO] ${normalizedFilter}`, 155);
             doc.text(filterLines, 30, currentTestY);
             currentTestY += (filterLines.length * 6);
           });
         } else {
-          doc.text("Nenhum filtro foi acionado", 30, currentTestY);
+          doc.text(normalizeText("Nenhum filtro foi acionado"), 30, currentTestY);
           currentTestY += 6;
         }
         
         currentTestY += 5;
-        doc.text("Status de Proteção:", 25, currentTestY);
+        doc.text(normalizeText("Status de Protecao:"), 25, currentTestY);
         currentTestY += 6;
         
         if (test.blocked_by_filter) {
           doc.setTextColor(34, 197, 94);
-          doc.text("✅ Ataque bloqueado pelos filtros de segurança", 30, currentTestY);
+          doc.text(normalizeText("[ OK ] Ataque bloqueado pelos filtros de seguranca"), 30, currentTestY);
         } else {
           doc.setTextColor(239, 68, 68);
-          doc.text("❌ Ataque NÃO foi bloqueado", 30, currentTestY);
+          doc.text(normalizeText("[FALHA] Ataque NAO foi bloqueado"), 30, currentTestY);
         }
         doc.setTextColor(0, 0, 0);
       });
