@@ -23,6 +23,7 @@ import Reports from "./pages/Reports";
 import BenchmarkV2 from "./pages/admin/BenchmarkV2";
 import SecurityValidation from "./pages/admin/SecurityValidation";
 import SecurityRunDetails from "./pages/admin/SecurityRunDetails";
+import AdminDataImport from "./pages/AdminDataImport";
 
 import RegimeUrbanisticoDashboard from "./pages/RegimeUrbanisticoDashboard";
 import Metrics from "./pages/admin/Metrics";
@@ -192,6 +193,15 @@ function App() {
                   <SimpleRoleGuard adminOnly={true}>
                     <AdminErrorBoundary>
                       <SecurityRunDetails />
+                    </AdminErrorBoundary>
+                  </SimpleRoleGuard>
+                </SimpleAuthGuard>
+              } />
+              <Route path="/admin/data-import" element={
+                <SimpleAuthGuard>
+                  <SimpleRoleGuard adminOnly={true}>
+                    <AdminErrorBoundary>
+                      <AdminDataImport />
                     </AdminErrorBoundary>
                   </SimpleRoleGuard>
                 </SimpleAuthGuard>
