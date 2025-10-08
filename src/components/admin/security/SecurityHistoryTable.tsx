@@ -35,8 +35,19 @@ export function SecurityHistoryTable({ runs, onRunDeleted }: SecurityHistoryTabl
     
     setIsDeleting(true);
     try {
+      // Obter token do usuário autenticado
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        throw new Error('Usuário não autenticado');
+      }
+
+      // Passar token no header Authorization
       const { data, error } = await supabase.functions.invoke('delete-security-run', {
-        body: { runId: deleteRunId }
+        body: { runId: deleteRunId },
+        headers: {
+          Authorization: `Bearer ${session.access_token}`
+        }
       });
 
       if (error) throw error;
@@ -52,7 +63,7 @@ export function SecurityHistoryTable({ runs, onRunDeleted }: SecurityHistoryTabl
       console.error('Erro ao deletar:', error);
       toast({
         title: "Erro",
-        description: "Erro ao deletar validação",
+        description: error.message || "Erro ao deletar validação",
         variant: "destructive",
       });
     } finally {
