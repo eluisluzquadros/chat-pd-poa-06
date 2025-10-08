@@ -65,9 +65,42 @@ function AdminDataImport() {
       'recuos de fundos': 'Recuos_de_Fundos',
       'recuos de fundos - observações': 'Recuos_de_Fundos___Observacoes',
       'subsolo': 'Subsolo',
-      'subsolo - observações': 'Subsolo___Observacoes'
+      'subsolo - observações': 'Subsolo___Observacoes',
+      'afastamentos - frente': 'Afastamentos___Frente',
+      'afastamentos - fundos': 'Afastamentos___Fundos',
+      'afastamentos - laterais': 'Afastamentos___Laterais',
+      'comércio atacadista': 'Comercio_Atacadista',
+      'comércio atacadista - ia1': 'Comercio_Atacadista___IA1',
+      'comércio atacadista - ia2': 'Comercio_Atacadista___IA2',
+      'comércio atacadista - ia3': 'Comercio_Atacadista___IA3',
+      'comércio varejista': 'Comercio_Varejista',
+      'comércio varejista - ia1': 'Comercio_Varejista___IA1',
+      'comércio varejista - ia2': 'Comercio_Varejista___IA2',
+      'comércio varejista - ia3': 'Comercio_Varejista___IA3',
+      'serviços - inócuo': 'Servicos___Inocuo',
+      'serviços - ia1': 'Servicos___IA1',
+      'serviços - ia2': 'Servicos___IA2',
+      'serviços - ia3': 'Servicos___IA3',
+      'indústria - inócua': 'Industria___Inocua',
+      'indústria - ia1': 'Industria___IA1',
+      'indústria - ia2': 'Industria___IA2',
+      'indústria - ia3': 'Industria___IA3',
+      'enquadramento - loteamento': 'Enquadramento___Loteamento',
+      'enquadramento - fracionamento': 'Enquadramento___Fracionamento',
+      'enquadramento - desmembramento': 'Enquadramento___Desmembramento',
+      'área pública - sistema viário': 'Area_Publica___Sistema_Viario',
+      'área pública - praças': 'Area_Publica___Pracas',
+      'área pública - equipamentos comunitários': 'Area_Publica___Equipamentos_Comunitarios',
+      'taxa de ocupação - lote menor que 360m²': 'Taxa_de_Ocupacao___Lote_menor_que_360m2',
+      'taxa de ocupação - lote de 360m² a 1500m²': 'Taxa_de_Ocupacao___Lote_de_360m2_a_1500m2',
+      'taxa de ocupação - lote maior que 1500m²': 'Taxa_de_Ocupacao___Lote_maior_que_1500m2'
     };
-    return columnMap[csvColumn.toLowerCase().trim()] || csvColumn;
+    
+    const normalized = csvColumn.toLowerCase().trim();
+    const mapped = columnMap[normalized];
+    
+    // If column is not in the map, return original (will be filtered later)
+    return mapped || csvColumn;
   };
 
   const recordsAreEqual = (record1: any, record2: any) => {
