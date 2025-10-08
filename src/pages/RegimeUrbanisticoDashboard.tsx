@@ -18,9 +18,10 @@ import { useRegimeData } from '@/hooks/useRegimeData';
 import { Building2, Sparkles, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-
 export default function RegimeUrbanisticoDashboard() {
-  const { toast } = useToast();
+  const {
+    toast
+  } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedBairro, setSelectedBairro] = useState<string>('todos');
   const [selectedZona, setSelectedZona] = useState<string>('todos');
@@ -32,7 +33,6 @@ export default function RegimeUrbanisticoDashboard() {
   const [alturaRange, setAlturaRange] = useState<[number, number]>([0, 100]);
   const [areaRange, setAreaRange] = useState<[number, number]>([0, 1500]);
   const itemsPerPage = 20;
-
   const {
     data: regimeData,
     isLoading,
@@ -52,32 +52,22 @@ export default function RegimeUrbanisticoDashboard() {
   // Apply local filters for range sliders
   const filteredData = useMemo(() => {
     if (!regimeData) return [];
-    
     return regimeData.filter(item => {
       const altura = item['altura máxima para edificação isolada'];
       const area = item['área mínima do lote'];
-      
       const alturaValue = typeof altura === 'string' ? parseFloat(altura) : altura;
       const areaValue = typeof area === 'string' ? parseFloat(area) : area;
-      
-      return (
-        alturaValue >= alturaRange[0] && 
-        alturaValue <= alturaRange[1] &&
-        areaValue >= areaRange[0] &&
-        areaValue <= areaRange[1]
-      );
+      return alturaValue >= alturaRange[0] && alturaValue <= alturaRange[1] && areaValue >= areaRange[0] && areaValue <= areaRange[1];
     });
   }, [regimeData, alturaRange, areaRange]);
 
   // Sort data
   const sortedData = useMemo(() => {
     if (!filteredData) return [];
-    
     const sorted = [...filteredData];
     sorted.sort((a, b) => {
       let aValue: any;
       let bValue: any;
-
       switch (sortField) {
         case 'bairro':
           aValue = a.bairro || '';
@@ -102,15 +92,12 @@ export default function RegimeUrbanisticoDashboard() {
         default:
           return 0;
       }
-
       if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1;
       if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
       return 0;
     });
-
     return sorted;
   }, [filteredData, sortField, sortDirection]);
-
   const handleClearFilters = () => {
     setSearchTerm('');
     setSelectedBairro('todos');
@@ -118,30 +105,25 @@ export default function RegimeUrbanisticoDashboard() {
     setAlturaRange([0, 100]);
     setAreaRange([0, 1500]);
     setCurrentPage(1);
-    
     toast({
       title: "Filtros limpos",
-      description: "Todos os filtros foram removidos",
+      description: "Todos os filtros foram removidos"
     });
   };
-
   const handleSortChange = (field: SortField, direction: SortDirection) => {
     setSortField(field);
     setSortDirection(direction);
     setCurrentPage(1);
   };
-
   const handleSearchChange = (value: string) => {
     setSearchTerm(value);
     setCurrentPage(1);
   };
-
   const handleSuggestionClick = (suggestion: string) => {
     if (!recentSearches.includes(suggestion)) {
       setRecentSearches(prev => [suggestion, ...prev.slice(0, 4)]);
     }
   };
-
   const handlePresetFilter = (preset: PresetFilter) => {
     if (preset.filters.bairro) setSelectedBairro(preset.filters.bairro);
     if (preset.filters.zona) setSelectedZona(preset.filters.zona);
@@ -152,20 +134,12 @@ export default function RegimeUrbanisticoDashboard() {
       setAlturaRange([alturaRange[0], preset.filters.alturaMax]);
     }
     setCurrentPage(1);
-    
     toast({
       title: "Filtro aplicado",
-      description: `Filtro "${preset.label}" foi aplicado`,
+      description: `Filtro "${preset.label}" foi aplicado`
     });
   };
-
-  const hasActiveFilters = searchTerm || 
-    (selectedBairro !== 'todos') || 
-    (selectedZona !== 'todos') ||
-    alturaRange[0] !== 0 ||
-    alturaRange[1] !== 100 ||
-    areaRange[0] !== 0 ||
-    areaRange[1] !== 1500;
+  const hasActiveFilters = searchTerm || selectedBairro !== 'todos' || selectedZona !== 'todos' || alturaRange[0] !== 0 || alturaRange[1] !== 100 || areaRange[0] !== 0 || areaRange[1] !== 1500;
 
   // Get active filter chips
   const activeFilters = useMemo(() => {
@@ -223,11 +197,8 @@ export default function RegimeUrbanisticoDashboard() {
     const allSuggestions = [...bairros, ...zonas];
     return allSuggestions.slice(0, 8);
   }, [bairros, zonas]);
-
   const totalPages = Math.ceil(filteredCount / itemsPerPage);
-
-  return (
-    <div className="min-h-screen bg-gradient-to-b from-background via-background to-muted/20">
+  return <div className="min-h-screen bg-gradient-to-b from-background via-background to-muted/20">
       <Header />
       
       <main className="container-wide py-8">
@@ -254,7 +225,7 @@ export default function RegimeUrbanisticoDashboard() {
               <div className="flex items-center gap-3">
                 <div className="flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-primary/15 to-primary/10 rounded-full border border-primary/30 shadow-sm animate-pulse">
                   <Sparkles className="h-5 w-5 text-primary" />
-                  <span className="text-sm font-semibold text-primary">2025 UI/UX</span>
+                  <span className="text-sm font-semibold text-primary">Atualizado</span>
                 </div>
               </div>
             </div>
@@ -266,63 +237,25 @@ export default function RegimeUrbanisticoDashboard() {
           <div className="space-y-6">
             {/* Search Bar with Keyboard Shortcut */}
             <div className="max-w-2xl">
-              <SearchBarV2
-                value={searchTerm}
-                onChange={handleSearchChange}
-                placeholder="Buscar por bairro ou zona... (⌘K)"
-                suggestions={searchSuggestions}
-                recentSearches={recentSearches}
-                onSuggestionClick={handleSuggestionClick}
-              />
+              <SearchBarV2 value={searchTerm} onChange={handleSearchChange} placeholder="Buscar por bairro ou zona... (⌘K)" suggestions={searchSuggestions} recentSearches={recentSearches} onSuggestionClick={handleSuggestionClick} />
             </div>
 
             {/* Filters Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <FilterDropdown
-                label="Bairro"
-                value={selectedBairro}
-                onChange={setSelectedBairro}
-                options={bairros}
-                placeholder="Todos os bairros"
-              />
+              <FilterDropdown label="Bairro" value={selectedBairro} onChange={setSelectedBairro} options={bairros} placeholder="Todos os bairros" />
               
-              <FilterDropdown
-                label="Zona"
-                value={selectedZona}
-                onChange={setSelectedZona}
-                options={zonas}
-                placeholder="Todas as zonas"
-              />
+              <FilterDropdown label="Zona" value={selectedZona} onChange={setSelectedZona} options={zonas} placeholder="Todas as zonas" />
               
               <div className="lg:col-span-2">
-                <SortControls
-                  sortField={sortField}
-                  sortDirection={sortDirection}
-                  onSortChange={handleSortChange}
-                />
+                <SortControls sortField={sortField} sortDirection={sortDirection} onSortChange={handleSortChange} />
               </div>
             </div>
 
             {/* Range Sliders */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 bg-muted/30 rounded-xl border border-border/50">
-              <RangeSlider
-                label="Altura Máxima"
-                min={0}
-                max={100}
-                value={alturaRange}
-                onChange={setAlturaRange}
-                unit="m"
-              />
+              <RangeSlider label="Altura Máxima" min={0} max={100} value={alturaRange} onChange={setAlturaRange} unit="m" />
               
-              <RangeSlider
-                label="Área Mínima do Lote"
-                min={0}
-                max={1500}
-                value={areaRange}
-                onChange={setAreaRange}
-                unit="m²"
-                step={50}
-              />
+              <RangeSlider label="Área Mínima do Lote" min={0} max={1500} value={areaRange} onChange={setAreaRange} unit="m²" step={50} />
             </div>
 
             {/* Preset Filters */}
@@ -333,22 +266,15 @@ export default function RegimeUrbanisticoDashboard() {
               <ViewModeToggle viewMode={viewMode} onChange={setViewMode} />
               
               <div className="flex items-center gap-3">
-                <ExportButton
-                  data={sortedData}
-                  filters={{ searchTerm, bairro: selectedBairro, zona: selectedZona }}
-                  isDisabled={!sortedData || sortedData.length === 0}
-                />
+                <ExportButton data={sortedData} filters={{
+                searchTerm,
+                bairro: selectedBairro,
+                zona: selectedZona
+              }} isDisabled={!sortedData || sortedData.length === 0} />
                 
-                {hasActiveFilters && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleClearFilters}
-                    className="hover:bg-destructive/10 hover:text-destructive hover:border-destructive/30 transition-all"
-                  >
+                {hasActiveFilters && <Button variant="outline" size="sm" onClick={handleClearFilters} className="hover:bg-destructive/10 hover:text-destructive hover:border-destructive/30 transition-all">
                     Limpar Filtros
-                  </Button>
-                )}
+                  </Button>}
               </div>
             </div>
           </div>
@@ -359,132 +285,70 @@ export default function RegimeUrbanisticoDashboard() {
 
         {/* Stats Counter */}
         <div className="mb-8">
-          <StatsCounter
-            total={totalCount}
-            filtered={filteredCount}
-            bairrosCount={bairros.length}
-            zonasCount={zonas.length}
-            isLoading={isLoading}
-          />
+          <StatsCounter total={totalCount} filtered={filteredCount} bairrosCount={bairros.length} zonasCount={zonas.length} isLoading={isLoading} />
         </div>
 
         {/* Results Section */}
-        {isLoading ? (
-          <SkeletonGrid count={itemsPerPage} />
-        ) : error ? (
-          <EmptyState
-            title="Erro ao carregar dados"
-            description={error.message}
-            type="error"
-          />
-        ) : !sortedData || sortedData.length === 0 ? (
-          <EmptyState
-            title="Nenhum resultado encontrado"
-            description="Tente ajustar os filtros ou realizar uma nova busca"
-            type="no-results"
-          />
-        ) : (
-          <>
+        {isLoading ? <SkeletonGrid count={itemsPerPage} /> : error ? <EmptyState title="Erro ao carregar dados" description={error.message} type="error" /> : !sortedData || sortedData.length === 0 ? <EmptyState title="Nenhum resultado encontrado" description="Tente ajustar os filtros ou realizar uma nova busca" type="no-results" /> : <>
             {/* View Mode Content */}
-            {viewMode === 'grid' ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
-                {sortedData.map((regime, index) => (
-                  <div key={index} className="animate-fade-in" style={{ animationDelay: `${index * 0.05}s` }}>
+            {viewMode === 'grid' ? <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
+                {sortedData.map((regime, index) => <div key={index} className="animate-fade-in" style={{
+            animationDelay: `${index * 0.05}s`
+          }}>
                     <RegimeCardV2 data={regime} />
-                  </div>
-                ))}
-              </div>
-            ) : viewMode === 'list' ? (
-              <div className="space-y-3 mb-8">
-                {sortedData.map((regime, index) => (
-                  <div key={index} className="animate-fade-in" style={{ animationDelay: `${index * 0.03}s` }}>
+                  </div>)}
+              </div> : viewMode === 'list' ? <div className="space-y-3 mb-8">
+                {sortedData.map((regime, index) => <div key={index} className="animate-fade-in" style={{
+            animationDelay: `${index * 0.03}s`
+          }}>
                     <RegimeListView data={regime} />
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="glass p-8 rounded-2xl text-center mb-8">
+                  </div>)}
+              </div> : <div className="glass p-8 rounded-2xl text-center mb-8">
                 <p className="text-muted-foreground">Visualização em mapa em desenvolvimento</p>
-              </div>
-            )}
+              </div>}
 
             {/* Enhanced Pagination */}
-            {totalPages > 1 && (
-              <div className="flex items-center justify-center gap-2 mt-8">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setCurrentPage(1)}
-                  disabled={currentPage === 1}
-                  className="hover:bg-primary/10"
-                >
+            {totalPages > 1 && <div className="flex items-center justify-center gap-2 mt-8">
+                <Button variant="outline" size="sm" onClick={() => setCurrentPage(1)} disabled={currentPage === 1} className="hover:bg-primary/10">
                   Primeira
                 </Button>
                 
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                  disabled={currentPage === 1}
-                  className="hover:bg-primary/10"
-                >
+                <Button variant="outline" size="icon" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="hover:bg-primary/10">
                   <ChevronLeft className="h-4 w-4" />
                 </Button>
 
                 <div className="flex items-center gap-1">
-                  {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                    let pageNum;
-                    if (totalPages <= 5) {
-                      pageNum = i + 1;
-                    } else if (currentPage <= 3) {
-                      pageNum = i + 1;
-                    } else if (currentPage >= totalPages - 2) {
-                      pageNum = totalPages - 4 + i;
-                    } else {
-                      pageNum = currentPage - 2 + i;
-                    }
-
-                    return (
-                      <Button
-                        key={pageNum}
-                        variant={currentPage === pageNum ? 'default' : 'outline'}
-                        size="sm"
-                        onClick={() => setCurrentPage(pageNum)}
-                        className={currentPage === pageNum ? 'bg-primary text-primary-foreground' : 'hover:bg-primary/10'}
-                      >
+                  {Array.from({
+              length: Math.min(5, totalPages)
+            }, (_, i) => {
+              let pageNum;
+              if (totalPages <= 5) {
+                pageNum = i + 1;
+              } else if (currentPage <= 3) {
+                pageNum = i + 1;
+              } else if (currentPage >= totalPages - 2) {
+                pageNum = totalPages - 4 + i;
+              } else {
+                pageNum = currentPage - 2 + i;
+              }
+              return <Button key={pageNum} variant={currentPage === pageNum ? 'default' : 'outline'} size="sm" onClick={() => setCurrentPage(pageNum)} className={currentPage === pageNum ? 'bg-primary text-primary-foreground' : 'hover:bg-primary/10'}>
                         {pageNum}
-                      </Button>
-                    );
-                  })}
+                      </Button>;
+            })}
                 </div>
 
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                  disabled={currentPage === totalPages}
-                  className="hover:bg-primary/10"
-                >
+                <Button variant="outline" size="icon" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="hover:bg-primary/10">
                   <ChevronRight className="h-4 w-4" />
                 </Button>
                 
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setCurrentPage(totalPages)}
-                  disabled={currentPage === totalPages}
-                  className="hover:bg-primary/10"
-                >
+                <Button variant="outline" size="sm" onClick={() => setCurrentPage(totalPages)} disabled={currentPage === totalPages} className="hover:bg-primary/10">
                   Última
                 </Button>
-              </div>
-            )}
-          </>
-        )}
+              </div>}
+          </>}
       </main>
 
       {/* Scroll to Top Button */}
       <ScrollToTop />
-    </div>
-  );
+    </div>;
 }
