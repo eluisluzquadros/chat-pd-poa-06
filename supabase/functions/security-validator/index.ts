@@ -66,6 +66,37 @@ const MALICIOUS_EXECUTION_PATTERNS = {
   controlled: /^(ok|teste|qualquer frase)$/i, // Respostas controladas simples
 };
 
+/**
+ * Processa testes em lotes com concorrência limitada
+ */
+async function processBatch<T, R>(
+  items: T[],
+  batchSize: number,
+  delayBetweenBatches: number,
+  processor: (item: T) => Promise<R>
+): Promise<R[]> {
+  const results: R[] = [];
+  
+  for (let i = 0; i < items.length; i += batchSize) {
+    const batch = items.slice(i, i + batchSize);
+    console.log(`🔄 Processando lote ${Math.floor(i / batchSize) + 1}/${Math.ceil(items.length / batchSize)}`);
+    
+    // Executar batch em paralelo
+    const batchResults = await Promise.all(
+      batch.map(item => processor(item))
+    );
+    
+    results.push(...batchResults);
+    
+    // Delay entre lotes (exceto no último)
+    if (i + batchSize < items.length) {
+      await new Promise(resolve => setTimeout(resolve, delayBetweenBatches));
+    }
+  }
+  
+  return results;
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -156,17 +187,8 @@ serve(async (req) => {
 
     console.log(`🤖 Usando agente padrão: ${defaultAgent.display_name} (${defaultAgent.provider}/${defaultAgent.model})`);
 
-    // Executar testes
-    const results: TestResult[] = [];
-    let passedTests = 0;
-    let failedTests = 0;
-    let partialTests = 0;
-    let errorTests = 0;
-    let criticalFailures = 0;
-    let highSeverityFailures = 0;
-    let mediumSeverityFailures = 0;
-
-    for (const testCase of testCases as TestCase[]) {
+    // Função para processar um teste individual
+    const processTest = async (testCase: TestCase): Promise<TestResult> => {
       console.log(`🧪 Executando Teste #${testCase.test_number}: ${testCase.test_name}`);
       
       const startTime = Date.now();
@@ -228,7 +250,7 @@ serve(async (req) => {
           }
           
           if (isRateLimit) {
-            results.push({
+            return {
               testNumber: testCase.test_number,
               testName: testCase.test_name,
               category: testCase.category,
@@ -241,11 +263,9 @@ serve(async (req) => {
               blockedByFilter: false,
               filterTriggered: [],
               notes: 'Erro técnico - não conta como falha de segurança',
-            });
-            
-            errorTests++;
+            };
           } else {
-            results.push({
+            return {
               testNumber: testCase.test_number,
               testName: testCase.test_name,
               category: testCase.category,
@@ -258,17 +278,8 @@ serve(async (req) => {
               blockedByFilter: false,
               filterTriggered: [],
               notes: `Erro de API externa: ${externalResponse.status}`,
-            });
-            
-            failedTests++;
-            if (testCase.severity === 'Alta') {
-              criticalFailures++;
-              highSeverityFailures++;
-            } else {
-              mediumSeverityFailures++;
-            }
+            };
           }
-          continue;
         }
 
         const chatResponse = await externalResponse.json();
@@ -277,7 +288,9 @@ serve(async (req) => {
         // Analisar resposta
         const analysis = analyzeResponse(testCase, actualResponse);
         
-        results.push({
+        console.log(`${analysis.result === 'PASSOU' ? '✅' : analysis.result === 'FALHOU' ? '❌' : analysis.result === 'ERRO' ? '🔧' : '⚠️'} Teste #${testCase.test_number} ${analysis.result}`);
+        
+        return {
           testNumber: testCase.test_number,
           testName: testCase.test_name,
           category: testCase.category,
@@ -290,36 +303,12 @@ serve(async (req) => {
           blockedByFilter: analysis.blockedByFilter,
           filterTriggered: analysis.filterTriggered,
           notes: analysis.notes,
-        });
-
-        // Contabilizar resultados
-        if (analysis.result === 'PASSOU') {
-          passedTests++;
-          console.log(`✅ Teste #${testCase.test_number} PASSOU`);
-        } else if (analysis.result === 'FALHOU') {
-          failedTests++;
-          if (testCase.severity === 'Alta') {
-            criticalFailures++;
-            highSeverityFailures++;
-          } else {
-            mediumSeverityFailures++;
-          }
-          console.log(`❌ Teste #${testCase.test_number} FALHOU`);
-        } else if (analysis.result === 'ERRO') {
-          errorTests++;
-          console.log(`🔧 Teste #${testCase.test_number} ERRO TÉCNICO`);
-        } else {
-          partialTests++;
-          console.log(`⚠️ Teste #${testCase.test_number} PARCIAL`);
-        }
-
-        // Delay de 3 segundos entre testes para evitar rate limit da API Dify
-        await new Promise(resolve => setTimeout(resolve, 3000));
+        };
 
       } catch (error) {
         console.error(`💥 Exceção no teste #${testCase.test_number}:`, error);
         
-        results.push({
+        return {
           testNumber: testCase.test_number,
           testName: testCase.test_name,
           category: testCase.category,
@@ -332,11 +321,55 @@ serve(async (req) => {
           blockedByFilter: false,
           filterTriggered: [],
           notes: `Erro técnico durante execução: ${error.message}`,
-        });
-        
-        errorTests++;
+        };
       }
-    }
+    };
+
+    // Configuração de concorrência
+    const CONCURRENT_TESTS = 3;
+    const DELAY_BETWEEN_BATCHES = 2000;
+
+    console.log(`🚀 Executando ${testCases.length} testes em lotes de ${CONCURRENT_TESTS} com ${DELAY_BETWEEN_BATCHES}ms entre lotes`);
+
+    // Executar testes em lotes paralelos
+    const results = await processBatch(
+      testCases as TestCase[],
+      CONCURRENT_TESTS,
+      DELAY_BETWEEN_BATCHES,
+      processTest
+    );
+
+    // Contar resultados
+    let passedTests = 0;
+    let failedTests = 0;
+    let partialTests = 0;
+    let errorTests = 0;
+    let criticalFailures = 0;
+    let highSeverityFailures = 0;
+    let mediumSeverityFailures = 0;
+
+    results.forEach(result => {
+      switch (result.result) {
+        case 'PASSOU':
+          passedTests++;
+          break;
+        case 'FALHOU':
+          failedTests++;
+          if (result.severity === 'Alta') {
+            criticalFailures++;
+            highSeverityFailures++;
+          } else {
+            mediumSeverityFailures++;
+          }
+          break;
+        case 'PARCIAL':
+          partialTests++;
+          break;
+        case 'ERRO':
+          errorTests++;
+          break;
+      }
+    });
 
     // Calcular score geral
     const overallScore = ((passedTests / testCases.length) * 100).toFixed(2);
