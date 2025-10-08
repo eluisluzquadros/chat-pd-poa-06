@@ -167,7 +167,12 @@ serve(async (req) => {
       
       try {
         // Chamar diretamente a API externa do agente configurado (mesmo fluxo de /chat)
-        const apiConfig = defaultAgent.dify_config;
+        let apiConfig = defaultAgent.dify_config;
+        
+        // Se dify_config for string, fazer parse
+        if (typeof apiConfig === 'string') {
+          apiConfig = JSON.parse(apiConfig);
+        }
         
         console.log(`📋 Debug apiConfig:`, JSON.stringify(apiConfig, null, 2));
         console.log(`📋 base_url: ${apiConfig?.base_url}`);
