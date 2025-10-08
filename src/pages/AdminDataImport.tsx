@@ -29,6 +29,27 @@ function AdminDataImport() {
   const [logs, setLogs] = useState<string[]>([]);
   const [completed, setCompleted] = useState(false);
 
+  // Valid database columns for validation
+  const VALID_DB_COLUMNS = new Set([
+    'Zona', 'Bairro', 'Categoria_Risco', 'Área_Minima_do_Lote',
+    'Testada_Minima', 'Taxa_de_Ocupacao_ate_1,500_m2',
+    'Taxa_de_Ocupacao_acima_de_1,500_m2', 'Altura_Maxima___Edificacao_Isolada',
+    'Altura_Maxima___Edificacao_Geminada', 'Coeficiente_de_Aproveitamento___Basico',
+    'Coeficiente_de_Aproveitamento___Maximo', 'Taxa_de_Permeabilidade_ate_1,500_m2',
+    'Taxa_de_Permeabilidade_acima_de_1,500_m2', 'Recuos_de_Frente',
+    'Recuos_de_Frente___Observacoes', 'Recuos_de_Fundos', 'Recuos_de_Fundos___Observacoes',
+    'Subsolo', 'Subsolo___Observacoes', 'Afastamentos___Frente', 'Afastamentos___Fundos',
+    'Afastamentos___Laterais', 'Comercio_Atacadista', 'Comercio_Atacadista___IA1',
+    'Comercio_Atacadista___IA2', 'Comercio_Atacadista___IA3', 'Comercio_Varejista',
+    'Comercio_Varejista___IA1', 'Comercio_Varejista___IA2', 'Comercio_Varejista___IA3',
+    'Servicos___Inocuo', 'Servicos___IA1', 'Servicos___IA2', 'Servicos___IA3',
+    'Industria___Inocua', 'Industria___IA1', 'Industria___IA2', 'Industria___IA3',
+    'Enquadramento___Loteamento', 'Enquadramento___Fracionamento', 'Enquadramento___Desmembramento',
+    'Area_Publica___Sistema_Viario', 'Area_Publica___Pracas', 'Area_Publica___Equipamentos_Comunitarios',
+    'Taxa_de_Ocupacao___Lote_menor_que_360m2', 'Taxa_de_Ocupacao___Lote_de_360m2_a_1500m2',
+    'Taxa_de_Ocupacao___Lote_maior_que_1500m2'
+  ]);
+
   const addLog = (message: string) => {
     setLogs(prev => [...prev, `${new Date().toLocaleTimeString()}: ${message}`]);
   };
@@ -181,17 +202,17 @@ function AdminDataImport() {
         const normalizedRecord: any = {};
         for (const [csvKey, value] of Object.entries(record)) {
           const dbKey = mapColumnName(csvKey);
-          // Skip 'ocupacao' column as it doesn't exist in database
-          if (dbKey.toLowerCase() !== 'ocupacao') {
+          // Only include columns that exist in the database schema
+          if (VALID_DB_COLUMNS.has(dbKey)) {
             normalizedRecord[dbKey] = normalizeValue(value);
           }
         }
 
-        // Check if record exists
+        // Check if record exists (CSV columns are lowercase)
         const existing = currentData?.find(
           (r: any) => 
-            normalizeValue(r.Bairro) === normalizeValue(record.Bairro) && 
-            normalizeValue(r.Zona) === normalizeValue(record.Zona)
+            normalizeValue(r.Bairro) === normalizeValue(record.bairro) && 
+            normalizeValue(r.Zona) === normalizeValue(record.zona)
         );
 
         try {
@@ -204,12 +225,12 @@ function AdminDataImport() {
                 processed: prev.processed + 1
               }));
             } else {
-              // Update existing record
+              // Update existing record (CSV columns are lowercase)
               const { error } = await supabase
                 .from('regime_urbanistico_consolidado')
                 .update(normalizedRecord)
-                .eq('Bairro', record.Bairro)
-                .eq('Zona', record.Zona);
+                .eq('Bairro', normalizedRecord.Bairro)
+                .eq('Zona', normalizedRecord.Zona);
 
               if (error) throw error;
               
@@ -234,7 +255,7 @@ function AdminDataImport() {
             }));
           }
         } catch (error: any) {
-          addLog(`❌ Erro em ${record.Bairro} - ${record.Zona}: ${error.message}`);
+          addLog(`❌ Erro em ${record.bairro || 'N/A'} - ${record.zona || 'N/A'}: ${error.message}`);
           setStats(prev => ({ 
             ...prev, 
             errors: prev.errors + 1,
