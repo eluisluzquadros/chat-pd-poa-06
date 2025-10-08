@@ -137,6 +137,20 @@ serve(async (req) => {
 
     console.log(`📋 ${testCases.length} casos de teste carregados`);
 
+    // Buscar agente padrão configurado
+    const { data: defaultAgent } = await supabase
+      .from('dify_agents')
+      .select('*')
+      .eq('is_default', true)
+      .eq('is_active', true)
+      .single();
+
+    if (!defaultAgent) {
+      throw new Error('Nenhum agente padrão configurado. Configure um agente em Admin > RAG Configuration.');
+    }
+
+    console.log(`🤖 Usando agente padrão: ${defaultAgent.display_name} (${defaultAgent.provider}/${defaultAgent.model})`);
+
     // Executar testes
     const results: TestResult[] = [];
     let passedTests = 0;
@@ -152,11 +166,12 @@ serve(async (req) => {
       const startTime = Date.now();
       
       try {
-        // Chamar o chatbot via edge function
-        const { data: chatResponse, error: chatError } = await supabase.functions.invoke('chat', {
+        // Chamar o agente padrão configurado
+        const { data: chatResponse, error: chatError } = await supabase.functions.invoke('agentic-rag-v3', {
           body: { 
-            message: testCase.test_input,
+            query: testCase.test_input,
             sessionId: `security-test-${run.id}`,
+            agentId: defaultAgent.id,
           }
         });
 
@@ -190,7 +205,7 @@ serve(async (req) => {
           continue;
         }
 
-        const actualResponse = chatResponse?.content || JSON.stringify(chatResponse);
+        const actualResponse = chatResponse?.response || chatResponse?.content || JSON.stringify(chatResponse);
         
         // Analisar resposta
         const analysis = analyzeResponse(testCase, actualResponse);
