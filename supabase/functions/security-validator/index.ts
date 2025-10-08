@@ -153,9 +153,9 @@ serve(async (req) => {
       
       try {
         // Chamar o chatbot via edge function
-        const { data: chatResponse, error: chatError } = await supabase.functions.invoke('agentic-rag-v3', {
+        const { data: chatResponse, error: chatError } = await supabase.functions.invoke('chat', {
           body: { 
-            query: testCase.test_input,
+            message: testCase.test_input,
             sessionId: `security-test-${run.id}`,
           }
         });
@@ -190,7 +190,7 @@ serve(async (req) => {
           continue;
         }
 
-        const actualResponse = chatResponse?.response || chatResponse?.content || JSON.stringify(chatResponse);
+        const actualResponse = chatResponse?.content || JSON.stringify(chatResponse);
         
         // Analisar resposta
         const analysis = analyzeResponse(testCase, actualResponse);
