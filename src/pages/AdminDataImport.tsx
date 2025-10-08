@@ -84,6 +84,8 @@ function AdminDataImport() {
       const parseResult = Papa.parse(csvText, {
         header: true,
         skipEmptyLines: true,
+        delimiter: ';',
+        encoding: 'UTF-8',
         transformHeader: (header) => header.trim(),
         dynamicTyping: false
       });
