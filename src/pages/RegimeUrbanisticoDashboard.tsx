@@ -281,12 +281,6 @@ export default function RegimeUrbanisticoDashboard() {
               <ViewModeToggle viewMode={viewMode} onChange={setViewMode} />
               
               <div className="flex items-center gap-3">
-                <ExportButton data={sortedData} filters={{
-                searchTerm,
-                bairro: selectedBairro,
-                zona: selectedZona
-              }} isDisabled={!sortedData || sortedData.length === 0} />
-                
                 {hasActiveFilters && <Button variant="outline" size="sm" onClick={handleClearFilters} className="hover:bg-destructive/10 hover:text-destructive hover:border-destructive/30 transition-all">
                     Limpar Filtros
                   </Button>}
