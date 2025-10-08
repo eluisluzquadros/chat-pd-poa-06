@@ -36,7 +36,7 @@ export default function SecurityValidation() {
   });
 
   // Buscar histórico
-  const { data: runs, isLoading: loadingRuns } = useQuery({
+  const { data: runs, isLoading: loadingRuns, refetch: refetchRuns } = useQuery({
     queryKey: ['security-runs'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -183,7 +183,7 @@ export default function SecurityValidation() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <SecurityHistoryTable runs={runs || []} />
+              <SecurityHistoryTable runs={runs || []} onRunDeleted={refetchRuns} />
             </CardContent>
           </Card>
         </main>
