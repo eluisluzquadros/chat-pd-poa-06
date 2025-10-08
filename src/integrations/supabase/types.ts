@@ -2066,6 +2066,223 @@ export type Database = {
         }
         Relationships: []
       }
+      security_lessons_learned: {
+        Row: {
+          created_at: string | null
+          discovered_date: string
+          how_fixed: string
+          id: string
+          related_run_id: string | null
+          severity: string
+          takeaway: string
+          test_number: number | null
+          vulnerability_name: string
+          what_happened: string
+          why_it_worked: string
+        }
+        Insert: {
+          created_at?: string | null
+          discovered_date: string
+          how_fixed: string
+          id?: string
+          related_run_id?: string | null
+          severity: string
+          takeaway: string
+          test_number?: number | null
+          vulnerability_name: string
+          what_happened: string
+          why_it_worked: string
+        }
+        Update: {
+          created_at?: string | null
+          discovered_date?: string
+          how_fixed?: string
+          id?: string
+          related_run_id?: string | null
+          severity?: string
+          takeaway?: string
+          test_number?: number | null
+          vulnerability_name?: string
+          what_happened?: string
+          why_it_worked?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "security_lessons_learned_related_run_id_fkey"
+            columns: ["related_run_id"]
+            isOneToOne: false
+            referencedRelation: "security_validation_runs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      security_test_cases: {
+        Row: {
+          attack_vector: string | null
+          category: string
+          created_at: string | null
+          expected_behavior: string
+          id: number
+          is_active: boolean | null
+          objective: string
+          severity: string
+          test_input: string
+          test_name: string
+          test_number: number
+          updated_at: string | null
+          version_added: string | null
+        }
+        Insert: {
+          attack_vector?: string | null
+          category: string
+          created_at?: string | null
+          expected_behavior: string
+          id: number
+          is_active?: boolean | null
+          objective: string
+          severity: string
+          test_input: string
+          test_name: string
+          test_number: number
+          updated_at?: string | null
+          version_added?: string | null
+        }
+        Update: {
+          attack_vector?: string | null
+          category?: string
+          created_at?: string | null
+          expected_behavior?: string
+          id?: number
+          is_active?: boolean | null
+          objective?: string
+          severity?: string
+          test_input?: string
+          test_name?: string
+          test_number?: number
+          updated_at?: string | null
+          version_added?: string | null
+        }
+        Relationships: []
+      }
+      security_test_results: {
+        Row: {
+          actual_response: string | null
+          blocked_by_filter: boolean | null
+          category: string
+          created_at: string | null
+          expected_behavior: string
+          filter_triggered: string[] | null
+          id: string
+          notes: string | null
+          response_time_ms: number | null
+          result: string
+          run_id: string | null
+          severity: string
+          test_input: string
+          test_name: string
+          test_number: number
+        }
+        Insert: {
+          actual_response?: string | null
+          blocked_by_filter?: boolean | null
+          category: string
+          created_at?: string | null
+          expected_behavior: string
+          filter_triggered?: string[] | null
+          id?: string
+          notes?: string | null
+          response_time_ms?: number | null
+          result: string
+          run_id?: string | null
+          severity: string
+          test_input: string
+          test_name: string
+          test_number: number
+        }
+        Update: {
+          actual_response?: string | null
+          blocked_by_filter?: boolean | null
+          category?: string
+          created_at?: string | null
+          expected_behavior?: string
+          filter_triggered?: string[] | null
+          id?: string
+          notes?: string | null
+          response_time_ms?: number | null
+          result?: string
+          run_id?: string | null
+          severity?: string
+          test_input?: string
+          test_name?: string
+          test_number?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "security_test_results_run_id_fkey"
+            columns: ["run_id"]
+            isOneToOne: false
+            referencedRelation: "security_validation_runs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      security_validation_runs: {
+        Row: {
+          completed_at: string | null
+          created_at: string | null
+          critical_failures: number
+          error_message: string | null
+          executed_by: string | null
+          failed_tests: number
+          high_severity_failures: number
+          id: string
+          medium_severity_failures: number
+          overall_score: number | null
+          partial_tests: number
+          passed_tests: number
+          started_at: string
+          status: string
+          system_version: string | null
+          total_tests: number
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string | null
+          critical_failures?: number
+          error_message?: string | null
+          executed_by?: string | null
+          failed_tests?: number
+          high_severity_failures?: number
+          id?: string
+          medium_severity_failures?: number
+          overall_score?: number | null
+          partial_tests?: number
+          passed_tests?: number
+          started_at?: string
+          status?: string
+          system_version?: string | null
+          total_tests?: number
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string | null
+          critical_failures?: number
+          error_message?: string | null
+          executed_by?: string | null
+          failed_tests?: number
+          high_severity_failures?: number
+          id?: string
+          medium_severity_failures?: number
+          overall_score?: number | null
+          partial_tests?: number
+          passed_tests?: number
+          started_at?: string
+          status?: string
+          system_version?: string | null
+          total_tests?: number
+        }
+        Relationships: []
+      }
       session_memory: {
         Row: {
           agent_results: Json | null
