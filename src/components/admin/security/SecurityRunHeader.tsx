@@ -182,7 +182,151 @@ export function SecurityRunHeader({ run, results }: SecurityRunHeaderProps) {
         },
       });
 
-      // 5. Rodapé em todas as páginas
+      // 5. Detalhes Completos de Cada Teste
+      doc.addPage();
+      doc.setFontSize(16);
+      doc.setFont("helvetica", "bold");
+      doc.text("Detalhes Completos dos Testes", 20, 20);
+
+      results.forEach((test, index) => {
+        // Nova página para cada teste (exceto o primeiro)
+        if (index > 0) doc.addPage();
+        
+        let currentTestY = 30;
+        
+        // Cabeçalho do Teste
+        doc.setFontSize(14);
+        doc.setFont("helvetica", "bold");
+        doc.setDrawColor(100, 100, 100);
+        doc.line(20, currentTestY, 190, currentTestY);
+        currentTestY += 7;
+        const testTitle = `TESTE #${test.test_number}: ${test.test_name}`;
+        doc.text(testTitle, 20, currentTestY);
+        currentTestY += 5;
+        doc.line(20, currentTestY, 190, currentTestY);
+        currentTestY += 10;
+        
+        // 1. Visão Geral
+        doc.setFontSize(12);
+        doc.setFont("helvetica", "bold");
+        doc.text("VISÃO GERAL", 20, currentTestY);
+        currentTestY += 8;
+        
+        doc.setFontSize(10);
+        doc.setFont("helvetica", "normal");
+        doc.text(`Categoria: ${test.category}`, 25, currentTestY);
+        currentTestY += 6;
+        
+        const severityEmoji = test.severity === 'Alta' ? '🔴' : test.severity === 'Média' ? '🟡' : '🟢';
+        doc.text(`Severidade: ${severityEmoji} ${test.severity}`, 25, currentTestY);
+        currentTestY += 6;
+        
+        const resultEmoji = test.result === 'PASSOU' ? '✅' : test.result === 'FALHOU' ? '❌' : '⚠️';
+        doc.text(`Resultado: ${resultEmoji} ${test.result}`, 25, currentTestY);
+        currentTestY += 6;
+        
+        doc.text(`Tempo de Resposta: ${test.response_time_ms || 0}ms`, 25, currentTestY);
+        currentTestY += 10;
+        
+        doc.setFont("helvetica", "bold");
+        doc.text("Comportamento Esperado:", 25, currentTestY);
+        currentTestY += 6;
+        doc.setFont("helvetica", "normal");
+        const expectedLines = doc.splitTextToSize(test.expected_behavior || 'Não especificado', 160);
+        doc.text(expectedLines, 25, currentTestY);
+        currentTestY += (expectedLines.length * 6) + 8;
+        
+        if (test.notes) {
+          doc.setFont("helvetica", "bold");
+          doc.text("Notas:", 25, currentTestY);
+          currentTestY += 6;
+          doc.setFont("helvetica", "normal");
+          const notesLines = doc.splitTextToSize(test.notes, 160);
+          doc.text(notesLines, 25, currentTestY);
+          currentTestY += (notesLines.length * 6) + 10;
+        }
+        
+        // 2. Input do Teste
+        doc.setFontSize(12);
+        doc.setFont("helvetica", "bold");
+        doc.text("INPUT DO TESTE", 20, currentTestY);
+        currentTestY += 8;
+        
+        doc.setFontSize(9);
+        doc.setFont("courier", "normal");
+        const inputText = test.test_input || 'Sem input';
+        const inputLines = doc.splitTextToSize(inputText, 160);
+        const inputHeight = Math.min(inputLines.length * 5, 40);
+        doc.setFillColor(245, 245, 245);
+        doc.rect(20, currentTestY - 5, 170, inputHeight + 10, 'F');
+        doc.text(inputLines.slice(0, 8), 25, currentTestY);
+        currentTestY += inputHeight + 15;
+        
+        // Verificar se precisa de nova página
+        if (currentTestY > 230) {
+          doc.addPage();
+          currentTestY = 20;
+        }
+        
+        // 3. Resposta do Sistema
+        doc.setFontSize(12);
+        doc.setFont("helvetica", "bold");
+        doc.text("RESPOSTA DO SISTEMA", 20, currentTestY);
+        currentTestY += 8;
+        
+        doc.setFontSize(9);
+        doc.setFont("courier", "normal");
+        const responseText = test.actual_response || 'Sem resposta';
+        const responseLines = doc.splitTextToSize(responseText, 160);
+        const responseHeight = Math.min(responseLines.length * 5, 60);
+        doc.setFillColor(245, 245, 245);
+        doc.rect(20, currentTestY - 5, 170, responseHeight + 10, 'F');
+        doc.text(responseLines.slice(0, 12), 25, currentTestY);
+        currentTestY += responseHeight + 15;
+        
+        // Verificar se precisa de nova página
+        if (currentTestY > 230) {
+          doc.addPage();
+          currentTestY = 20;
+        }
+        
+        // 4. Análise de Segurança
+        doc.setFontSize(12);
+        doc.setFont("helvetica", "bold");
+        doc.text("ANÁLISE DE SEGURANÇA", 20, currentTestY);
+        currentTestY += 8;
+        
+        doc.setFontSize(10);
+        doc.setFont("helvetica", "normal");
+        doc.text("Filtros Acionados:", 25, currentTestY);
+        currentTestY += 6;
+        
+        if (test.filter_triggered && test.filter_triggered.length > 0) {
+          test.filter_triggered.forEach((filter: string) => {
+            const filterLines = doc.splitTextToSize(`🛡️ ${filter}`, 155);
+            doc.text(filterLines, 30, currentTestY);
+            currentTestY += (filterLines.length * 6);
+          });
+        } else {
+          doc.text("Nenhum filtro foi acionado", 30, currentTestY);
+          currentTestY += 6;
+        }
+        
+        currentTestY += 5;
+        doc.text("Status de Proteção:", 25, currentTestY);
+        currentTestY += 6;
+        
+        if (test.blocked_by_filter) {
+          doc.setTextColor(34, 197, 94);
+          doc.text("✅ Ataque bloqueado pelos filtros de segurança", 30, currentTestY);
+        } else {
+          doc.setTextColor(239, 68, 68);
+          doc.text("❌ Ataque NÃO foi bloqueado", 30, currentTestY);
+        }
+        doc.setTextColor(0, 0, 0);
+      });
+
+      // 6. Rodapé em todas as páginas
       const pageCount = doc.getNumberOfPages();
       for (let i = 1; i <= pageCount; i++) {
         doc.setPage(i);
