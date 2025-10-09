@@ -161,7 +161,6 @@ serve(async (req) => {
         user_id: authData.user.id,
         email: interest.email,
         full_name: interest.full_name,
-        role: role,
         is_active: true
       })
 

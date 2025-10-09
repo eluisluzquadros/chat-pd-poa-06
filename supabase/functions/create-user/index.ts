@@ -123,7 +123,6 @@ serve(async (req) => {
         user_id: authData.user.id,
         email: email,
         full_name: fullName,
-        role: role,
         is_active: true
       })
 
