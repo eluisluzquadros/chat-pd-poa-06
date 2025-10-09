@@ -35,12 +35,12 @@ const CreateAccountDialog = ({
   onOpenChange,
   onSuccess,
 }: ConversionDialogProps) => {
-  const [role, setRole] = useState<AppRole>("citizen");
+  const [role, setRole] = useState<AppRole>("user");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const resetDialog = () => {
-    setRole("citizen");
+    setRole("user");
     setError(null);
   };
 
