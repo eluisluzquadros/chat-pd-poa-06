@@ -3,11 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { InterestForm } from '@/components/auth/InterestForm';
+import { ForgotPasswordModal } from '@/components/auth/ForgotPasswordModal';
 import { Card, CardContent } from '@/components/ui/card';
-import { Loader2, UserPlus, Lock, Mail } from 'lucide-react';
+import { Loader2, UserPlus, Lock, Mail, Eye, EyeOff, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { SecureAuthService } from '@/services/secureAuthService';
 import { toast } from 'sonner';
 import { useTheme } from "@/components/ui/theme-provider";
@@ -16,10 +18,12 @@ import { supabase } from '@/integrations/supabase/client';
 const AuthPage = () => {
   const { isAuthenticated, refreshAuthState } = useAuth();
   const [isInterestModalOpen, setIsInterestModalOpen] = useState(false);
+  const [isForgotPasswordOpen, setIsForgotPasswordOpen] = useState(false);
   const [authMode, setAuthMode] = useState<'login' | 'signup'>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const navigate = useNavigate();
@@ -63,7 +67,9 @@ const AuthPage = () => {
         const result = await SecureAuthService.signUp(email, password, fullName);
         
         if (result.success) {
-          toast.success('Conta criada com sucesso! Você já está logado.');
+          toast.success('Conta criada! Verifique seu email para ativar sua conta.', {
+            duration: 6000
+          });
           await refreshAuthState();
           navigate('/chat');
         } else {
@@ -167,16 +173,43 @@ const AuthPage = () => {
                   <Lock className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
                   <Input
                     id="password"
-                    type="password"
+                    type={showPassword ? "text" : "password"}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="pl-9"
+                    className="pl-9 pr-10"
                     placeholder="••••••••"
                     required
                     disabled={isLoading}
                   />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
+                    onClick={() => setShowPassword(!showPassword)}
+                    disabled={isLoading}
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-4 w-4 text-muted-foreground" />
+                    ) : (
+                      <Eye className="h-4 w-4 text-muted-foreground" />
+                    )}
+                  </Button>
                 </div>
               </div>
+
+              {authMode === 'login' && (
+                <div className="flex justify-end">
+                  <Button
+                    type="button"
+                    variant="link"
+                    className="p-0 h-auto text-sm"
+                    onClick={() => setIsForgotPasswordOpen(true)}
+                  >
+                    Esqueci a senha
+                  </Button>
+                </div>
+              )}
 
               <Button 
                 type="submit" 
@@ -205,6 +238,15 @@ const AuthPage = () => {
                   : 'Já tem conta? Faça login'}
               </Button>
             </form>
+
+            {authMode === 'login' && (
+              <Alert className="mt-4">
+                <Info className="h-4 w-4" />
+                <AlertDescription>
+                  Se você acabou de criar sua conta, verifique seu email para ativá-la antes de fazer login.
+                </AlertDescription>
+              </Alert>
+            )}
 
             {/* Divisor */}
             <div className="relative">
@@ -248,6 +290,12 @@ const AuthPage = () => {
           <InterestForm onClose={handleCloseInterestModal} />
         </DialogContent>
       </Dialog>
+
+      {/* Modal para Recuperação de Senha */}
+      <ForgotPasswordModal 
+        open={isForgotPasswordOpen} 
+        onOpenChange={setIsForgotPasswordOpen}
+      />
     </div>
   );
 };

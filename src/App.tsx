@@ -9,6 +9,7 @@ import React from "react";
 // Pages
 import Auth from "./pages/Auth";
 import AuthCallback from "./pages/AuthCallback";
+import ResetPassword from "./pages/ResetPassword";
 import DemoLogin from "./pages/DemoLogin";
 import Chat from "./pages/Chat";
 import NotFound from "./pages/NotFound";
@@ -75,6 +76,9 @@ function App() {
               
               {/* Página de callback para OAuth */}
               <Route path="/auth/callback" element={<AuthCallback />} />
+              
+              {/* Página de reset de senha */}
+              <Route path="/reset-password" element={<ResetPassword />} />
               
               {/* Insights route */}
               <Route path="/insights" element={<SimpleAuthGuard><React.Suspense fallback={null}>{React.createElement(React.lazy(() => import('./pages/Insights')))}</React.Suspense></SimpleAuthGuard>} />
