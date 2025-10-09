@@ -27,11 +27,23 @@ export const ForgotPasswordModal = ({ open, onOpenChange }: ForgotPasswordModalP
     setIsLoading(true);
 
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/reset-password`,
+      console.log('🔐 Solicitando recuperação de senha para:', email);
+      
+      // Chamar Edge Function customizada para enviar email em PT-BR
+      const { data, error } = await supabase.functions.invoke('send-password-recovery', {
+        body: { email }
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('❌ Erro na edge function:', error);
+        throw error;
+      }
+
+      if (!data.success) {
+        throw new Error(data.error || 'Erro ao enviar email de recuperação');
+      }
+
+      console.log('✅ Email de recuperação enviado com sucesso');
 
       toast.success('Email de recuperação enviado! Verifique sua caixa de entrada.', {
         duration: 6000
@@ -40,7 +52,7 @@ export const ForgotPasswordModal = ({ open, onOpenChange }: ForgotPasswordModalP
       setEmail('');
       onOpenChange(false);
     } catch (error: any) {
-      console.error('Erro ao enviar email de recuperação:', error);
+      console.error('❌ Erro ao enviar email de recuperação:', error);
       toast.error(error.message || 'Erro ao enviar email de recuperação');
     } finally {
       setIsLoading(false);

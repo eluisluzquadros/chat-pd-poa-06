@@ -1,10 +1,9 @@
-
 import { useState, useCallback, useEffect, useRef } from "react";
 import { User, Session } from "@supabase/supabase-js";
 import { AppRole } from "@/types/app";
 import { AuthService, setupAuthListener } from "@/services/authService";
 import { toast } from "sonner";
-
+import { supabase } from "@/integrations/supabase/client";
 export const useAuthContext = () => {
   // Estados
   const [isAuthenticated, setIsAuthenticated] = useState(false);

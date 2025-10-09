@@ -31,10 +31,18 @@ const AuthPage = () => {
 
   // Redirecionar se o usuário já estiver autenticado
   useEffect(() => {
-    if (isAuthenticated) {
+    // Detectar se é um link de recuperação de senha
+    const hash = window.location.hash;
+    const isPasswordRecovery = hash.includes('type=recovery') || hash.includes('type=reset');
+    
+    if (isAuthenticated && !isPasswordRecovery) {
       navigate('/chat', {
         replace: true
       });
+    } else if (isPasswordRecovery) {
+      // Se for recuperação de senha, redirecionar para /reset-password preservando o hash
+      console.log('🔐 Detectado link de recuperação, redirecionando para /reset-password');
+      navigate('/reset-password' + hash, { replace: true });
     }
   }, [isAuthenticated, navigate]);
 

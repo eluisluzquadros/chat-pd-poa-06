@@ -21,9 +21,17 @@ const ResetPassword = () => {
     // Verificar se há um token de recuperação na URL
     const hashParams = new URLSearchParams(window.location.hash.substring(1));
     const accessToken = hashParams.get('access_token');
+    const type = hashParams.get('type');
     
-    if (!accessToken) {
-      toast.error('Link inválido ou expirado');
+    console.log('🔐 Reset Password - Hash params:', { 
+      hasAccessToken: !!accessToken, 
+      type,
+      fullHash: window.location.hash 
+    });
+    
+    if (!accessToken || type !== 'recovery') {
+      console.error('❌ Token inválido ou tipo incorreto');
+      toast.error('Link de recuperação inválido ou expirado');
       navigate('/auth');
     }
   }, [navigate]);
@@ -50,8 +58,17 @@ const ResetPassword = () => {
 
       if (error) throw error;
 
-      toast.success('Senha atualizada com sucesso!');
-      navigate('/auth');
+      toast.success('Senha redefinida com sucesso! Redirecionando...', {
+        duration: 3000
+      });
+      
+      setPassword('');
+      setConfirmPassword('');
+      
+      // Redirecionar para /chat (usuário já está autenticado após reset)
+      setTimeout(() => {
+        navigate('/chat');
+      }, 1500);
     } catch (error: any) {
       console.error('Erro ao atualizar senha:', error);
       toast.error(error.message || 'Erro ao atualizar senha');
