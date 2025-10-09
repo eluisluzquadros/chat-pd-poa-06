@@ -118,8 +118,64 @@ serve(async (req) => {
       }
 
       if (existingAccount) {
-        console.log('✅ User exists in user_accounts, complete account detected')
-        throw new Error('Este email já está registrado no sistema de autenticação e tem conta de usuário')
+        console.log('✅ User exists in user_accounts, checking if complete...')
+        
+        // Check if user has role assigned
+        const { data: existingRole, error: roleCheckError } = await supabaseAdmin
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', existingAuthUser.id)
+          .maybeSingle()
+
+        if (roleCheckError) {
+          console.error('❌ Error checking user role:', roleCheckError)
+        }
+
+        if (!existingRole) {
+          console.log('⚠️ Incomplete account detected - missing role. Completing...')
+          
+          // Complete the account by adding role
+          const { error: roleError } = await supabaseAdmin
+            .from('user_roles')
+            .insert({
+              user_id: existingAuthUser.id,
+              role: role as any
+            })
+
+          if (roleError) {
+            console.error('❌ Error adding role to incomplete account:', roleError)
+            throw new Error('Erro ao completar conta existente')
+          }
+
+          // Update interest manifestation
+          const { error: updateError } = await supabaseAdmin
+            .from('interest_manifestations')
+            .update({
+              account_created: true,
+              status: 'converted'
+            })
+            .eq('id', interest.id)
+
+          if (updateError) {
+            console.error('❌ Error updating interest:', updateError)
+          }
+
+          console.log('✅ Incomplete account completed successfully')
+          return new Response(
+            JSON.stringify({ 
+              success: true, 
+              user_id: existingAuthUser.id,
+              message: 'Conta incompleta foi finalizada com sucesso'
+            }),
+            { 
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+              status: 200
+            }
+          )
+        } else {
+          console.log('✅ Complete account detected')
+          throw new Error('Este email já está registrado no sistema de autenticação e tem conta de usuário')
+        }
       } else {
         console.log('⚠️ Orphaned auth user detected, cleaning up...')
         // Delete the orphaned auth user
