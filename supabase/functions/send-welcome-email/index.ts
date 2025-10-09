@@ -38,22 +38,102 @@ const handler = async (req: Request): Promise<Response> => {
             <meta charset="utf-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <style>
-              body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif; line-height: 1.6; color: #333; }
-              .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-              .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; border-radius: 10px 10px 0 0; text-align: center; }
-              .content { background: #ffffff; padding: 30px; border: 1px solid #e0e0e0; border-top: none; }
-              .credentials { background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #667eea; }
-              .credential-item { margin: 10px 0; }
-              .credential-label { font-weight: 600; color: #555; }
-              .credential-value { font-family: 'Courier New', monospace; background: #fff; padding: 8px 12px; border-radius: 4px; display: inline-block; margin-top: 5px; }
-              .button { display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; margin: 20px 0; font-weight: 600; }
-              .warning { background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0; border-radius: 4px; }
-              .footer { text-align: center; color: #888; font-size: 12px; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e0e0e0; }
+              body { 
+                font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif; 
+                line-height: 1.6; 
+                color: #333; 
+                margin: 0;
+                padding: 0;
+              }
+              .container { 
+                max-width: 600px; 
+                margin: 0 auto; 
+                padding: 20px; 
+              }
+              .header { 
+                background: linear-gradient(135deg, #29625D 0%, #4CAEA9 100%); 
+                color: white; 
+                padding: 40px 30px; 
+                border-radius: 10px 10px 0 0; 
+                text-align: center; 
+              }
+              .logo {
+                max-width: 200px;
+                height: auto;
+                margin-bottom: 20px;
+              }
+              .content { 
+                background: #ffffff; 
+                padding: 30px; 
+                border: 1px solid #e0e0e0; 
+                border-top: none; 
+              }
+              .credentials { 
+                background: #f8f9fa; 
+                padding: 20px; 
+                border-radius: 8px; 
+                margin: 20px 0; 
+                border-left: 4px solid #29625D; 
+              }
+              .credential-item { 
+                margin: 10px 0; 
+              }
+              .credential-label { 
+                font-weight: 600; 
+                color: #555; 
+              }
+              .credential-value { 
+                font-family: 'Courier New', monospace; 
+                background: #fff; 
+                padding: 8px 12px; 
+                border-radius: 4px; 
+                display: inline-block; 
+                margin-top: 5px; 
+              }
+              .button { 
+                display: inline-block; 
+                background: linear-gradient(135deg, #29625D 0%, #358681 100%); 
+                color: white; 
+                padding: 14px 32px; 
+                text-decoration: none; 
+                border-radius: 6px; 
+                margin: 20px 0; 
+                font-weight: 600;
+                transition: all 0.3s ease;
+              }
+              .warning { 
+                background: #fff3cd; 
+                border-left: 4px solid #ffc107; 
+                padding: 15px; 
+                margin: 20px 0; 
+                border-radius: 4px; 
+              }
+              .footer { 
+                text-align: center; 
+                color: #888; 
+                font-size: 12px; 
+                margin-top: 30px; 
+                padding-top: 20px; 
+                border-top: 1px solid #e0e0e0; 
+              }
+              @media only screen and (max-width: 600px) {
+                .container {
+                  padding: 10px;
+                }
+                .header, .content {
+                  padding: 20px;
+                }
+                .button {
+                  display: block;
+                  text-align: center;
+                }
+              }
             </style>
           </head>
           <body>
             <div class="container">
               <div class="header">
+                <img src="https://ngrqwmvuhvjkeohesbxs.supabase.co/storage/v1/object/public/lovable-uploads/ea243044-6006-46b3-840a-a280efc7a4d3.png" alt="Prefeitura de Porto Alegre" class="logo">
                 <h1 style="margin: 0; font-size: 28px;">🎉 Bem-vindo!</h1>
                 <p style="margin: 10px 0 0 0; opacity: 0.9;">Plataforma ChatPDPOA</p>
               </div>
