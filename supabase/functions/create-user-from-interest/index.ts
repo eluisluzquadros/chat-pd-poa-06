@@ -55,9 +55,9 @@ serve(async (req) => {
     const { role } = requestData
     const interest = {
       ...requestData.interest,
-      email: requestData.interest.email.toLowerCase().trim() // Normalize email
+      email: requestData.interest.email.toLowerCase().trim()
     }
-    const password = generateSecurePassword() // Generate secure random password
+    const password = generateSecurePassword()
     console.log('🔐 Generated secure password for user')
 
     console.log('🚀 Creating user from interest:', {
@@ -108,7 +108,7 @@ serve(async (req) => {
       // Check if user exists in user_accounts
       const { data: existingAccount, error: accountCheckError } = await supabaseAdmin
         .from('user_accounts')
-        .select('id')
+        .select('id, user_id')
         .eq('email', interest.email)
         .maybeSingle()
 
@@ -118,13 +118,13 @@ serve(async (req) => {
       }
 
       if (existingAccount) {
-        console.log('✅ User exists in user_accounts, checking if complete...')
+        console.log('✅ User exists in user_accounts')
         
-        // Check if user has role assigned
+        // Check if user has a role assigned
         const { data: existingRole, error: roleCheckError } = await supabaseAdmin
           .from('user_roles')
           .select('role')
-          .eq('user_id', existingAuthUser.id)
+          .eq('user_id', existingAccount.user_id)
           .maybeSingle()
 
         if (roleCheckError) {
@@ -134,37 +134,27 @@ serve(async (req) => {
         if (!existingRole) {
           console.log('⚠️ Incomplete account detected - missing role. Completing...')
           
-          // Complete the account by adding role
+          // Add missing role
           const { error: roleError } = await supabaseAdmin
             .from('user_roles')
-            .insert({
-              user_id: existingAuthUser.id,
-              role: role as any
-            })
+            .insert({ user_id: existingAccount.user_id, role: role as any })
 
           if (roleError) {
-            console.error('❌ Error adding role to incomplete account:', roleError)
-            throw new Error('Erro ao completar conta existente')
+            console.error('❌ Error adding missing role:', roleError)
+            throw new Error('Erro ao completar conta de usuário')
           }
 
           // Update interest manifestation
-          const { error: updateError } = await supabaseAdmin
+          await supabaseAdmin
             .from('interest_manifestations')
-            .update({
-              account_created: true,
-              status: 'converted'
-            })
+            .update({ account_created: true, status: 'converted' })
             .eq('id', interest.id)
-
-          if (updateError) {
-            console.error('❌ Error updating interest:', updateError)
-          }
 
           console.log('✅ Incomplete account completed successfully')
           return new Response(
             JSON.stringify({ 
               success: true, 
-              user_id: existingAuthUser.id,
+              user_id: existingAccount.user_id,
               message: 'Conta incompleta foi finalizada com sucesso'
             }),
             { 
@@ -172,13 +162,11 @@ serve(async (req) => {
               status: 200
             }
           )
-        } else {
-          console.log('✅ Complete account detected')
-          throw new Error('Este email já está registrado no sistema de autenticação e tem conta de usuário')
         }
+
+        throw new Error('Este email já está registrado no sistema de autenticação e tem conta de usuário')
       } else {
         console.log('⚠️ Orphaned auth user detected, cleaning up...')
-        // Delete the orphaned auth user
         const { error: deleteError } = await supabaseAdmin.auth.admin.deleteUser(existingAuthUser.id)
         if (deleteError) {
           console.error('❌ Error deleting orphaned user:', deleteError)
@@ -298,13 +286,11 @@ serve(async (req) => {
       
       if (emailError) {
         console.error('⚠️ Error sending welcome email:', emailError)
-        // Don't throw - user was created successfully, just log the email error
       } else {
         console.log('✅ Welcome email sent successfully')
       }
     } catch (emailError) {
       console.error('⚠️ Exception sending welcome email:', emailError)
-      // Don't throw - user was created successfully
     }
 
     return new Response(
