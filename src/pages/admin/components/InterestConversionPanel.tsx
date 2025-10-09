@@ -2,7 +2,7 @@
 import { useState } from "react";
 import SearchBar from "./SearchBar";
 import InterestTable from "./InterestTable";
-import ConversionDialog from "./ConversionDialog";
+import CreateAccountDialog from "./CreateAccountDialog";
 import { useInterestManagement } from "../hooks/useInterestManagement";
 
 interface InterestConversionPanelProps {
@@ -40,7 +40,7 @@ const InterestConversionPanel = ({ onUserCreated }: InterestConversionPanelProps
       />
 
       {selectedInterest && (
-        <ConversionDialog
+        <CreateAccountDialog
           interest={selectedInterest}
           open={!!selectedInterest}
           onOpenChange={(open) => !open && setSelectedInterest(null)}
