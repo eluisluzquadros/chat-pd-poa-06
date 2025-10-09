@@ -17,8 +17,20 @@ interface RequestBody {
     organization_size?: string
     newsletter_opt_in?: boolean
   }
-  password: string
   role: string
+}
+
+function generateSecurePassword(): string {
+  const length = 12;
+  const charset = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*';
+  let password = '';
+  const crypto = globalThis.crypto;
+  const array = new Uint32Array(length);
+  crypto.getRandomValues(array);
+  for (let i = 0; i < length; i++) {
+    password += charset[array[i] % charset.length];
+  }
+  return password;
 }
 
 serve(async (req) => {
@@ -40,11 +52,13 @@ serve(async (req) => {
     )
 
     const requestData: RequestBody = await req.json()
-    const { password, role } = requestData
+    const { role } = requestData
     const interest = {
       ...requestData.interest,
       email: requestData.interest.email.toLowerCase().trim() // Normalize email
     }
+    const password = generateSecurePassword() // Generate secure random password
+    console.log('🔐 Generated secure password for user')
 
     console.log('🚀 Creating user from interest:', {
       interestId: interest.id,
@@ -214,6 +228,28 @@ serve(async (req) => {
     }
 
     console.log('User creation from interest complete!')
+
+    // Send welcome email with credentials
+    console.log('📧 Sending welcome email with credentials...')
+    try {
+      const { data: emailData, error: emailError } = await supabaseAdmin.functions.invoke('send-welcome-email', {
+        body: {
+          email: interest.email,
+          fullName: interest.full_name,
+          password: password
+        }
+      })
+      
+      if (emailError) {
+        console.error('⚠️ Error sending welcome email:', emailError)
+        // Don't throw - user was created successfully, just log the email error
+      } else {
+        console.log('✅ Welcome email sent successfully')
+      }
+    } catch (emailError) {
+      console.error('⚠️ Exception sending welcome email:', emailError)
+      // Don't throw - user was created successfully
+    }
 
     return new Response(
       JSON.stringify({ 

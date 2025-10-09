@@ -35,13 +35,11 @@ const CreateAccountDialog = ({
   onOpenChange,
   onSuccess,
 }: ConversionDialogProps) => {
-  const [password, setPassword] = useState("");
   const [role, setRole] = useState<AppRole>("citizen");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const resetDialog = () => {
-    setPassword("");
     setRole("citizen");
     setError(null);
   };
@@ -49,11 +47,6 @@ const CreateAccountDialog = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    
-    if (!password) {
-      setError("Por favor, defina uma senha");
-      return;
-    }
 
     setIsSubmitting(true);
 
@@ -86,7 +79,6 @@ const CreateAccountDialog = ({
           organization_size: interest.organization_size,
           newsletter_opt_in: interest.newsletter_opt_in
         },
-        password,
         role
       });
 
@@ -103,7 +95,6 @@ const CreateAccountDialog = ({
             organization_size: interest.organization_size,
             newsletter_opt_in: interest.newsletter_opt_in
           },
-          password,
           role
         }
       });
@@ -121,7 +112,7 @@ const CreateAccountDialog = ({
         throw new Error(data.error);
       }
 
-      toast.success("Usuário criado com sucesso a partir da manifestação de interesse", { duration: 3000 });
+      toast.success(`Usuário criado! Um email com as credenciais foi enviado para ${interest.email}`, { duration: 5000 });
       onSuccess();
       onOpenChange(false);
     } catch (error: any) {
@@ -165,17 +156,6 @@ const CreateAccountDialog = ({
           <div className="space-y-2">
             <Label>Organização</Label>
             <div className="p-2 bg-muted rounded">{interest.organization}</div>
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="password">Senha*</Label>
-            <Input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              placeholder="Digite uma senha para o usuário"
-            />
           </div>
           <div className="space-y-2">
             <Label htmlFor="role">Função</Label>
