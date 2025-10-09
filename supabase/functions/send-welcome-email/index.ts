@@ -28,7 +28,7 @@ const handler = async (req: Request): Promise<Response> => {
     const platformUrl = Deno.env.get("PLATFORM_URL") || "https://chatpdpoa.org";
 
     const emailResponse = await resend.emails.send({
-      from: "Plataforma ChatPDPOA <onboarding@resend.dev>",
+      from: "Plataforma ChatPDPOA <noreply@chatpdpoa.org>",
       to: [email],
       subject: "Bem-vindo à Plataforma ChatPDPOA! 🎉",
       html: `
