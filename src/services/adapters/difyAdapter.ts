@@ -17,90 +17,38 @@ async function fetchWithTimeout(
 ): Promise<Response> {
   const { timeout = 60000, ...fetchOptions } = options;
   
-  // Detectar Safari iOS (incluindo Chrome iOS que usa WebKit)
   const userAgent = navigator.userAgent;
   const isiOS = /iPad|iPhone|iPod/.test(userAgent);
-  const isWebKit = /WebKit/i.test(userAgent);
-  const isSafariIOS = isiOS && isWebKit;
-
-  // 📊 Telemetria: Detecção de plataforma
+  
   telemetryService.logPlatformDetection({
     userAgent: userAgent.substring(0, 200),
     isiOS,
-    isWebKit,
-    isSafariIOS,
-    willUseXHR: isSafariIOS,
-    navigatorPlatform: navigator.platform,
-    windowWidth: window.innerWidth
+    willUseFetch: true,
+    navigatorPlatform: navigator.platform
   }).catch(err => console.error('Telemetry failed:', err));
 
-  // WORKAROUND: Usar XMLHttpRequest no Safari iOS para evitar bug do iOS 18+
-  if (isSafariIOS) {
-    console.log('🍎 [iOS Workaround] Using XMLHttpRequest instead of fetch');
-    telemetryService.logInfo('iOS Workaround activated - Using XMLHttpRequest').catch(() => {});
+  if (isiOS) {
+    // iOS: Use fetch without AbortController (iOS 18 bug workaround)
+    // AbortController causes issues on iOS, so we use Promise.race for timeout
+    console.log('🍎 [iOS] Using fetch without AbortController for streaming support');
+    telemetryService.logInfo('iOS: Using fetch without AbortController').catch(() => {});
     
-    return new Promise<Response>((resolve, reject) => {
-      const xhr = new XMLHttpRequest();
-      
-      // 📊 Telemetria: XHR Start
-      telemetryService.logXHRStart(url, fetchOptions.method || 'GET').catch(() => {});
-      
-      xhr.open(fetchOptions.method || 'GET', url);
-      
-      // Headers
-      if (fetchOptions.headers) {
-        const headers = fetchOptions.headers as Record<string, string>;
-        Object.keys(headers).forEach(key => {
-          xhr.setRequestHeader(key, headers[key]);
-        });
-      }
-      
-      // Timeout
-      xhr.timeout = timeout;
-      xhr.ontimeout = () => {
-        const error = new Error(`Timeout: O agente demorou mais de ${timeout/1000}s para responder. Tente novamente ou use uma mensagem mais curta.`);
-        telemetryService.logXHRError(error, xhr.readyState).catch(() => {});
-        reject(error);
-      };
-      
-      // Success
-      xhr.onload = () => {
-        // 📊 Telemetria: XHR Success
-        telemetryService.logXHRSuccess(xhr.status, xhr.responseText.length).catch(() => {});
-        
-        const headers = new Headers();
-        xhr.getAllResponseHeaders().split('\r\n').forEach(line => {
-          const [key, value] = line.split(': ');
-          if (key && value) headers.append(key, value);
-        });
-        
-        resolve(new Response(xhr.responseText, {
-          status: xhr.status,
-          statusText: xhr.statusText,
-          headers
-        }));
-      };
-      
-      // Error
-      xhr.onerror = () => {
-        const error = new Error(`Network error: ${xhr.statusText || 'Request failed'}`);
-        telemetryService.logXHRError(error, xhr.readyState).catch(() => {});
-        reject(error);
-      };
-      
-      // Send
-      xhr.send(fetchOptions.body as string || null);
-    });
+    const fetchPromise = fetch(url, fetchOptions);
+    const timeoutPromise = new Promise<Response>((_, reject) => 
+      setTimeout(() => reject(new Error(`Timeout: ${timeout * 2}ms`)), timeout * 2)
+    );
+    
+    return Promise.race([fetchPromise, timeoutPromise]);
   }
-  
-  // Navegadores normais: usar fetch padrão com AbortController
+
+  // Non-iOS browsers: Use standard fetch with AbortController
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeout);
-  
+
   try {
     const response = await fetch(url, {
       ...fetchOptions,
-      signal: controller.signal
+      signal: controller.signal,
     });
     clearTimeout(timeoutId);
     return response;
