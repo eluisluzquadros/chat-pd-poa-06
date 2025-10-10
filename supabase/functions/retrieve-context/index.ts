@@ -30,30 +30,46 @@ async function retrieveFromLlamaCloud(
   topK: number,
   scoreThreshold: number
 ): Promise<RetrievalResult[]> {
-  console.log('🔍 [LlamaCloud] Retrieving...', { indexId, topK, scoreThreshold });
+  console.log('🔍 [LlamaCloud] Using /chat endpoint...', { indexId, topK });
   
-  const requestPayload = {
-    query,
-    top_k: topK,
-    similarity_cutoff: scoreThreshold,
+  const chatPayload = {
+    messages: [{ role: 'user', content: query }],
+    data: {
+      retrieval_parameters: {
+        dense_similarity_top_k: topK,
+        dense_similarity_cutoff: 0,
+        sparse_similarity_top_k: topK,
+        enable_reranking: true,
+        rerank_top_n: Math.min(topK, 10),
+        alpha: 0.5,
+        retrieval_mode: 'chunks',
+        retrieve_page_screenshot_nodes: true,
+        retrieve_page_figure_nodes: true,
+      },
+      llm_parameters: {
+        model_name: 'GPT_4O_MINI',
+        temperature: 0.1,
+        use_citation: true,
+      },
+    },
   };
-  
-  console.log('📤 Query sent to LlamaCloud:', {
+
+  console.log('📤 Query sent to LlamaCloud /chat:', {
     indexId,
     queryPreview: query.substring(0, 100),
+    retrieval_mode: 'chunks',
     top_k: topK,
-    similarity_cutoff: scoreThreshold,
   });
 
   const response = await fetch(
-    `https://api.cloud.llamaindex.ai/api/v1/pipelines/${indexId}/retrieve`,
+    `https://api.cloud.llamaindex.ai/api/v1/pipelines/${indexId}/chat`,
     {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(requestPayload),
+      body: JSON.stringify(chatPayload),
     }
   );
 
@@ -63,18 +79,19 @@ async function retrieveFromLlamaCloud(
     throw new Error(`LlamaCloud API error: ${response.status}`);
   }
 
-  const data: LlamaCloudResponse = await response.json();
+  const data = await response.json();
+  const sources = data.sources || [];
   
   console.log('📥 LlamaCloud response:', {
-    nodesCount: data.nodes?.length || 0,
-    firstNodeScore: data.nodes?.[0]?.score || 'N/A',
-    firstNodePreview: data.nodes?.[0]?.text?.substring(0, 50) || 'N/A',
+    sourcesCount: sources.length,
+    firstSourceScore: sources[0]?.score || 'N/A',
+    firstSourcePreview: sources[0]?.text?.substring(0, 50) || 'N/A',
   });
 
-  return (data.nodes || []).map(node => ({
-    text: node.text,
-    score: node.score,
-    metadata: node.metadata,
+  return sources.map((source: any) => ({
+    text: source.text,
+    score: source.score,
+    metadata: source.metadata,
     source: 'llamacloud',
   }));
 }

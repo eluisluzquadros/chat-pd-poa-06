@@ -34,19 +34,37 @@ serve(async (req) => {
     const testQuery = 'regulamento urbanístico teste';
     console.log('📤 Test query:', testQuery);
 
+    const chatPayload = {
+      messages: [{ role: 'user', content: testQuery }],
+      data: {
+        retrieval_parameters: {
+          dense_similarity_top_k: top_k || 30,
+          dense_similarity_cutoff: 0,
+          sparse_similarity_top_k: top_k || 30,
+          enable_reranking: true,
+          rerank_top_n: Math.min(top_k || 6, 10),
+          alpha: 0.5,
+          retrieval_mode: 'chunks',
+          retrieve_page_screenshot_nodes: true,
+          retrieve_page_figure_nodes: true,
+        },
+        llm_parameters: {
+          model_name: 'GPT_4O_MINI',
+          temperature: 0.1,
+          use_citation: true,
+        },
+      },
+    };
+
     const response = await fetch(
-      `https://api.cloud.llamaindex.ai/api/v1/pipelines/${index_id}/retrieve`,
+      `https://api.cloud.llamaindex.ai/api/v1/pipelines/${index_id}/chat`,
       {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${api_key}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          query: testQuery,
-          top_k,
-          similarity_cutoff: score_threshold,
-        }),
+        body: JSON.stringify(chatPayload),
       }
     );
 
@@ -57,20 +75,22 @@ serve(async (req) => {
     }
 
     const data = await response.json();
-    const nodes = data.nodes || [];
+    const sources = data.sources || [];
 
     console.log('📥 Test results:', {
-      nodesRetrieved: nodes.length,
-      scores: nodes.map((n: any) => n.score),
+      sourcesRetrieved: sources.length,
+      scores: sources.map((s: any) => s.score),
+      responsePreview: data.response?.substring(0, 100),
     });
 
-    if (nodes.length === 0) {
+    if (sources.length === 0) {
       const result = {
         success: true,
         message: '⚠️ Conexão OK, mas nenhum documento encontrado. Verifique se o index tem documentos.',
         details: {
-          nodesRetrieved: 0,
+          sourcesRetrieved: 0,
           query: testQuery,
+          response: data.response,
         },
       };
       return new Response(
@@ -79,15 +99,16 @@ serve(async (req) => {
       );
     }
 
-    const avgScore = nodes.reduce((sum: number, n: any) => sum + n.score, 0) / nodes.length;
+    const avgScore = sources.reduce((sum: number, s: any) => sum + (s.score || 0), 0) / sources.length;
     const result = {
       success: true,
-      message: `✅ Conexão OK! ${nodes.length} documento(s) encontrado(s)`,
+      message: `✅ Conexão OK! ${sources.length} documento(s) encontrado(s)`,
       details: {
-        nodesRetrieved: nodes.length,
+        sourcesRetrieved: sources.length,
         avgScore,
-        topScores: nodes.map((n: any) => n.score),
+        topScores: sources.slice(0, 5).map((s: any) => s.score),
         query: testQuery,
+        responsePreview: data.response?.substring(0, 200),
       },
     };
 
