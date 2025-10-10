@@ -31,6 +31,19 @@ async function retrieveFromLlamaCloud(
   scoreThreshold: number
 ): Promise<RetrievalResult[]> {
   console.log('🔍 [LlamaCloud] Retrieving...', { indexId, topK, scoreThreshold });
+  
+  const requestPayload = {
+    query,
+    top_k: topK,
+    similarity_cutoff: scoreThreshold,
+  };
+  
+  console.log('📤 Query sent to LlamaCloud:', {
+    indexId,
+    queryPreview: query.substring(0, 100),
+    top_k: topK,
+    similarity_cutoff: scoreThreshold,
+  });
 
   const response = await fetch(
     `https://api.cloud.llamaindex.ai/api/v1/pipelines/${indexId}/retrieve`,
@@ -40,11 +53,7 @@ async function retrieveFromLlamaCloud(
         'Authorization': `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        query,
-        top_k: topK,
-        similarity_cutoff: scoreThreshold,
-      }),
+      body: JSON.stringify(requestPayload),
     }
   );
 
@@ -55,6 +64,12 @@ async function retrieveFromLlamaCloud(
   }
 
   const data: LlamaCloudResponse = await response.json();
+  
+  console.log('📥 LlamaCloud response:', {
+    nodesCount: data.nodes?.length || 0,
+    firstNodeScore: data.nodes?.[0]?.score || 'N/A',
+    firstNodePreview: data.nodes?.[0]?.text?.substring(0, 50) || 'N/A',
+  });
 
   return (data.nodes || []).map(node => ({
     text: node.text,
@@ -131,7 +146,7 @@ serve(async (req) => {
 
       try {
         const config = kb.config || {};
-        const settings = kb.retrieval_settings || { top_k: 5, score_threshold: 0.7 };
+        const settings = kb.retrieval_settings || { top_k: 5, score_threshold: 0.3 };
 
         if (kb.provider === 'llamacloud') {
           const indexId = config.index_id;

@@ -15,7 +15,9 @@ import {
 } from '@/components/ui/select';
 import { knowledgeBaseService } from '@/services/knowledgeBaseService';
 import { toast } from 'sonner';
-import { Loader2 } from 'lucide-react';
+import { Loader2, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { useKnowledgeBaseTest } from '@/hooks/useKnowledgeBaseTest';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 const formSchema = z.object({
   name: z.string().min(1, 'Nome é obrigatório').regex(/^[a-z0-9_-]+$/, 'Use apenas letras minúsculas, números, _ e -'),
@@ -43,6 +45,7 @@ export function KnowledgeBaseForm({
 }: KnowledgeBaseFormProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [isFetching, setIsFetching] = useState(false);
+  const { testing, lastResult, testKnowledgeBase, clearResult } = useKnowledgeBaseTest();
 
   const {
     register,
@@ -85,9 +88,9 @@ export function KnowledgeBaseForm({
   }, [knowledgeBaseId, setValue]);
 
   const onSubmit = async (values: FormValues) => {
-    setIsLoading(true);
+    setLoading(true);
     try {
-      const kbData = {
+      const data = {
         name: values.name,
         display_name: values.display_name,
         description: values.description,
@@ -100,23 +103,58 @@ export function KnowledgeBaseForm({
           top_k: values.top_k,
           score_threshold: values.score_threshold,
         },
+        is_active: true,
       };
 
       if (knowledgeBaseId) {
-        await knowledgeBaseService.updateKnowledgeBase(knowledgeBaseId, kbData);
-        toast.success('Base de conhecimento atualizada');
+        await knowledgeBaseService.updateKnowledgeBase(knowledgeBaseId, data);
+        toast({
+          title: "Base de conhecimento atualizada",
+          description: "As alterações foram salvas com sucesso.",
+        });
       } else {
-        await knowledgeBaseService.createKnowledgeBase(kbData);
-        toast.success('Base de conhecimento criada');
+        await knowledgeBaseService.createKnowledgeBase(data);
+        toast({
+          title: "Base de conhecimento criada",
+          description: "A base foi criada com sucesso.",
+        });
       }
-
       onSuccess();
-    } catch (error: any) {
-      console.error('Error saving KB:', error);
-      toast.error(error.message || 'Erro ao salvar base de conhecimento');
+    } catch (error) {
+      console.error('Error saving knowledge base:', error);
+      toast({
+        variant: "destructive",
+        title: "Erro ao salvar",
+        description: error instanceof Error ? error.message : "Erro desconhecido",
+      });
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
+  };
+
+  const handleTestConnection = async () => {
+    const values = watch();
+    
+    if (!values.index_id || !values.api_key_secret_name) {
+      toast({
+        variant: "destructive",
+        title: "Dados incompletos",
+        description: "Preencha Index ID e API Key Secret antes de testar",
+      });
+      return;
+    }
+
+    const apiKey = prompt('Cole sua LlamaCloud API Key para teste:');
+    if (!apiKey) return;
+
+    clearResult();
+    await testKnowledgeBase({
+      provider: values.provider,
+      index_id: values.index_id,
+      api_key: apiKey,
+      top_k: values.top_k,
+      score_threshold: values.score_threshold,
+    });
   };
 
   if (isFetching) {
@@ -244,6 +282,51 @@ export function KnowledgeBaseForm({
             Similaridade mínima (0.0-1.0)
           </p>
         </div>
+      </div>
+
+      <div className="space-y-4 pt-4 border-t">
+        <div className="flex items-center justify-between">
+          <div>
+            <h4 className="font-medium">Testar Conexão</h4>
+            <p className="text-sm text-muted-foreground">
+              Valida se a configuração está correta
+            </p>
+          </div>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={handleTestConnection}
+            disabled={testing || !watch('index_id')}
+          >
+            {testing && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            Testar
+          </Button>
+        </div>
+
+        {lastResult && (
+          <Alert variant={lastResult.success ? 'default' : 'destructive'}>
+            {lastResult.success ? (
+              <CheckCircle2 className="h-4 w-4" />
+            ) : (
+              <AlertCircle className="h-4 w-4" />
+            )}
+            <AlertDescription>
+              <div>{lastResult.message}</div>
+              {lastResult.details && (
+                <div className="text-xs mt-2 space-y-1">
+                  <div>Query de teste: "{lastResult.details.query}"</div>
+                  <div>Documentos encontrados: {lastResult.details.nodesRetrieved}</div>
+                  {lastResult.details.avgScore && (
+                    <div>Score médio: {lastResult.details.avgScore.toFixed(3)}</div>
+                  )}
+                  {lastResult.details.topScores && lastResult.details.topScores.length > 0 && (
+                    <div>Top scores: {lastResult.details.topScores.map(s => s.toFixed(3)).join(', ')}</div>
+                  )}
+                </div>
+              )}
+            </AlertDescription>
+          </Alert>
+        )}
       </div>
 
       <div className="flex justify-end gap-2 pt-4">

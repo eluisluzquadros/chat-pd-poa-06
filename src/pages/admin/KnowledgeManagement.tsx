@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { Plus } from 'lucide-react';
+import { useKnowledgeBaseTest } from '@/hooks/useKnowledgeBaseTest';
+import { ExternalKnowledgeBase } from '@/services/knowledgeBaseService';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -12,6 +14,7 @@ import { toast } from 'sonner';
 export default function KnowledgeManagement() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedKBId, setSelectedKBId] = useState<string | null>(null);
+  const { testKnowledgeBase } = useKnowledgeBaseTest();
 
   const { data: knowledgeBases, isLoading, refetch } = useQuery({
     queryKey: ['knowledge-bases'],
@@ -55,6 +58,19 @@ export default function KnowledgeManagement() {
     refetch();
   };
 
+  const handleTest = async (kb: ExternalKnowledgeBase) => {
+    const apiKey = prompt('Cole sua LlamaCloud API Key para teste:');
+    if (!apiKey) return;
+
+    await testKnowledgeBase({
+      provider: kb.provider,
+      index_id: kb.config?.index_id || '',
+      api_key: apiKey,
+      top_k: kb.retrieval_settings?.top_k || 5,
+      score_threshold: kb.retrieval_settings?.score_threshold || 0.3,
+    });
+  };
+
   return (
     <div className="container mx-auto py-8 px-4">
       <Card>
@@ -77,6 +93,7 @@ export default function KnowledgeManagement() {
             onEdit={handleEdit}
             onDelete={handleDelete}
             onToggleStatus={handleToggleStatus}
+            onTest={handleTest}
           />
         </CardContent>
       </Card>

@@ -1,7 +1,7 @@
 import { ExternalKnowledgeBase } from '@/services/knowledgeBaseService';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Edit, Trash2, Power, PowerOff } from 'lucide-react';
+import { Edit, Trash2, Power, PowerOff, TestTube } from 'lucide-react';
 import {
   Table,
   TableBody,
@@ -17,6 +17,7 @@ interface KnowledgeBaseListProps {
   onEdit: (id: string) => void;
   onDelete: (id: string) => void;
   onToggleStatus: (id: string, isActive: boolean) => void;
+  onTest?: (kb: ExternalKnowledgeBase) => void;
 }
 
 export function KnowledgeBaseList({
@@ -25,6 +26,7 @@ export function KnowledgeBaseList({
   onEdit,
   onDelete,
   onToggleStatus,
+  onTest,
 }: KnowledgeBaseListProps) {
   if (isLoading) {
     return <div className="text-center py-8">Carregando...</div>;
@@ -87,6 +89,16 @@ export function KnowledgeBaseList({
             </TableCell>
             <TableCell className="text-right">
               <div className="flex justify-end gap-2">
+                {onTest && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => onTest(kb)}
+                    title="Testar Conexão"
+                  >
+                    <TestTube className="h-4 w-4 text-blue-500" />
+                  </Button>
+                )}
                 <Button
                   variant="ghost"
                   size="icon"

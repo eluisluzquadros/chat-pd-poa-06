@@ -61,7 +61,7 @@ serve(async (req) => {
           }
         });
 
-        if (contextResponse.data?.context) {
+        if (contextResponse.data?.context && contextResponse.data?.resultsCount > 0) {
           const { context, sources, resultsCount } = contextResponse.data;
           console.log(`✅ Retrieved ${resultsCount} results from knowledge bases`);
           
@@ -77,8 +77,11 @@ INSTRUÇÕES IMPORTANTES:
 - Responda em português de forma clara e objetiva`;
 
           contextSources = sources;
-        } else if (contextResponse.error) {
-          console.warn('⚠️ Context retrieval failed:', contextResponse.error);
+        } else if (contextResponse.error || !contextResponse.data?.resultsCount) {
+          console.warn('⚠️ RAG unavailable or empty, proceeding without context:', {
+            error: contextResponse.error,
+            resultsCount: contextResponse.data?.resultsCount || 0,
+          });
         }
       } catch (error) {
         console.error('⚠️ Error calling retrieve-context:', error);
