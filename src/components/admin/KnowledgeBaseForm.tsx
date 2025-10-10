@@ -88,7 +88,7 @@ export function KnowledgeBaseForm({
   }, [knowledgeBaseId, setValue]);
 
   const onSubmit = async (values: FormValues) => {
-    setLoading(true);
+    setIsLoading(true);
     try {
       const data = {
         name: values.name,
@@ -108,27 +108,23 @@ export function KnowledgeBaseForm({
 
       if (knowledgeBaseId) {
         await knowledgeBaseService.updateKnowledgeBase(knowledgeBaseId, data);
-        toast({
-          title: "Base de conhecimento atualizada",
+        toast.success("Base de conhecimento atualizada", {
           description: "As alterações foram salvas com sucesso.",
         });
       } else {
         await knowledgeBaseService.createKnowledgeBase(data);
-        toast({
-          title: "Base de conhecimento criada",
+        toast.success("Base de conhecimento criada", {
           description: "A base foi criada com sucesso.",
         });
       }
       onSuccess();
     } catch (error) {
       console.error('Error saving knowledge base:', error);
-      toast({
-        variant: "destructive",
-        title: "Erro ao salvar",
+      toast.error("Erro ao salvar", {
         description: error instanceof Error ? error.message : "Erro desconhecido",
       });
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
@@ -136,9 +132,7 @@ export function KnowledgeBaseForm({
     const values = watch();
     
     if (!values.index_id || !values.api_key_secret_name) {
-      toast({
-        variant: "destructive",
-        title: "Dados incompletos",
+      toast.error("Dados incompletos", {
         description: "Preencha Index ID e API Key Secret antes de testar",
       });
       return;
