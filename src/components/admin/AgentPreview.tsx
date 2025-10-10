@@ -103,7 +103,8 @@ export function AgentPreview({ formData }: AgentPreviewProps) {
             <div>
               <h4 className="text-sm font-medium text-muted-foreground mb-1">Provedor</h4>
               <p className="text-sm">
-                {formData.provider === 'crewai' ? '🤖 CrewAI' : 
+                {formData.provider === 'lovable' ? '🚀 Lovable' :
+                 formData.provider === 'crewai' ? '🤖 CrewAI' : 
                  formData.provider === 'dify' ? '🔧 Dify' : 
                  formData.provider === 'langflow' ? '🌊 Langflow' : 
                  '🤖 API Externa'}
@@ -119,33 +120,47 @@ export function AgentPreview({ formData }: AgentPreviewProps) {
                 <h4 className="text-sm font-medium">Configuração da API</h4>
               </div>
               
-              <div className="space-y-2 text-sm">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <span className="text-muted-foreground">URL da API:</span>
-                    <p className="font-mono text-xs break-all">{formatApiUrl()}</p>
+              {formData.provider === 'lovable' ? (
+                <div className="p-3 bg-green-50 dark:bg-green-950 border border-green-200 dark:border-green-800 rounded-md">
+                  <div className="flex items-center gap-2 text-green-800 dark:text-green-200">
+                    <span className="text-lg">✅</span>
+                    <div className="text-sm">
+                      <p className="font-medium">Agente Nativo</p>
+                      <p className="text-green-700 dark:text-green-300">
+                        Usa Supabase Edge Function <code className="bg-green-100 dark:bg-green-900 px-1 rounded">openai-chat</code>
+                      </p>
+                    </div>
                   </div>
+                </div>
+              ) : (
+                <div className="space-y-2 text-sm">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <span className="text-muted-foreground">URL da API:</span>
+                      <p className="font-mono text-xs break-all">{formatApiUrl()}</p>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground">
+                        {formData.provider === 'crewai' ? 'Workflow ID:' : 'App ID:'}
+                      </span>
+                      <p className="font-mono text-xs">
+                        {formData.api_config.app_id || 
+                         (formData.provider === 'crewai' ? 'Opcional' : 'Não configurado')}
+                      </p>
+                    </div>
+                  </div>
+                  
                   <div>
-                    <span className="text-muted-foreground">
-                      {formData.provider === 'crewai' ? 'Workflow ID:' : 'App ID:'}
-                    </span>
+                    <span className="text-muted-foreground">API Key:</span>
                     <p className="font-mono text-xs">
-                      {formData.api_config.app_id || 
-                       (formData.provider === 'crewai' ? 'Opcional' : 'Não configurado')}
+                      {formData.api_config.api_key ? 
+                        `${formData.api_config.api_key.substring(0, 8)}...${formData.api_config.api_key.slice(-4)}` : 
+                        'Não configurada'
+                      }
                     </p>
                   </div>
                 </div>
-                
-                <div>
-                  <span className="text-muted-foreground">API Key:</span>
-                  <p className="font-mono text-xs">
-                    {formData.api_config.api_key ? 
-                      `${formData.api_config.api_key.substring(0, 8)}...${formData.api_config.api_key.slice(-4)}` : 
-                      'Não configurada'
-                    }
-                  </p>
-                </div>
-              </div>
+              )}
             </div>
 
           <Separator />

@@ -8,8 +8,9 @@ export function getAdapterForAgent(provider: string): ChatAdapter {
   console.log(`🔌 [Adapter Factory] Selecting adapter for provider: ${normalizedProvider}`);
   
   switch (normalizedProvider) {
+    case 'lovable':
     case 'openai':
-      console.log('✅ Using OpenAI Adapter');
+      console.log('✅ Using OpenAI Adapter (Lovable Native)');
       return new OpenAIAdapter();
     case 'dify':
     default:

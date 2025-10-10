@@ -22,13 +22,23 @@ import { AgentPreview } from '@/components/admin/AgentPreview';
 
 // Plataformas e modelos disponíveis para agentes externos
 const PLATFORMS = [
+  { id: 'lovable', name: 'Lovable', description: '🚀 Agente nativo via Supabase Edge Functions (OpenAI, Gemini, etc.)' },
   { id: 'dify', name: 'Dify', description: 'Plataforma Dify para criação de aplicações AI' },
   { id: 'langflow', name: 'Langflow', description: 'Framework visual para criação de fluxos LangChain' },
   { id: 'crewai', name: 'CrewAI', description: 'Framework para múltiplos agentes AI colaborativos' },
   { id: 'custom', name: 'Personalizado', description: 'API personalizada ou outro provedor' }
 ];
 
+const LOVABLE_MODELS = [
+  { id: 'gpt-4o-mini', name: 'GPT-4o Mini', category: 'lovable', description: '⚡ Rápido e econômico (OpenAI)' },
+  { id: 'gpt-4o', name: 'GPT-4o', category: 'lovable', description: '🧠 Mais poderoso (OpenAI)' },
+  { id: 'gpt-4-turbo', name: 'GPT-4 Turbo', category: 'lovable', description: '🚀 Turbo (OpenAI)' },
+  { id: 'gemini-2.5-flash', name: 'Gemini 2.5 Flash', category: 'lovable', description: '⚡ Rápido e multimodal (Google)' },
+  { id: 'gemini-2.5-pro', name: 'Gemini 2.5 Pro', category: 'lovable', description: '🧠 Mais poderoso (Google)' },
+];
+
 const MODELS = [
+  ...LOVABLE_MODELS,
   { id: 'dify-app', name: 'Aplicação Dify', category: 'dify', description: 'Aplicação customizada no Dify' },
   { id: 'dify-workflow', name: 'Workflow Dify', category: 'dify', description: 'Workflow automatizado no Dify' },
   { id: 'langflow-flow', name: 'Fluxo Langflow', category: 'langflow', description: 'Fluxo criado no Langflow' },
@@ -104,15 +114,16 @@ export default function AgentsConfig() {
 
     // Validação de configuração da API
     const isCrewAI = formData.provider === 'crewai';
-    
-    // Service endpoint e app_id são opcionais para CrewAI
-    const requiredFields = ['base_url', 'api_key'];
-    if (!isCrewAI) {
+    const isLovable = formData.provider === 'lovable';
+
+    // Para Lovable, nenhum campo de API é obrigatório (usa secrets do Supabase)
+    const requiredFields = isLovable ? [] : ['base_url', 'api_key'];
+    if (!isCrewAI && !isLovable) {
       requiredFields.push('service_api_endpoint', 'app_id');
     }
-    
+
     const missingFields = requiredFields.filter(field => !formData.api_config[field as keyof typeof formData.api_config]);
-    
+
     if (missingFields.length > 0) {
       setActiveTab('api');
       return;
@@ -159,8 +170,18 @@ export default function AgentsConfig() {
       let newApiConfig = { ...defaultApiConfig };
       let newModel = '';
 
-      switch (provider) {
-        case 'dify':
+    switch (provider) {
+      case 'lovable':
+        newApiConfig = {
+          base_url: '',
+          service_api_endpoint: '',
+          api_key: '',
+          app_id: '',
+          server_url: ''
+        };
+        newModel = 'gpt-4o-mini';
+        break;
+      case 'dify':
           newApiConfig = {
             base_url: 'https://cloud.dify.ai',
             service_api_endpoint: '/api/chat-messages',
@@ -454,11 +475,13 @@ export default function AgentsConfig() {
           </DialogHeader>
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="general">Geral</TabsTrigger>
-              <TabsTrigger value="api">Conexão API</TabsTrigger>
-              <TabsTrigger value="preview">Preview</TabsTrigger>
-            </TabsList>
+              <TabsList className={`grid w-full ${formData.provider === 'lovable' ? 'grid-cols-2' : 'grid-cols-3'}`}>
+                <TabsTrigger value="general">Geral</TabsTrigger>
+                {formData.provider !== 'lovable' && (
+                  <TabsTrigger value="api">Conexão API</TabsTrigger>
+                )}
+                <TabsTrigger value="preview">Preview</TabsTrigger>
+              </TabsList>
 
             <form onSubmit={handleSubmit} className="space-y-6">
               <TabsContent value="general" className="space-y-4">
@@ -471,6 +494,22 @@ export default function AgentsConfig() {
                     { field: 'model', label: 'Modelo', required: true },
                   ]}
                 />
+
+                {formData.provider === 'lovable' && (
+                  <div className="p-4 bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg">
+                    <div className="flex items-start gap-3">
+                      <div className="text-2xl">🚀</div>
+                      <div className="flex-1">
+                        <h4 className="font-semibold text-blue-900 dark:text-blue-100 mb-1">Agente Nativo Lovable</h4>
+                        <p className="text-sm text-blue-700 dark:text-blue-300">
+                          Este agente usa Supabase Edge Functions. A API Key está armazenada com segurança nos secrets do Supabase.
+                          Não é necessário configurar campos de API externa.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 <TooltipProvider>
                   <div className="space-y-2">
                     <div className="flex items-center gap-2">
@@ -561,18 +600,16 @@ export default function AgentsConfig() {
                       <SelectValue placeholder="Selecione o modelo" />
                     </SelectTrigger>
                     <SelectContent>
-                      {MODELS.filter(model => 
-                        model.category === formData.provider || 
-                        (formData.provider === 'custom' && model.category === 'custom') ||
-                        (['anthropic', 'openai'].includes(model.category))
-                      ).map((model) => (
-                        <SelectItem key={model.id} value={model.id}>
-                          <div className="flex flex-col">
-                            <span className="font-medium">{model.name}</span>
-                            <span className="text-xs text-muted-foreground">{model.description}</span>
-                          </div>
-                        </SelectItem>
-                      ))}
+                      {MODELS
+                        .filter(m => m.category === formData.provider || m.category === 'custom')
+                        .map((model) => (
+                          <SelectItem key={model.id} value={model.id}>
+                            <div className="flex flex-col">
+                              <span className="font-medium">{model.name}</span>
+                              <span className="text-xs text-muted-foreground">{model.description}</span>
+                            </div>
+                          </SelectItem>
+                        ))}
                     </SelectContent>
                   </Select>
                 </div>
