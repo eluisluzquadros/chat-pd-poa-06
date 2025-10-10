@@ -38,18 +38,24 @@ serve(async (req) => {
   }
 
   try {
-    const { provider, index_id, api_key, top_k = 3, score_threshold = 0.3 } = await req.json();
+    const { provider, index_id, api_key_secret_name, top_k = 3, score_threshold = 0.3 } = await req.json();
+
+    // Buscar API key do Vault do Supabase
+    const apiKey = Deno.env.get(api_key_secret_name || 'LLAMACLOUD_API_KEY');
+    if (!apiKey) {
+      throw new Error(`API Key não encontrada no Vault: ${api_key_secret_name || 'LLAMACLOUD_API_KEY'}`);
+    }
 
     console.log('🧪 Testing KB:', {
       provider,
       index_id,
-      api_key: api_key?.substring(0, 10) + '...',
+      api_key: apiKey?.substring(0, 10) + '...',
       top_k,
       score_threshold,
     });
 
-    if (!index_id || !api_key) {
-      throw new Error('Index ID e API Key são obrigatórios');
+    if (!index_id) {
+      throw new Error('Index ID é obrigatório');
     }
 
     if (provider !== 'llamacloud') {
@@ -87,7 +93,7 @@ serve(async (req) => {
       {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${api_key}`,
+          'Authorization': `Bearer ${apiKey}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(chatPayload),
@@ -131,7 +137,6 @@ serve(async (req) => {
     console.log('📥 Test results:', {
       sourcesRetrieved: sources.length,
       scores: sources.map((s: any) => s.score),
-      responsePreview: data.response?.substring(0, 100),
     });
 
     if (sources.length === 0) {
@@ -141,7 +146,6 @@ serve(async (req) => {
         details: {
           sourcesRetrieved: 0,
           query: testQuery,
-          response: data.response,
         },
       };
       return new Response(
@@ -159,7 +163,6 @@ serve(async (req) => {
         avgScore,
         topScores: sources.slice(0, 5).map((s: any) => s.score),
         query: testQuery,
-        responsePreview: data.response?.substring(0, 200),
       },
     };
 

@@ -144,14 +144,11 @@ export function KnowledgeBaseForm({
       return;
     }
 
-    const apiKey = prompt('Cole sua LlamaCloud API Key para teste:');
-    if (!apiKey) return;
-
     clearResult();
     await testKnowledgeBase({
       provider: values.provider,
       index_id: values.index_id,
-      api_key: apiKey,
+      api_key_secret_name: values.api_key_secret_name,
       top_k: values.top_k,
       score_threshold: values.score_threshold,
     });

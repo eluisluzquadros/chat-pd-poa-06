@@ -5,7 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 interface TestKBParams {
   provider: string;
   index_id: string;
-  api_key: string;
+  api_key_secret_name: string;
   top_k?: number;
   score_threshold?: number;
 }
@@ -31,8 +31,8 @@ export const useKnowledgeBaseTest = () => {
       return { success: false, message: 'Teste já em andamento' };
     }
 
-    if (!params.index_id || !params.api_key) {
-      const error = { success: false, message: 'Index ID e API Key são obrigatórios' };
+    if (!params.index_id || !params.api_key_secret_name) {
+      const error = { success: false, message: 'Index ID e API Key Secret são obrigatórios' };
       setLastResult(error);
       toast.error(error.message);
       return error;
@@ -45,7 +45,7 @@ export const useKnowledgeBaseTest = () => {
       console.log('🧪 Testing KB:', {
         provider: params.provider,
         index_id: params.index_id,
-        api_key: params.api_key.substring(0, 10) + '...',
+        api_key_secret_name: params.api_key_secret_name,
       });
 
       console.log('🧪 Calling edge function test-knowledge-base...');
@@ -54,7 +54,7 @@ export const useKnowledgeBaseTest = () => {
         body: {
           provider: params.provider,
           index_id: params.index_id,
-          api_key: params.api_key,
+          api_key_secret_name: params.api_key_secret_name,
           top_k: params.top_k || 3,
           score_threshold: params.score_threshold || 0.3,
         },
