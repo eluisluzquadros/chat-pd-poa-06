@@ -1,4 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
+import { AuthService } from '@/services/authService';
 
 export interface ExternalKnowledgeBase {
   id: string;
@@ -81,6 +82,9 @@ class KnowledgeBaseService {
   }
 
   async createKnowledgeBase(kbData: CreateKnowledgeBaseData): Promise<ExternalKnowledgeBase> {
+    // Refresh session if needed before critical operation
+    await AuthService.refreshSessionIfNeeded();
+    
     const cleanData = {
       name: kbData.name,
       display_name: kbData.display_name,
@@ -109,6 +113,9 @@ class KnowledgeBaseService {
     id: string,
     kbData: Partial<CreateKnowledgeBaseData>
   ): Promise<ExternalKnowledgeBase> {
+    // Refresh session if needed before critical operation
+    await AuthService.refreshSessionIfNeeded();
+    
     const updateData: Record<string, any> = {};
 
     if (kbData.name !== undefined) updateData.name = kbData.name;
@@ -135,6 +142,9 @@ class KnowledgeBaseService {
   }
 
   async deleteKnowledgeBase(id: string): Promise<void> {
+    // Refresh session if needed before critical operation
+    await AuthService.refreshSessionIfNeeded();
+    
     const { error } = await supabase
       .from('external_knowledge_bases')
       .delete()

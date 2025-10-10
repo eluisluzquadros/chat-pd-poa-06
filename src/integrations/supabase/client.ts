@@ -15,3 +15,14 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
     autoRefreshToken: true,
   }
 });
+
+// Setup auth state listener to clear cache on token refresh
+supabase.auth.onAuthStateChange((event, session) => {
+  if (event === 'TOKEN_REFRESHED') {
+    console.log('🔄 Token refreshed by Supabase, clearing session cache');
+    // Clear cache to ensure fresh session data
+    import('@/services/authService').then(({ AuthService }) => {
+      AuthService.clearSessionCache();
+    });
+  }
+});

@@ -122,6 +122,51 @@ export const AuthService = {
     }
   },
 
+  // Refresh session if token is about to expire (< 5 minutes)
+  refreshSessionIfNeeded: async (): Promise<boolean> => {
+    try {
+      const session = await AuthService.getCurrentSession();
+      
+      if (!session?.expires_at) {
+        console.log('⚠️ No session or expiry time found');
+        return false;
+      }
+
+      const expiresAt = session.expires_at * 1000; // Convert to milliseconds
+      const now = Date.now();
+      const timeUntilExpiry = expiresAt - now;
+      const fiveMinutes = 5 * 60 * 1000;
+
+      // Se token expira em menos de 5 minutos, fazer refresh
+      if (timeUntilExpiry < fiveMinutes) {
+        console.log('🔄 Token expiring soon, refreshing session...');
+        
+        const { data, error } = await supabase.auth.refreshSession();
+        
+        if (error) {
+          console.error('❌ Error refreshing session:', error);
+          return false;
+        }
+
+        if (data.session) {
+          // Atualizar cache com nova sessão
+          sessionCache.set('current_session', { 
+            session: data.session, 
+            timestamp: Date.now() 
+          });
+          console.log('✅ Session refreshed successfully');
+          return true;
+        }
+      }
+
+      console.log('✅ Token still valid, no refresh needed');
+      return true;
+    } catch (error) {
+      console.error('❌ Error checking session expiry:', error);
+      return false;
+    }
+  },
+
   // Obter usuário atual
   getCurrentUser: async () => {
     try {
