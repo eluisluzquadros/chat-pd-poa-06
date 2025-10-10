@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { LlamaCloudAdapter } from '@/services/knowledgeBase/adapters/llamacloud';
+import { supabase } from '@/integrations/supabase/client';
 
 interface TestKBParams {
   provider: string;
@@ -48,64 +48,35 @@ export const useKnowledgeBaseTest = () => {
         api_key: params.api_key.substring(0, 10) + '...',
       });
 
-      if (params.provider !== 'llamacloud') {
-        throw new Error('Apenas LlamaCloud suportado por enquanto');
-      }
+      console.log('🧪 Calling edge function test-knowledge-base...');
 
-      // Criar adapter temporário
-      const adapter = new LlamaCloudAdapter(
-        { index_id: params.index_id },
-        {
+      const { data, error } = await supabase.functions.invoke('test-knowledge-base', {
+        body: {
+          provider: params.provider,
+          index_id: params.index_id,
+          api_key: params.api_key,
           top_k: params.top_k || 3,
-          score_threshold: params.score_threshold || 0.3, // Threshold mais baixo para teste
+          score_threshold: params.score_threshold || 0.3,
         },
-        params.api_key
-      );
-
-      // Testar com query simples
-      const testQuery = 'regulamento urbanístico teste';
-      console.log('📤 Test query:', testQuery);
-
-      const results = await adapter.retrieve({
-        query: testQuery,
-        topK: 3,
-        scoreThreshold: 0.3,
       });
 
-      console.log('📥 Test results:', {
-        nodesRetrieved: results.length,
-        scores: results.map(r => r.score),
-      });
-
-      if (results.length === 0) {
-        const result: TestResult = {
-          success: true, // Conexão OK, mas sem resultados
-          message: '⚠️ Conexão OK, mas nenhum documento encontrado. Verifique se o index tem documentos.',
-          details: {
-            nodesRetrieved: 0,
-            query: testQuery,
-          },
-        };
-        setLastResult(result);
-        toast.warning(result.message, { id: 'kb-test' });
-        return result;
+      if (error) {
+        throw new Error(error.message || 'Erro ao chamar edge function');
       }
 
-      const avgScore = results.reduce((sum, r) => sum + r.score, 0) / results.length;
-      const result: TestResult = {
-        success: true,
-        message: `✅ Conexão OK! ${results.length} documento(s) encontrado(s)`,
-        details: {
-          nodesRetrieved: results.length,
-          avgScore,
-          topScores: results.map(r => r.score),
-          query: testQuery,
-        },
-      };
+      if (!data) {
+        throw new Error('Resposta vazia da edge function');
+      }
 
-      setLastResult(result);
-      toast.success(result.message, { id: 'kb-test' });
-      return result;
+      console.log('📥 Edge function response:', data);
+
+      setLastResult(data);
+      if (data.success) {
+        toast.success(data.message, { id: 'kb-test' });
+      } else {
+        toast.error(data.message, { id: 'kb-test' });
+      }
+      return data;
     } catch (error: any) {
       console.error('❌ KB test failed:', error);
       const result: TestResult = {

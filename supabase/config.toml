@@ -1,5 +1,8 @@
 project_id = "ngrqwmvuhvjkeohesbxs"
 
+[functions.test-knowledge-base]
+verify_jwt = false
+
 [functions.openai-chat]
 verify_jwt = false
 
