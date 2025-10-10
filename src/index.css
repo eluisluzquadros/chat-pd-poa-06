@@ -159,3 +159,32 @@
 .text-gradient {
   @apply bg-gradient-to-r from-dark-green to-light-green bg-clip-text text-transparent;
 }
+
+/* Sidebar mobile - forçar backdrop e fundo opaco */
+[data-mobile="true"] {
+  background-color: hsl(var(--background)) !important;
+}
+
+/* Scrollbar personalizada para tabs */
+.scrollbar-thin::-webkit-scrollbar {
+  height: 4px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: hsl(var(--muted-foreground) / 0.2);
+  border-radius: 2px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground) / 0.3);
+}
+
+/* Firefox scrollbar */
+.scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: hsl(var(--muted-foreground) / 0.2) transparent;
+}
