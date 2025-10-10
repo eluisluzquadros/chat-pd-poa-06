@@ -85,7 +85,14 @@ export class DifyAdapter implements IExternalAgentAdapter {
 
       // ✅ CORRIGIDO: Implementar timeout manual compatível com Safari iOS
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 30000);
+      const TIMEOUT_MS = 60000; // ✅ Aumentar para 60 segundos (mobile + RAG)
+      let wasAborted = false;
+
+      const timeoutId = setTimeout(() => {
+        wasAborted = true;
+        controller.abort();
+        console.warn('⏰ DifyAdapter: Request timeout after', TIMEOUT_MS, 'ms');
+      }, TIMEOUT_MS);
 
       try {
         const response = await fetch(url, {
@@ -141,6 +148,12 @@ export class DifyAdapter implements IExternalAgentAdapter {
         };
       } catch (fetchError) {
         clearTimeout(timeoutId);
+        
+        // ✅ Melhorar mensagem de erro se foi timeout
+        if (wasAborted || (fetchError instanceof Error && fetchError.name === 'AbortError')) {
+          throw new Error(`Timeout: O agente demorou mais de ${TIMEOUT_MS/1000}s para responder. Tente novamente ou use uma mensagem mais curta.`);
+        }
+        
         throw fetchError;
       }
 

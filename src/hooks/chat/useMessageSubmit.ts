@@ -265,6 +265,16 @@ export function useMessageSubmit({
 
       console.log(`🚀 [useMessageSubmit] Processing message via ${selectedModel}...`);
       console.log('🔍 [DEBUG] About to log message details with sessionId:', sessionId);
+
+      // ✅ Mostrar feedback progressivo após 5 segundos
+      const progressToastId = 'processing-message';
+      const progressTimer = setTimeout(() => {
+        toast({
+          title: "Processando...",
+          description: "O agente está analisando sua pergunta. Isso pode levar até 1 minuto.",
+          duration: 55000, // Manter até timeout
+        });
+      }, 5000);
       if (!sessionId) {
         console.error('🚨 [DEBUG] sessionId undefined at message details log!');
         throw new Error('sessionId undefined at message details log');
@@ -283,12 +293,19 @@ export function useMessageSubmit({
       
       // 🚀 SDK STRATEGY: Use routing sessionId based on agent capabilities
       // Multi-turn conversations maintain context, playground-style agents self-manage
-      const result = await chatService.processMessage(
-        currentInput, 
-        userRole, 
-        routingSessionId, // Smart routing: real sessionId for continuity OR empty for self-managed
-        selectedModel
-      );
+      let result;
+      try {
+        result = await chatService.processMessage(
+          currentInput, 
+          userRole, 
+          routingSessionId, // Smart routing: real sessionId for continuity OR empty for self-managed
+          selectedModel
+        );
+        clearTimeout(progressTimer); // ✅ Limpar toast de progresso em caso de sucesso
+      } catch (error) {
+        clearTimeout(progressTimer); // ✅ Limpar toast de progresso em caso de erro
+        throw error;
+      }
 
       console.log(`✅ [useMessageSubmit] ${selectedModel} response received:`, {
         hasResponse: !!result.response,

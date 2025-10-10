@@ -133,28 +133,58 @@ export class ExternalAgentGateway {
         throw new Error(`Invalid configuration for agent: ${agent.name}`);
       }
 
-      // Processar via adapter específico
-      const result = await adapter.process(agent, message, options);
-      
-      const executionTime = Date.now() - startTime;
-      console.log(`✅ ExternalAgentGateway.processMessage COMPLETE:`, {
-        agentId: agent.id,
-        platform,
-        executionTime,
-        success: true,
-        responseLength: result.response?.length || 0,
-        confidence: result.confidence
-      });
+      // Processar via adapter específico com retry
+      const MAX_RETRIES = 2;
+      let lastError: Error | null = null;
 
-      return {
-        ...result,
-        executionTime: result.executionTime || executionTime,
-        metadata: {
-          ...result.metadata,
-          platform,
-          gatewayExecutionTime: executionTime
+      for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+        try {
+          console.log(`🔄 ExternalAgentGateway: Attempt ${attempt}/${MAX_RETRIES}`);
+          
+          const result = await adapter.process(agent, message, options);
+          
+          const executionTime = Date.now() - startTime;
+          console.log(`✅ ExternalAgentGateway.processMessage COMPLETE:`, {
+            agentId: agent.id,
+            platform,
+            executionTime,
+            attempt,
+            success: true,
+            responseLength: result.response?.length || 0,
+            confidence: result.confidence
+          });
+          
+          return {
+            ...result,
+            executionTime: result.executionTime || executionTime,
+            metadata: {
+              ...result.metadata,
+              platform,
+              gatewayExecutionTime: executionTime,
+              retryAttempt: attempt
+            }
+          };
+          
+        } catch (error) {
+          lastError = error as Error;
+          
+          // Só fazer retry se for timeout
+          const isTimeout = error instanceof Error && 
+                           (error.message.includes('Timeout') || 
+                            error.message.includes('aborted'));
+          
+          if (!isTimeout || attempt === MAX_RETRIES) {
+            throw error;
+          }
+          
+          // Backoff exponencial: 2s, 4s
+          const backoffMs = 1000 * Math.pow(2, attempt);
+          console.warn(`⚠️ ExternalAgentGateway: Timeout on attempt ${attempt}, retrying in ${backoffMs}ms`);
+          await new Promise(resolve => setTimeout(resolve, backoffMs));
         }
-      };
+      }
+
+      throw lastError || new Error('All retry attempts failed');
 
     } catch (error) {
       const executionTime = Date.now() - startTime;
