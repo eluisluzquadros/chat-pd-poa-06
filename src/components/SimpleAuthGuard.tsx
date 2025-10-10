@@ -22,8 +22,10 @@ export const SimpleAuthGuard = ({
   const [hasPermission, setHasPermission] = useState(true);
   const location = useLocation();
   
-  // Efeito melhorado para verificar autenticação com melhor persistência
+  // Efeito melhorado para verificar autenticação com melhor persistência e timeout para mobile
   useEffect(() => {
+    let timeoutId: NodeJS.Timeout;
+    
     const checkAuth = async () => {
       try {
         console.log("🔍 SimpleRoleGuard: Iniciando verificação sem limpeza de cache");
@@ -108,7 +110,22 @@ export const SimpleAuthGuard = ({
       }
     };
     
+    // Timeout de segurança para mobile (10 segundos)
+    timeoutId = setTimeout(() => {
+      console.warn("⚠️ SimpleAuthGuard: Timeout na verificação - forçando finalização");
+      setIsInitializing(false);
+      
+      // Se ainda não autenticou após timeout, redirecionar
+      setIsAuthenticated(false);
+    }, 10000);
+    
     checkAuth();
+    
+    return () => {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+    };
   }, [requiredRole, location.pathname]);
 
   // Mostrar spinner de carregamento durante inicialização
