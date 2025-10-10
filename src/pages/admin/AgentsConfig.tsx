@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Plus, Settings, Star, Trash2, Edit, TestTube, Loader2, AlertCircle } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Plus, Settings, Star, Trash2, Edit, TestTube, Loader2, AlertCircle, Database } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -14,11 +14,16 @@ import { Slider } from '@/components/ui/slider';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useAgents } from '@/hooks/useAgents';
 import { useConnectionTest } from '@/hooks/useConnectionTest';
+import { useKnowledgeBases } from '@/hooks/useKnowledgeBases';
 import { CreateAgentData, ApiConfig, ModelParameters } from '@/services/agentsService';
 import { refreshRAGCacheWithToast } from '@/utils/ragCacheUtils';
 import { Separator } from '@/components/ui/separator';
 import { AgentFormValidator } from '@/components/admin/AgentFormValidator';
 import { AgentPreview } from '@/components/admin/AgentPreview';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { knowledgeBaseService } from '@/services/knowledgeBaseService';
+import { Link } from 'react-router-dom';
 
 // Plataformas e modelos disponíveis para agentes externos
 const PLATFORMS = [
@@ -58,6 +63,7 @@ interface AgentFormData {
   is_default: boolean;
   api_config: ApiConfig; // Configuração da API externa
   parameters: ModelParameters;
+  selectedKnowledgeBases: string[];
 }
 
 // Configuração padrão da API externa (sem credenciais por segurança)
@@ -91,16 +97,25 @@ const defaultFormData: AgentFormData = {
   is_default: false,
   api_config: defaultApiConfig,
   parameters: defaultParameters,
+  selectedKnowledgeBases: [],
 };
 
 export default function AgentsConfig() {
   const { agents, loading, creating, updating, updateAgent, createAgent, deleteAgent, toggleAgentStatus, setAsDefault } = useAgents();
   const { testing, lastResult, testConnection, clearResult } = useConnectionTest();
+  const { knowledgeBases, agentKBLinks, loadAgentKBLinks } = useKnowledgeBases();
   const [showDialog, setShowDialog] = useState(false);
   const [editingAgent, setEditingAgent] = useState<string | null>(null);
   const [formData, setFormData] = useState<AgentFormData>(defaultFormData);
   const [activeTab, setActiveTab] = useState('general');
   const [showValidation, setShowValidation] = useState(false);
+
+  // Carregar bases vinculadas para todos os agentes
+  useEffect(() => {
+    agents.forEach(agent => {
+      loadAgentKBLinks(agent.id);
+    });
+  }, [agents]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -142,10 +157,22 @@ export default function AgentsConfig() {
         parameters: formData.parameters,
       };
 
+      let savedAgentId: string;
+      
       if (editingAgent) {
         await updateAgent(editingAgent, agentData);
+        savedAgentId = editingAgent;
       } else {
-        await createAgent(agentData);
+        const newAgent = await createAgent(agentData);
+        savedAgentId = newAgent.id;
+      }
+
+      // Atualizar vínculos de bases de conhecimento
+      if (formData.selectedKnowledgeBases.length > 0) {
+        await knowledgeBaseService.updateAgentKBLinks(
+          savedAgentId,
+          formData.selectedKnowledgeBases
+        );
       }
 
       setShowDialog(false);
@@ -226,8 +253,13 @@ export default function AgentsConfig() {
     });
   };
 
-  const handleEdit = (agent: any) => {
+  const handleEdit = async (agent: any) => {
     setEditingAgent(agent.id);
+    
+    // Carregar bases vinculadas ao agente
+    const links = await loadAgentKBLinks(agent.id);
+    const linkedKBIds = links.map(link => link.knowledge_base_id);
+    
     setFormData({
       name: agent.name,
       display_name: agent.display_name,
@@ -238,6 +270,7 @@ export default function AgentsConfig() {
       is_default: agent.is_default,
       api_config: agent.api_config || defaultApiConfig,
       parameters: agent.parameters || defaultParameters,
+      selectedKnowledgeBases: linkedKBIds,
     });
     setShowDialog(true);
   };
@@ -428,6 +461,21 @@ export default function AgentsConfig() {
                     )}
                   </div>
                 )}
+                {agentKBLinks[agent.id]?.length > 0 && (
+                  <div className="flex items-center gap-2 text-sm">
+                    <Database className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-muted-foreground">
+                      <strong>Bases:</strong>{' '}
+                      {agentKBLinks[agent.id]
+                        .map(link => {
+                          const kb = knowledgeBases.find(k => k.id === link.knowledge_base_id);
+                          return kb?.display_name;
+                        })
+                        .filter(Boolean)
+                        .join(', ')}
+                    </span>
+                  </div>
+                )}
                 <div className="flex items-center gap-2 pt-2">
                   {!agent.is_default && agent.is_active && (
                     <Button
@@ -474,12 +522,21 @@ export default function AgentsConfig() {
             </DialogTitle>
           </DialogHeader>
 
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className={`grid w-full ${formData.provider === 'lovable' ? 'grid-cols-2' : 'grid-cols-3'}`}>
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+              <TabsList className={`grid w-full ${formData.provider === 'lovable' ? 'grid-cols-3' : 'grid-cols-4'}`}>
                 <TabsTrigger value="general">Geral</TabsTrigger>
                 {formData.provider !== 'lovable' && (
                   <TabsTrigger value="api">Conexão API</TabsTrigger>
                 )}
+                <TabsTrigger value="knowledge" className="flex items-center gap-2">
+                  <Database className="h-4 w-4" />
+                  Bases
+                  {formData.selectedKnowledgeBases.length > 0 && (
+                    <Badge variant="secondary" className="ml-1 h-5 min-w-5 rounded-full px-1 flex items-center justify-center text-xs">
+                      {formData.selectedKnowledgeBases.length}
+                    </Badge>
+                  )}
+                </TabsTrigger>
                 <TabsTrigger value="preview">Preview</TabsTrigger>
               </TabsList>
 
@@ -879,6 +936,84 @@ export default function AgentsConfig() {
                 </div>
               </TabsContent>
 
+              <TabsContent value="knowledge" className="space-y-4">
+                <div className="space-y-4">
+                  <div>
+                    <Label className="text-base font-semibold">Bases de Conhecimento Externas</Label>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Selecione as bases que o agente deve consultar via RAG (Retrieval-Augmented Generation)
+                    </p>
+                  </div>
+
+                  {knowledgeBases.length === 0 ? (
+                    <Alert>
+                      <AlertCircle className="h-4 w-4" />
+                      <AlertTitle>Nenhuma base cadastrada</AlertTitle>
+                      <AlertDescription>
+                        Cadastre bases de conhecimento em{' '}
+                        <Link to="/admin/knowledge" className="text-primary hover:underline font-medium">
+                          Gestão de Conhecimento
+                        </Link>
+                      </AlertDescription>
+                    </Alert>
+                  ) : (
+                    <div className="space-y-2">
+                      {knowledgeBases.map(kb => (
+                        <div key={kb.id} className="flex items-start gap-3 p-4 border rounded-lg hover:bg-accent/50 transition-colors">
+                          <Checkbox
+                            id={`kb-${kb.id}`}
+                            checked={formData.selectedKnowledgeBases.includes(kb.id)}
+                            onCheckedChange={(checked) => {
+                              setFormData(prev => ({
+                                ...prev,
+                                selectedKnowledgeBases: checked
+                                  ? [...prev.selectedKnowledgeBases, kb.id]
+                                  : prev.selectedKnowledgeBases.filter(id => id !== kb.id)
+                              }));
+                            }}
+                          />
+                          <label htmlFor={`kb-${kb.id}`} className="flex-1 cursor-pointer">
+                            <div className="flex items-center justify-between">
+                              <div className="flex-1">
+                                <p className="font-medium">{kb.display_name}</p>
+                                <p className="text-sm text-muted-foreground mt-1">
+                                  {kb.description || 'Sem descrição'}
+                                </p>
+                                <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground">
+                                  <span>📦 {kb.provider}</span>
+                                  {kb.config.index_id && (
+                                    <span>🔖 {kb.config.index_id}</span>
+                                  )}
+                                </div>
+                              </div>
+                              <div className="flex flex-col gap-1 items-end">
+                                <Badge variant="outline" className="text-xs">
+                                  Top {kb.retrieval_settings.top_k}
+                                </Badge>
+                                <span className="text-xs text-muted-foreground">
+                                  Threshold: {kb.retrieval_settings.score_threshold}
+                                </span>
+                              </div>
+                            </div>
+                          </label>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {formData.selectedKnowledgeBases.length > 1 && (
+                    <div className="p-3 bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg">
+                      <p className="text-sm text-blue-700 dark:text-blue-300">
+                        💡 <strong>Ordem de consulta:</strong>{' '}
+                        {formData.selectedKnowledgeBases.map(id => {
+                          const kb = knowledgeBases.find(k => k.id === id);
+                          return kb?.display_name;
+                        }).join(' → ')}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </TabsContent>
 
               <TabsContent value="preview" className="space-y-4">
                 <AgentPreview formData={formData} />
