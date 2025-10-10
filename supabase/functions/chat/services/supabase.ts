@@ -11,14 +11,14 @@ export async function getSecrets() {
   console.log("🔑 Getting secrets from Supabase...");
   const { data: secrets, error: secretsError } = await supabaseClient
     .from("secrets")
-    .select("name, secret_value");
+    .select("name, value");
 
   if (secretsError || !secrets) {
     throw new Error("Error retrieving secrets from Supabase.");
   }
 
   const secretsMap = Object.fromEntries(
-    secrets.map(({ name, secret_value }) => [name, secret_value])
+    secrets.map(({ name, value }) => [name, value])
   );
 
   const openaiApiKey = secretsMap["OPENAI_API_KEY"];

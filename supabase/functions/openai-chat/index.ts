@@ -30,7 +30,7 @@ serve(async (req) => {
 
     const { data: secrets, error: secretsError } = await supabaseClient
       .from("secrets")
-      .select("secret_value")
+      .select("value")
       .eq("name", "OPENAI_API_KEY")
       .single();
 
@@ -39,7 +39,7 @@ serve(async (req) => {
       throw new Error("OpenAI API Key not configured");
     }
 
-    const openaiApiKey = secrets.secret_value;
+    const openaiApiKey = secrets.value;
 
     // Call OpenAI API (blocking mode for initial test)
     console.log('🤖 Calling OpenAI API...');
