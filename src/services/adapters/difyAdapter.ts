@@ -7,6 +7,87 @@ import {
 } from '../externalAgentGateway';
 
 /**
+ * Wrapper de fetch com fallback para XMLHttpRequest no Safari iOS
+ * Resolve bug do iOS 18+ onde AbortController causa "signal is aborted without reason"
+ */
+async function fetchWithTimeout(
+  url: string,
+  options: RequestInit & { timeout?: number }
+): Promise<Response> {
+  const { timeout = 60000, ...fetchOptions } = options;
+  
+  // Detectar Safari iOS (incluindo Chrome iOS que usa WebKit)
+  const userAgent = navigator.userAgent;
+  const isSafariIOS = /iPad|iPhone|iPod/.test(userAgent) && /WebKit/i.test(userAgent);
+  
+  // WORKAROUND: Usar XMLHttpRequest no Safari iOS para evitar bug do iOS 18+
+  if (isSafariIOS) {
+    console.log('🍎 [iOS Workaround] Using XMLHttpRequest instead of fetch');
+    
+    return new Promise<Response>((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      xhr.open(fetchOptions.method || 'GET', url);
+      
+      // Headers
+      if (fetchOptions.headers) {
+        const headers = fetchOptions.headers as Record<string, string>;
+        Object.keys(headers).forEach(key => {
+          xhr.setRequestHeader(key, headers[key]);
+        });
+      }
+      
+      // Timeout
+      xhr.timeout = timeout;
+      xhr.ontimeout = () => {
+        reject(new Error(`Timeout: O agente demorou mais de ${timeout/1000}s para responder. Tente novamente ou use uma mensagem mais curta.`));
+      };
+      
+      // Success
+      xhr.onload = () => {
+        const headers = new Headers();
+        xhr.getAllResponseHeaders().split('\r\n').forEach(line => {
+          const [key, value] = line.split(': ');
+          if (key && value) headers.append(key, value);
+        });
+        
+        resolve(new Response(xhr.responseText, {
+          status: xhr.status,
+          statusText: xhr.statusText,
+          headers
+        }));
+      };
+      
+      // Error
+      xhr.onerror = () => {
+        reject(new Error(`Network error: ${xhr.statusText || 'Request failed'}`));
+      };
+      
+      // Send
+      xhr.send(fetchOptions.body as string || null);
+    });
+  }
+  
+  // Navegadores normais: usar fetch padrão com AbortController
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeout);
+  
+  try {
+    const response = await fetch(url, {
+      ...fetchOptions,
+      signal: controller.signal
+    });
+    clearTimeout(timeoutId);
+    return response;
+  } catch (error) {
+    clearTimeout(timeoutId);
+    if (error instanceof Error && error.name === 'AbortError') {
+      throw new Error(`Timeout: O agente demorou mais de ${timeout/1000}s para responder. Tente novamente ou use uma mensagem mais curta.`);
+    }
+    throw error;
+  }
+}
+
+/**
  * DifyAdapter - Adapter para integração com a API Dify
  * 
  * Implementa mapeamento de conversações para resolver o erro "Conversation Not Exists":
@@ -83,26 +164,13 @@ export class DifyAdapter implements IExternalAgentAdapter {
 
       console.log('📡 DifyAdapter making request to:', url);
 
-      // ✅ CORRIGIDO: Implementar timeout manual compatível com Safari iOS
-      const controller = new AbortController();
-      const TIMEOUT_MS = 60000; // ✅ Aumentar para 60 segundos (mobile + RAG)
-      let wasAborted = false;
-
-      const timeoutId = setTimeout(() => {
-        wasAborted = true;
-        controller.abort();
-        console.warn('⏰ DifyAdapter: Request timeout after', TIMEOUT_MS, 'ms');
-      }, TIMEOUT_MS);
-
       try {
-        const response = await fetch(url, {
+        const response = await fetchWithTimeout(url, {
           method: 'POST',
           headers,
           body: JSON.stringify(payload),
-          signal: controller.signal
+          timeout: 60000 // 60 segundos
         });
-        
-        clearTimeout(timeoutId);
 
         if (!response.ok) {
           const errorText = await response.text();
@@ -147,14 +215,7 @@ export class DifyAdapter implements IExternalAgentAdapter {
           }
         };
       } catch (fetchError) {
-        clearTimeout(timeoutId);
-        
-        // ✅ Melhorar mensagem de erro se foi timeout
-        if (wasAborted || (fetchError instanceof Error && fetchError.name === 'AbortError')) {
-          throw new Error(`Timeout: O agente demorou mais de ${TIMEOUT_MS/1000}s para responder. Tente novamente ou use uma mensagem mais curta.`);
-        }
-        
-        throw fetchError;
+        throw fetchError; // Erro já formatado por fetchWithTimeout
       }
 
     } catch (error) {
