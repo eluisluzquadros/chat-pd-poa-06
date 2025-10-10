@@ -13,13 +13,22 @@ const Header = () => {
 
   return (
     <header className="bg-primary text-primary-foreground shadow-md sticky top-0 z-50">
-      <div className="w-full max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 flex items-center justify-between py-4">
-        <div className="flex items-center gap-4">
-          <Logo />
-        </div>
-        <div className="flex items-center space-x-6">
-          <MainNavigation />
-          <UserMenu isAuthenticated={isAuthenticated} isLoading={isLoading} />
+      <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-16 sm:h-20">
+          {/* Logo - sempre visível */}
+          <div className="flex items-center gap-2 min-w-0">
+            <Logo />
+          </div>
+          
+          {/* Navegação - esconder em mobile, mostrar em tablet+ */}
+          <div className="hidden md:flex items-center space-x-6">
+            <MainNavigation />
+          </div>
+          
+          {/* User Menu - sempre visível mas compacto em mobile */}
+          <div className="flex items-center gap-2">
+            <UserMenu isAuthenticated={isAuthenticated} isLoading={isLoading} />
+          </div>
         </div>
       </div>
     </header>

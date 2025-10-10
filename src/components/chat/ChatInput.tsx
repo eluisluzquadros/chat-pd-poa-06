@@ -26,19 +26,20 @@ export function ChatInput({
   };
 
   return (
-    <form onSubmit={onSubmit} className="w-full space-y-2">
+    <form onSubmit={onSubmit} className="w-full space-y-2 px-2 sm:px-0">
       <div className={cn(
-        "relative flex items-end gap-2 sm:gap-3 p-2 sm:p-3",
+        "relative flex items-end gap-2",
         "bg-background border border-input rounded-xl",
         "focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2",
         "transition-all duration-200",
+        "p-2 sm:p-3",
         centered ? "max-w-2xl mx-auto" : "w-full"
       )}>
         {isLoading && (
           <div className="absolute inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center rounded-xl z-10">
             <div className="flex items-center gap-2">
-              <div className="h-4 w-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-              <span className="text-sm text-muted-foreground">Enviando...</span>
+              <div className="h-3 w-3 sm:h-4 sm:w-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+              <span className="text-xs sm:text-sm text-muted-foreground">Enviando...</span>
             </div>
           </div>
         )}
@@ -49,13 +50,16 @@ export function ChatInput({
           onKeyDown={handleKeyDown}
           placeholder="Digite sua mensagem..."
           className={cn(
-            "flex-1 min-h-[40px] max-h-[120px] resize-none",
-            "border-0 bg-transparent p-0",
+            "flex-1 min-h-[40px] max-h-[100px] sm:max-h-[120px]",
+            "resize-none border-0 bg-transparent p-0",
             "focus-visible:ring-0 focus-visible:ring-offset-0",
             "placeholder:text-muted-foreground",
-            "text-sm sm:text-base"
+            "text-sm sm:text-base",
+            "overflow-y-auto scrollbar-thin",
+            "break-words"
           )}
           disabled={isLoading}
+          rows={1}
         />
         
         <Button 
@@ -63,18 +67,19 @@ export function ChatInput({
           size="icon"
           disabled={!input.trim() || isLoading}
           className={cn(
-            "h-8 w-8 sm:h-10 sm:w-10 rounded-lg flex-shrink-0",
+            "h-9 w-9 sm:h-10 sm:w-10",
+            "rounded-lg flex-shrink-0",
             "bg-primary hover:bg-primary/90 text-primary-foreground",
             "disabled:opacity-50 disabled:cursor-not-allowed",
-            "transition-all duration-200 hover:scale-105",
+            "transition-all duration-200 hover:scale-105 active:scale-95",
             "shadow-sm"
           )}
         >
-          <Send className="h-3 w-3 sm:h-4 sm:w-4" />
+          <Send className="h-4 w-4" />
         </Button>
       </div>
       
-      <p className="text-xs text-center text-muted-foreground px-2">
+      <p className="text-[10px] sm:text-xs text-center text-muted-foreground px-2">
         O assistente pode cometer erros. Considere verificar informações importantes.
       </p>
     </form>

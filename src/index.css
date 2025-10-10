@@ -55,15 +55,28 @@
 @layer base {
   * {
     @apply border-border;
+    box-sizing: border-box;
   }
   html {
     overflow-x: hidden;
     max-width: 100vw;
+    scroll-behavior: smooth;
   }
   body {
     @apply bg-background text-foreground min-h-screen antialiased;
     font-feature-settings: "rlig" 1, "calt" 1;
     overflow-x: hidden;
+    max-width: 100vw;
+    position: relative;
+  }
+  img, video, iframe {
+    max-width: 100%;
+    height: auto;
+  }
+  textarea {
+    word-wrap: break-word;
+    word-break: break-word;
+    overflow-wrap: break-word;
   }
   h1, h2, h3, h4, h5, h6 {
     @apply font-heading font-semibold tracking-tight;

@@ -68,85 +68,91 @@ export const MessageList = memo(function MessageList({
       onScroll={handleScroll} 
       className="h-full overflow-y-auto scrollbar-thin scrollbar-thumb-muted-foreground/20 scrollbar-track-transparent"
     >
-      <div className="max-w-4xl mx-auto p-4 space-y-6">
+      <div className="max-w-4xl mx-auto px-2 sm:px-4 space-y-4 sm:space-y-6">
         {messages.length > 0 ? (
           <>
             {messages.map((message) => (
               <div 
                 key={message.id} 
                 className={cn(
-                  "flex w-full",
+                  "flex w-full gap-2 sm:gap-3",
                   message.role === "user" ? "justify-end" : "justify-start"
                 )}
               >
+                {/* Avatar ANTES da mensagem (não absoluto) - apenas em desktop */}
+                {message.role === "assistant" && (
+                  <div className="hidden sm:flex w-8 h-8 rounded-full items-center justify-center bg-background border border-border shadow-sm flex-shrink-0 mt-1">
+                    <Code className="h-4 w-4 text-primary" />
+                  </div>
+                )}
+                
+                {/* Mensagem */}
                 <div 
                   className={cn(
-                    "group relative max-w-[95%] sm:max-w-[85%] md:max-w-[75%] lg:max-w-[70%]",
-                    "rounded-2xl p-4 shadow-sm transition-all duration-200",
+                    "group relative flex-1 max-w-[90%] sm:max-w-[85%] md:max-w-[75%] lg:max-w-[70%]",
+                    "rounded-2xl p-3 sm:p-4 shadow-sm transition-all duration-200",
                     message.role === "user" 
-                      ? "bg-primary text-primary-foreground" 
+                      ? "bg-primary text-primary-foreground ml-auto" 
                       : "bg-card text-card-foreground border border-border"
                   )}
                 >
-                  {/* Avatar - apenas em telas maiores */}
-                  <div className={cn(
-                    "hidden sm:flex absolute top-2 w-7 h-7 rounded-full items-center justify-center",
-                    "bg-background border border-border shadow-sm",
-                    message.role === "user" ? "-right-9" : "-left-9"
-                  )}>
-                    {message.role === "user" 
-                      ? <User className="h-4 w-4 text-primary" /> 
-                      : <Code className="h-4 w-4 text-primary" />
-                    }
-                  </div>
-
-                  {/* Botão de copiar */}
+                  {/* Botão de copiar - ajustado para mobile */}
                   <Button 
                     variant="ghost" 
                     size="icon" 
                     className={cn(
-                      "absolute top-2 right-2 h-6 w-6 opacity-0 group-hover:opacity-100",
-                      "transition-opacity duration-200",
+                      "absolute top-1 right-1 sm:top-2 sm:right-2",
+                      "h-6 w-6 sm:h-7 sm:w-7",
+                      "opacity-0 group-hover:opacity-100 transition-opacity duration-200",
                       message.role === "user" 
-                        ? "text-primary-foreground/70 hover:text-primary-foreground hover:bg-primary-foreground/10" 
-                        : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                        ? "text-primary-foreground/70 hover:bg-primary-foreground/10" 
+                        : "text-muted-foreground hover:bg-muted"
                     )}
                     onClick={() => copyMessage(message.content)}
                   >
-                    <Copy className="h-3 w-3" />
+                    <Copy className="h-3 w-3 sm:h-4 sm:w-4" />
                   </Button>
 
-                   {/* Conteúdo da mensagem */}
-                   <div className="pr-8">
-                      {message.role === "assistant" ? (
-                        <AgenticV2ResponseRenderer 
-                          content={message.content} 
-                          isAgenticV2={true}
-                          isAdmin={isAdmin}
-                          isTestMode={false}
-                          agentName={getAgentDisplayName(message.model)}
-                        />
-                     ) : (
-                        <MessageContent 
-                          content={message.content} 
-                          role={message.role}
-                        />
-                     )}
-                   </div>
+                  {/* Conteúdo - com padding para botão de copiar */}
+                  <div className="pr-7 sm:pr-8">
+                    {message.role === "assistant" ? (
+                      <AgenticV2ResponseRenderer 
+                        content={message.content} 
+                        isAgenticV2={true}
+                        isAdmin={isAdmin}
+                        isTestMode={false}
+                        agentName={getAgentDisplayName(message.model)}
+                      />
+                    ) : (
+                      <MessageContent 
+                        content={message.content} 
+                        role={message.role}
+                      />
+                    )}
+                  </div>
 
                   {/* Timestamp */}
                   <div className={cn(
-                    "flex items-center justify-between mt-3 text-xs",
+                    "flex items-center justify-between mt-2 sm:mt-3 text-xs",
                     message.role === "user" 
                       ? "text-primary-foreground/70" 
                       : "text-muted-foreground"
                   )}>
-                    <span>{message.timestamp.toLocaleTimeString('pt-BR')}</span>
-                     {message.role === "assistant" && (
-                       <span className="ml-2 hidden sm:inline">via ChatPDPOA</span>
-                     )}
+                    <span className="text-[10px] sm:text-xs">
+                      {message.timestamp.toLocaleTimeString('pt-BR')}
+                    </span>
+                    {message.role === "assistant" && (
+                      <span className="ml-2 text-[10px] sm:text-xs">via ChatPDPOA</span>
+                    )}
                   </div>
                 </div>
+
+                {/* Avatar DEPOIS da mensagem - apenas em desktop */}
+                {message.role === "user" && (
+                  <div className="hidden sm:flex w-8 h-8 rounded-full items-center justify-center bg-background border border-border shadow-sm flex-shrink-0 mt-1">
+                    <User className="h-4 w-4 text-primary" />
+                  </div>
+                )}
               </div>
             ))}
 
