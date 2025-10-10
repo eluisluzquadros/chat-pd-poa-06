@@ -21,6 +21,7 @@ export interface ModelParameters {
   timeout?: number;
   max_retries?: number;
   response_format?: 'text' | 'json';
+  system_prompt?: string;
 }
 
 export interface Agent {

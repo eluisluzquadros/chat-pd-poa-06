@@ -189,6 +189,15 @@ export function AgentPreview({ formData }: AgentPreviewProps) {
                 <p>{formData.parameters.stream ? 'Ativado' : 'Desativado'}</p>
               </div>
             </div>
+
+            {formData.parameters.system_prompt && (
+              <div className="space-y-1 mt-4">
+                <span className="text-xs text-muted-foreground font-medium">System Prompt</span>
+                <div className="text-sm bg-muted p-3 rounded-md font-mono whitespace-pre-wrap break-words max-h-48 overflow-y-auto">
+                  {formData.parameters.system_prompt}
+                </div>
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>
