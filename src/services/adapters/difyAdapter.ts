@@ -5,6 +5,7 @@ import {
   AgentProcessResponse, 
   ConnectionTestResult 
 } from '../externalAgentGateway';
+import { telemetryService } from '../telemetryService';
 
 /**
  * Wrapper de fetch com fallback para XMLHttpRequest no Safari iOS
@@ -18,14 +19,32 @@ async function fetchWithTimeout(
   
   // Detectar Safari iOS (incluindo Chrome iOS que usa WebKit)
   const userAgent = navigator.userAgent;
-  const isSafariIOS = /iPad|iPhone|iPod/.test(userAgent) && /WebKit/i.test(userAgent);
-  
+  const isiOS = /iPad|iPhone|iPod/.test(userAgent);
+  const isWebKit = /WebKit/i.test(userAgent);
+  const isSafariIOS = isiOS && isWebKit;
+
+  // 📊 Telemetria: Detecção de plataforma
+  telemetryService.logPlatformDetection({
+    userAgent: userAgent.substring(0, 200),
+    isiOS,
+    isWebKit,
+    isSafariIOS,
+    willUseXHR: isSafariIOS,
+    navigatorPlatform: navigator.platform,
+    windowWidth: window.innerWidth
+  }).catch(err => console.error('Telemetry failed:', err));
+
   // WORKAROUND: Usar XMLHttpRequest no Safari iOS para evitar bug do iOS 18+
   if (isSafariIOS) {
     console.log('🍎 [iOS Workaround] Using XMLHttpRequest instead of fetch');
+    telemetryService.logInfo('iOS Workaround activated - Using XMLHttpRequest').catch(() => {});
     
     return new Promise<Response>((resolve, reject) => {
       const xhr = new XMLHttpRequest();
+      
+      // 📊 Telemetria: XHR Start
+      telemetryService.logXHRStart(url, fetchOptions.method || 'GET').catch(() => {});
+      
       xhr.open(fetchOptions.method || 'GET', url);
       
       // Headers
@@ -39,11 +58,16 @@ async function fetchWithTimeout(
       // Timeout
       xhr.timeout = timeout;
       xhr.ontimeout = () => {
-        reject(new Error(`Timeout: O agente demorou mais de ${timeout/1000}s para responder. Tente novamente ou use uma mensagem mais curta.`));
+        const error = new Error(`Timeout: O agente demorou mais de ${timeout/1000}s para responder. Tente novamente ou use uma mensagem mais curta.`);
+        telemetryService.logXHRError(error, xhr.readyState).catch(() => {});
+        reject(error);
       };
       
       // Success
       xhr.onload = () => {
+        // 📊 Telemetria: XHR Success
+        telemetryService.logXHRSuccess(xhr.status, xhr.responseText.length).catch(() => {});
+        
         const headers = new Headers();
         xhr.getAllResponseHeaders().split('\r\n').forEach(line => {
           const [key, value] = line.split(': ');
@@ -59,7 +83,9 @@ async function fetchWithTimeout(
       
       // Error
       xhr.onerror = () => {
-        reject(new Error(`Network error: ${xhr.statusText || 'Request failed'}`));
+        const error = new Error(`Network error: ${xhr.statusText || 'Request failed'}`);
+        telemetryService.logXHRError(error, xhr.readyState).catch(() => {});
+        reject(error);
       };
       
       // Send
@@ -109,6 +135,9 @@ export class DifyAdapter implements IExternalAgentAdapter {
     options: AgentProcessOptions = {}
   ): Promise<AgentProcessResponse> {
     const startTime = Date.now();
+    
+    // Configurar contexto de telemetria
+    telemetryService.setContext(options.sessionId || null, options.userId || null);
     
     console.log('🔧 DifyAdapter.process START:', {
       agentId: agent.id,
@@ -191,10 +220,16 @@ export class DifyAdapter implements IExternalAgentAdapter {
           data = await response.json();
           console.log('🍎 [Mobile Debug] response.json() SUCCESS');
           console.log('🍎 [Mobile Debug] Data keys:', Object.keys(data));
+          
+          // 📊 Telemetria: JSON Parse Success
+          telemetryService.logJSONParse(true).catch(() => {});
         } catch (jsonError) {
           console.error('🍎 [Mobile Debug] response.json() FAILED:', jsonError);
           console.error('🍎 [Mobile Debug] JSON Error name:', jsonError instanceof Error ? jsonError.name : 'unknown');
           console.error('🍎 [Mobile Debug] JSON Error message:', jsonError instanceof Error ? jsonError.message : 'unknown');
+          
+          // 📊 Telemetria: JSON Parse Failed
+          telemetryService.logJSONParse(false, jsonError as Error).catch(() => {});
           
           // 🍎 iOS 18 BUG WORKAROUND: Tentar response.text() se json() falhar
           try {
@@ -202,8 +237,17 @@ export class DifyAdapter implements IExternalAgentAdapter {
             console.log('🍎 [Mobile Debug] response.text() SUCCESS, length:', textResponse.length);
             data = JSON.parse(textResponse);
             console.log('🍎 [Mobile Debug] Manual JSON.parse() SUCCESS');
+            
+            // 📊 Telemetria: Manual JSON.parse succeeded
+            telemetryService.logInfo('Manual JSON.parse succeeded after response.text()', {
+              responseLength: textResponse.length
+            }).catch(() => {});
           } catch (textError) {
             console.error('🍎 [Mobile Debug] response.text() also FAILED:', textError);
+            
+            // 📊 Telemetria: Complete failure
+            telemetryService.logError(textError as Error, 'response.text() also failed').catch(() => {});
+            
             throw jsonError; // Re-throw original error
           }
         }

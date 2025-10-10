@@ -554,6 +554,51 @@ export type Database = {
         }
         Relationships: []
       }
+      ios_debug_logs: {
+        Row: {
+          created_at: string | null
+          details: Json | null
+          error_message: string | null
+          error_name: string | null
+          id: string
+          log_level: string
+          log_type: string
+          message: string
+          session_id: string | null
+          stack_trace: string | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          details?: Json | null
+          error_message?: string | null
+          error_name?: string | null
+          id?: string
+          log_level: string
+          log_type: string
+          message: string
+          session_id?: string | null
+          stack_trace?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          details?: Json | null
+          error_message?: string | null
+          error_name?: string | null
+          id?: string
+          log_level?: string
+          log_type?: string
+          message?: string
+          session_id?: string | null
+          stack_trace?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       knowledge_graph_edges: {
         Row: {
           created_at: string | null
