@@ -8,17 +8,17 @@ export async function getSecrets() {
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
   );
 
-  console.log("🔑 Getting secrets from Supabase...");
+  console.log("🔑 Getting secrets from Supabase Vault...");
   const { data: secrets, error: secretsError } = await supabaseClient
-    .from("secrets")
-    .select("name, value");
+    .from("decrypted_secrets")
+    .select("name, decrypted_secret");
 
   if (secretsError || !secrets) {
-    throw new Error("Error retrieving secrets from Supabase.");
+    throw new Error("Error retrieving secrets from Vault.");
   }
 
   const secretsMap = Object.fromEntries(
-    secrets.map(({ name, value }) => [name, value])
+    secrets.map(({ name, decrypted_secret }) => [name, decrypted_secret])
   );
 
   const openaiApiKey = secretsMap["OPENAI_API_KEY"];

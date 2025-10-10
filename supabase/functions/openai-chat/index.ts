@@ -28,18 +28,19 @@ serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
 
+    // Read from vault.decrypted_secrets (encrypted at rest)
     const { data: secrets, error: secretsError } = await supabaseClient
-      .from("secrets")
-      .select("value")
+      .from("decrypted_secrets")
+      .select("name, decrypted_secret")
       .eq("name", "OPENAI_API_KEY")
       .single();
 
     if (secretsError || !secrets) {
-      console.error('❌ OpenAI API Key not found in secrets');
-      throw new Error("OpenAI API Key not configured");
+      console.error('❌ OpenAI API Key not found in vault');
+      throw new Error("OpenAI API Key not configured in Vault");
     }
 
-    const openaiApiKey = secrets.value;
+    const openaiApiKey = secrets.decrypted_secret;
 
     // Call OpenAI API (blocking mode for initial test)
     console.log('🤖 Calling OpenAI API...');
