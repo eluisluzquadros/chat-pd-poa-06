@@ -112,19 +112,13 @@ serve(async (req) => {
 
     console.log(`📚 Found ${agentKBs.length} knowledge base(s)`);
 
-    // Get secrets
-    const { data: secrets, error: secretsError } = await supabaseClient
-      .from('decrypted_secrets')
-      .select('name, decrypted_secret');
+    // Get secrets from Edge Function Secrets
+    const secretsMap: Record<string, string> = {
+      LLAMACLOUD_API_KEY: Deno.env.get('LLAMACLOUD_API_KEY') || '',
+      OPENAI_API_KEY: Deno.env.get('OPENAI_API_KEY') || '',
+    };
 
-    if (secretsError) {
-      console.error('❌ Error retrieving secrets:', secretsError);
-      throw secretsError;
-    }
-
-    const secretsMap = Object.fromEntries(
-      (secrets || []).map(({ name, decrypted_secret }) => [name, decrypted_secret])
-    );
+    console.log('✅ Secrets loaded from environment:', Object.keys(secretsMap).filter(k => secretsMap[k]));
 
     // Retrieve from all knowledge bases
     const allResults: RetrievalResult[] = [];

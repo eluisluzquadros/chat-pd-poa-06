@@ -24,25 +24,15 @@ serve(async (req) => {
       agentModel: agentConfig?.model 
     });
 
-    // Get OpenAI API Key from Supabase secrets
-    const supabaseClient = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
-    );
+    // Get OpenAI API Key from Edge Function Secrets
+    const openaiApiKey = Deno.env.get('OPENAI_API_KEY');
 
-    // Read from vault.decrypted_secrets (encrypted at rest)
-    const { data: secrets, error: secretsError } = await supabaseClient
-      .from("decrypted_secrets")
-      .select("name, decrypted_secret")
-      .eq("name", "OPENAI_API_KEY")
-      .single();
-
-    if (secretsError || !secrets) {
-      console.error('❌ OpenAI API Key not found in vault');
-      throw new Error("OpenAI API Key not configured in Vault");
+    if (!openaiApiKey) {
+      console.error('❌ OPENAI_API_KEY not found in environment');
+      throw new Error("OPENAI_API_KEY not configured in Edge Function Secrets");
     }
 
-    const openaiApiKey = secrets.decrypted_secret;
+    console.log('✅ OpenAI API Key loaded from environment');
 
     // Prepare system prompt and user message
     let systemPrompt = 'Você é um assistente útil. Responda de forma clara e concisa.';
