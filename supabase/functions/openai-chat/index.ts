@@ -47,7 +47,8 @@ serve(async (req) => {
     console.log('✅ OpenAI API Key loaded from environment');
 
     // Prepare system prompt and user message
-    let systemPrompt = 'Você é um assistente útil. Responda de forma clara e concisa.';
+    let systemPrompt = agentConfig?.parameters?.system_prompt || 
+                       'Você é um assistente útil. Responda de forma clara e concisa.';
     let contextSources = [];
 
     // Check if agent has knowledge bases configured via new system
@@ -65,23 +66,29 @@ serve(async (req) => {
           const { context, sources, resultsCount } = contextResponse.data;
           console.log(`✅ Retrieved ${resultsCount} results from knowledge bases`);
           
-          systemPrompt = `Você é um assistente especializado. Use APENAS as informações do contexto abaixo para responder.
+          // Combinar system prompt original + contexto RAG (não sobrescrever)
+          systemPrompt = `${systemPrompt}
+
+IMPORTANTE: Use as informações da base de conhecimento abaixo para responder:
 
 CONTEXTO DA BASE DE CONHECIMENTO:
 ${context}
 
-INSTRUÇÕES IMPORTANTES:
+INSTRUÇÕES DE USO DO CONTEXTO:
+- Priorize as informações do contexto acima
 - Cite as fontes usando [1], [2], etc. conforme aparecem no contexto
 - Se a informação não estiver no contexto, diga: "Não encontrei informações sobre isso na base de conhecimento."
-- Seja preciso e baseie-se apenas no contexto fornecido
-- Responda em português de forma clara e objetiva`;
+- Seja preciso e baseie-se no contexto fornecido`;
 
           contextSources = sources;
         } else if (contextResponse.error || !contextResponse.data?.resultsCount) {
           console.warn('⚠️ RAG unavailable or empty, proceeding without context:', {
             error: contextResponse.error,
             resultsCount: contextResponse.data?.resultsCount || 0,
+            agentId: agentConfig.id,
+            kbCount: agentConfig.knowledge_bases?.length || 0,
           });
+          console.log(`⚠️ [RAG] Agente "${agentConfig.name}" não obteve contexto - verifique bases de conhecimento`);
         }
       } catch (error) {
         console.error('⚠️ Error calling retrieve-context:', error);

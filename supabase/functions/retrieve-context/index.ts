@@ -1,3 +1,4 @@
+import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
@@ -31,6 +32,20 @@ function parseChunkedResponse(text: string): any {
   return chunks;
 }
 
+async function fetchWithRetry(url: string, options: RequestInit, retries = 2): Promise<Response> {
+  for (let i = 0; i <= retries; i++) {
+    try {
+      const response = await fetch(url, options);
+      return response;
+    } catch (error) {
+      if (i === retries) throw error;
+      console.warn(`⚠️ Retry ${i + 1}/${retries} after error:`, error.message);
+      await new Promise(resolve => setTimeout(resolve, 1000 * (i + 1))); // Backoff: 1s, 2s
+    }
+  }
+  throw new Error('All retries failed');
+}
+
 interface RetrievalResult {
   text: string;
   score: number;
@@ -61,11 +76,11 @@ async function retrieveFromLlamaCloud(
     messages: [{ role: 'user', content: query }],
     data: {
       retrieval_parameters: {
-        dense_similarity_top_k: topK,
+        dense_similarity_top_k: topK || 30,
         dense_similarity_cutoff: 0,
-        sparse_similarity_top_k: topK,
+        sparse_similarity_top_k: topK || 30,
         enable_reranking: true,
-        rerank_top_n: Math.min(topK, 10),
+        rerank_top_n: Math.min(topK || 6, 10),
         alpha: 0.5,
         retrieval_mode: 'chunks',
         retrieve_page_screenshot_nodes: true,
@@ -87,7 +102,7 @@ async function retrieveFromLlamaCloud(
     top_k: topK,
   });
 
-  const response = await fetch(
+  const response = await fetchWithRetry(
     `https://api.cloud.llamaindex.ai/api/v1/pipelines/${indexId}/chat`,
     {
       method: 'POST',
@@ -96,6 +111,7 @@ async function retrieveFromLlamaCloud(
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(chatPayload),
+      signal: AbortSignal.timeout(30000),
     }
   );
 
