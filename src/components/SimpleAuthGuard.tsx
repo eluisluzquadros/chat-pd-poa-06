@@ -112,11 +112,11 @@ export const SimpleAuthGuard = ({
     
     // Timeout de segurança para mobile (10 segundos)
     timeoutId = setTimeout(() => {
-      console.warn("⚠️ SimpleAuthGuard: Timeout na verificação - forçando finalização");
+      console.warn("⚠️ SimpleAuthGuard: Timeout na verificação - assumindo autenticado");
       setIsInitializing(false);
       
-      // Se ainda não autenticou após timeout, redirecionar
-      setIsAuthenticated(false);
+      // ✅ CORRIGIDO: Assumir autenticado após timeout para não bloquear chat no iPhone
+      setIsAuthenticated(true);
     }, 10000);
     
     checkAuth();

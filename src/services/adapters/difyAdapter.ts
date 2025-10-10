@@ -83,56 +83,66 @@ export class DifyAdapter implements IExternalAgentAdapter {
 
       console.log('📡 DifyAdapter making request to:', url);
 
-      // Fazer requisição
-      const response = await fetch(url, {
-        method: 'POST',
-        headers,
-        body: JSON.stringify(payload),
-        signal: AbortSignal.timeout(30000) // 30 segundos para timeout da requisição
-      });
+      // ✅ CORRIGIDO: Implementar timeout manual compatível com Safari iOS
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000);
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Dify API error: ${response.status} - ${errorText}`);
-      }
-
-      const data = await response.json();
-      const executionTime = Date.now() - startTime;
-
-      // Armazenar conversation_id retornado pelo Dify para uso futuro
-      if (data.conversation_id && data.conversation_id !== conversationId) {
-        this.conversationMapping.set(sessionId, data.conversation_id);
-        console.log('💾 DifyAdapter stored conversation mapping:', {
-          sessionId,
-          difyConversationId: data.conversation_id,
-          wasNewConversation: !storedConversationId
+      try {
+        const response = await fetch(url, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify(payload),
+          signal: controller.signal
         });
-      }
+        
+        clearTimeout(timeoutId);
 
-      console.log('✅ DifyAdapter.process COMPLETE:', {
-        agentId: agent.id,
-        executionTime,
-        hasResponse: !!data.answer,
-        responseLength: data.answer?.length || 0,
-        conversationId: data.conversation_id,
-        messageId: data.message_id
-      });
-
-      // Mapear resposta para formato padrão
-      return {
-        response: data.answer || data.result || 'No response from Dify agent',
-        confidence: 0.85, // Dify não retorna confidence, usar valor padrão
-        sources: { tabular: 0, conceptual: 0 }, // Pode ser expandido baseado nos dados do Dify
-        executionTime,
-        metadata: {
-          model: agent.model,
-          provider: 'dify',
-          conversationId: data.conversation_id,
-          messageId: data.message_id,
-          tokensUsed: data.metadata?.usage?.total_tokens || 0,
-          difyData: data
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(`Dify API error: ${response.status} - ${errorText}`);
         }
-      };
+
+        const data = await response.json();
+        const executionTime = Date.now() - startTime;
+
+        // Armazenar conversation_id retornado pelo Dify para uso futuro
+        if (data.conversation_id && data.conversation_id !== conversationId) {
+          this.conversationMapping.set(sessionId, data.conversation_id);
+          console.log('💾 DifyAdapter stored conversation mapping:', {
+            sessionId,
+            difyConversationId: data.conversation_id,
+            wasNewConversation: !storedConversationId
+          });
+        }
+
+        console.log('✅ DifyAdapter.process COMPLETE:', {
+          agentId: agent.id,
+          executionTime,
+          hasResponse: !!data.answer,
+          responseLength: data.answer?.length || 0,
+          conversationId: data.conversation_id,
+          messageId: data.message_id
+        });
+
+        // Mapear resposta para formato padrão
+        return {
+          response: data.answer || data.result || 'No response from Dify agent',
+          confidence: 0.85, // Dify não retorna confidence, usar valor padrão
+          sources: { tabular: 0, conceptual: 0 }, // Pode ser expandido baseado nos dados do Dify
+          executionTime,
+          metadata: {
+            model: agent.model,
+            provider: 'dify',
+            conversationId: data.conversation_id,
+            messageId: data.message_id,
+            tokensUsed: data.metadata?.usage?.total_tokens || 0,
+            difyData: data
+          }
+        };
+      } catch (fetchError) {
+        clearTimeout(timeoutId);
+        throw fetchError;
+      }
 
     } catch (error) {
       const executionTime = Date.now() - startTime;

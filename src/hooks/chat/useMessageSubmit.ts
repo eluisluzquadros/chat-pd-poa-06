@@ -40,21 +40,30 @@ export function useMessageSubmit({
   const { trackTokenUsage, estimateTokens } = useTokenTracking();
 
   const handleSubmit = useCallback(async (e: React.FormEvent) => {
+    console.log('🎯 [Mobile Debug] handleSubmit START:', {
+      hasInput: !!input.trim(),
+      isLoading,
+      isDomainReady,
+      selectedModel,
+      currentSessionId,
+      userAgent: navigator.userAgent
+    });
+    
     e.preventDefault();
-    if (!input.trim() || isLoading) return;
-
-    // CRÍTICO: Aguardar DomainContext estar ready antes de prosseguir
-    if (!isDomainReady) {
-      console.log('⏳ [useMessageSubmit] Waiting for DomainContext to be ready...');
-      toast({
-        title: "Carregando",
-        description: "Inicializando sistema, aguarde...",
-      });
+    if (!input.trim() || isLoading) {
+      console.warn('⚠️ [Mobile Debug] Submit aborted - early validation failed');
       return;
+    }
+
+    // ⚠️ REMOVIDO: Verificação isDomainReady que bloqueava iPhone
+    // Prosseguir sem aguardar DomainContext para garantir envio no mobile
+    if (!isDomainReady) {
+      console.warn('⚠️ [Mobile Debug] DomainContext not ready, proceeding anyway');
     }
 
     const session = await getCurrentAuthenticatedSession();
     if (!session?.user) {
+      console.error('❌ [Mobile Debug] No authenticated session');
       toast({
         title: "Error",
         description: "You need to be logged in to send messages",
@@ -63,9 +72,26 @@ export function useMessageSubmit({
       return;
     }
 
+    // ✅ VALIDAÇÃO: Garantir que agente está selecionado antes de prosseguir
+    if (!selectedModel) {
+      console.error('❌ [Mobile Debug] No agent selected');
+      toast({
+        title: "Erro",
+        description: "Nenhum agente selecionado. Recarregue a página.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsLoading(true);
     const currentInput = input;
     setInput("");
+
+    console.log('✅ [Mobile Debug] Message submission started:', {
+      messageLength: currentInput.length,
+      selectedModel,
+      hasSession: !!currentSessionId
+    });
 
     // Get user role for context - declare here for proper scope
     const { AuthService } = await import("@/services/authService");

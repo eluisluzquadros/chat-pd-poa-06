@@ -28,13 +28,22 @@ export function ChatInput({
   return (
     <form onSubmit={onSubmit} className="w-full space-y-2">
       <div className={cn(
-        "flex items-end gap-2 sm:gap-3 p-2 sm:p-3",
+        "relative flex items-end gap-2 sm:gap-3 p-2 sm:p-3",
         "bg-background border border-input rounded-xl",
         "focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2",
         "transition-all duration-200",
         centered ? "max-w-2xl mx-auto" : "w-full"
       )}>
-        <Textarea 
+        {isLoading && (
+          <div className="absolute inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center rounded-xl z-10">
+            <div className="flex items-center gap-2">
+              <div className="h-4 w-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+              <span className="text-sm text-muted-foreground">Enviando...</span>
+            </div>
+          </div>
+        )}
+        
+        <Textarea
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
