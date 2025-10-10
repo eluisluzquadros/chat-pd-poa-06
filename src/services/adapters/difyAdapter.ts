@@ -178,7 +178,7 @@ export class DifyAdapter implements IExternalAgentAdapter {
       const payload = {
         inputs: {},
         query: message,
-        response_mode: 'blocking', // Forçar modo blocking para JSON response
+        response_mode: 'streaming', // ✅ Usar streaming para evitar bug iOS 18
         conversation_id: conversationId,
         user: options.userId || 'anonymous',
         auto_generate_name: false
@@ -214,51 +214,74 @@ export class DifyAdapter implements IExternalAgentAdapter {
           throw new Error(`Dify API error: ${response.status} - ${errorText}`);
         }
 
-        console.log('🍎 [Mobile Debug] About to parse response.json()');
-        let data;
-        try {
-          data = await response.json();
-          console.log('🍎 [Mobile Debug] response.json() SUCCESS');
-          console.log('🍎 [Mobile Debug] Data keys:', Object.keys(data));
-          
-          // 📊 Telemetria: JSON Parse Success
-          telemetryService.logJSONParse(true).catch(() => {});
-        } catch (jsonError) {
-          console.error('🍎 [Mobile Debug] response.json() FAILED:', jsonError);
-          console.error('🍎 [Mobile Debug] JSON Error name:', jsonError instanceof Error ? jsonError.name : 'unknown');
-          console.error('🍎 [Mobile Debug] JSON Error message:', jsonError instanceof Error ? jsonError.message : 'unknown');
-          
-          // 📊 Telemetria: JSON Parse Failed
-          telemetryService.logJSONParse(false, jsonError as Error).catch(() => {});
-          
-          // 🍎 iOS 18 BUG WORKAROUND: Tentar response.text() se json() falhar
-          try {
-            const textResponse = await response.text();
-            console.log('🍎 [Mobile Debug] response.text() SUCCESS, length:', textResponse.length);
-            data = JSON.parse(textResponse);
-            console.log('🍎 [Mobile Debug] Manual JSON.parse() SUCCESS');
-            
-            // 📊 Telemetria: Manual JSON.parse succeeded
-            telemetryService.logInfo('Manual JSON.parse succeeded after response.text()', {
-              responseLength: textResponse.length
-            }).catch(() => {});
-          } catch (textError) {
-            console.error('🍎 [Mobile Debug] response.text() also FAILED:', textError);
-            
-            // 📊 Telemetria: Complete failure
-            telemetryService.logError(textError as Error, 'response.text() also failed').catch(() => {});
-            
-            throw jsonError; // Re-throw original error
-          }
+        // ✅ Processar resposta em streaming (SSE)
+        console.log('🍎 [Streaming] Starting SSE processing');
+        telemetryService.logInfo('Starting SSE streaming mode').catch(() => {});
+        
+        const reader = response.body?.getReader();
+        if (!reader) {
+          throw new Error('Response body not readable');
         }
+        
+        const decoder = new TextDecoder();
+        let fullAnswer = '';
+        let difyConversationId = '';
+        let difyMessageId = '';
+        let metadata: any = {};
+        
+        try {
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) {
+              console.log('🍎 [Streaming] Stream ended');
+              break;
+            }
+            
+            const chunk = decoder.decode(value, { stream: true });
+            const lines = chunk.split('\n');
+            
+            for (const line of lines) {
+              if (!line.startsWith('data: ')) continue;
+              
+              const jsonStr = line.slice(6).trim();
+              if (jsonStr === '[DONE]' || !jsonStr) continue;
+              
+              try {
+                const data = JSON.parse(jsonStr);
+                console.log('🍎 [Streaming] Event:', data.event);
+                
+                if (data.event === 'message') {
+                  fullAnswer += data.answer || '';
+                } else if (data.event === 'message_end') {
+                  difyConversationId = data.conversation_id || '';
+                  difyMessageId = data.id || '';
+                  metadata = data.metadata || {};
+                }
+              } catch (parseError) {
+                console.warn('🍎 [Streaming] Failed to parse SSE line:', jsonStr.substring(0, 100));
+              }
+            }
+          }
+          
+          telemetryService.logInfo('SSE streaming completed', {
+            answerLength: fullAnswer.length,
+            conversationId: difyConversationId
+          }).catch(() => {});
+          
+        } catch (streamError) {
+          console.error('🍎 [Streaming] Stream processing error:', streamError);
+          telemetryService.logError(streamError as Error, 'SSE stream processing').catch(() => {});
+          throw streamError;
+        }
+        
         const executionTime = Date.now() - startTime;
 
         // Armazenar conversation_id retornado pelo Dify para uso futuro
-        if (data.conversation_id && data.conversation_id !== conversationId) {
-          this.conversationMapping.set(sessionId, data.conversation_id);
+        if (difyConversationId && difyConversationId !== conversationId) {
+          this.conversationMapping.set(sessionId, difyConversationId);
           console.log('💾 DifyAdapter stored conversation mapping:', {
             sessionId,
-            difyConversationId: data.conversation_id,
+            difyConversationId,
             wasNewConversation: !storedConversationId
           });
         }
@@ -266,29 +289,29 @@ export class DifyAdapter implements IExternalAgentAdapter {
         console.log('✅ DifyAdapter.process COMPLETE:', {
           agentId: agent.id,
           executionTime,
-          hasResponse: !!data.answer,
-          responseLength: data.answer?.length || 0,
-          conversationId: data.conversation_id,
-          messageId: data.message_id
+          hasResponse: !!fullAnswer,
+          responseLength: fullAnswer.length,
+          conversationId: difyConversationId,
+          messageId: difyMessageId
         });
 
         // Mapear resposta para formato padrão
         return {
-          response: data.answer || data.result || 'No response from Dify agent',
-          confidence: 0.85, // Dify não retorna confidence, usar valor padrão
-          sources: { tabular: 0, conceptual: 0 }, // Pode ser expandido baseado nos dados do Dify
+          response: fullAnswer || 'No response from Dify agent',
+          confidence: 0.85,
+          sources: { tabular: 0, conceptual: 0 },
           executionTime,
           metadata: {
             model: agent.model,
             provider: 'dify',
-            conversationId: data.conversation_id,
-            messageId: data.message_id,
-            tokensUsed: data.metadata?.usage?.total_tokens || 0,
-            difyData: data
+            conversationId: difyConversationId,
+            messageId: difyMessageId,
+            tokensUsed: metadata?.usage?.total_tokens || 0,
+            difyData: metadata
           }
         };
       } catch (fetchError) {
-        throw fetchError; // Erro já formatado por fetchWithTimeout
+        throw fetchError;
       }
 
     } catch (error) {
