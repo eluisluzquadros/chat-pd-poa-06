@@ -134,11 +134,38 @@ export class ChatService {
         stream: selectedAgent.parameters?.stream
       };
 
-      const ragResult = await externalAgentGateway.processMessage(
-        selectedAgent,
-        message,
-        agentOptions
-      );
+      let ragResult: any;
+
+      // 🚀 BYPASS: Agentes Lovable usam novo sistema de adapters (Edge Functions)
+      if (selectedAgent.provider === 'lovable') {
+        console.log('🚀 [ChatService] Using Lovable Native Adapter');
+        
+        const { getAdapterForAgent } = await import('@/services/adapters');
+        const adapter = getAdapterForAgent(selectedAgent.provider);
+        
+        const adapterResult = await adapter.process(message, {
+          sessionId: agentOptions.sessionId,
+          userId: agentOptions.userId,
+          agentConfig: selectedAgent
+        });
+        
+        // Converter para formato esperado pelo ChatService
+        ragResult = {
+          response: adapterResult.content,
+          confidence: 0.95,
+          executionTime: Date.now() - startTime,
+          metadata: adapterResult.metadata
+        };
+      } else {
+        // Outros providers (Dify, Langflow, CrewAI) usam ExternalAgentGateway
+        console.log('🔌 [ChatService] Using ExternalAgentGateway');
+        
+        ragResult = await externalAgentGateway.processMessage(
+          selectedAgent,
+          message,
+          agentOptions
+        );
+      }
 
       if (!ragResult || !ragResult.response) {
         throw new Error('No response from external agent');

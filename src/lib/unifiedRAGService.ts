@@ -146,18 +146,46 @@ export class UnifiedRAGService {
         throw new Error('Nenhum agente externo disponível');
       }
       
-      console.log(`🤖 [UnifiedRAGService] Using external agent: ${selectedAgent.display_name} (${selectedAgent.provider})`);
+      console.log(`🤖 [UnifiedRAGService] Using agent: ${selectedAgent.display_name} (${selectedAgent.provider})`);
       
-      // Chamar através do External Agent Gateway
-      const result = await externalAgentGateway.processMessage(
-        selectedAgent,
-        options.message,
-        {
+      let result: any;
+
+      // 🚀 BYPASS: Agentes Lovable usam novo sistema de adapters (Edge Functions)
+      if (selectedAgent.provider === 'lovable') {
+        console.log('🚀 [UnifiedRAGService] Using Lovable Native Adapter');
+        
+        const { getAdapterForAgent } = await import('@/services/adapters');
+        const adapter = getAdapterForAgent(selectedAgent.provider);
+        
+        const startTime = Date.now();
+        const adapterResult = await adapter.process(options.message, {
           sessionId: options.sessionId || `session-${Date.now()}`,
           userId: options.userId || 'anonymous',
-          userRole: options.userRole || 'citizen'
-        }
-      );
+          agentConfig: selectedAgent
+        });
+        
+        // Converter para formato esperado pelo UnifiedRAGService
+        result = {
+          response: adapterResult.content,
+          confidence: 0.95,
+          executionTime: Date.now() - startTime,
+          metadata: adapterResult.metadata,
+          sources: { tabular: [], conceptual: [] }
+        };
+      } else {
+        // Outros providers (Dify, Langflow, CrewAI) usam ExternalAgentGateway
+        console.log('🔌 [UnifiedRAGService] Using ExternalAgentGateway');
+        
+        result = await externalAgentGateway.processMessage(
+          selectedAgent,
+          options.message,
+          {
+            sessionId: options.sessionId || `session-${Date.now()}`,
+            userId: options.userId || 'anonymous',
+            userRole: options.userRole || 'citizen'
+          }
+        );
+      }
       
       console.log(`✅ [UnifiedRAGService] External agent response received`);
       
