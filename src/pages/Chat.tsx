@@ -41,12 +41,12 @@ export default function Chat() {
 
   return (
     <SimpleAuthGuard>
-      <div className="h-screen flex flex-col bg-background">
+      <div className="h-screen flex flex-col bg-background overflow-x-hidden">
         <Header />
         
-        <div className="flex-1 min-h-0">
+        <div className="flex-1 min-h-0 overflow-x-hidden">
           <SidebarProvider defaultOpen={true}>
-            <div className="flex h-full w-full">
+            <div className="flex h-full w-full overflow-x-hidden">
               <AppSidebar
                 messages={messages}
                 onNewChat={handleNewChat}

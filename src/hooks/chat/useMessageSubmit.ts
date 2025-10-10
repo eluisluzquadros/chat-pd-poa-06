@@ -261,20 +261,7 @@ export function useMessageSubmit({
         console.log('✅ [DEBUG] User message saved to database successfully');
       }
 
-      // 🔥 NOVO: Incrementar contador para mensagem do usuário
-      console.log('🔍 [DEBUG] About to increment user count with sessionId:', sessionId);
-      if (!sessionId) {
-        console.error('🚨 [DEBUG] sessionId undefined at increment_message_count user!');
-        throw new Error('sessionId undefined at increment_message_count user');
-      }
-      const { error: userCountError } = await supabase
-        .rpc('increment_message_count', { 
-          session_id_param: sessionId 
-        });
-      
-      if (userCountError) {
-        console.error('Erro ao incrementar contador para mensagem do usuário:', userCountError);
-      }
+      // ✅ Message count is automatically handled by chat_history table
 
       console.log(`🚀 [useMessageSubmit] Processing message via ${selectedModel}...`);
       console.log('🔍 [DEBUG] About to log message details with sessionId:', sessionId);
@@ -346,20 +333,7 @@ export function useMessageSubmit({
 
       if (assistantMessageError) throw assistantMessageError;
 
-      // 🔥 NOVO: Incrementar contador para resposta do assistente
-      console.log('🔍 [DEBUG] About to increment assistant count with sessionId:', sessionId);
-      if (!sessionId) {
-        console.error('🚨 [DEBUG] sessionId undefined at increment_message_count assistant!');
-        throw new Error('sessionId undefined at increment_message_count assistant');
-      }
-      const { error: assistantCountError } = await supabase
-        .rpc('increment_message_count', { 
-          session_id_param: sessionId 
-        });
-      
-      if (assistantCountError) {
-        console.error('Erro ao incrementar contador para resposta do assistente:', assistantCountError);
-      }
+      // ✅ Message count is automatically handled by chat_history table
 
       console.log('🔍 [DEBUG] About to updateSession with sessionId:', sessionId);
       if (!sessionId) {
