@@ -165,6 +165,10 @@ export class DifyAdapter implements IExternalAgentAdapter {
       console.log('📡 DifyAdapter making request to:', url);
 
       try {
+        console.log('🍎 [Mobile Debug] About to call fetchWithTimeout');
+        console.log('🍎 [Mobile Debug] URL:', url);
+        console.log('🍎 [Mobile Debug] Payload:', JSON.stringify(payload).substring(0, 200));
+        
         const response = await fetchWithTimeout(url, {
           method: 'POST',
           headers,
@@ -172,12 +176,37 @@ export class DifyAdapter implements IExternalAgentAdapter {
           timeout: 60000 // 60 segundos
         });
 
+        console.log('🍎 [Mobile Debug] fetchWithTimeout returned response');
+        console.log('🍎 [Mobile Debug] Response status:', response.status);
+        console.log('🍎 [Mobile Debug] Response ok:', response.ok);
+
         if (!response.ok) {
           const errorText = await response.text();
           throw new Error(`Dify API error: ${response.status} - ${errorText}`);
         }
 
-        const data = await response.json();
+        console.log('🍎 [Mobile Debug] About to parse response.json()');
+        let data;
+        try {
+          data = await response.json();
+          console.log('🍎 [Mobile Debug] response.json() SUCCESS');
+          console.log('🍎 [Mobile Debug] Data keys:', Object.keys(data));
+        } catch (jsonError) {
+          console.error('🍎 [Mobile Debug] response.json() FAILED:', jsonError);
+          console.error('🍎 [Mobile Debug] JSON Error name:', jsonError instanceof Error ? jsonError.name : 'unknown');
+          console.error('🍎 [Mobile Debug] JSON Error message:', jsonError instanceof Error ? jsonError.message : 'unknown');
+          
+          // 🍎 iOS 18 BUG WORKAROUND: Tentar response.text() se json() falhar
+          try {
+            const textResponse = await response.text();
+            console.log('🍎 [Mobile Debug] response.text() SUCCESS, length:', textResponse.length);
+            data = JSON.parse(textResponse);
+            console.log('🍎 [Mobile Debug] Manual JSON.parse() SUCCESS');
+          } catch (textError) {
+            console.error('🍎 [Mobile Debug] response.text() also FAILED:', textError);
+            throw jsonError; // Re-throw original error
+          }
+        }
         const executionTime = Date.now() - startTime;
 
         // Armazenar conversation_id retornado pelo Dify para uso futuro
