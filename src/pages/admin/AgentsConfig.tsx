@@ -683,31 +683,33 @@ export default function AgentsConfig() {
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2">
-                    <Label htmlFor="system_prompt">System Prompt</Label>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <AlertCircle className="h-4 w-4 text-muted-foreground" />
-                      </TooltipTrigger>
-                      <TooltipContent className="max-w-md">
-                        <p>Instruções do sistema que definem o comportamento do agente. 
-                        Este prompt é enviado antes de cada mensagem do usuário.</p>
-                      </TooltipContent>
-                    </Tooltip>
+                <TooltipProvider>
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <Label htmlFor="system_prompt">System Prompt</Label>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <AlertCircle className="h-4 w-4 text-muted-foreground" />
+                        </TooltipTrigger>
+                        <TooltipContent className="max-w-md">
+                          <p>Instruções do sistema que definem o comportamento do agente. 
+                          Este prompt é enviado antes de cada mensagem do usuário.</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </div>
+                    <Textarea
+                      id="system_prompt"
+                      value={formData.parameters.system_prompt || ''}
+                      onChange={(e) => updateParameters('system_prompt', e.target.value)}
+                      placeholder="Ex: Você é um assistente técnico especializado em PDUS..."
+                      rows={8}
+                      className="font-mono text-sm"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      💡 Dica: Defina claramente o papel, escopo e regras de segurança do agente
+                    </p>
                   </div>
-                  <Textarea
-                    id="system_prompt"
-                    value={formData.parameters.system_prompt || ''}
-                    onChange={(e) => updateParameters('system_prompt', e.target.value)}
-                    placeholder="Ex: Você é um assistente técnico especializado em PDUS..."
-                    rows={8}
-                    className="font-mono text-sm"
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    💡 Dica: Defina claramente o papel, escopo e regras de segurança do agente
-                  </p>
-                </div>
+                </TooltipProvider>
 
                 <Separator />
 
