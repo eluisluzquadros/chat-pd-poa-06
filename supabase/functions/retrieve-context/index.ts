@@ -52,6 +52,7 @@ async function retrieveFromLlamaCloud(
         use_citation: true,
       },
     },
+    stream: false,
   };
 
   console.log('📤 Query sent to LlamaCloud /chat:', {
@@ -79,7 +80,18 @@ async function retrieveFromLlamaCloud(
     throw new Error(`LlamaCloud API error: ${response.status}`);
   }
 
-  const data = await response.json();
+  const responseText = await response.text();
+  console.log('📥 Raw response (first 300 chars):', responseText.substring(0, 300));
+
+  let data;
+  try {
+    data = JSON.parse(responseText);
+  } catch (parseError) {
+    console.error('❌ JSON parse error:', parseError);
+    console.error('📄 Full response:', responseText);
+    throw new Error(`Failed to parse LlamaCloud response: ${parseError.message}`);
+  }
+
   const sources = data.sources || [];
   
   console.log('📥 LlamaCloud response:', {
