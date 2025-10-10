@@ -2,74 +2,7 @@ import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-interface LlamaCloudNode {
-  text: string;
-  score: number;
-  metadata?: Record<string, any>;
-}
-
-interface LlamaCloudResponse {
-  nodes: LlamaCloudNode[];
-}
-
-async function retrieveContext(
-  query: string,
-  indexId: string,
-  apiKey: string
-): Promise<string> {
-  console.log('🔍 [RAG] Retrieving context from LlamaCloud...', { 
-    indexId,
-    queryLength: query.length 
-  });
-  
-  try {
-    const response = await fetch(
-      `https://api.cloud.llamaindex.ai/api/v1/pipelines/${indexId}/retrieve`,
-      {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${apiKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          query,
-          top_k: 5,
-          similarity_cutoff: 0.7,
-        }),
-      }
-    );
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('❌ [RAG] LlamaCloud API Error:', response.status, errorText);
-      throw new Error(`LlamaCloud API error: ${response.status}`);
-    }
-
-    const data: LlamaCloudResponse = await response.json();
-    
-    if (!data.nodes || data.nodes.length === 0) {
-      console.log('⚠️ [RAG] No context nodes found');
-      return '';
-    }
-
-    const context = data.nodes
-      .map((node, i) => `[${i + 1}] ${node.text}`)
-      .join('\n\n');
-    
-    const avgScore = data.nodes.reduce((sum, n) => sum + n.score, 0) / data.nodes.length;
-    
-    console.log('✅ [RAG] Context retrieved', { 
-      nodesCount: data.nodes.length,
-      contextLength: context.length,
-      avgScore: avgScore.toFixed(3)
-    });
-    
-    return context;
-  } catch (error) {
-    console.error('🔥 [RAG] Error retrieving context:', error);
-    throw error;
-  }
-}
+// Context retrieval is now handled by retrieve-context edge function
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -111,37 +44,25 @@ serve(async (req) => {
 
     const openaiApiKey = secrets.decrypted_secret;
 
-    // Check if RAG is enabled for this agent
-    const indexId = agentConfig?.api_config?.llamacloud_index_id;
-    
-    // Get LLAMACLOUD_API_KEY from vault if RAG is enabled
-    let llamacloudApiKey: string | undefined;
-    if (indexId) {
-      const { data: llamaSecret, error: llamaError } = await supabaseClient
-        .from("decrypted_secrets")
-        .select("decrypted_secret")
-        .eq("name", "LLAMACLOUD_API_KEY")
-        .single();
-      
-      if (!llamaError && llamaSecret) {
-        llamacloudApiKey = llamaSecret.decrypted_secret;
-      } else {
-        console.warn('⚠️ RAG enabled but LLAMACLOUD_API_KEY not found in vault');
-      }
-    }
-
     // Prepare system prompt and user message
     let systemPrompt = 'Você é um assistente útil. Responda de forma clara e concisa.';
-    let userMessage = message;
+    let contextSources = [];
 
-    // If RAG is configured, retrieve context
-    if (indexId && llamacloudApiKey) {
-      console.log('🔍 RAG Mode enabled for agent:', agentConfig?.name);
-      
+    // Check if agent has knowledge bases configured via new system
+    if (agentConfig?.id) {
+      console.log('🔍 Retrieving context via retrieve-context edge function');
       try {
-        const context = await retrieveContext(message, indexId, llamacloudApiKey);
-        
-        if (context) {
+        const contextResponse = await supabaseClient.functions.invoke('retrieve-context', {
+          body: { 
+            agentId: agentConfig.id, 
+            query: message 
+          }
+        });
+
+        if (contextResponse.data?.context) {
+          const { context, sources, resultsCount } = contextResponse.data;
+          console.log(`✅ Retrieved ${resultsCount} results from knowledge bases`);
+          
           systemPrompt = `Você é um assistente especializado. Use APENAS as informações do contexto abaixo para responder.
 
 CONTEXTO DA BASE DE CONHECIMENTO:
@@ -152,23 +73,20 @@ INSTRUÇÕES IMPORTANTES:
 - Se a informação não estiver no contexto, diga: "Não encontrei informações sobre isso na base de conhecimento."
 - Seja preciso e baseie-se apenas no contexto fornecido
 - Responda em português de forma clara e objetiva`;
-          
-          userMessage = `PERGUNTA DO USUÁRIO: ${message}`;
-          
-          console.log('✅ RAG context injected into prompt');
-        } else {
-          console.log('⚠️ No context retrieved from RAG');
+
+          contextSources = sources;
+        } else if (contextResponse.error) {
+          console.warn('⚠️ Context retrieval failed:', contextResponse.error);
         }
-      } catch (ragError) {
-        console.error('❌ RAG retrieval failed:', ragError);
-        // Continue without RAG if it fails
+      } catch (error) {
+        console.error('⚠️ Error calling retrieve-context:', error);
       }
     }
 
     // Call OpenAI API with potentially enriched context
     console.log('🤖 Calling OpenAI API...', { 
       model: agentConfig?.model || 'gpt-4o-mini',
-      ragEnabled: !!(indexId && llamacloudApiKey)
+      hasContext: contextSources.length > 0
     });
     
     const openaiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -181,9 +99,9 @@ INSTRUÇÕES IMPORTANTES:
         model: agentConfig?.model || 'gpt-4o-mini',
         messages: [
           { role: 'system', content: systemPrompt },
-          { role: 'user', content: userMessage }
+          { role: 'user', content: message }
         ],
-        temperature: indexId ? 0.3 : (agentConfig?.parameters?.temperature || 0.7),
+        temperature: contextSources.length > 0 ? 0.3 : (agentConfig?.parameters?.temperature || 0.7),
         max_tokens: agentConfig?.parameters?.max_tokens || 1000,
       }),
     });
@@ -234,6 +152,7 @@ INSTRUÇÕES IMPORTANTES:
         answer: assistantMessage,
         model: data.model,
         usage: data.usage,
+        sources: contextSources,
       }),
       { 
         headers: { 

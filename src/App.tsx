@@ -31,6 +31,7 @@ import Metrics from "./pages/admin/Metrics";
 import PlatformSettings from "./pages/admin/PlatformSettings";
 import AgenticRAGDashboard from "./components/admin/AgenticRAGDashboard";
 const KnowledgeBaseAdminLazy = React.lazy(() => import("./pages/admin/KnowledgeBaseAdmin"));
+const KnowledgeManagementLazy = React.lazy(() => import("./pages/admin/KnowledgeManagement"));
 
 // Components
 import { SimpleAuthGuard } from "./components/SimpleAuthGuard";
@@ -180,6 +181,17 @@ function App() {
                     <React.Suspense fallback={null}>
                       <KnowledgeBaseAdminLazy />
                     </React.Suspense>
+                  </SimpleRoleGuard>
+                </SimpleAuthGuard>
+              } />
+              <Route path="/admin/knowledge" element={
+                <SimpleAuthGuard>
+                  <SimpleRoleGuard adminOnly={true}>
+                    <AdminErrorBoundary>
+                      <React.Suspense fallback={null}>
+                        <KnowledgeManagementLazy />
+                      </React.Suspense>
+                    </AdminErrorBoundary>
                   </SimpleRoleGuard>
                 </SimpleAuthGuard>
               } />

@@ -3,6 +3,9 @@ project_id = "ngrqwmvuhvjkeohesbxs"
 [functions.openai-chat]
 verify_jwt = false
 
+[functions.retrieve-context]
+verify_jwt = true
+
 [functions.agentic-rag]
 verify_jwt = true
 

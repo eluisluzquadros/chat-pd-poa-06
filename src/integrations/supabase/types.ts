@@ -64,6 +64,48 @@ export type Database = {
           },
         ]
       }
+      agent_knowledge_bases: {
+        Row: {
+          agent_id: string
+          created_at: string
+          id: string
+          is_active: boolean
+          knowledge_base_id: string
+          priority: number
+        }
+        Insert: {
+          agent_id: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          knowledge_base_id: string
+          priority?: number
+        }
+        Update: {
+          agent_id?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          knowledge_base_id?: string
+          priority?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_knowledge_bases_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "dify_agents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agent_knowledge_bases_knowledge_base_id_fkey"
+            columns: ["knowledge_base_id"]
+            isOneToOne: false
+            referencedRelation: "external_knowledge_bases"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       agent_performance_metrics: {
         Row: {
           agent_type: string
@@ -516,6 +558,51 @@ export type Database = {
           name?: string
           parameters?: Json
           provider?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
+      external_knowledge_bases: {
+        Row: {
+          config: Json
+          created_at: string
+          created_by: string | null
+          description: string | null
+          display_name: string
+          id: string
+          is_active: boolean
+          name: string
+          provider: string
+          retrieval_settings: Json
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          config?: Json
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          display_name: string
+          id?: string
+          is_active?: boolean
+          name: string
+          provider: string
+          retrieval_settings?: Json
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          config?: Json
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          display_name?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          provider?: string
+          retrieval_settings?: Json
           updated_at?: string
           updated_by?: string | null
         }
