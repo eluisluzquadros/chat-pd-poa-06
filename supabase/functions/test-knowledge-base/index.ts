@@ -6,6 +6,31 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+function parseChunkedResponse(text: string): any {
+  // LlamaCloud retorna formato: "0:""\n8:[{...}]\n16:{...}"
+  const lines = text.trim().split('\n');
+  const chunks: any[] = [];
+  
+  for (const line of lines) {
+    if (!line.trim()) continue;
+    
+    const colonIndex = line.indexOf(':');
+    if (colonIndex === -1) continue;
+    
+    const jsonPart = line.substring(colonIndex + 1);
+    if (jsonPart === '""' || jsonPart === '') continue;
+    
+    try {
+      const parsed = JSON.parse(jsonPart);
+      chunks.push(parsed);
+    } catch (e) {
+      console.warn('⚠️ Failed to parse chunk:', jsonPart.substring(0, 100));
+    }
+  }
+  
+  return chunks;
+}
+
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -78,16 +103,30 @@ serve(async (req) => {
     const responseText = await response.text();
     console.log('📥 Raw response (first 300 chars):', responseText.substring(0, 300));
 
-    let data;
+    let sources: any[] = [];
     try {
-      data = JSON.parse(responseText);
+      const chunks = parseChunkedResponse(responseText);
+      console.log('📦 Parsed chunks:', chunks.length);
+      
+      // Procurar pelo chunk com sources
+      for (const chunk of chunks) {
+        if (Array.isArray(chunk)) {
+          for (const item of chunk) {
+            if (item.type === 'sources' && item.data?.nodes) {
+              sources = item.data.nodes;
+              break;
+            }
+          }
+        }
+        if (sources.length > 0) break;
+      }
+      
+      console.log('📥 Extracted sources:', sources.length);
     } catch (parseError) {
-      console.error('❌ JSON parse error:', parseError);
+      console.error('❌ Parse error:', parseError);
       console.error('📄 Full response:', responseText);
       throw new Error(`Failed to parse LlamaCloud response: ${parseError.message}`);
     }
-
-    const sources = data.sources || [];
 
     console.log('📥 Test results:', {
       sourcesRetrieved: sources.length,
