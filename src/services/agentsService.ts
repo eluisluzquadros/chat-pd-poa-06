@@ -9,6 +9,8 @@ export interface ApiConfig {
   public_url?: string;
   server_url?: string;
   workflow_id?: string;
+  llamacloud_index_id?: string;
+  llamacloud_api_key?: string;
 }
 
 export interface ModelParameters {

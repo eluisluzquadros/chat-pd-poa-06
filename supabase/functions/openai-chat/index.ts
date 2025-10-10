@@ -1,6 +1,7 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { retrieveContext } from "../chat/services/rag-service.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -42,8 +43,66 @@ serve(async (req) => {
 
     const openaiApiKey = secrets.decrypted_secret;
 
-    // Call OpenAI API (blocking mode for initial test)
-    console.log('🤖 Calling OpenAI API...');
+    // Check if RAG is enabled for this agent
+    const indexId = agentConfig?.api_config?.llamacloud_index_id;
+    
+    // Get LLAMACLOUD_API_KEY from vault if RAG is enabled
+    let llamacloudApiKey: string | undefined;
+    if (indexId) {
+      const { data: llamaSecret, error: llamaError } = await supabaseClient
+        .from("decrypted_secrets")
+        .select("decrypted_secret")
+        .eq("name", "LLAMACLOUD_API_KEY")
+        .single();
+      
+      if (!llamaError && llamaSecret) {
+        llamacloudApiKey = llamaSecret.decrypted_secret;
+      } else {
+        console.warn('⚠️ RAG enabled but LLAMACLOUD_API_KEY not found in vault');
+      }
+    }
+
+    // Prepare system prompt and user message
+    let systemPrompt = 'Você é um assistente útil. Responda de forma clara e concisa.';
+    let userMessage = message;
+
+    // If RAG is configured, retrieve context
+    if (indexId && llamacloudApiKey) {
+      console.log('🔍 RAG Mode enabled for agent:', agentConfig?.name);
+      
+      try {
+        const context = await retrieveContext(message, indexId, llamacloudApiKey);
+        
+        if (context) {
+          systemPrompt = `Você é um assistente especializado. Use APENAS as informações do contexto abaixo para responder.
+
+CONTEXTO DA BASE DE CONHECIMENTO:
+${context}
+
+INSTRUÇÕES IMPORTANTES:
+- Cite as fontes usando [1], [2], etc. conforme aparecem no contexto
+- Se a informação não estiver no contexto, diga: "Não encontrei informações sobre isso na base de conhecimento."
+- Seja preciso e baseie-se apenas no contexto fornecido
+- Responda em português de forma clara e objetiva`;
+          
+          userMessage = `PERGUNTA DO USUÁRIO: ${message}`;
+          
+          console.log('✅ RAG context injected into prompt');
+        } else {
+          console.log('⚠️ No context retrieved from RAG');
+        }
+      } catch (ragError) {
+        console.error('❌ RAG retrieval failed:', ragError);
+        // Continue without RAG if it fails
+      }
+    }
+
+    // Call OpenAI API with potentially enriched context
+    console.log('🤖 Calling OpenAI API...', { 
+      model: agentConfig?.model || 'gpt-4o-mini',
+      ragEnabled: !!(indexId && llamacloudApiKey)
+    });
+    
     const openaiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -53,14 +112,11 @@ serve(async (req) => {
       body: JSON.stringify({
         model: agentConfig?.model || 'gpt-4o-mini',
         messages: [
-          { 
-            role: 'system', 
-            content: 'Você é um assistente útil. Responda de forma clara e concisa.' 
-          },
-          { role: 'user', content: message }
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userMessage }
         ],
-        temperature: agentConfig?.parameters?.temperature || 0.7,
-        max_tokens: agentConfig?.parameters?.max_tokens || 500,
+        temperature: indexId ? 0.3 : (agentConfig?.parameters?.temperature || 0.7),
+        max_tokens: agentConfig?.parameters?.max_tokens || 1000,
       }),
     });
 

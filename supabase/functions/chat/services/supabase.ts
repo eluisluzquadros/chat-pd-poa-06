@@ -23,10 +23,11 @@ export async function getSecrets() {
 
   const openaiApiKey = secretsMap["OPENAI_API_KEY"];
   const assistantId = secretsMap["ASSISTANT_ID"];
+  const llamacloudApiKey = secretsMap["LLAMACLOUD_API_KEY"];
 
   if (!openaiApiKey || !assistantId) {
     throw new Error("🔴 Required secrets missing.");
   }
 
-  return { openaiApiKey, assistantId };
+  return { openaiApiKey, assistantId, llamacloudApiKey };
 }
