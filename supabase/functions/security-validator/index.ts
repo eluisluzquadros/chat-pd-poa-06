@@ -256,7 +256,7 @@ serve(async (req) => {
           // ============================
           console.log(`🔄 Agente ${targetAgent.display_name} usa chat interno`);
           
-          const { data: chatResponse, error: chatError } = await supabaseAdmin.functions.invoke('chat', {
+          const { data: chatResponse, error: chatError } = await supabase.functions.invoke('chat', {
             body: {
               message: testCase.test_input,
               sessionId: `security-test-${runId}-${testCase.test_number}`,

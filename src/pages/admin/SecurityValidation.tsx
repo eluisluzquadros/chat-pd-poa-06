@@ -57,7 +57,15 @@ export default function SecurityValidation() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('security_validation_runs')
-        .select('*')
+        .select(`
+          *,
+          dify_agents (
+            id,
+            display_name,
+            provider,
+            model
+          )
+        `)
         .order('started_at', { ascending: false })
         .limit(20);
       

@@ -1,7 +1,7 @@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Eye, FileDown, Trash2 } from "lucide-react";
+import { Eye, FileDown, Trash2, Bot } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useNavigate } from "react-router-dom";
@@ -105,6 +105,7 @@ export function SecurityHistoryTable({ runs, onRunDeleted }: SecurityHistoryTabl
       <TableHeader>
         <TableRow>
           <TableHead>Data</TableHead>
+          <TableHead>Agente</TableHead>
           <TableHead>Versão</TableHead>
           <TableHead>Score</TableHead>
           <TableHead className="text-center">Passou</TableHead>
@@ -119,6 +120,16 @@ export function SecurityHistoryTable({ runs, onRunDeleted }: SecurityHistoryTabl
           <TableRow key={run.id}>
             <TableCell>
               {run.started_at && format(new Date(run.started_at), "dd/MM/yyyy HH:mm", { locale: ptBR })}
+            </TableCell>
+            <TableCell>
+              {run.dify_agents ? (
+                <Badge variant="secondary" className="text-xs gap-1">
+                  <Bot className="h-3 w-3" />
+                  {run.dify_agents.display_name}
+                </Badge>
+              ) : (
+                <Badge variant="outline" className="text-xs">Padrão</Badge>
+              )}
             </TableCell>
             <TableCell>
               <Badge variant="outline">{run.system_version || 'v1.0'}</Badge>

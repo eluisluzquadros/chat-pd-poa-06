@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { FileDown, Code, Shield } from "lucide-react";
+import { FileDown, Code, Shield, Bot } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { toast } from "sonner";
@@ -432,10 +432,23 @@ export function SecurityRunHeader({ run, results }: SecurityRunHeaderProps) {
         </div>
       </CardHeader>
       <CardContent className="space-y-3">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-sm">
           <div>
             <span className="text-muted-foreground">ID da Execução:</span>
             <p className="font-mono text-xs mt-1">{run.id}</p>
+          </div>
+          <div>
+            <span className="text-muted-foreground">Agente Testado:</span>
+            <p className="mt-1">
+              {run.dify_agents ? (
+                <Badge variant="secondary" className="gap-1">
+                  <Bot className="h-3 w-3" />
+                  {run.dify_agents.display_name}
+                </Badge>
+              ) : (
+                <Badge variant="outline">Agente Padrão</Badge>
+              )}
+            </p>
           </div>
           <div>
             <span className="text-muted-foreground">Versão do Sistema:</span>
