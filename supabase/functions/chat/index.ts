@@ -25,6 +25,7 @@ serve(async (req) => {
 
     // Use agent-specific configuration if provided
     let finalAssistantId = assistantId;
+    let isExternalAgent = false;
     if (agentId) {
       console.log(`🤖 Using agent configuration: ${agentId}`);
       const { createClient } = await import("https://esm.sh/@supabase/supabase-js@2");
@@ -43,8 +44,14 @@ serve(async (req) => {
         console.error("❌ Error fetching agent:", agentError);
       } else if (agent?.parameters?.assistant_id) {
         finalAssistantId = agent.parameters.assistant_id;
+        isExternalAgent = true;
         console.log(`✅ Using assistant from agent "${agent.display_name}": ${finalAssistantId}`);
       }
+    }
+
+    // Validate secrets only for external agents or when no agentId provided
+    if ((isExternalAgent || !agentId) && (!openaiApiKey || !finalAssistantId)) {
+      throw new Error("🔴 OpenAI secrets required for this agent");
     }
 
     const response = await processUserMessage(message, sessionId, finalAssistantId, openaiApiKey);
