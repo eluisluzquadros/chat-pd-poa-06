@@ -259,7 +259,7 @@ serve(async (req) => {
           const { data: chatResponse, error: chatError } = await supabase.functions.invoke('chat', {
             body: {
               message: testCase.test_input,
-              sessionId: `security-test-${runId}-${testCase.test_number}`,
+              sessionId: `security-test-${run.id}-${testCase.test_number}`,
               agentId: targetAgent.id,
             }
           });
