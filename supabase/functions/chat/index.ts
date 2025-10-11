@@ -3,6 +3,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { CORS_HEADERS } from "./constants.ts";
 import { getSecrets } from "./services/supabase.ts";
 import { processUserMessage } from "./services/messageProcessor.ts";
+import { processLovableAgent } from "./services/lovableHandler.ts";
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -26,6 +27,8 @@ serve(async (req) => {
     // Use agent-specific configuration if provided
     let finalAssistantId = assistantId;
     let isExternalAgent = false;
+    let agent = null;
+    
     if (agentId) {
       console.log(`🤖 Using agent configuration: ${agentId}`);
       const { createClient } = await import("https://esm.sh/@supabase/supabase-js@2");
@@ -34,27 +37,55 @@ serve(async (req) => {
         Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
       );
       
-      const { data: agent, error: agentError } = await supabase
+      const { data: agentData, error: agentError } = await supabase
         .from('dify_agents')
-        .select('parameters, display_name')
+        .select('parameters, display_name, model, provider')
         .eq('id', agentId)
         .single();
       
       if (agentError) {
         console.error("❌ Error fetching agent:", agentError);
-      } else if (agent?.parameters?.assistant_id) {
+        throw new Error(`Failed to fetch agent: ${agentError.message}`);
+      }
+      
+      agent = agentData;
+      
+      // Detectar tipo de agente
+      if (agent?.parameters?.assistant_id) {
+        // Agente externo usando OpenAI Assistants API
         finalAssistantId = agent.parameters.assistant_id;
         isExternalAgent = true;
-        console.log(`✅ Using assistant from agent "${agent.display_name}": ${finalAssistantId}`);
+        console.log(`✅ Using OpenAI Assistant from agent "${agent.display_name}": ${finalAssistantId}`);
+      } else {
+        // Agente Lovable usando Completions API
+        console.log(`✅ Using Lovable agent "${agent.display_name}" with Completions API`);
+        isExternalAgent = false;
       }
     }
 
-    // Validate secrets only for external agents or when no agentId provided
-    if ((isExternalAgent || !agentId) && (!openaiApiKey || !finalAssistantId)) {
-      throw new Error("🔴 OpenAI secrets required for this agent");
+    // Validar segredos baseado no tipo de agente
+    if (isExternalAgent && (!openaiApiKey || !finalAssistantId)) {
+      throw new Error("🔴 OpenAI API key and Assistant ID required for external assistant");
+    }
+    
+    if (!isExternalAgent && agentId && !openaiApiKey) {
+      throw new Error("🔴 OpenAI API key required for Lovable agent");
+    }
+    
+    if (!agentId && (!openaiApiKey || !finalAssistantId)) {
+      throw new Error("🔴 OpenAI secrets required");
     }
 
-    const response = await processUserMessage(message, sessionId, finalAssistantId, openaiApiKey);
+    // Rotear para o processador apropriado
+    let response;
+    
+    if (isExternalAgent || !agentId) {
+      // Usar OpenAI Assistants API (fluxo existente)
+      response = await processUserMessage(message, sessionId, finalAssistantId, openaiApiKey);
+    } else {
+      // Usar OpenAI Completions API para agentes Lovable
+      response = await processLovableAgent(message, sessionId, agent, openaiApiKey);
+    }
 
     return new Response(
       JSON.stringify(response),
