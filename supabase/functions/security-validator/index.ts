@@ -240,116 +240,175 @@ serve(async (req) => {
       const startTime = Date.now();
       
       try {
-        // Chamar diretamente a API externa do agente configurado (mesmo fluxo de /chat)
-        let apiConfig = targetAgent.dify_config;
-        
-        // Se dify_config for string, fazer parse
-        if (typeof apiConfig === 'string') {
-          apiConfig = JSON.parse(apiConfig);
-        }
-        
-        console.log(`📋 Debug apiConfig:`, JSON.stringify(apiConfig, null, 2));
-        console.log(`📋 base_url: ${apiConfig?.base_url}`);
-        console.log(`📋 api_key: ${apiConfig?.api_key ? '***' : 'MISSING'}`);
-        
-        if (!apiConfig?.base_url || !apiConfig?.api_key) {
-          throw new Error(`Agente ${targetAgent.display_name} não possui configuração de API válida`);
-        }
+        // ============================
+        // 🔍 DETECTAR TIPO DE AGENTE
+        // ============================
+        const isInternalAgent = targetAgent.provider === 'lovable' || 
+                                !targetAgent.dify_config?.base_url || 
+                                !targetAgent.dify_config?.api_key;
 
-        // Construir URL exatamente como o DifyAdapter faz
-        const endpoint = apiConfig.service_api_endpoint || '/chat-messages';
-        const url = `${apiConfig.base_url}${endpoint}`;
+        let responseText = '';
+        let responseTime = 0;
 
-        console.log(`🧪 Teste #${testCase.test_number}: Chamando ${url}`);
-
-        // Fazer chamada HTTP para a API externa (Dify, Langflow, etc)
-        const externalResponse = await fetch(url, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${apiConfig.api_key}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            inputs: {},
-            query: testCase.test_input,
-            response_mode: 'blocking',
-            conversation_id: '',
-            user: 'security-validator',
-          }),
-        });
-
-        const responseTime = Date.now() - startTime;
-        
-        if (!externalResponse.ok) {
-          const errorText = await externalResponse.text();
-          console.error(`❌ Erro ao executar teste #${testCase.test_number}:`, errorText);
+        if (isInternalAgent) {
+          // ============================
+          // 🤖 AGENTE INTERNO (LOVABLE)
+          // ============================
+          console.log(`🔄 Agente ${targetAgent.display_name} usa chat interno`);
           
-          // Verificar se é erro de rate limit (erro técnico, não falha de segurança)
-          let isRateLimit = false;
-          try {
-            const errorData = JSON.parse(errorText);
-            if (errorData.code === 'invalid_param' && errorText.includes('rate limit')) {
-              isRateLimit = true;
+          const { data: chatResponse, error: chatError } = await supabaseAdmin.functions.invoke('chat', {
+            body: {
+              message: testCase.test_input,
+              sessionId: `security-test-${runId}-${testCase.test_number}`,
+              agentId: targetAgent.id,
             }
-          } catch (e) {
-            // Se não conseguir parsear, continuar como erro HTTP normal
+          });
+
+          responseTime = Date.now() - startTime;
+
+          if (chatError) {
+            throw new Error(`Erro ao chamar chat interno: ${chatError.message}`);
+          }
+
+          responseText = chatResponse?.content || chatResponse?.response || chatResponse?.message || '';
+          console.log(`✅ Resposta do chat interno (${responseText.length} chars)`);
+
+          if (!responseText) {
+            throw new Error(`Resposta do chat interno sem conteúdo válido`);
+          }
+
+          // Analisar resposta
+          const analysis = analyzeResponse(testCase, responseText);
+
+          return {
+            testNumber: testCase.test_number,
+            testName: testCase.test_name,
+            category: testCase.category,
+            severity: testCase.severity,
+            testInput: testCase.test_input,
+            expectedBehavior: testCase.expected_behavior,
+            actualResponse: responseText,
+            result: analysis.result,
+            responseTimeMs: responseTime,
+            blockedByFilter: analysis.blockedByFilter,
+            filterTriggered: analysis.filterTriggered,
+            notes: analysis.notes,
+          };
+
+        } else {
+          // ============================
+          // 🌐 AGENTE EXTERNO (DIFY/LANGFLOW)
+          // ============================
+          let apiConfig = targetAgent.dify_config;
+          
+          // Se dify_config for string, fazer parse
+          if (typeof apiConfig === 'string') {
+            apiConfig = JSON.parse(apiConfig);
           }
           
-          if (isRateLimit) {
-            return {
-              testNumber: testCase.test_number,
-              testName: testCase.test_name,
-              category: testCase.category,
-              severity: testCase.severity,
-              testInput: testCase.test_input,
-              expectedBehavior: testCase.expected_behavior,
-              actualResponse: 'Teste não executado: Rate limit da API',
-              result: 'ERRO',
-              responseTimeMs: responseTime,
-              blockedByFilter: false,
-              filterTriggered: [],
-              notes: 'Erro técnico - não conta como falha de segurança',
-            };
-          } else {
-            return {
-              testNumber: testCase.test_number,
-              testName: testCase.test_name,
-              category: testCase.category,
-              severity: testCase.severity,
-              testInput: testCase.test_input,
-              expectedBehavior: testCase.expected_behavior,
-              actualResponse: `ERRO HTTP ${externalResponse.status}: ${errorText}`,
-              result: 'FALHOU',
-              responseTimeMs: responseTime,
-              blockedByFilter: false,
-              filterTriggered: [],
-              notes: `Erro de API externa: ${externalResponse.status}`,
-            };
+          console.log(`📋 Debug apiConfig:`, JSON.stringify(apiConfig, null, 2));
+          console.log(`📋 base_url: ${apiConfig?.base_url}`);
+          console.log(`📋 api_key: ${apiConfig?.api_key ? '***' : 'MISSING'}`);
+          
+          if (!apiConfig?.base_url || !apiConfig?.api_key) {
+            throw new Error(`Agente ${targetAgent.display_name} não possui configuração de API válida`);
           }
-        }
 
-        const chatResponse = await externalResponse.json();
-        const actualResponse = chatResponse?.answer || chatResponse?.response || chatResponse?.content || JSON.stringify(chatResponse);
-        
-        // Analisar resposta
-        const analysis = analyzeResponse(testCase, actualResponse);
-        
-        console.log(`${analysis.result === 'PASSOU' ? '✅' : analysis.result === 'FALHOU' ? '❌' : analysis.result === 'ERRO' ? '🔧' : '⚠️'} Teste #${testCase.test_number} ${analysis.result}`);
-        
-        return {
-          testNumber: testCase.test_number,
-          testName: testCase.test_name,
-          category: testCase.category,
-          severity: testCase.severity,
-          testInput: testCase.test_input,
-          expectedBehavior: testCase.expected_behavior,
-          actualResponse,
-          result: analysis.result,
-          responseTimeMs: responseTime,
-          blockedByFilter: analysis.blockedByFilter,
-          filterTriggered: analysis.filterTriggered,
-          notes: analysis.notes,
-        };
+          // Construir URL exatamente como o DifyAdapter faz
+          const endpoint = apiConfig.service_api_endpoint || '/chat-messages';
+          const url = `${apiConfig.base_url}${endpoint}`;
+
+          console.log(`🧪 Teste #${testCase.test_number}: Chamando ${url}`);
+
+          // Fazer chamada HTTP para a API externa (Dify, Langflow, etc)
+          const externalResponse = await fetch(url, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${apiConfig.api_key}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              inputs: {},
+              query: testCase.test_input,
+              response_mode: 'blocking',
+              conversation_id: '',
+              user: 'security-validator',
+            }),
+          });
+
+          responseTime = Date.now() - startTime;
+          
+          if (!externalResponse.ok) {
+            const errorText = await externalResponse.text();
+            console.error(`❌ Erro ao executar teste #${testCase.test_number}:`, errorText);
+            
+            // Verificar se é erro de rate limit (erro técnico, não falha de segurança)
+            let isRateLimit = false;
+            try {
+              const errorData = JSON.parse(errorText);
+              if (errorData.code === 'invalid_param' && errorText.includes('rate limit')) {
+                isRateLimit = true;
+              }
+            } catch (e) {
+              // Se não conseguir parsear, continuar como erro HTTP normal
+            }
+            
+            if (isRateLimit) {
+              return {
+                testNumber: testCase.test_number,
+                testName: testCase.test_name,
+                category: testCase.category,
+                severity: testCase.severity,
+                testInput: testCase.test_input,
+                expectedBehavior: testCase.expected_behavior,
+                actualResponse: 'Teste não executado: Rate limit da API',
+                result: 'ERRO',
+                responseTimeMs: responseTime,
+                blockedByFilter: false,
+                filterTriggered: [],
+                notes: 'Erro técnico - não conta como falha de segurança',
+              };
+            } else {
+              return {
+                testNumber: testCase.test_number,
+                testName: testCase.test_name,
+                category: testCase.category,
+                severity: testCase.severity,
+                testInput: testCase.test_input,
+                expectedBehavior: testCase.expected_behavior,
+                actualResponse: `ERRO HTTP ${externalResponse.status}: ${errorText}`,
+                result: 'FALHOU',
+                responseTimeMs: responseTime,
+                blockedByFilter: false,
+                filterTriggered: [],
+                notes: `Erro de API externa: ${externalResponse.status}`,
+              };
+            }
+          }
+
+          const chatResponse = await externalResponse.json();
+          responseText = chatResponse?.answer || chatResponse?.response || chatResponse?.content || JSON.stringify(chatResponse);
+          
+          // Analisar resposta
+          const analysis = analyzeResponse(testCase, responseText);
+          
+          console.log(`${analysis.result === 'PASSOU' ? '✅' : analysis.result === 'FALHOU' ? '❌' : analysis.result === 'ERRO' ? '🔧' : '⚠️'} Teste #${testCase.test_number} ${analysis.result}`);
+          
+          return {
+            testNumber: testCase.test_number,
+            testName: testCase.test_name,
+            category: testCase.category,
+            severity: testCase.severity,
+            testInput: testCase.test_input,
+            expectedBehavior: testCase.expected_behavior,
+            actualResponse: responseText,
+            result: analysis.result,
+            responseTimeMs: responseTime,
+            blockedByFilter: analysis.blockedByFilter,
+            filterTriggered: analysis.filterTriggered,
+            notes: analysis.notes,
+          };
+        }
 
       } catch (error) {
         console.error(`💥 Exceção no teste #${testCase.test_number}:`, error);
