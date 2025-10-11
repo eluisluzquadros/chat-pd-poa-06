@@ -139,10 +139,11 @@ serve(async (req) => {
       throw new Error('Acesso negado. Apenas administradores podem executar validações de segurança.');
     }
 
-    const { testNumbers, systemVersion = 'v1.0' } = await req.json();
+    const { testNumbers, agentId, systemVersion = 'v1.0' } = await req.json();
 
     console.log(`🔒 Iniciando validação de segurança - Versão: ${systemVersion}`);
     console.log(`📝 Testes selecionados:`, testNumbers || 'TODOS');
+    console.log(`🤖 Agent ID fornecido:`, agentId || 'Usar padrão');
 
     // Criar registro de execução
     const { data: run, error: runError } = await supabase
@@ -152,6 +153,7 @@ serve(async (req) => {
         executed_by: user.id,
         system_version: systemVersion,
         started_at: new Date().toISOString(),
+        agent_id: agentId,
       })
       .select()
       .single();
@@ -161,6 +163,26 @@ serve(async (req) => {
     }
 
     console.log(`✅ Run criada com ID: ${run.id}`);
+
+    // ⏱️  Timeout automático: marcar como failed após 10 minutos
+    const timeoutMs = 10 * 60 * 1000; // 10 minutos
+    const timeoutId = setTimeout(async () => {
+      console.log(`⏱️  TIMEOUT: Run ${run.id} excedeu 10 minutos, marcando como failed`);
+      
+      const { error } = await supabase
+        .from('security_validation_runs')
+        .update({
+          status: 'failed',
+          completed_at: new Date().toISOString(),
+          error_message: 'Timeout: Execução excedeu 10 minutos'
+        })
+        .eq('id', run.id)
+        .eq('status', 'running'); // Só atualiza se ainda estiver running
+      
+      if (error) {
+        console.error('❌ Erro ao aplicar timeout:', error);
+      }
+    }, timeoutMs);
 
     // Buscar casos de teste
     let testQuery = supabase
@@ -181,19 +203,35 @@ serve(async (req) => {
 
     console.log(`📋 ${testCases.length} casos de teste carregados`);
 
-    // Buscar agente padrão configurado
-    const { data: defaultAgent } = await supabase
-      .from('dify_agents')
-      .select('*')
-      .eq('is_default', true)
-      .eq('is_active', true)
-      .single();
-
-    if (!defaultAgent) {
-      throw new Error('Nenhum agente padrão configurado. Configure um agente em Admin > RAG Configuration.');
+    // Buscar agente (fornecido ou padrão)
+    let targetAgent;
+    if (agentId) {
+      const { data, error } = await supabase
+        .from('dify_agents')
+        .select('*')
+        .eq('id', agentId)
+        .eq('is_active', true)
+        .single();
+      
+      if (error || !data) {
+        throw new Error(`Agente ${agentId} não encontrado ou inativo`);
+      }
+      targetAgent = data;
+    } else {
+      const { data } = await supabase
+        .from('dify_agents')
+        .select('*')
+        .eq('is_default', true)
+        .eq('is_active', true)
+        .single();
+      
+      if (!data) {
+        throw new Error('Nenhum agente padrão configurado. Configure um agente em Admin > RAG Configuration.');
+      }
+      targetAgent = data;
     }
 
-    console.log(`🤖 Usando agente padrão: ${defaultAgent.display_name} (${defaultAgent.provider}/${defaultAgent.model})`);
+    console.log(`🤖 Usando agente: ${targetAgent.display_name} (${targetAgent.provider}/${targetAgent.model})`);
 
     // Função para processar um teste individual
     const processTest = async (testCase: TestCase): Promise<TestResult> => {
@@ -203,7 +241,7 @@ serve(async (req) => {
       
       try {
         // Chamar diretamente a API externa do agente configurado (mesmo fluxo de /chat)
-        let apiConfig = defaultAgent.dify_config;
+        let apiConfig = targetAgent.dify_config;
         
         // Se dify_config for string, fazer parse
         if (typeof apiConfig === 'string') {
@@ -215,7 +253,7 @@ serve(async (req) => {
         console.log(`📋 api_key: ${apiConfig?.api_key ? '***' : 'MISSING'}`);
         
         if (!apiConfig?.base_url || !apiConfig?.api_key) {
-          throw new Error(`Agente ${defaultAgent.display_name} não possui configuração de API válida`);
+          throw new Error(`Agente ${targetAgent.display_name} não possui configuração de API válida`);
         }
 
         // Construir URL exatamente como o DifyAdapter faz
@@ -436,6 +474,9 @@ serve(async (req) => {
       console.error('Erro ao atualizar run:', updateError);
     }
 
+    // ✅ Limpar timeout pois a execução completou com sucesso
+    clearTimeout(timeoutId);
+
     return new Response(
       JSON.stringify({
         success: true,
@@ -460,6 +501,15 @@ serve(async (req) => {
 
   } catch (error) {
     console.error('❌ Erro na validação de segurança:', error);
+
+    // Em caso de erro, também limpar o timeout (se existir)
+    try {
+      if (typeof timeoutId !== 'undefined') {
+        clearTimeout(timeoutId);
+      }
+    } catch (e) {
+      // Ignorar erro ao limpar timeout
+    }
 
     return new Response(
       JSON.stringify({

@@ -2199,30 +2199,6 @@ export type Database = {
         }
         Relationships: []
       }
-      secrets: {
-        Row: {
-          created_at: string | null
-          id: number
-          name: string
-          updated_at: string | null
-          value: string
-        }
-        Insert: {
-          created_at?: string | null
-          id?: number
-          name: string
-          updated_at?: string | null
-          value: string
-        }
-        Update: {
-          created_at?: string | null
-          id?: number
-          name?: string
-          updated_at?: string | null
-          value?: string
-        }
-        Relationships: []
-      }
       security_lessons_learned: {
         Row: {
           created_at: string | null
@@ -2385,6 +2361,7 @@ export type Database = {
       }
       security_validation_runs: {
         Row: {
+          agent_id: string | null
           completed_at: string | null
           created_at: string | null
           critical_failures: number
@@ -2403,6 +2380,7 @@ export type Database = {
           total_tests: number
         }
         Insert: {
+          agent_id?: string | null
           completed_at?: string | null
           created_at?: string | null
           critical_failures?: number
@@ -2421,6 +2399,7 @@ export type Database = {
           total_tests?: number
         }
         Update: {
+          agent_id?: string | null
           completed_at?: string | null
           created_at?: string | null
           critical_failures?: number
@@ -2438,7 +2417,15 @@ export type Database = {
           system_version?: string | null
           total_tests?: number
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "security_validation_runs_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "dify_agents"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       session_memory: {
         Row: {

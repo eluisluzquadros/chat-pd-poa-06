@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import { SecurityRunCard } from "@/components/admin/security/SecurityRunCard";
 import { SecurityHistoryTable } from "@/components/admin/security/SecurityHistoryTable";
 import { SecurityTestSelector } from "@/components/admin/security/SecurityTestSelector";
+import { SecurityAgentSelector } from "@/components/admin/security/SecurityAgentSelector";
 import { Progress } from "@/components/ui/progress";
 import {
   AlertDialog,
@@ -25,10 +26,13 @@ import {
 
 export default function SecurityValidation() {
   const [selectedTests, setSelectedTests] = useState<number[]>([]);
+  const [selectedAgentId, setSelectedAgentId] = useState<string | null>(null);
   const [isRunning, setIsRunning] = useState(false);
   const [progress, setProgress] = useState(0);
   const [showClearDialog, setShowClearDialog] = useState(false);
+  const [showOrphanDialog, setShowOrphanDialog] = useState(false);
   const [isClearing, setIsClearing] = useState(false);
+  const [isCleaningOrphans, setIsCleaningOrphans] = useState(false);
   const queryClient = useQueryClient();
 
   // Buscar última execução
@@ -71,6 +75,7 @@ export default function SecurityValidation() {
       const { data, error } = await supabase.functions.invoke('security-validator', {
         body: {
           testNumbers: selectedTests.length > 0 ? selectedTests : undefined,
+          agentId: selectedAgentId,
           systemVersion: 'v1.0',
         },
       });
@@ -124,6 +129,9 @@ export default function SecurityValidation() {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       
+      console.log('🔍 Tentando limpar histórico...');
+      console.log('Session:', session ? 'Presente' : 'Ausente');
+      
       if (!session) {
         throw new Error('Usuário não autenticado');
       }
@@ -133,6 +141,8 @@ export default function SecurityValidation() {
           Authorization: `Bearer ${session.access_token}`
         }
       });
+
+      console.log('Resposta:', { data, error });
 
       if (error) throw error;
 
@@ -144,11 +154,56 @@ export default function SecurityValidation() {
       queryClient.invalidateQueries({ queryKey: ['security-runs'] });
       setShowClearDialog(false);
     } catch (error: any) {
+      console.error('❌ Erro ao limpar histórico:', error);
       toast.error('Erro ao limpar histórico', {
         description: error.message,
       });
     } finally {
       setIsClearing(false);
+    }
+  };
+
+  const handleCleanOrphanRuns = async () => {
+    setIsCleaningOrphans(true);
+    try {
+      console.log('🧹 Limpando órfãs...');
+
+      // Marcar como failed todas as runs com status 'running' que têm mais de 10 minutos
+      const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString();
+      
+      const { data, error } = await supabase
+        .from('security_validation_runs')
+        .update({
+          status: 'failed',
+          completed_at: new Date().toISOString(),
+          error_message: 'Timeout: Execução cancelada automaticamente após 10 minutos'
+        })
+        .eq('status', 'running')
+        .lt('started_at', tenMinutesAgo)
+        .select();
+
+      if (error) throw error;
+
+      const orphanCount = data?.length || 0;
+      
+      if (orphanCount === 0) {
+        toast.info('Nenhuma execução órfã encontrada');
+      } else {
+        toast.success('Execuções órfãs limpas', {
+          description: `${orphanCount} execução(ões) marcada(s) como falha`,
+        });
+        queryClient.invalidateQueries({ queryKey: ['security-latest-run'] });
+        queryClient.invalidateQueries({ queryKey: ['security-runs'] });
+      }
+      
+      setShowOrphanDialog(false);
+    } catch (error: any) {
+      console.error('❌ Erro ao limpar órfãs:', error);
+      toast.error('Erro ao limpar órfãs', {
+        description: error.message,
+      });
+    } finally {
+      setIsCleaningOrphans(false);
     }
   };
 
@@ -180,6 +235,11 @@ export default function SecurityValidation() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
+              <SecurityAgentSelector
+                selectedAgentId={selectedAgentId}
+                onAgentChange={setSelectedAgentId}
+              />
+
               <SecurityTestSelector
                 selectedTests={selectedTests}
                 onSelectionChange={setSelectedTests}
@@ -228,15 +288,26 @@ export default function SecurityValidation() {
                   Histórico de Execuções
                 </CardTitle>
                 {runs && runs.length > 0 && (
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    onClick={() => setShowClearDialog(true)}
-                    className="gap-2"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                    Limpar Histórico
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setShowOrphanDialog(true)}
+                      className="gap-2"
+                    >
+                      <AlertTriangle className="h-4 w-4" />
+                      Limpar Órfãs
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={() => setShowClearDialog(true)}
+                      className="gap-2"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                      Limpar Tudo
+                    </Button>
+                  </div>
                 )}
               </div>
             </CardHeader>
@@ -245,7 +316,7 @@ export default function SecurityValidation() {
             </CardContent>
           </Card>
 
-          {/* Alert Dialog para confirmação */}
+          {/* Alert Dialog para limpar tudo */}
           <AlertDialog open={showClearDialog} onOpenChange={setShowClearDialog}>
             <AlertDialogContent>
               <AlertDialogHeader>
@@ -263,6 +334,29 @@ export default function SecurityValidation() {
                   className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                 >
                   {isClearing ? "Limpando..." : "Limpar Tudo"}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+
+          {/* Alert Dialog para limpar órfãs */}
+          <AlertDialog open={showOrphanDialog} onOpenChange={setShowOrphanDialog}>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Limpar execuções órfãs?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Esta ação irá marcar como "falha" todas as execuções com status "Em Execução" 
+                  que foram iniciadas há mais de 10 minutos. Use isso para limpar execuções travadas.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel disabled={isCleaningOrphans}>Cancelar</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={handleCleanOrphanRuns}
+                  disabled={isCleaningOrphans}
+                  className="bg-orange-600 text-white hover:bg-orange-700"
+                >
+                  {isCleaningOrphans ? "Limpando..." : "Limpar Órfãs"}
                 </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
