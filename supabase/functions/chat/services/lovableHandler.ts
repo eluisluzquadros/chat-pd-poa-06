@@ -1,5 +1,28 @@
 import { ChatResponse } from "../types.ts";
 
+// Função para estimar tokens (aproximação: ~4 chars = 1 token)
+function estimateTokens(text: string): number {
+  return Math.ceil(text.length / 4);
+}
+
+// Função para truncar histórico mantendo limite de tokens
+function truncateHistory(history: any[], maxTokens: number): any[] {
+  const truncated: any[] = [];
+  let currentTokens = 0;
+  
+  // Adicionar mensagens do mais recente para o mais antigo
+  for (let i = history.length - 1; i >= 0; i--) {
+    const msgTokens = estimateTokens(history[i].content || '');
+    if (currentTokens + msgTokens > maxTokens) {
+      break;
+    }
+    truncated.unshift(history[i]);
+    currentTokens += msgTokens;
+  }
+  
+  return truncated;
+}
+
 export async function processLovableAgent(
   message: string,
   sessionId: string | null,
@@ -10,8 +33,9 @@ export async function processLovableAgent(
   console.log(`📝 Processing with Lovable agent: ${agent.display_name}`);
   
   const systemPrompt = agent.parameters?.system_prompt || "You are a helpful assistant.";
-  const maxTokens = agent.parameters?.max_tokens || 4000;
+  const maxCompletionTokens = agent.parameters?.max_tokens || 4000;
   const temperature = agent.parameters?.temperature || 0.7;
+  const maxHistoryMessages = agent.parameters?.max_history_messages || 30;
   
   // Buscar histórico da sessão (se houver)
   let conversationHistory: any[] = [];
@@ -28,10 +52,23 @@ export async function processLovableAgent(
       .select('message')
       .eq('session_id', sessionId)
       .order('created_at', { ascending: true })
-      .limit(10);
+      .limit(maxHistoryMessages);
     
     if (history) {
       conversationHistory = history.map(h => h.message);
+      
+      // Controle de tokens: reservar 2000 tokens para histórico
+      const maxHistoryTokens = 2000;
+      const historyTokenCount = conversationHistory.reduce(
+        (total, msg) => total + estimateTokens(msg.content || ''), 
+        0
+      );
+      
+      if (historyTokenCount > maxHistoryTokens) {
+        console.log(`⚠️ History tokens (${historyTokenCount}) exceeded limit, truncating...`);
+        conversationHistory = truncateHistory(conversationHistory, maxHistoryTokens);
+        console.log(`✂️ Truncated to ${conversationHistory.length} messages`);
+      }
     }
   }
   
@@ -54,7 +91,7 @@ export async function processLovableAgent(
     body: JSON.stringify({
       model: agent.model || "gpt-4o-mini",
       messages: messages,
-      max_tokens: maxTokens,
+      max_completion_tokens: maxCompletionTokens,
       temperature: temperature,
       stream: false
     })
