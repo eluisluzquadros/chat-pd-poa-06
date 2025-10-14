@@ -21,6 +21,7 @@ import AgentsConfig from "./pages/admin/AgentsConfig";
 import AdminPlayground from "./pages/admin/AdminPlayground";
 import UserSettings from "./pages/UserSettings";
 import Reports from "./pages/Reports";
+import ProcessInsights from "./pages/ProcessInsights";
 import BenchmarkV2 from "./pages/admin/BenchmarkV2";
 import SecurityValidation from "./pages/admin/SecurityValidation";
 import SecurityRunDetails from "./pages/admin/SecurityRunDetails";
@@ -219,6 +220,13 @@ function App() {
                     <AdminErrorBoundary>
                       <AdminDataImport />
                     </AdminErrorBoundary>
+                  </SimpleRoleGuard>
+                </SimpleAuthGuard>
+              } />
+              <Route path="/admin/process-insights" element={
+                <SimpleAuthGuard>
+                  <SimpleRoleGuard adminOnly={true}>
+                    <ProcessInsights />
                   </SimpleRoleGuard>
                 </SimpleAuthGuard>
               } />

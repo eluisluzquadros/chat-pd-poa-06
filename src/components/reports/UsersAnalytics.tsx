@@ -29,10 +29,15 @@ export function UsersAnalytics({ timeRange }: UsersAnalyticsProps) {
     const fetchUserStats = async () => {
       setIsLoading(true);
       try {
-        // Get all users
+        // Get all users with their roles
         const { data: users, error } = await supabase
           .from("user_accounts")
-          .select("*");
+          .select(`
+            *,
+            user_roles (
+              role
+            )
+          `);
 
         if (error) throw error;
 
@@ -42,7 +47,7 @@ export function UsersAnalytics({ timeRange }: UsersAnalyticsProps) {
         
         // Count by role
         const byRole = users.reduce((acc, user) => {
-          const role = user.role as AppRole;
+          const role = (user.user_roles?.[0]?.role || 'user') as AppRole;
           acc[role] = (acc[role] || 0) + 1;
           return acc;
         }, { admin: 0, supervisor: 0, analyst: 0, user: 0 } as Record<AppRole, number>);
