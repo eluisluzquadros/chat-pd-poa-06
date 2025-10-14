@@ -608,6 +608,45 @@ export type Database = {
         }
         Relationships: []
       }
+      intelligence_alerts: {
+        Row: {
+          acknowledged: boolean | null
+          acknowledged_at: string | null
+          acknowledged_by: string | null
+          alert_type: string
+          data: Json | null
+          description: string | null
+          id: string
+          severity: string | null
+          title: string
+          triggered_at: string
+        }
+        Insert: {
+          acknowledged?: boolean | null
+          acknowledged_at?: string | null
+          acknowledged_by?: string | null
+          alert_type: string
+          data?: Json | null
+          description?: string | null
+          id?: string
+          severity?: string | null
+          title: string
+          triggered_at?: string
+        }
+        Update: {
+          acknowledged?: boolean | null
+          acknowledged_at?: string | null
+          acknowledged_by?: string | null
+          alert_type?: string
+          data?: Json | null
+          description?: string | null
+          id?: string
+          severity?: string | null
+          title?: string
+          triggered_at?: string
+        }
+        Relationships: []
+      }
       interest_manifestations: {
         Row: {
           account_created: boolean
@@ -1158,6 +1197,53 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      message_insights: {
+        Row: {
+          analyzed_at: string
+          created_at: string
+          id: string
+          intent: string[] | null
+          keywords: string[] | null
+          sentiment: string | null
+          sentiment_score: number | null
+          session_id: string
+          topics: string[] | null
+          user_message: string
+        }
+        Insert: {
+          analyzed_at?: string
+          created_at?: string
+          id?: string
+          intent?: string[] | null
+          keywords?: string[] | null
+          sentiment?: string | null
+          sentiment_score?: number | null
+          session_id: string
+          topics?: string[] | null
+          user_message: string
+        }
+        Update: {
+          analyzed_at?: string
+          created_at?: string
+          id?: string
+          intent?: string[] | null
+          keywords?: string[] | null
+          sentiment?: string | null
+          sentiment_score?: number | null
+          session_id?: string
+          topics?: string[] | null
+          user_message?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "message_insights_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "chat_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       messages: {
         Row: {
@@ -2904,6 +2990,16 @@ export type Database = {
         }
         Relationships: []
       }
+      mv_daily_insights: {
+        Row: {
+          avg_sentiment: number | null
+          date: string | null
+          message_count: number | null
+          sentiment: string | null
+          unique_users: number | null
+        }
+        Relationships: []
+      }
       qa_quality_monitoring: {
         Row: {
           alert_status: string | null
@@ -3093,6 +3189,14 @@ export type Database = {
           total_messages: number
         }[]
       }
+      get_top_topics: {
+        Args: { end_date: string; limit_count?: number; start_date: string }
+        Returns: {
+          avg_sentiment_score: number
+          count: number
+          topic: string
+        }[]
+      }
       gtrgm_compress: {
         Args: { "": unknown }
         Returns: unknown
@@ -3167,11 +3271,13 @@ export type Database = {
               query_text: string
             }
         Returns: {
+          article_number: number
+          article_text: string
           content: string
-          id: string
-          metadata: Json
-          rank: number
-          similarity: number
+          document_type: string
+          hierarchy: string
+          relevance_score: number
+          source: string
         }[]
       }
       is_admin: {
@@ -3200,7 +3306,7 @@ export type Database = {
       }
       l2_normalize: {
         Args: { "": string } | { "": unknown } | { "": unknown }
-        Returns: string
+        Returns: unknown
       }
       log_agent_performance: {
         Args: {
@@ -3389,6 +3495,10 @@ export type Database = {
           keywords: string[]
           similarity: number
         }[]
+      }
+      refresh_daily_insights: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
       }
       remove_content_duplications: {
         Args: Record<PropertyKey, never>

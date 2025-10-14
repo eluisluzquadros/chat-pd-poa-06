@@ -21,7 +21,7 @@ export function UsersAnalytics({ timeRange }: UsersAnalyticsProps) {
   const [stats, setStats] = useState<UserStats>({
     total: 0,
     active: 0,
-    byRole: { admin: 0, supervisor: 0, analyst: 0, citizen: 0 }
+    byRole: { admin: 0, supervisor: 0, analyst: 0, user: 0 }
   });
   const [isLoading, setIsLoading] = useState(true);
 
@@ -45,7 +45,7 @@ export function UsersAnalytics({ timeRange }: UsersAnalyticsProps) {
           const role = user.role as AppRole;
           acc[role] = (acc[role] || 0) + 1;
           return acc;
-        }, { admin: 0, supervisor: 0, analyst: 0, citizen: 0 } as Record<AppRole, number>);
+        }, { admin: 0, supervisor: 0, analyst: 0, user: 0 } as Record<AppRole, number>);
 
         setStats({
           total: totalUsers,
@@ -102,7 +102,7 @@ export function UsersAnalytics({ timeRange }: UsersAnalyticsProps) {
               />
               <StatsCard 
                 title="Cidadãos" 
-                value={stats.byRole.citizen} 
+                value={stats.byRole.user} 
                 className="bg-purple-50 dark:bg-purple-950/30"
               />
             </div>

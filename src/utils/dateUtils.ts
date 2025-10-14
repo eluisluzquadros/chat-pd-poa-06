@@ -4,6 +4,23 @@ import { ptBR } from "date-fns/locale";
 
 export type TimeRange = "7days" | "month" | "year";
 
+export const PDPOA_LAUNCH_DATE = new Date('2025-10-08T00:00:00');
+
+export type Period = 'all' | 'testing' | 'production';
+
+export function getDateRangeByPeriod(period: Period, timeRange: TimeRange): [Date, Date] {
+  const [startDate, endDate] = getDateRangeFromFilter(timeRange);
+  
+  switch (period) {
+    case 'testing':
+      return [startDate, PDPOA_LAUNCH_DATE];
+    case 'production':
+      return [PDPOA_LAUNCH_DATE, endDate];
+    default:
+      return [startDate, endDate];
+  }
+}
+
 export const getDateRangeFromFilter = (filter: TimeRange): [Date, Date] => {
   const now = new Date();
   

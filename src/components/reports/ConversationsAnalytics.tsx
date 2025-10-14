@@ -82,7 +82,7 @@ interface ConversationsAnalyticsProps {
 export function ConversationsAnalytics({ timeRange }: ConversationsAnalyticsProps) {
   const [stats, setStats] = useState<ConversationStats>({
     total: 0,
-    byRole: { admin: 0, supervisor: 0, analyst: 0, citizen: 0 },
+    byRole: { admin: 0, supervisor: 0, analyst: 0, user: 0 },
     chartData: []
   });
   const [isLoading, setIsLoading] = useState(true);
@@ -109,7 +109,7 @@ export function ConversationsAnalytics({ timeRange }: ConversationsAnalyticsProp
           admin: 0, 
           supervisor: 0, 
           analyst: 0, 
-          citizen: 0 
+          user: 0 
         };
         
         // If we have sessions, get user roles from user_roles table only
@@ -130,9 +130,9 @@ export function ConversationsAnalytics({ timeRange }: ConversationsAnalyticsProp
             userRoleMap.set(user.user_id, user.role as AppRole);
           });
           
-          // Count conversations by user role, using 'citizen' as default for users without defined roles
+          // Count conversations by user role, using 'user' as default for users without defined roles
           chatSessions.forEach(session => {
-            const role = (userRoleMap.get(session.user_id) || 'citizen') as AppRole;
+            const role = (userRoleMap.get(session.user_id) || 'user') as AppRole;
             if (userRoles[role] !== undefined) {
               userRoles[role] = (userRoles[role] || 0) + 1;
             }
@@ -226,7 +226,7 @@ export function ConversationsAnalytics({ timeRange }: ConversationsAnalyticsProp
               />
               <StatsCard 
                 title="Cidadãos" 
-                value={stats.byRole.citizen} 
+                value={stats.byRole.user} 
                 className="bg-purple-50 dark:bg-purple-950/30"
               />
             </div>
