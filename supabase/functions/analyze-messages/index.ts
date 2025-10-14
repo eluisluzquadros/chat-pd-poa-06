@@ -1,9 +1,17 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.57.3';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+// ✅ Cliente Supabase com permissões de admin
+const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+console.log('🔑 Supabase client initialized with service role');
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -11,14 +19,25 @@ serve(async (req) => {
   }
 
   try {
+    // ✅ Receber array de objetos com session_id, user_message, created_at
     const { messages } = await req.json();
+    
+    console.log(`📊 [STEP 1] Received ${messages.length} messages for analysis`);
+    console.log(`📊 [STEP 1] First message sample:`, JSON.stringify(messages[0]));
+    
     const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY');
     
     if (!OPENAI_API_KEY) {
+      console.error('❌ [ERROR] OPENAI_API_KEY not configured');
       throw new Error('OPENAI_API_KEY not configured');
     }
+    
+    console.log('✅ [STEP 2] OpenAI API Key validated');
 
-    console.log(`📊 Analyzing ${messages.length} messages...`);
+    // Extrair apenas o texto das mensagens para análise
+    const messageTexts = messages.map((m: any) => m.user_message || m.content || m);
+    
+    console.log(`📊 [STEP 3] Extracted ${messageTexts.length} message texts`);
 
     const analysisPrompt = `Analise as seguintes mensagens de usuários e retorne um JSON com insights.
 
@@ -30,7 +49,7 @@ Para cada mensagem, identifique:
 5. **keywords**: array das principais palavras-chave
 
 Mensagens:
-${messages.map((m: string, i: number) => `${i + 1}. "${m}"`).join('\n')}
+${messageTexts.map((m: string, i: number) => `${i + 1}. "${m}"`).join('\n')}
 
 Retorne um JSON com estrutura:
 {
@@ -73,16 +92,65 @@ Retorne um JSON com estrutura:
     const analysisText = aiResult.choices[0].message.content;
     const analysis = JSON.parse(analysisText);
 
-    console.log(`✅ Analysis complete for ${analysis.results.length} messages`);
+    console.log(`✅ [STEP 4] OpenAI analysis complete: ${analysis.results.length} results`);
+    console.log(`📊 [STEP 4] Sample result:`, JSON.stringify(analysis.results[0]));
 
-    return new Response(JSON.stringify(analysis), {
+    // ✅ INSERIR INSIGHTS NO BANCO DE DADOS
+    const insights = messages.map((msg: any, idx: number) => {
+      const result = analysis.results[idx];
+      return {
+        session_id: msg.session_id,
+        user_message: msg.user_message || msg.content || msg,
+        sentiment: result?.sentiment || 'neutral',
+        sentiment_score: result?.sentiment_score || 0.5,
+        intent: result?.intent || [],
+        topics: result?.topics || [],
+        keywords: result?.keywords || [],
+        created_at: msg.created_at || new Date().toISOString()
+      };
+    });
+
+    console.log(`📊 [STEP 5] Prepared ${insights.length} insights for insertion`);
+    console.log(`📊 [STEP 5] Sample insight:`, JSON.stringify(insights[0]));
+
+    // ✅ UPSERT usando service_role (bypassa RLS)
+    const { data: insertedData, error: insertError } = await supabase
+      .from('message_insights')
+      .upsert(insights, { 
+        onConflict: 'session_id,user_message',
+        ignoreDuplicates: false 
+      })
+      .select();
+
+    if (insertError) {
+      console.error('❌ [STEP 6 ERROR] Database insert failed:', insertError);
+      console.error('❌ [STEP 6 ERROR] Insert error details:', JSON.stringify(insertError));
+      throw new Error(`Database insert failed: ${insertError.message}`);
+    }
+
+    console.log(`✅ [STEP 6] Successfully inserted ${insights.length} insights into database`);
+    console.log(`✅ [STEP 6] Inserted data sample:`, JSON.stringify(insertedData?.[0]));
+
+    return new Response(JSON.stringify({ 
+      success: true,
+      analyzed: insights.length,
+      results: analysis.results 
+    }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
 
   } catch (error) {
-    console.error('Error in analyze-messages:', error);
+    console.error('❌ [FATAL ERROR] Function failed:', error);
+    console.error('❌ [FATAL ERROR] Error name:', error.name);
+    console.error('❌ [FATAL ERROR] Error message:', error.message);
+    console.error('❌ [FATAL ERROR] Error stack:', error.stack);
+    
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        success: false,
+        error: error.message,
+        errorType: error.name 
+      }),
       { 
         status: 500, 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' } 

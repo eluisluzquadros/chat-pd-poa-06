@@ -36,51 +36,47 @@ export class MessageAnalysisService {
       const batch = sessions.slice(i, i + batchSize);
       
       try {
-        // Extrair apenas mensagens do usuário
-        const userMessages = batch
+        // ✅ Preparar dados completos para enviar
+        const messagesToAnalyze = batch
           .filter(s => s.message?.role === 'user')
-          .map(s => s.message?.content || '');
-
-        if (userMessages.length === 0) continue;
-
-        // Enviar para edge function
-        const { data: analysis, error: funcError } = await supabase.functions.invoke(
-          'analyze-messages',
-          { body: { messages: userMessages } }
-        );
-
-        if (funcError) throw funcError;
-
-        // Salvar resultados no banco
-        const insights = batch
-          .filter(s => s.message?.role === 'user')
-          .map((session, idx) => ({
-            session_id: session.session_id,
-            user_message: session.message?.content || '',
-            sentiment: analysis.results[idx]?.sentiment,
-            sentiment_score: analysis.results[idx]?.sentiment_score,
-            intent: analysis.results[idx]?.intent,
-            topics: analysis.results[idx]?.topics,
-            keywords: analysis.results[idx]?.keywords,
-            created_at: session.created_at,
+          .map(s => ({
+            session_id: s.session_id,
+            user_message: s.message?.content || '',
+            created_at: s.created_at
           }));
 
-        const { error: insertError } = await supabase
-          .from('message_insights')
-          .upsert(insights, { 
-            onConflict: 'session_id,user_message',
-            ignoreDuplicates: true 
-          });
-
-        if (insertError) {
-          console.error('Insert error:', insertError);
-          errors += insights.length;
-        } else {
-          analyzed += insights.length;
+        if (messagesToAnalyze.length === 0) {
+          console.log(`⏭️ Batch ${i}-${i + batchSize}: No user messages, skipping`);
+          continue;
         }
 
+        console.log(`📤 Sending batch ${i}-${i + batchSize}: ${messagesToAnalyze.length} messages`);
+
+        // ✅ Enviar para edge function (que agora faz tudo)
+        const { data: result, error: funcError } = await supabase.functions.invoke(
+          'analyze-messages',
+          { body: { messages: messagesToAnalyze } }
+        );
+
+        console.log(`📥 Received response:`, result);
+
+        if (funcError) {
+          console.error(`❌ Edge function error:`, funcError);
+          throw funcError;
+        }
+
+        if (!result?.success) {
+          console.error(`❌ Analysis failed:`, result?.error);
+          throw new Error(result?.error || 'Analysis failed');
+        }
+
+        // ✅ A edge function já fez o INSERT, só contabilizar
+        analyzed += result.analyzed || 0;
+        console.log(`✅ Batch ${i}-${i + batchSize} processed: ${result.analyzed} messages`);
+
       } catch (error) {
-        console.error(`Error processing batch ${i}-${i + batchSize}:`, error);
+        console.error(`❌ Error processing batch ${i}-${i + batchSize}:`, error);
+        console.error(`❌ Error details:`, JSON.stringify(error));
         errors += batch.length;
       }
     }
