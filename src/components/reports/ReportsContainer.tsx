@@ -2,8 +2,9 @@
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { DownloadIcon } from "lucide-react";
+import { DownloadIcon, Brain } from "lucide-react";
 import { toast } from "sonner";
+import { Link } from "react-router-dom";
 import { TimeRange, Period, getTimeRangeLabel } from "@/utils/dateUtils";
 import { TimeRangeSelector } from "@/components/reports/TimeRangeSelector";
 import { PeriodSelector } from "@/components/reports/PeriodSelector";
@@ -13,7 +14,12 @@ import { ConversationsAnalytics } from "@/components/reports/ConversationsAnalyt
 import { SentimentAnalytics } from "@/components/reports/SentimentAnalytics";
 import { TopicsAnalytics } from "@/components/reports/TopicsAnalytics";
 import { IntelligenceAlerts } from "@/components/reports/IntelligenceAlerts";
+import { KeywordsCloud } from "@/components/reports/KeywordsCloud";
+import { IntentAnalytics } from "@/components/reports/IntentAnalytics";
+import { FAQDetector } from "@/components/reports/FAQDetector";
+import { ExecutiveDashboard } from "@/components/reports/ExecutiveDashboard";
 import { reportExportService } from "@/services/reportExportService";
+import { supabase } from "@/integrations/supabase/client";
 
 export function ReportsContainer() {
   const [timeRange, setTimeRange] = useState<TimeRange>("7days");
@@ -22,12 +28,54 @@ export function ReportsContainer() {
 
   const handleExportData = async () => {
     try {
-      const data: any[] = [];
-      const filename = `relatorio_${activeTab}_${period}_${timeRange}`;
+      let data: any[] = [];
       
+      // Fetch data based on active tab
+      switch(activeTab) {
+        case 'users':
+          const { data: users } = await supabase
+            .from('user_accounts')
+            .select('*');
+          data = users || [];
+          break;
+        
+        case 'conversations':
+          const { data: sessions } = await supabase
+            .from('chat_sessions')
+            .select('*');
+          data = sessions || [];
+          break;
+        
+        case 'sentiment':
+        case 'topics':
+        case 'keywords':
+        case 'intents':
+          const { data: insights } = await supabase
+            .from('message_insights')
+            .select('*');
+          data = insights || [];
+          break;
+        
+        case 'alerts':
+          const { data: alerts } = await supabase
+            .from('intelligence_alerts')
+            .select('*');
+          data = alerts || [];
+          break;
+        
+        default:
+          // Export all sessions for overview
+          const { data: allSessions } = await supabase
+            .from('chat_sessions')
+            .select('*');
+          data = allSessions || [];
+      }
+      
+      const filename = `relatorio_${activeTab}_${period}_${timeRange}`;
       await reportExportService.exportToCSV(data, filename);
       toast.success("Relatório exportado com sucesso");
     } catch (error) {
+      console.error("Export error:", error);
       toast.error("Erro ao exportar relatório");
     }
   };
@@ -53,14 +101,22 @@ export function ReportsContainer() {
                   {getTimeRangeLabel(timeRange)}
                 </CardDescription>
               </div>
-              <Button 
-                variant="outline"
-                className="flex items-center gap-2"
-                onClick={handleExportData}
-              >
-                <DownloadIcon className="h-4 w-4" />
-                Exportar CSV
-              </Button>
+              <div className="flex gap-2">
+                <Link to="/admin/process-insights">
+                  <Button variant="outline" className="flex items-center gap-2">
+                    <Brain className="h-4 w-4" />
+                    Processar Insights
+                  </Button>
+                </Link>
+                <Button 
+                  variant="outline"
+                  className="flex items-center gap-2"
+                  onClick={handleExportData}
+                >
+                  <DownloadIcon className="h-4 w-4" />
+                  Exportar CSV
+                </Button>
+              </div>
             </CardHeader>
             <CardContent>
               <PeriodSelector 
@@ -74,6 +130,10 @@ export function ReportsContainer() {
               />
               
               <div className="space-y-6 mt-6">
+                {activeTab === "executive" && (
+                  <ExecutiveDashboard period={period} timeRange={timeRange} />
+                )}
+
                 {(activeTab === "all" || activeTab === "users") && (
                   <UsersAnalytics timeRange={timeRange} />
                 )}
@@ -88,6 +148,18 @@ export function ReportsContainer() {
 
                 {(activeTab === "all" || activeTab === "topics") && (
                   <TopicsAnalytics period={period} timeRange={timeRange} />
+                )}
+
+                {activeTab === "keywords" && (
+                  <KeywordsCloud period={period} timeRange={timeRange} />
+                )}
+
+                {activeTab === "intents" && (
+                  <IntentAnalytics period={period} timeRange={timeRange} />
+                )}
+
+                {activeTab === "faqs" && (
+                  <FAQDetector period={period} timeRange={timeRange} />
                 )}
 
                 {(activeTab === "all" || activeTab === "alerts") && (

@@ -29,25 +29,34 @@ export function UsersAnalytics({ timeRange }: UsersAnalyticsProps) {
     const fetchUserStats = async () => {
       setIsLoading(true);
       try {
-        // Get all users with their roles
-        const { data: users, error } = await supabase
+        // Fetch users separately
+        const { data: users, error: usersError } = await supabase
           .from("user_accounts")
-          .select(`
-            *,
-            user_roles (
-              role
-            )
-          `);
+          .select("id, user_id, email, is_active");
 
-        if (error) throw error;
+        if (usersError) throw usersError;
 
-        // Calculate stats
+        // Fetch roles separately
+        const { data: rolesData, error: rolesError } = await supabase
+          .from("user_roles")
+          .select("user_id, role");
+
+        if (rolesError) throw rolesError;
+
+        if (!users) {
+          setStats({ total: 0, active: 0, byRole: { admin: 0, supervisor: 0, analyst: 0, user: 0 } });
+          return;
+        }
+
+        // Create map of user_id -> role
+        const roleMap = new Map(rolesData?.map(r => [r.user_id, r.role]));
+
         const totalUsers = users.length;
-        const activeUsers = users.filter(user => user.is_active).length;
+        const activeUsers = users.filter((u) => u.is_active).length;
         
         // Count by role
         const byRole = users.reduce((acc, user) => {
-          const role = (user.user_roles?.[0]?.role || 'user') as AppRole;
+          const role = (roleMap.get(user.user_id) || 'user') as AppRole;
           acc[role] = (acc[role] || 0) + 1;
           return acc;
         }, { admin: 0, supervisor: 0, analyst: 0, user: 0 } as Record<AppRole, number>);
