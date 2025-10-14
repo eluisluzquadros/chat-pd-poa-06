@@ -45,17 +45,29 @@ export class MessageAnalysisService {
             created_at: s.created_at
           }));
 
-        if (messagesToAnalyze.length === 0) {
+        // ✅ REMOVER DUPLICATAS baseado em session_id + user_message
+        const uniqueMessages = Array.from(
+          new Map(
+            messagesToAnalyze.map(msg => [
+              `${msg.session_id}:${msg.user_message}`,
+              msg
+            ])
+          ).values()
+        );
+
+        const duplicatesCount = messagesToAnalyze.length - uniqueMessages.length;
+
+        if (uniqueMessages.length === 0) {
           console.log(`⏭️ Batch ${i}-${i + batchSize}: No user messages, skipping`);
           continue;
         }
 
-        console.log(`📤 Sending batch ${i}-${i + batchSize}: ${messagesToAnalyze.length} messages`);
+        console.log(`📤 Sending batch ${i}-${i + batchSize}: ${uniqueMessages.length} unique messages${duplicatesCount > 0 ? ` (${duplicatesCount} duplicates removed)` : ''}`);
 
         // ✅ Enviar para edge function (que agora faz tudo)
         const { data: result, error: funcError } = await supabase.functions.invoke(
           'analyze-messages',
-          { body: { messages: messagesToAnalyze } }
+          { body: { messages: uniqueMessages } }
         );
 
         console.log(`📥 Received response:`, result);
