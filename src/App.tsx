@@ -82,8 +82,6 @@ function App() {
               {/* Página de reset de senha */}
               <Route path="/reset-password" element={<ResetPassword />} />
               
-              {/* Insights route */}
-              <Route path="/insights" element={<SimpleAuthGuard><React.Suspense fallback={null}>{React.createElement(React.lazy(() => import('./pages/Insights')))}</React.Suspense></SimpleAuthGuard>} />
               
               {/* Basic authenticated routes */}
               <Route path="/chat" element={<SimpleAuthGuard><Chat /></SimpleAuthGuard>} />
@@ -223,22 +221,9 @@ function App() {
                   </SimpleRoleGuard>
                 </SimpleAuthGuard>
               } />
-              <Route path="/admin/process-insights" element={
-                <SimpleAuthGuard>
-                  <SimpleRoleGuard adminOnly={true}>
-                    <ProcessInsights />
-                  </SimpleRoleGuard>
-                </SimpleAuthGuard>
-              } />
-              
-              {/* Admin or supervisor routes */}
-              <Route path="/reports" element={
-                <SimpleAuthGuard>
-                  <SimpleRoleGuard adminOnly={false} supervisorOnly={true}>
-                    <Reports />
-                  </SimpleRoleGuard>
-                </SimpleAuthGuard>
-              } />
+              {/* Redirect old routes to new dashboard */}
+              <Route path="/reports" element={<Navigate to="/admin/dashboard" replace />} />
+              <Route path="/admin/process-insights" element={<Navigate to="/admin/dashboard" replace />} />
               
               {/* Redirects for old routes */}
               <Route path="/profile" element={<SimpleAuthGuard><UserSettings /></SimpleAuthGuard>} />

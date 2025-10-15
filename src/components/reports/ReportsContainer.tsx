@@ -21,7 +21,11 @@ import { ExecutiveDashboard } from "@/components/reports/ExecutiveDashboard";
 import { reportExportService } from "@/services/reportExportService";
 import { supabase } from "@/integrations/supabase/client";
 
-export function ReportsContainer() {
+interface ReportsContainerProps {
+  showProcessButton?: boolean;
+}
+
+export function ReportsContainer({ showProcessButton = true }: ReportsContainerProps) {
   const [timeRange, setTimeRange] = useState<TimeRange>("7days");
   const [period, setPeriod] = useState<Period>("all");
   const [activeTab, setActiveTab] = useState("all");
@@ -102,12 +106,14 @@ export function ReportsContainer() {
                 </CardDescription>
               </div>
               <div className="flex gap-2">
-                <Link to="/admin/process-insights">
-                  <Button variant="outline" className="flex items-center gap-2">
-                    <Brain className="h-4 w-4" />
-                    Processar Insights
-                  </Button>
-                </Link>
+                {showProcessButton && (
+                  <Link to="/admin/process-insights">
+                    <Button variant="outline" className="flex items-center gap-2">
+                      <Brain className="h-4 w-4" />
+                      Processar Insights
+                    </Button>
+                  </Link>
+                )}
                 <Button 
                   variant="outline"
                   className="flex items-center gap-2"

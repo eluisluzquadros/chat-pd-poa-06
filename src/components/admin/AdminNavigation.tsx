@@ -18,11 +18,8 @@ import {
 } from "lucide-react";
 
 const adminNavItems = [
-  { path: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { path: "/admin/dashboard", label: "Dashboard & Relatórios", icon: LayoutDashboard },
   { path: "/admin/users", label: "Usuários", icon: Users },
-  { path: "/admin/feedback", label: "Feedback", icon: MessageSquare },
-  { path: "/reports", label: "Relatórios", icon: BarChart3 },
-  { path: "/admin/process-insights", label: "Processar Insights", icon: Brain },
   { path: "/admin/observatory", label: "Observatório", icon: Microscope },
   { path: "/admin/playground", label: "Playground", icon: FlaskConical },
   { path: "/admin/agents-config", label: "Agentes", icon: Cpu },
@@ -30,8 +27,7 @@ const adminNavItems = [
   { path: "/admin/monitoring", label: "Monitoramento", icon: Target },
   { path: "/admin/security", label: "Segurança", icon: Shield },
   { path: "/admin/data-import", label: "Importar Dados", icon: Database },
-  { path: "/admin/metrics", label: "Métricas", icon: BarChart3 },
-  { path: "/admin/settings", label: "Configurações", icon: Settings },
+  { path: "/admin/settings", label: "Configurações RAG", icon: Settings },
 ];
 
 export function AdminNavigation() {

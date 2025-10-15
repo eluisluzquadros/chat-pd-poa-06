@@ -13,6 +13,15 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
 console.log('🔑 Supabase client initialized with service role');
 
+// Helper para limpar texto (remoção de stop words e saudações)
+function cleanText(text: string): string {
+  return text
+    .toLowerCase()
+    .replace(/[^\w\sáàâãéèêíïóôõöúçñ]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -34,8 +43,11 @@ serve(async (req) => {
     
     console.log('✅ [STEP 2] OpenAI API Key validated');
 
-    // Extrair apenas o texto das mensagens para análise
-    const messageTexts = messages.map((m: any) => m.user_message || m.content || m);
+    // ✅ Pré-processar mensagens: limpar e normalizar
+    const messageTexts = messages.map((m: any) => {
+      const raw = m.user_message || m.content || m;
+      return cleanText(raw);
+    });
     
     console.log(`📊 [STEP 3] Extracted ${messageTexts.length} message texts`);
 
@@ -46,7 +58,13 @@ Para cada mensagem, identifique:
 2. **sentiment_score**: valor de 0 a 1 (0=muito negativo, 1=muito positivo)
 3. **intent**: array de intenções (ex: ["buscar_informacao", "entender_regras"])
 4. **topics**: array de tópicos (ex: ["LUOS", "zoneamento", "mobilidade"])
-5. **keywords**: array das principais palavras-chave
+5. **keywords**: array das principais palavras-chave RELEVANTES
+
+**IMPORTANTE:**
+- IGNORE saudações (oi, olá, bom dia, boa tarde, coe, etc.)
+- IGNORE stop words comuns (de, para, com, o, a, etc.)
+- FOQUE em termos técnicos e relevantes sobre planejamento urbano
+- Palavras-chave devem ter significado analítico real
 
 Mensagens:
 ${messageTexts.map((m: string, i: number) => `${i + 1}. "${m}"`).join('\n')}
