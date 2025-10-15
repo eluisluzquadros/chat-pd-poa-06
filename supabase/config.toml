@@ -1,5 +1,14 @@
 project_id = "ngrqwmvuhvjkeohesbxs"
 
+[functions.qa-create-test-case]
+verify_jwt = true
+
+[functions.qa-update-test-case]
+verify_jwt = true
+
+[functions.qa-delete-test-case]
+verify_jwt = true
+
 [functions.test-knowledge-base]
 verify_jwt = false
 
