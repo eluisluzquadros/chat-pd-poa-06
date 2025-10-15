@@ -33,7 +33,7 @@ export default function AdminDashboardPage() {
             </TabsList>
 
             <TabsContent value="reports" className="space-y-4 mt-6">
-              <ReportsContainer showProcessButton={false} />
+              <ReportsContainer showProcessButton={true} />
             </TabsContent>
 
             <TabsContent value="costs" className="space-y-4 mt-6">
