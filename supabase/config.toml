@@ -44,3 +44,6 @@ verify_jwt = false
 
 [functions.analyze-messages]
 verify_jwt = false
+
+[functions.qa-execute-validation-v2]
+verify_jwt = true

@@ -20,12 +20,17 @@ import {
   RefreshCw
 } from 'lucide-react';
 import { TestCaseManager } from '@/components/admin/TestCaseManager';
+import { TestExecutionDialog } from '@/components/admin/TestExecutionDialog';
 import { useQuery } from '@tanstack/react-query';
+import { useQAValidator } from '@/hooks/useQAValidator';
+import { toast } from 'sonner';
 
 export default function QualityBenchmark() {
   const [activeTab, setActiveTab] = useState("test-cases");
   const [isLoading, setIsLoading] = useState(false);
+  const [testDialogOpen, setTestDialogOpen] = useState(false);
   const { agents, loading: agentsLoading } = useAgents();
+  const { runValidation, isRunning, progress } = useQAValidator();
 
   // Query para casos de teste
   const { data: testCases, refetch: refetchTestCases } = useQuery({
@@ -42,7 +47,7 @@ export default function QualityBenchmark() {
   });
 
   // Query para execuções
-  const { data: executions } = useQuery({
+  const { data: executions, refetch: refetchExecutions } = useQuery({
     queryKey: ['qa-validation-runs'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -91,6 +96,25 @@ export default function QualityBenchmark() {
     enabled: !!testCases && !!executions
   });
 
+  const handleExecuteTests = async (config: any) => {
+    try {
+      toast.info('Iniciando execução de testes...');
+      
+      await runValidation(config);
+      
+      toast.success('Testes iniciados com sucesso!');
+      
+      // Refresh executions list after a delay
+      setTimeout(() => {
+        refetchExecutions();
+      }, 2000);
+      
+    } catch (error) {
+      console.error('Error executing tests:', error);
+      toast.error('Erro ao executar testes: ' + (error as Error).message);
+    }
+  };
+
 
   const KPICard = ({ title, value, icon: Icon, description, trend }: any) => (
     <Card>
@@ -120,10 +144,20 @@ export default function QualityBenchmark() {
       <main className="container mx-auto px-6 py-8 max-w-7xl">
         <div className="space-y-6">
           <div className="flex items-center justify-between">
-            <h1 className="text-3xl font-bold text-[#29625D]">Quality & Benchmark Center</h1>
-            <Badge variant="outline" className="text-[#29625D]">
-              Sistema Unificado de QA e Benchmarks
-            </Badge>
+            <div>
+              <h1 className="text-3xl font-bold text-[#29625D]">Quality & Benchmark Center</h1>
+              <Badge variant="outline" className="text-[#29625D] mt-2">
+                Sistema Unificado de QA e Benchmarks
+              </Badge>
+            </div>
+            <Button 
+              onClick={() => setTestDialogOpen(true)}
+              className="gap-2"
+              disabled={isRunning}
+            >
+              <Play className="h-4 w-4" />
+              Executar Testes
+            </Button>
           </div>
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
@@ -437,6 +471,16 @@ export default function QualityBenchmark() {
           </Tabs>
         </div>
       </main>
+
+      {/* Test Execution Dialog */}
+      <TestExecutionDialog
+        open={testDialogOpen}
+        onOpenChange={setTestDialogOpen}
+        onExecute={handleExecuteTests}
+        agents={agents || []}
+        isRunning={isRunning}
+        progress={progress}
+      />
     </div>
   );
 }
