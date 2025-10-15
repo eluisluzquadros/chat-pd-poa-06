@@ -2,9 +2,9 @@
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { DownloadIcon, Brain } from "lucide-react";
+import { DownloadIcon, Brain, Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import { Link } from "react-router-dom";
+
 import { TimeRange, Period, getTimeRangeLabel } from "@/utils/dateUtils";
 import { TimeRangeSelector } from "@/components/reports/TimeRangeSelector";
 import { PeriodSelector } from "@/components/reports/PeriodSelector";
@@ -19,6 +19,7 @@ import { IntentAnalytics } from "@/components/reports/IntentAnalytics";
 import { FAQDetector } from "@/components/reports/FAQDetector";
 import { ExecutiveDashboard } from "@/components/reports/ExecutiveDashboard";
 import { reportExportService } from "@/services/reportExportService";
+import { messageAnalysisService } from "@/services/messageAnalysisService";
 import { supabase } from "@/integrations/supabase/client";
 
 interface ReportsContainerProps {
@@ -29,6 +30,29 @@ export function ReportsContainer({ showProcessButton = true }: ReportsContainerP
   const [timeRange, setTimeRange] = useState<TimeRange>("7days");
   const [period, setPeriod] = useState<Period>("all");
   const [activeTab, setActiveTab] = useState("all");
+  const [isProcessing, setIsProcessing] = useState(false);
+
+  const handleProcessInsights = async () => {
+    setIsProcessing(true);
+    try {
+      toast.info("Iniciando análise de mensagens...");
+      
+      const result = await messageAnalysisService.analyzeHistoricalMessages(500);
+      
+      if (result.errors > 0) {
+        toast.warning(
+          `Análise concluída com ${result.errors} erros. ${result.analyzed} mensagens analisadas.`
+        );
+      } else {
+        toast.success(`${result.analyzed} mensagens analisadas com sucesso!`);
+      }
+    } catch (error) {
+      console.error("Erro ao processar mensagens:", error);
+      toast.error("Erro ao processar mensagens. Verifique o console.");
+    } finally {
+      setIsProcessing(false);
+    }
+  };
 
   const handleExportData = async () => {
     try {
@@ -107,12 +131,24 @@ export function ReportsContainer({ showProcessButton = true }: ReportsContainerP
               </div>
               <div className="flex gap-2">
                 {showProcessButton && (
-                  <Link to="/admin/process-insights">
-                    <Button variant="outline" className="flex items-center gap-2">
-                      <Brain className="h-4 w-4" />
-                      Processar Insights
-                    </Button>
-                  </Link>
+                  <Button 
+                    variant="outline" 
+                    className="flex items-center gap-2"
+                    onClick={handleProcessInsights}
+                    disabled={isProcessing}
+                  >
+                    {isProcessing ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        Processando...
+                      </>
+                    ) : (
+                      <>
+                        <Brain className="h-4 w-4" />
+                        Processar Insights
+                      </>
+                    )}
+                  </Button>
                 )}
                 <Button 
                   variant="outline"
