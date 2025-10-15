@@ -47,3 +47,9 @@ verify_jwt = false
 
 [functions.qa-execute-validation-v2]
 verify_jwt = true
+
+[functions.unified-chat]
+verify_jwt = true
+
+[functions.qa-reset-history]
+verify_jwt = true

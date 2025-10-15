@@ -6,9 +6,28 @@ import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { Eye, Clock, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
+import { Eye, Clock, CheckCircle, XCircle, AlertCircle, Trash2, RefreshCw, Download, MoreVertical } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { QAResultsDetailModal } from './QAResultsDetailModal';
+import { useQAHistoryReset } from '@/hooks/useQAHistoryReset';
+import { toast } from 'sonner';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 interface QAValidationRun {
   id: string;
@@ -47,6 +66,10 @@ export function QAExecutionHistory() {
   const [detailsLoading, setDetailsLoading] = useState(false);
   const [selectedRunId, setSelectedRunId] = useState<string | null>(null);
   const [selectedRunData, setSelectedRunData] = useState<any>(null);
+  const [showResetDialog, setShowResetDialog] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [runToDelete, setRunToDelete] = useState<string | null>(null);
+  const { loading: resetLoading, resetHistory, getCurrentStats } = useQAHistoryReset();
 
   useEffect(() => {
     fetchRuns();
@@ -138,11 +161,120 @@ export function QAExecutionHistory() {
     return `${minutes}m ${seconds}s`;
   };
 
+  const handleResetHistory = async () => {
+    const stats = await getCurrentStats();
+    if (!stats) {
+      toast.error('Erro ao obter estatísticas');
+      return;
+    }
+
+    if (stats.runs === 0) {
+      toast.info('Não há histórico para limpar');
+      return;
+    }
+
+    setShowResetDialog(true);
+  };
+
+  const confirmResetHistory = async () => {
+    setShowResetDialog(false);
+    const result = await resetHistory();
+    
+    if (result.success) {
+      await fetchRuns();
+    }
+  };
+
+  const handleDeleteRun = async (runId: string) => {
+    setRunToDelete(runId);
+    setShowDeleteDialog(true);
+  };
+
+  const confirmDeleteRun = async () => {
+    if (!runToDelete) return;
+
+    try {
+      const { error: resultsError } = await supabase
+        .from('qa_validation_results')
+        .delete()
+        .eq('validation_run_id', runToDelete);
+
+      if (resultsError) throw resultsError;
+
+      const { error: runError } = await supabase
+        .from('qa_validation_runs')
+        .delete()
+        .eq('id', runToDelete);
+
+      if (runError) throw runError;
+
+      toast.success('Execução deletada com sucesso');
+      await fetchRuns();
+    } catch (error) {
+      console.error('Error deleting run:', error);
+      toast.error('Erro ao deletar execução');
+    } finally {
+      setShowDeleteDialog(false);
+      setRunToDelete(null);
+    }
+  };
+
+  const handleExportRun = async (runId: string) => {
+    try {
+      const { data: results, error } = await supabase
+        .from('qa_validation_results')
+        .select('*, qa_test_cases(*)')
+        .eq('validation_run_id', runId);
+
+      if (error) throw error;
+
+      const headers = ['ID', 'Pergunta', 'Esperado', 'Recebido', 'Acurácia', 'Tempo (ms)', 'Status'];
+      const rows = results.map(r => [
+        r.id,
+        r.qa_test_cases?.question || 'N/A',
+        r.qa_test_cases?.expected_answer || 'N/A',
+        r.actual_answer,
+        r.accuracy_score.toFixed(2),
+        r.response_time_ms,
+        r.is_correct ? 'Correto' : 'Incorreto'
+      ]);
+
+      const csv = [
+        headers.join(','),
+        ...rows.map(row => row.map(cell => `"${cell}"`).join(','))
+      ].join('\n');
+
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `qa-results-${runId}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+
+      toast.success('Resultados exportados com sucesso');
+    } catch (error) {
+      console.error('Error exporting run:', error);
+      toast.error('Erro ao exportar resultados');
+    }
+  };
+
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Histórico de Execuções QA</CardTitle>
-      </CardHeader>
+    <>
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle>Histórico de Execuções QA</CardTitle>
+            <Button
+              variant="destructive"
+              onClick={handleResetHistory}
+              disabled={resetLoading || isLoading}
+            >
+              <Trash2 className="h-4 w-4 mr-2" />
+              Limpar Histórico Completo
+            </Button>
+          </div>
+        </CardHeader>
       <CardContent>
         {isLoading ? (
           <div className="text-center py-8">Carregando histórico...</div>
@@ -193,23 +325,38 @@ export function QAExecutionHistory() {
                       locale: ptBR 
                     })}
                   </TableCell>
-                   <TableCell>
-                     <Button
-                       variant="ghost"
-                       size="sm"
-                       onClick={() => {
-                         setSelectedRunId(run.id);
-                         setSelectedRunData({
-                           model: run.model,
-                           totalTests: run.total_tests,
-                           passedTests: run.passed_tests,
-                           accuracy: (run.overall_accuracy || 0) * 100,
-                           startedAt: run.started_at
-                         });
-                       }}
-                     >
-                       <Eye className="h-4 w-4" />
-                     </Button>
+                  <TableCell>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="sm">
+                          <MoreVertical className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => handleDeleteRun(run.id)}>
+                          <Trash2 className="h-4 w-4 mr-2" />
+                          Deletar
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleExportRun(run.id)}>
+                          <Download className="h-4 w-4 mr-2" />
+                          Exportar CSV
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={() => {
+                          setSelectedRunId(run.id);
+                          setSelectedRunData({
+                            model: run.model,
+                            totalTests: run.total_tests,
+                            passedTests: run.passed_tests,
+                            accuracy: (run.overall_accuracy || 0) * 100,
+                            startedAt: run.started_at
+                          });
+                        }}>
+                          <Eye className="h-4 w-4 mr-2" />
+                          Ver Detalhes
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </TableCell>
                 </TableRow>
               ))}
@@ -231,5 +378,44 @@ export function QAExecutionHistory() {
         runData={selectedRunData}
       />
     </Card>
+
+    {/* Reset History Confirmation Dialog */}
+    <AlertDialog open={showResetDialog} onOpenChange={setShowResetDialog}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Confirmar Limpeza de Histórico</AlertDialogTitle>
+          <AlertDialogDescription>
+            Esta ação irá deletar permanentemente todo o histórico de execuções QA.
+            Você não poderá desfazer esta ação.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+          <AlertDialogAction onClick={confirmResetHistory} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+            Confirmar Limpeza
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+
+    {/* Delete Run Confirmation Dialog */}
+    <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Confirmar Exclusão</AlertDialogTitle>
+          <AlertDialogDescription>
+            Esta ação irá deletar permanentemente esta execução e todos os seus resultados.
+            Você não poderá desfazer esta ação.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+          <AlertDialogAction onClick={confirmDeleteRun} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+            Confirmar Exclusão
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+    </>
   );
 }
