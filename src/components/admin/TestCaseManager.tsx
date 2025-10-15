@@ -2,10 +2,12 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { AlertCircle, Download, Upload, RefreshCw, CheckCircle, XCircle } from 'lucide-react';
+import { AlertCircle, Download, Upload, RefreshCw, CheckCircle, XCircle, Plus } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { TestCasesList } from './TestCasesList';
+import { CreateTestCaseDialog } from './CreateTestCaseDialog';
 
 interface TestCase {
   id?: string;
@@ -27,6 +29,7 @@ interface ImportResult {
 export function TestCaseManager() {
   const [isLoading, setIsLoading] = useState(false);
   const [importResult, setImportResult] = useState<ImportResult | null>(null);
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const queryClient = useQueryClient();
 
   // Query para casos de teste
@@ -317,6 +320,13 @@ export function TestCaseManager() {
           </div>
           <div className="flex gap-2">
             <Button 
+              onClick={() => setCreateDialogOpen(true)}
+              data-testid="button-create-testcase"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Novo Caso
+            </Button>
+            <Button 
               variant="outline" 
               onClick={handleImport}
               disabled={isLoading}
@@ -398,32 +408,22 @@ export function TestCaseManager() {
           </div>
         </div>
 
-        {/* Preview dos Casos de Teste */}
-        {testCases && testCases.length > 0 && (
-          <div className="space-y-2">
-            <h4 className="font-medium text-sm">Preview dos Casos de Teste ({testCases.length})</h4>
-            <div className="max-h-40 overflow-y-auto border rounded-lg">
-              {testCases.slice(0, 5).map((testCase, index) => (
-                <div key={testCase.id} className="p-3 border-b last:border-b-0 text-sm">
-                  <p className="font-medium">{index + 1}. {testCase.question}</p>
-                  <p className="text-muted-foreground text-xs mt-1 line-clamp-1">
-                    {testCase.expected_answer}
-                  </p>
-                  <div className="flex items-center gap-2 mt-1">
-                    {testCase.category && <Badge variant="outline" className="text-xs">{testCase.category}</Badge>}
-                    {testCase.difficulty && <Badge variant="secondary" className="text-xs">{testCase.difficulty}</Badge>}
-                  </div>
-                </div>
-              ))}
-              {testCases.length > 5 && (
-                <div className="p-3 text-center text-xs text-muted-foreground border-t">
-                  + {testCases.length - 5} casos adicionais
-                </div>
-              )}
-            </div>
-          </div>
-        )}
+        {/* Lista Completa de Casos de Teste */}
+        <div className="space-y-2">
+          <h4 className="font-medium">Casos de Teste Cadastrados</h4>
+          <TestCasesList 
+            testCases={testCases || []} 
+            loading={isLoading}
+            onRefresh={refetchTestCases}
+          />
+        </div>
       </CardContent>
+
+      <CreateTestCaseDialog
+        open={createDialogOpen}
+        onOpenChange={setCreateDialogOpen}
+        onTestCaseCreated={refetchTestCases}
+      />
     </Card>
   );
 }
