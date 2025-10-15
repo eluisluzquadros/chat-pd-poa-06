@@ -138,6 +138,58 @@ serve(async (req) => {
       response = openRouterData.choices?.[0]?.message?.content || "";
       tokensUsed = openRouterData.usage?.total_tokens || 0;
 
+    } else if (agent.provider === "external") {
+      // Call External API (OpenAI direct)
+      const openaiApiKey = Deno.env.get("OPENAI_API_KEY");
+      if (!openaiApiKey) {
+        throw new Error("OPENAI_API_KEY not configured");
+      }
+
+      // Se model não for reconhecido, usar gpt-4o-mini como fallback
+      const modelName = agent.model === "custom-app" 
+        ? "gpt-4o-mini" 
+        : agent.model || "gpt-4o-mini";
+      
+      const apiUrl = "https://api.openai.com/v1/chat/completions";
+
+      console.log(`[unified-chat] Using external provider with OpenAI API`);
+      console.log(`[unified-chat] Model: ${modelName}`);
+
+      const openaiResponse = await fetch(apiUrl, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${openaiApiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: modelName,
+          messages: [
+            {
+              role: "system",
+              content: agent.parameters?.system_prompt || "Você é um assistente útil especializado em urbanismo e legislação.",
+            },
+            {
+              role: "user",
+              content: message,
+            },
+          ],
+          temperature: agent.parameters?.temperature || 0.7,
+          max_tokens: agent.parameters?.max_tokens || 2000,
+        }),
+      });
+
+      if (!openaiResponse.ok) {
+        const errorText = await openaiResponse.text();
+        console.error("[unified-chat] OpenAI API error:", errorText);
+        throw new Error(`OpenAI API error: ${openaiResponse.status} - ${errorText}`);
+      }
+
+      const openaiData = await openaiResponse.json();
+      response = openaiData.choices?.[0]?.message?.content || "";
+      tokensUsed = openaiData.usage?.total_tokens || 0;
+
+      console.log(`[unified-chat] OpenAI response received: ${response.substring(0, 100)}...`);
+
     } else {
       throw new Error(`Unsupported provider: ${agent.provider}`);
     }
