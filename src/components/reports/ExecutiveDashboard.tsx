@@ -19,7 +19,6 @@ export function ExecutiveDashboard({ period, timeRange }: ExecutiveDashboardProp
     totalUsers: 0,
     totalConversations: 0,
     totalMessages: 0,
-    satisfactionRate: 0,
   });
 
   useEffect(() => {
@@ -40,22 +39,10 @@ export function ExecutiveDashboard({ period, timeRange }: ExecutiveDashboardProp
           .from("message_insights")
           .select("*", { count: "exact", head: true });
 
-        // Satisfaction rate
-        const { data: sentimentData } = await supabase
-          .from("message_insights")
-          .select("sentiment");
-
-        let satisfactionRate = 0;
-        if (sentimentData && sentimentData.length > 0) {
-          const positive = sentimentData.filter((d: any) => d.sentiment === "positive").length;
-          satisfactionRate = (positive / sentimentData.length) * 100;
-        }
-
         setKpis({
           totalUsers: usersCount || 0,
           totalConversations: sessionsCount || 0,
           totalMessages: messagesCount || 0,
-          satisfactionRate: Math.round(satisfactionRate),
         });
       } catch (error) {
         console.error("Error fetching KPIs:", error);
@@ -68,11 +55,10 @@ export function ExecutiveDashboard({ period, timeRange }: ExecutiveDashboardProp
   return (
     <div className="space-y-6">
       {/* KPIs Section */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <StatsCard title="Total de Usuários" value={kpis.totalUsers} />
         <StatsCard title="Conversas Realizadas" value={kpis.totalConversations} />
         <StatsCard title="Mensagens Analisadas" value={kpis.totalMessages} />
-        <StatsCard title="Taxa de Satisfação" value={`${kpis.satisfactionRate}%`} />
       </div>
 
       {/* Main Dashboard Sections */}
