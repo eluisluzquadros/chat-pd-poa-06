@@ -70,6 +70,14 @@ serve(async (req) => {
     // Garantir expected_keywords como array
     const keywords = Array.isArray(expected_keywords) ? expected_keywords : [];
 
+    // Mapear difficulty (UI) para complexity (DB)
+    const complexityMap: { [key: string]: string } = {
+      'easy': 'simple',
+      'medium': 'medium',
+      'hard': 'high'
+    };
+    const mappedComplexity = complexityMap[difficulty?.toLowerCase()] || 'medium';
+
     // Validar campos obrigatórios
     if (!question || !expected_answer || !category) {
       return new Response(
@@ -88,7 +96,7 @@ serve(async (req) => {
         expected_answer,
         category,
         difficulty: difficulty || 'medium',
-        complexity: difficulty || 'medium',
+        complexity: mappedComplexity,
         tags: tags || [],
         is_active: is_active !== undefined ? is_active : true,
         is_sql_related: is_sql_related || false,
