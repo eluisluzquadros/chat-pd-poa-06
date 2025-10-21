@@ -61,6 +61,15 @@ serve(async (req) => {
       min_response_length
     } = await req.json();
 
+    // Gerar test_id único
+    const test_id = `TC-${Date.now()}-${Math.random().toString(36).substring(2, 9).toUpperCase()}`;
+
+    // Usar question como query
+    const query_text = question;
+
+    // Garantir expected_keywords como array
+    const keywords = Array.isArray(expected_keywords) ? expected_keywords : [];
+
     // Validar campos obrigatórios
     if (!question || !expected_answer || !category) {
       return new Response(
@@ -73,6 +82,8 @@ serve(async (req) => {
     const { data: newTestCase, error: insertError } = await supabaseClient
       .from('qa_test_cases')
       .insert({
+        test_id,
+        query: query_text,
         question,
         expected_answer,
         category,
@@ -82,7 +93,7 @@ serve(async (req) => {
         is_sql_related: is_sql_related || false,
         expected_sql: expected_sql || null,
         sql_complexity: sql_complexity || null,
-        expected_keywords: expected_keywords || [],
+        expected_keywords: keywords,
         min_response_length: min_response_length || null,
         version: 1,
         created_at: new Date().toISOString(),
