@@ -88,6 +88,7 @@ serve(async (req) => {
         expected_answer,
         category,
         difficulty: difficulty || 'medium',
+        complexity: difficulty || 'medium',
         tags: tags || [],
         is_active: is_active !== undefined ? is_active : true,
         is_sql_related: is_sql_related || false,
