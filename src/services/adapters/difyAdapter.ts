@@ -238,8 +238,23 @@ export class DifyAdapter implements IExternalAgentAdapter {
         let difyMessageId = '';
         let metadata: any = {};
 
+        // Debug: verificar detecção iOS Safari
+        const detectedAsIOSSafari = isIOSSafari();
+        const ua = navigator.userAgent;
+        console.log('🔍 [DEBUG] iOS Safari Detection:', {
+          detectedAsIOSSafari,
+          userAgent: ua.substring(0, 150),
+          isIOS: /iPad|iPhone|iPod/.test(ua),
+          isWebKit: /WebKit/.test(ua),
+          isChrome: /CriOS|Chrome/.test(ua)
+        });
+        telemetryService.logInfo('iOS Safari Detection Debug', {
+          detectedAsIOSSafari,
+          userAgent: ua.substring(0, 150)
+        }).catch(() => {});
+
         // 🔥 CRITICAL: iOS Safari precisa de abordagem diferente para streams
-        if (isIOSSafari()) {
+        if (detectedAsIOSSafari) {
           console.log('🍎 [iOS] Detected iOS Safari, using iOS-specific stream processing');
           const result = await this.processStreamForiOS(response);
           fullAnswer = result.fullAnswer;
@@ -249,56 +264,69 @@ export class DifyAdapter implements IExternalAgentAdapter {
         } else {
           // Desktop/Android: usar ReadableStream.getReader() padrão
           console.log('🖥️ [Desktop] Using standard ReadableStream processing');
-          const reader = response.body?.getReader();
-          if (!reader) {
-            throw new Error('Response body not readable');
-          }
-          
-          const decoder = new TextDecoder();
           
           try {
-            while (true) {
-              const { done, value } = await reader.read();
-              if (done) {
-                console.log('🖥️ [Streaming] Stream ended');
-                break;
-              }
+            const reader = response.body?.getReader();
+            if (!reader) {
+              // Fallback para iOS se getReader falhar
+              console.warn('⚠️ [Fallback] getReader() failed, trying iOS method');
+              telemetryService.logInfo('Fallback: Using iOS method after getReader failed').catch(() => {});
+              const result = await this.processStreamForiOS(response);
+              fullAnswer = result.fullAnswer;
+              difyConversationId = result.conversationId;
+              difyMessageId = result.messageId;
+              metadata = result.metadata;
+            } else {
+              // ReadableStream disponível, processar normalmente
+              const decoder = new TextDecoder();
               
-              const chunk = decoder.decode(value, { stream: true });
-              const lines = chunk.split('\n');
-              
-              for (const line of lines) {
-                if (!line.startsWith('data: ')) continue;
+              while (true) {
+                const { done, value } = await reader.read();
+                if (done) {
+                  console.log('🖥️ [Streaming] Stream ended');
+                  break;
+                }
                 
-                const jsonStr = line.slice(6).trim();
-                if (jsonStr === '[DONE]' || !jsonStr) continue;
+                const chunk = decoder.decode(value, { stream: true });
+                const lines = chunk.split('\n');
                 
-                try {
-                  const data = JSON.parse(jsonStr);
-                  console.log('🖥️ [Streaming] Event:', data.event);
+                for (const line of lines) {
+                  if (!line.startsWith('data: ')) continue;
                   
-                  if (data.event === 'message') {
-                    fullAnswer += data.answer || '';
-                  } else if (data.event === 'message_end') {
-                    difyConversationId = data.conversation_id || '';
-                    difyMessageId = data.id || '';
-                    metadata = data.metadata || {};
+                  const jsonStr = line.slice(6).trim();
+                  if (jsonStr === '[DONE]' || !jsonStr) continue;
+                  
+                  try {
+                    const data = JSON.parse(jsonStr);
+                    console.log('🖥️ [Streaming] Event:', data.event);
+                    
+                    if (data.event === 'message') {
+                      fullAnswer += data.answer || '';
+                    } else if (data.event === 'message_end') {
+                      difyConversationId = data.conversation_id || '';
+                      difyMessageId = data.id || '';
+                      metadata = data.metadata || {};
+                    }
+                  } catch (parseError) {
+                    console.warn('🖥️ [Streaming] Failed to parse SSE line:', jsonStr.substring(0, 100));
                   }
-                } catch (parseError) {
-                  console.warn('🖥️ [Streaming] Failed to parse SSE line:', jsonStr.substring(0, 100));
                 }
               }
+              
+              telemetryService.logInfo('SSE streaming completed', {
+                answerLength: fullAnswer.length,
+                conversationId: difyConversationId
+              }).catch(() => {});
             }
-            
-            telemetryService.logInfo('SSE streaming completed', {
-              answerLength: fullAnswer.length,
-              conversationId: difyConversationId
-            }).catch(() => {});
-            
           } catch (streamError) {
-            console.error('🖥️ [Streaming] Stream processing error:', streamError);
-            telemetryService.logError(streamError as Error, 'SSE stream processing').catch(() => {});
-            throw streamError;
+            // Se qualquer erro ocorrer, tentar método iOS como fallback final
+            console.error('❌ [Stream Error] Standard processing failed:', streamError);
+            console.log('🔄 [Fallback] Attempting iOS method as last resort');
+            telemetryService.logError(streamError as Error, 'Stream processing - trying iOS fallback').catch(() => {});
+            
+            // IMPORTANTE: Response já foi parcialmente lido, então precisamos fazer nova request
+            // Por ora, lançar erro para não retornar resposta vazia
+            throw new Error(`Stream processing failed: ${streamError.message}`);
           }
         }
         
