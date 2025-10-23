@@ -62,6 +62,20 @@ async function fetchWithTimeout(
 }
 
 /**
+ * Detecta se está rodando no Safari iOS
+ * Safari iOS tem limitações com ReadableStream.getReader() que requerem workarounds
+ */
+function isIOSSafari(): boolean {
+  const ua = navigator.userAgent;
+  const isIOS = /iPad|iPhone|iPod/.test(ua);
+  const isWebKit = /WebKit/.test(ua);
+  const isChrome = /CriOS|Chrome/.test(ua);
+  
+  // iOS Safari: deve ser iOS + WebKit + NÃO Chrome
+  return isIOS && isWebKit && !isChrome;
+}
+
+/**
  * DifyAdapter - Adapter para integração com a API Dify
  * 
  * Implementa mapeamento de conversações para resolver o erro "Conversation Not Exists":
@@ -76,6 +90,59 @@ async function fetchWithTimeout(
 export class DifyAdapter implements IExternalAgentAdapter {
   // In-memory storage for session to Dify conversation mapping
   private conversationMapping = new Map<string, string>();
+  
+  /**
+   * Processa stream SSE usando chunks de texto para iOS Safari
+   * iOS tem problemas com ReadableStream.getReader(), então usamos abordagem alternativa
+   */
+  private async processStreamForiOS(response: Response): Promise<{
+    fullAnswer: string;
+    conversationId: string;
+    messageId: string;
+    metadata: any;
+  }> {
+    console.log('🍎 [iOS] Using iOS-specific SSE processing');
+    telemetryService.logInfo('iOS: Starting iOS-specific SSE processing').catch(() => {});
+    
+    let fullAnswer = '';
+    let conversationId = '';
+    let messageId = '';
+    let metadata: any = {};
+    
+    // Para iOS: ler o body como texto completo (não streaming chunk-a-chunk)
+    // Isso funciona porque Dify envia eventos SSE sequencialmente
+    const text = await response.text();
+    const lines = text.split('\n');
+    
+    for (const line of lines) {
+      if (!line.startsWith('data: ')) continue;
+      
+      const jsonStr = line.slice(6).trim();
+      if (jsonStr === '[DONE]' || !jsonStr) continue;
+      
+      try {
+        const data = JSON.parse(jsonStr);
+        console.log('🍎 [iOS SSE] Event:', data.event);
+        
+        if (data.event === 'message') {
+          fullAnswer += data.answer || '';
+        } else if (data.event === 'message_end') {
+          conversationId = data.conversation_id || '';
+          messageId = data.id || '';
+          metadata = data.metadata || {};
+        }
+      } catch (parseError) {
+        console.warn('🍎 [iOS SSE] Failed to parse line:', jsonStr.substring(0, 100));
+      }
+    }
+    
+    telemetryService.logInfo('iOS: SSE processing completed', {
+      answerLength: fullAnswer.length,
+      conversationId
+    }).catch(() => {});
+    
+    return { fullAnswer, conversationId, messageId, metadata };
+  }
   
   async process(
     agent: Agent, 
@@ -165,61 +232,74 @@ export class DifyAdapter implements IExternalAgentAdapter {
         // ✅ Processar resposta em streaming (SSE)
         console.log('🍎 [Streaming] Starting SSE processing');
         telemetryService.logInfo('Starting SSE streaming mode').catch(() => {});
-        
-        const reader = response.body?.getReader();
-        if (!reader) {
-          throw new Error('Response body not readable');
-        }
-        
-        const decoder = new TextDecoder();
+
         let fullAnswer = '';
         let difyConversationId = '';
         let difyMessageId = '';
         let metadata: any = {};
-        
-        try {
-          while (true) {
-            const { done, value } = await reader.read();
-            if (done) {
-              console.log('🍎 [Streaming] Stream ended');
-              break;
-            }
-            
-            const chunk = decoder.decode(value, { stream: true });
-            const lines = chunk.split('\n');
-            
-            for (const line of lines) {
-              if (!line.startsWith('data: ')) continue;
-              
-              const jsonStr = line.slice(6).trim();
-              if (jsonStr === '[DONE]' || !jsonStr) continue;
-              
-              try {
-                const data = JSON.parse(jsonStr);
-                console.log('🍎 [Streaming] Event:', data.event);
-                
-                if (data.event === 'message') {
-                  fullAnswer += data.answer || '';
-                } else if (data.event === 'message_end') {
-                  difyConversationId = data.conversation_id || '';
-                  difyMessageId = data.id || '';
-                  metadata = data.metadata || {};
-                }
-              } catch (parseError) {
-                console.warn('🍎 [Streaming] Failed to parse SSE line:', jsonStr.substring(0, 100));
-              }
-            }
+
+        // 🔥 CRITICAL: iOS Safari precisa de abordagem diferente para streams
+        if (isIOSSafari()) {
+          console.log('🍎 [iOS] Detected iOS Safari, using iOS-specific stream processing');
+          const result = await this.processStreamForiOS(response);
+          fullAnswer = result.fullAnswer;
+          difyConversationId = result.conversationId;
+          difyMessageId = result.messageId;
+          metadata = result.metadata;
+        } else {
+          // Desktop/Android: usar ReadableStream.getReader() padrão
+          console.log('🖥️ [Desktop] Using standard ReadableStream processing');
+          const reader = response.body?.getReader();
+          if (!reader) {
+            throw new Error('Response body not readable');
           }
           
-          telemetryService.logInfo('SSE streaming completed', {
-            answerLength: fullAnswer.length,
-            conversationId: difyConversationId
-          }).catch(() => {});
+          const decoder = new TextDecoder();
           
-        } catch (streamError) {
-          console.error('🍎 [Streaming] Stream processing error:', streamError);
-          telemetryService.logError(streamError as Error, 'SSE stream processing').catch(() => {});
-          throw streamError;
+          try {
+            while (true) {
+              const { done, value } = await reader.read();
+              if (done) {
+                console.log('🖥️ [Streaming] Stream ended');
+                break;
+              }
+              
+              const chunk = decoder.decode(value, { stream: true });
+              const lines = chunk.split('\n');
+              
+              for (const line of lines) {
+                if (!line.startsWith('data: ')) continue;
+                
+                const jsonStr = line.slice(6).trim();
+                if (jsonStr === '[DONE]' || !jsonStr) continue;
+                
+                try {
+                  const data = JSON.parse(jsonStr);
+                  console.log('🖥️ [Streaming] Event:', data.event);
+                  
+                  if (data.event === 'message') {
+                    fullAnswer += data.answer || '';
+                  } else if (data.event === 'message_end') {
+                    difyConversationId = data.conversation_id || '';
+                    difyMessageId = data.id || '';
+                    metadata = data.metadata || {};
+                  }
+                } catch (parseError) {
+                  console.warn('🖥️ [Streaming] Failed to parse SSE line:', jsonStr.substring(0, 100));
+                }
+              }
+            }
+            
+            telemetryService.logInfo('SSE streaming completed', {
+              answerLength: fullAnswer.length,
+              conversationId: difyConversationId
+            }).catch(() => {});
+            
+          } catch (streamError) {
+            console.error('🖥️ [Streaming] Stream processing error:', streamError);
+            telemetryService.logError(streamError as Error, 'SSE stream processing').catch(() => {});
+            throw streamError;
+          }
         }
         
         const executionTime = Date.now() - startTime;
