@@ -272,7 +272,7 @@ export class ExternalAgentGateway {
 
   // Detectar plataforma baseada no agente
   private detectPlatform(agent: Agent): AgentPlatform {
-    // Primeiro tentar detectar pelo provider
+    // 1️⃣ Tentar detectar pelo provider
     if (agent.provider) {
       const providerLower = agent.provider.toLowerCase();
       if (providerLower.includes('dify')) return AgentPlatform.DIFY;
@@ -280,7 +280,13 @@ export class ExternalAgentGateway {
       if (providerLower.includes('crewai') || providerLower.includes('crew')) return AgentPlatform.CREWAI;
     }
 
-    // Detectar pela URL da API config
+    // 2️⃣ NOVO: Detectar pela presença de dify_config
+    if ((agent as any).dify_config) {
+      console.log('🔍 [Gateway] Detected Dify via dify_config');
+      return AgentPlatform.DIFY;
+    }
+
+    // 3️⃣ Detectar pela URL em api_config (fallback para agentes antigos)
     if (agent.api_config?.base_url) {
       const url = agent.api_config.base_url.toLowerCase();
       if (url.includes('dify')) return AgentPlatform.DIFY;
@@ -288,7 +294,21 @@ export class ExternalAgentGateway {
       if (url.includes('crewai')) return AgentPlatform.CREWAI;
     }
 
+    // 4️⃣ NOVO: Detectar pela URL em dify_config.base_url
+    if ((agent as any).dify_config?.base_url) {
+      const url = (agent as any).dify_config.base_url.toLowerCase();
+      if (url.includes('dify')) {
+        console.log('🔍 [Gateway] Detected Dify via dify_config.base_url');
+        return AgentPlatform.DIFY;
+      }
+    }
+
     // Default para custom se não conseguir detectar
+    console.warn('⚠️ [Gateway] Could not detect platform, defaulting to CUSTOM:', {
+      provider: agent.provider,
+      hasApiConfig: !!agent.api_config,
+      hasDifyConfig: !!(agent as any).dify_config
+    });
     return AgentPlatform.CUSTOM;
   }
 }

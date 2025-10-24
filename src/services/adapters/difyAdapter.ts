@@ -163,12 +163,15 @@ export class DifyAdapter implements IExternalAgentAdapter {
     });
 
     try {
+      // Usar dify_config se disponível, senão fallback para api_config
+      const config = (agent as any).dify_config || agent.api_config;
+
       // Validar configuração
-      if (!this.validateConfig(agent.api_config)) {
+      if (!this.validateConfig(config)) {
         throw new Error('Invalid Dify configuration');
       }
 
-      const { base_url, service_api_endpoint, api_key, app_id } = agent.api_config!;
+      const { base_url, service_api_endpoint, api_key, app_id } = config!;
       
       // Construir URL do endpoint
       const endpoint = service_api_endpoint || '/v1/chat-messages';
@@ -386,7 +389,10 @@ export class DifyAdapter implements IExternalAgentAdapter {
     const startTime = Date.now();
     
     try {
-      if (!this.validateConfig(agent.api_config)) {
+      // Usar dify_config se disponível, senão fallback para api_config
+      const config = (agent as any).dify_config || agent.api_config;
+      
+      if (!this.validateConfig(config)) {
         return {
           success: false,
           message: 'Invalid Dify configuration',
@@ -394,7 +400,7 @@ export class DifyAdapter implements IExternalAgentAdapter {
         };
       }
 
-      const { base_url, api_key, app_id } = agent.api_config!;
+      const { base_url, api_key, app_id } = config!;
       
       // Usar endpoint válido da API Dify para testar conexão
       const url = `${base_url}/v1/parameters`;
@@ -439,15 +445,25 @@ export class DifyAdapter implements IExternalAgentAdapter {
   }
 
   validateConfig(apiConfig: any): boolean {
-    if (!apiConfig) return false;
+    if (!apiConfig) {
+      console.warn('⚠️ [DifyAdapter] validateConfig: No config provided');
+      return false;
+    }
     
     // Campos obrigatórios para Dify
     const requiredFields = ['base_url', 'api_key', 'app_id'];
     
-    return requiredFields.every(field => {
+    const isValid = requiredFields.every(field => {
       const value = apiConfig[field];
-      return value && typeof value === 'string' && value.trim().length > 0;
+      const fieldValid = value && typeof value === 'string' && value.trim().length > 0;
+      if (!fieldValid) {
+        console.warn(`⚠️ [DifyAdapter] validateConfig: Missing or invalid field: ${field}`);
+      }
+      return fieldValid;
     });
+    
+    console.log('🔍 [DifyAdapter] validateConfig result:', { isValid, hasBaseUrl: !!apiConfig.base_url });
+    return isValid;
   }
 
   // Validar se string é UUID válido (formato v4)
