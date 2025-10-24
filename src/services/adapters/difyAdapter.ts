@@ -63,16 +63,31 @@ async function fetchWithTimeout(
 
 /**
  * Detecta se está rodando no Safari iOS
- * Safari iOS tem limitações com ReadableStream.getReader() que requerem workarounds
+ * Safari iOS tem limitações com ReadableStream que requerem workarounds
  */
 function isIOSSafari(): boolean {
+  // Verificar se está no navegador (não Node.js)
+  if (typeof window === 'undefined' || typeof navigator === 'undefined') {
+    return false;
+  }
+  
   const ua = navigator.userAgent;
   const isIOS = /iPad|iPhone|iPod/.test(ua);
   const isWebKit = /WebKit/.test(ua);
-  const isChrome = /CriOS|Chrome/.test(ua);
+  const isChrome = /CriOS|Chrome|EdgiOS|FxiOS/.test(ua); // Chrome, Edge, Firefox no iOS
   
-  // iOS Safari: deve ser iOS + WebKit + NÃO Chrome
-  return isIOS && isWebKit && !isChrome;
+  // iOS Safari: deve ser iOS + WebKit + NÃO outro browser
+  const isiOSSafari = isIOS && isWebKit && !isChrome;
+  
+  console.log('🔍 [isIOSSafari] Detection:', {
+    isiOSSafari,
+    isIOS,
+    isWebKit,
+    isChrome,
+    ua: ua.substring(0, 100)
+  });
+  
+  return isiOSSafari;
 }
 
 /**
@@ -111,8 +126,27 @@ export class DifyAdapter implements IExternalAgentAdapter {
     
     // Para iOS: ler o body como texto completo (não streaming chunk-a-chunk)
     // Isso funciona porque Dify envia eventos SSE sequencialmente
-    const text = await response.text();
+    let text: string;
+    try {
+      // Verificar se body já foi consumido
+      if (response.bodyUsed) {
+        console.warn('⚠️ [iOS] Response body already consumed, cannot read');
+        throw new Error('Response body already consumed');
+      }
+      
+      text = await response.text();
+      console.log('🍎 [iOS] Successfully read response text:', {
+        textLength: text.length,
+        firstChars: text.substring(0, 100)
+      });
+    } catch (readError) {
+      console.error('❌ [iOS] Failed to read response text:', readError);
+      telemetryService.logError(readError as Error, 'iOS: Failed to read response text').catch(() => {});
+      throw readError;
+    }
+    
     const lines = text.split('\n');
+    console.log('🍎 [iOS] Split into lines:', lines.length);
     
     for (const line of lines) {
       if (!line.startsWith('data: ')) continue;
@@ -232,6 +266,10 @@ export class DifyAdapter implements IExternalAgentAdapter {
           throw new Error(`Dify API error: ${response.status} - ${errorText}`);
         }
 
+        // ✅ CRÍTICO: Clonar response ANTES de qualquer tentativa de leitura do body
+        // Isso permite fallback se o primeiro método falhar
+        const responseClone = response.clone();
+
         // ✅ Processar resposta em streaming (SSE)
         console.log('🍎 [Streaming] Starting SSE processing');
         telemetryService.logInfo('Starting SSE streaming mode').catch(() => {});
@@ -259,11 +297,22 @@ export class DifyAdapter implements IExternalAgentAdapter {
         // 🔥 CRITICAL: iOS Safari precisa de abordagem diferente para streams
         if (detectedAsIOSSafari) {
           console.log('🍎 [iOS] Detected iOS Safari, using iOS-specific stream processing');
-          const result = await this.processStreamForiOS(response);
-          fullAnswer = result.fullAnswer;
-          difyConversationId = result.conversationId;
-          difyMessageId = result.messageId;
-          metadata = result.metadata;
+          try {
+            // Usar response original para método iOS
+            const result = await this.processStreamForiOS(response);
+            fullAnswer = result.fullAnswer;
+            difyConversationId = result.conversationId;
+            difyMessageId = result.messageId;
+            metadata = result.metadata;
+          } catch (iosError) {
+            // Se falhar, tentar com o clone
+            console.error('🍎 [iOS] Primary iOS method failed, trying clone:', iosError);
+            const result = await this.processStreamForiOS(responseClone);
+            fullAnswer = result.fullAnswer;
+            difyConversationId = result.conversationId;
+            difyMessageId = result.messageId;
+            metadata = result.metadata;
+          }
         } else {
           // Desktop/Android: usar ReadableStream.getReader() padrão
           console.log('🖥️ [Desktop] Using standard ReadableStream processing');
@@ -271,10 +320,10 @@ export class DifyAdapter implements IExternalAgentAdapter {
           try {
             const reader = response.body?.getReader();
             if (!reader) {
-              // Fallback para iOS se getReader falhar
-              console.warn('⚠️ [Fallback] getReader() failed, trying iOS method');
+              // Fallback: usar o clone com método iOS
+              console.warn('⚠️ [Fallback] getReader() failed, trying iOS method with clone');
               telemetryService.logInfo('Fallback: Using iOS method after getReader failed').catch(() => {});
-              const result = await this.processStreamForiOS(response);
+              const result = await this.processStreamForiOS(responseClone);
               fullAnswer = result.fullAnswer;
               difyConversationId = result.conversationId;
               difyMessageId = result.messageId;
@@ -322,14 +371,16 @@ export class DifyAdapter implements IExternalAgentAdapter {
               }).catch(() => {});
             }
           } catch (streamError) {
-            // Se qualquer erro ocorrer, tentar método iOS como fallback final
+            // Se qualquer erro ocorrer, tentar método iOS com clone
             console.error('❌ [Stream Error] Standard processing failed:', streamError);
-            console.log('🔄 [Fallback] Attempting iOS method as last resort');
-            telemetryService.logError(streamError as Error, 'Stream processing - trying iOS fallback').catch(() => {});
+            console.log('🔄 [Fallback] Attempting iOS method with clone as last resort');
+            telemetryService.logError(streamError as Error, 'Stream processing - trying iOS fallback with clone').catch(() => {});
             
-            // IMPORTANTE: Response já foi parcialmente lido, então precisamos fazer nova request
-            // Por ora, lançar erro para não retornar resposta vazia
-            throw new Error(`Stream processing failed: ${streamError.message}`);
+            const result = await this.processStreamForiOS(responseClone);
+            fullAnswer = result.fullAnswer;
+            difyConversationId = result.conversationId;
+            difyMessageId = result.messageId;
+            metadata = result.metadata;
           }
         }
         
