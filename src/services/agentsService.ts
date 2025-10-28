@@ -75,6 +75,7 @@ export class AgentsService {
     return (data || []).map(agent => ({
       ...agent,
       api_config: (agent.dify_config as unknown as ApiConfig) || {},
+      dify_config: agent.dify_config,
       parameters: (agent.parameters as unknown as ModelParameters) || {},
     }));
   }
@@ -94,6 +95,7 @@ export class AgentsService {
     return (data || []).map(agent => ({
       ...agent,
       api_config: (agent.dify_config as unknown as ApiConfig) || {},
+      dify_config: agent.dify_config,
       parameters: (agent.parameters as unknown as ModelParameters) || {},
     }));
   }
@@ -116,6 +118,7 @@ export class AgentsService {
     return {
       ...data,
       api_config: (data.dify_config as unknown as ApiConfig) || {},
+      dify_config: data.dify_config,
       parameters: (data.parameters as unknown as ModelParameters) || {},
     };
   }
@@ -191,6 +194,7 @@ export class AgentsService {
     return {
       ...data,
       api_config: (data.dify_config as unknown as ApiConfig) || {},
+      dify_config: data.dify_config,
       parameters: (data.parameters as unknown as ModelParameters) || {},
     };
   }
@@ -233,6 +237,7 @@ export class AgentsService {
     return {
       ...data,
       api_config: (data.dify_config as unknown as ApiConfig) || {},
+      dify_config: data.dify_config,
       parameters: (data.parameters as unknown as ModelParameters) || {},
     };
   }
@@ -265,6 +270,7 @@ export class AgentsService {
     return {
       ...data,
       api_config: (data.dify_config as unknown as ApiConfig) || {},
+      dify_config: data.dify_config,
       parameters: (data.parameters as unknown as ModelParameters) || {},
     };
   }
@@ -289,6 +295,7 @@ export class AgentsService {
     return {
       ...data,
       api_config: (data.dify_config as unknown as ApiConfig) || {},
+      dify_config: data.dify_config,
       parameters: (data.parameters as unknown as ModelParameters) || {},
     };
   }
@@ -322,6 +329,7 @@ export class AgentsService {
     return {
       ...data,
       api_config: (data.dify_config as unknown as ApiConfig) || {},
+      dify_config: data.dify_config,
       parameters: (data.parameters as unknown as ModelParameters) || {},
     };
   }

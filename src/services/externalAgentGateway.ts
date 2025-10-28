@@ -282,11 +282,27 @@ export class ExternalAgentGateway {
 
     // 2️⃣ NOVO: Detectar pela presença de dify_config
     if ((agent as any).dify_config) {
-      console.log('🔍 [Gateway] Detected Dify via dify_config');
+      console.log('🔍 [Gateway] Detected Dify via dify_config property');
       return AgentPlatform.DIFY;
     }
 
-    // 3️⃣ Detectar pela URL em api_config (fallback para agentes antigos)
+    // 3️⃣ NOVO: Detectar pela estrutura típica de Dify em api_config
+    if (agent.api_config) {
+      const hasServiceEndpoint = agent.api_config.service_api_endpoint === '/chat-messages';
+      const hasAppId = agent.api_config.app_id?.startsWith('app-');
+      const hasAppKey = agent.api_config.api_key?.startsWith('app-');
+      
+      if (hasServiceEndpoint || hasAppId || hasAppKey) {
+        console.log('🔍 [Gateway] Detected Dify via api_config structure:', {
+          hasServiceEndpoint,
+          hasAppId,
+          hasAppKey
+        });
+        return AgentPlatform.DIFY;
+      }
+    }
+
+    // 4️⃣ Detectar pela URL em api_config (fallback para agentes antigos)
     if (agent.api_config?.base_url) {
       const url = agent.api_config.base_url.toLowerCase();
       if (url.includes('dify')) return AgentPlatform.DIFY;
@@ -294,20 +310,18 @@ export class ExternalAgentGateway {
       if (url.includes('crewai')) return AgentPlatform.CREWAI;
     }
 
-    // 4️⃣ NOVO: Detectar pela URL em dify_config.base_url
+    // 5️⃣ Detectar pela URL em dify_config.base_url
     if ((agent as any).dify_config?.base_url) {
       const url = (agent as any).dify_config.base_url.toLowerCase();
-      if (url.includes('dify')) {
-        console.log('🔍 [Gateway] Detected Dify via dify_config.base_url');
-        return AgentPlatform.DIFY;
-      }
+      if (url.includes('dify')) return AgentPlatform.DIFY;
     }
 
     // Default para custom se não conseguir detectar
     console.warn('⚠️ [Gateway] Could not detect platform, defaulting to CUSTOM:', {
       provider: agent.provider,
       hasApiConfig: !!agent.api_config,
-      hasDifyConfig: !!(agent as any).dify_config
+      hasDifyConfig: !!(agent as any).dify_config,
+      apiConfigKeys: agent.api_config ? Object.keys(agent.api_config) : []
     });
     return AgentPlatform.CUSTOM;
   }
