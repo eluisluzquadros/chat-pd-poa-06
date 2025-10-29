@@ -31,7 +31,7 @@ async function fetchWithTimeout(
     // iOS: Use fetch without AbortController (iOS 18 bug workaround)
     // AbortController causes issues on iOS, so we use Promise.race for timeout
     console.log('🍎 [iOS] Using fetch without AbortController for streaming support');
-    telemetryService.logInfo('iOS: Using fetch without AbortController').catch(() => {});
+    telemetryService.logInfoOld('iOS: Using fetch without AbortController').catch(() => {});
     
     const fetchPromise = fetch(url, fetchOptions);
     const timeoutPromise = new Promise<Response>((_, reject) => 
@@ -116,8 +116,10 @@ export class DifyAdapter implements IExternalAgentAdapter {
     messageId: string;
     metadata: any;
   }> {
+    // 🔥 TELEMETRIA: Início do processamento iOS
+    await telemetryService.logInfo('DifyAdapter', 'processStreamForiOS started');
+    
     console.log('🍎 [iOS] Using iOS-specific SSE processing');
-    telemetryService.logInfo('iOS: Starting iOS-specific SSE processing').catch(() => {});
     
     let fullAnswer = '';
     let conversationId = '';
@@ -131,17 +133,31 @@ export class DifyAdapter implements IExternalAgentAdapter {
       // Verificar se body já foi consumido
       if (response.bodyUsed) {
         console.warn('⚠️ [iOS] Response body already consumed, cannot read');
+        
+        // 🔥 TELEMETRIA: Body já consumido
+        await telemetryService.logWarn('DifyAdapter', 'Response body already consumed');
+        
         throw new Error('Response body already consumed');
       }
       
       text = await response.text();
+      
+      // 🔥 TELEMETRIA: Texto lido com sucesso
+      await telemetryService.logInfo('DifyAdapter', 'Response text read', {
+        textLength: text.length,
+        firstChars: text.substring(0, 100)
+      });
+      
       console.log('🍎 [iOS] Successfully read response text:', {
         textLength: text.length,
         firstChars: text.substring(0, 100)
       });
     } catch (readError) {
       console.error('❌ [iOS] Failed to read response text:', readError);
-      telemetryService.logError(readError as Error, 'iOS: Failed to read response text').catch(() => {});
+      
+      // 🔥 TELEMETRIA: Falha ao ler texto
+      await telemetryService.logError('DifyAdapter', 'Failed to read response text', readError as Error);
+      
       throw readError;
     }
     
@@ -170,10 +186,11 @@ export class DifyAdapter implements IExternalAgentAdapter {
       }
     }
     
-    telemetryService.logInfo('iOS: SSE processing completed', {
-      answerLength: fullAnswer.length,
+    // 🔥 TELEMETRIA: Processamento completo
+    await telemetryService.logInfo('DifyAdapter', 'processStreamForiOS completed', {
+      fullAnswerLength: fullAnswer.length,
       conversationId
-    }).catch(() => {});
+    });
     
     return { fullAnswer, conversationId, messageId, metadata };
   }
@@ -187,6 +204,15 @@ export class DifyAdapter implements IExternalAgentAdapter {
     
     // Configurar contexto de telemetria
     telemetryService.setContext(options.sessionId || null, options.userId || null);
+    
+    // 🔥 TELEMETRIA: Log de início
+    await telemetryService.logInfo('DifyAdapter', 'Process started', {
+      agentId: agent.id,
+      agentName: agent.name,
+      messageLength: message.length,
+      hasApiConfig: !!agent.api_config,
+      hasDifyConfig: !!(agent as any).dify_config
+    });
     
     console.log('🔧 DifyAdapter.process START:', {
       agentId: agent.id,
@@ -257,12 +283,23 @@ export class DifyAdapter implements IExternalAgentAdapter {
           timeout: 60000 // 60 segundos
         });
 
+        // 🔥 TELEMETRIA: Fetch completado
+        await telemetryService.logInfo('DifyAdapter', 'Fetch completed', {
+          responseOk: response.ok,
+          status: response.status,
+          statusText: response.statusText
+        });
+
         console.log('🍎 [Mobile Debug] fetchWithTimeout returned response');
         console.log('🍎 [Mobile Debug] Response status:', response.status);
         console.log('🍎 [Mobile Debug] Response ok:', response.ok);
 
         if (!response.ok) {
           const errorText = await response.text();
+          await telemetryService.logError('DifyAdapter', 'HTTP error from Dify API', undefined, {
+            status: response.status,
+            errorText: errorText.substring(0, 500)
+          });
           throw new Error(`Dify API error: ${response.status} - ${errorText}`);
         }
 
@@ -396,6 +433,15 @@ export class DifyAdapter implements IExternalAgentAdapter {
           });
         }
 
+        const executionTime = Date.now() - startTime;
+        
+        // 🔥 TELEMETRIA: Processo completo com sucesso
+        await telemetryService.logInfo('DifyAdapter', 'Process completed successfully', {
+          executionTime,
+          responseLength: fullAnswer?.length,
+          hasConversationId: !!difyConversationId
+        });
+
         console.log('✅ DifyAdapter.process COMPLETE:', {
           agentId: agent.id,
           executionTime,
@@ -421,11 +467,18 @@ export class DifyAdapter implements IExternalAgentAdapter {
           }
         };
       } catch (fetchError) {
+        await telemetryService.logError('DifyAdapter', 'Fetch error', fetchError as Error);
         throw fetchError;
       }
 
     } catch (error) {
       const executionTime = Date.now() - startTime;
+      
+      // 🔥 TELEMETRIA: Falha completa
+      await telemetryService.logError('DifyAdapter', 'Process failed completely', error as Error, {
+        executionTime
+      });
+      
       console.error('❌ DifyAdapter.process FAILED:', {
         agentId: agent.id,
         executionTime,

@@ -275,7 +275,7 @@ export type Database = {
           action: string
           created_at: string | null
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           new_values: Json | null
           old_values: Json | null
           record_id: string | null
@@ -287,7 +287,7 @@ export type Database = {
           action: string
           created_at?: string | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           new_values?: Json | null
           old_values?: Json | null
           record_id?: string | null
@@ -299,7 +299,7 @@ export type Database = {
           action?: string
           created_at?: string | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           new_values?: Json | null
           old_values?: Json | null
           record_id?: string | null
@@ -509,6 +509,42 @@ export type Database = {
           details?: Json
           id?: string
           resolved?: boolean | null
+        }
+        Relationships: []
+      }
+      debug_logs: {
+        Row: {
+          component: string
+          created_at: string | null
+          id: string
+          level: string
+          message: string
+          metadata: Json | null
+          session_id: string | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          component: string
+          created_at?: string | null
+          id?: string
+          level: string
+          message: string
+          metadata?: Json | null
+          session_id?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          component?: string
+          created_at?: string | null
+          id?: string
+          level?: string
+          message?: string
+          metadata?: Json | null
+          session_id?: string | null
+          user_agent?: string | null
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -3081,10 +3117,6 @@ export type Database = {
         Args: { p_query_text: string; p_query_type: string; p_result: Json }
         Returns: undefined
       }
-      binary_quantize: {
-        Args: { "": string } | { "": unknown }
-        Returns: unknown
-      }
       cache_regime_query: {
         Args: { p_bairro?: string; p_zona?: string }
         Returns: Json
@@ -3094,7 +3126,7 @@ export type Database = {
         Returns: boolean
       }
       check_quality_thresholds: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           current_value: number
           metric_name: string
@@ -3102,32 +3134,17 @@ export type Database = {
           threshold_value: number
         }[]
       }
-      clean_expired_cache: {
-        Args: Record<PropertyKey, never>
-        Returns: number
-      }
-      cleanup_old_data: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      cleanup_stuck_qa_runs: {
-        Args: Record<PropertyKey, never>
-        Returns: number
-      }
-      convert_string_to_vector: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
+      clean_expired_cache: { Args: never; Returns: number }
+      cleanup_old_data: { Args: never; Returns: undefined }
+      cleanup_stuck_qa_runs: { Args: never; Returns: number }
+      convert_string_to_vector: { Args: never; Returns: undefined }
       delete_chat_session_atomic: {
         Args: { session_id_param: string }
         Returns: Json
       }
-      execute_sql_query: {
-        Args: { query_text: string }
-        Returns: Json
-      }
+      execute_sql_query: { Args: { query_text: string }; Returns: Json }
       fix_content_duplications_v2: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           duplications_removed: number
           id: number
@@ -3162,14 +3179,8 @@ export type Database = {
         Args: { art_num: number; doc_type: string }
         Returns: string
       }
-      get_current_user_role: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
-      get_from_cache: {
-        Args: { p_query_text: string }
-        Returns: Json
-      }
+      get_current_user_role: { Args: never; Returns: string }
+      get_from_cache: { Args: { p_query_text: string }; Returns: Json }
       get_riscos_bairro: {
         Args: { nome_bairro: string }
         Returns: {
@@ -3197,42 +3208,6 @@ export type Database = {
           topic: string
         }[]
       }
-      gtrgm_compress: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      gtrgm_decompress: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      gtrgm_in: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      gtrgm_options: {
-        Args: { "": unknown }
-        Returns: undefined
-      }
-      gtrgm_out: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      halfvec_avg: {
-        Args: { "": number[] }
-        Returns: unknown
-      }
-      halfvec_out: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      halfvec_send: {
-        Args: { "": unknown }
-        Returns: string
-      }
-      halfvec_typmod_in: {
-        Args: { "": unknown[] }
-        Returns: number
-      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -3240,74 +3215,41 @@ export type Database = {
         }
         Returns: boolean
       }
-      hnsw_bit_support: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      hnsw_halfvec_support: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      hnsw_sparsevec_support: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      hnswhandler: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      hybrid_search: {
-        Args:
-          | {
+      hybrid_search:
+        | {
+            Args: {
               doc_type?: string
               embedding_vector?: string
               limit_results?: number
               search_query: string
             }
-          | {
+            Returns: {
+              article_number: number
+              article_text: string
+              content: string
+              document_type: string
+              hierarchy: string
+              relevance_score: number
+              source: string
+            }[]
+          }
+        | {
+            Args: {
               match_count?: number
               match_threshold?: number
               query_embedding: string
               query_text: string
             }
-        Returns: {
-          article_number: number
-          article_text: string
-          content: string
-          document_type: string
-          hierarchy: string
-          relevance_score: number
-          source: string
-        }[]
-      }
-      is_admin: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
-      is_supervisor_or_admin: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
-      ivfflat_bit_support: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      ivfflat_halfvec_support: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      ivfflathandler: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      l2_norm: {
-        Args: { "": unknown } | { "": unknown }
-        Returns: number
-      }
-      l2_normalize: {
-        Args: { "": string } | { "": unknown } | { "": unknown }
-        Returns: unknown
-      }
+            Returns: {
+              content: string
+              id: string
+              metadata: Json
+              rank: number
+              similarity: number
+            }[]
+          }
+      is_admin: { Args: never; Returns: boolean }
+      is_supervisor_or_admin: { Args: never; Returns: boolean }
       log_agent_performance: {
         Args: {
           p_agent_type: string
@@ -3344,23 +3286,43 @@ export type Database = {
           similarity: number
         }[]
       }
-      match_documents: {
-        Args:
-          | { filter?: Json; match_count?: number; query_embedding: string }
-          | { match_count: number; query_embedding: string }
-          | {
+      match_documents:
+        | {
+            Args: {
               match_count?: number
               match_threshold?: number
               query_embedding: string
             }
-        Returns: {
-          article_number: number
-          article_text: string
-          document_type: string
-          full_content: string
-          similarity: number
-        }[]
-      }
+            Returns: {
+              article_number: number
+              article_text: string
+              document_type: string
+              full_content: string
+              similarity: number
+            }[]
+          }
+        | {
+            Args: { match_count: number; query_embedding: string }
+            Returns: {
+              chunk_metadata: Json
+              content_chunk: string
+              document_id: number
+              similarity: number
+            }[]
+          }
+        | {
+            Args: {
+              filter?: Json
+              match_count?: number
+              query_embedding: string
+            }
+            Returns: {
+              content: string
+              id: number
+              metadata: Json
+              similarity: number
+            }[]
+          }
       match_embeddings: {
         Args: {
           match_count?: number
@@ -3496,12 +3458,9 @@ export type Database = {
           similarity: number
         }[]
       }
-      refresh_daily_insights: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
+      refresh_daily_insights: { Args: never; Returns: undefined }
       remove_content_duplications: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           duplications_removed: number
           id: number
@@ -3509,10 +3468,7 @@ export type Database = {
           original_length: number
         }[]
       }
-      run_comprehensive_qa_test: {
-        Args: Record<PropertyKey, never>
-        Returns: Json
-      }
+      run_comprehensive_qa_test: { Args: never; Returns: Json }
       save_to_cache: {
         Args: {
           p_agent_results: Json
@@ -3607,34 +3563,9 @@ export type Database = {
           zona: string
         }[]
       }
-      set_limit: {
-        Args: { "": number }
-        Returns: number
-      }
-      show_limit: {
-        Args: Record<PropertyKey, never>
-        Returns: number
-      }
-      show_trgm: {
-        Args: { "": string }
-        Returns: string[]
-      }
-      sparsevec_out: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      sparsevec_send: {
-        Args: { "": unknown }
-        Returns: string
-      }
-      sparsevec_typmod_in: {
-        Args: { "": unknown[] }
-        Returns: number
-      }
-      update_chunk_metadata: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
+      show_limit: { Args: never; Returns: number }
+      show_trgm: { Args: { "": string }; Returns: string[] }
+      update_chunk_metadata: { Args: never; Returns: undefined }
       update_document_embedding: {
         Args: { doc_id: string; new_embedding: number[] }
         Returns: undefined
@@ -3647,34 +3578,7 @@ export type Database = {
         Args: { user_email: string; user_id: string }
         Returns: Json
       }
-      validate_qa_model: {
-        Args: { model_name: string }
-        Returns: boolean
-      }
-      vector_avg: {
-        Args: { "": number[] }
-        Returns: string
-      }
-      vector_dims: {
-        Args: { "": string } | { "": unknown }
-        Returns: number
-      }
-      vector_norm: {
-        Args: { "": string }
-        Returns: number
-      }
-      vector_out: {
-        Args: { "": string }
-        Returns: unknown
-      }
-      vector_send: {
-        Args: { "": string }
-        Returns: string
-      }
-      vector_typmod_in: {
-        Args: { "": unknown[] }
-        Returns: number
-      }
+      validate_qa_model: { Args: { model_name: string }; Returns: boolean }
     }
     Enums: {
       app_role: "admin" | "supervisor" | "user" | "analyst"

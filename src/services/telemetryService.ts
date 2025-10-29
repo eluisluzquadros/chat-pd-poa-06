@@ -41,14 +41,49 @@ class TelemetryService {
     }
   }
 
+  // 🔥 NOVO: Log genérico para debug_logs table
+  async log(level: LogLevel, component: string, message: string, metadata?: any): Promise<void> {
+    try {
+      await supabase.from('debug_logs').insert({
+        user_id: this.userId,
+        session_id: this.sessionId,
+        level,
+        component,
+        message,
+        metadata: metadata || {},
+        user_agent: navigator.userAgent
+      });
+      console.log(`[${level.toUpperCase()}] ${component}: ${message}`, metadata);
+    } catch (error) {
+      console.error('Failed to write debug log:', error);
+    }
+  }
+
+  async logInfo(component: string, message: string, metadata?: any): Promise<void> {
+    return this.log('info', component, message, metadata);
+  }
+
+  async logWarn(component: string, message: string, metadata?: any): Promise<void> {
+    return this.log('warn', component, message, metadata);
+  }
+
+  async logError(component: string, message: string, error?: Error, metadata?: any): Promise<void> {
+    return this.log('error', component, message, {
+      ...metadata,
+      errorMessage: error?.message,
+      errorStack: error?.stack
+    });
+  }
+
   async logPlatformDetection(details: {
     userAgent: string;
     isiOS: boolean;
-    isWebKit: boolean;
-    isSafariIOS: boolean;
-    willUseXHR: boolean;
+    willUseFetch?: boolean;
+    isWebKit?: boolean;
+    isSafariIOS?: boolean;
+    willUseXHR?: boolean;
     navigatorPlatform: string;
-    windowWidth: number;
+    windowWidth?: number;
   }): Promise<void> {
     await this.sendLog({
       log_type: 'platform_detection',
@@ -101,7 +136,8 @@ class TelemetryService {
     });
   }
 
-  async logError(error: Error, context: string): Promise<void> {
+  // Backwards compatibility with old methods
+  async logErrorOld(error: Error, context: string): Promise<void> {
     await this.sendLog({
       log_type: 'error',
       log_level: 'error',
@@ -113,7 +149,7 @@ class TelemetryService {
     });
   }
 
-  async logInfo(message: string, details?: object): Promise<void> {
+  async logInfoOld(message: string, details?: object): Promise<void> {
     await this.sendLog({
       log_type: 'info',
       log_level: 'info',
