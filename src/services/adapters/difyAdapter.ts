@@ -420,8 +420,6 @@ export class DifyAdapter implements IExternalAgentAdapter {
             metadata = result.metadata;
           }
         }
-        
-        const executionTime = Date.now() - startTime;
 
         // Armazenar conversation_id retornado pelo Dify para uso futuro
         if (difyConversationId && difyConversationId !== conversationId) {
