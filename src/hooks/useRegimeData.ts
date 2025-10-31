@@ -30,6 +30,8 @@ interface UseRegimeDataParams {
   searchTerm: string;
   bairro: string;
   zona: string;
+  alturaRange: [number, number];
+  areaRange: [number, number];
   page: number;
   limit: number;
 }
@@ -38,6 +40,8 @@ export function useRegimeData({
   searchTerm,
   bairro,
   zona,
+  alturaRange,
+  areaRange,
   page,
   limit
 }: UseRegimeDataParams) {
@@ -50,6 +54,8 @@ export function useRegimeData({
   const [allZonas, setAllZonas] = useState<string[]>([]);
 
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
+  const debouncedAlturaRange = useDebounce(alturaRange, 300);
+  const debouncedAreaRange = useDebounce(areaRange, 300);
 
   // Load initial data and get unique values
   useEffect(() => {
@@ -110,6 +116,22 @@ export function useRegimeData({
           query = query.eq('zona', zona);
         }
 
+        // Apply altura range filter
+        if (debouncedAlturaRange[0] > 0 || debouncedAlturaRange[1] < 130) {
+          const alturaCol = 'altura máxima para edificação isolada';
+          query = query
+            .gte(alturaCol, debouncedAlturaRange[0].toString())
+            .lte(alturaCol, debouncedAlturaRange[1].toString());
+        }
+
+        // Apply area range filter
+        if (debouncedAreaRange[0] > 0 || debouncedAreaRange[1] < 20000) {
+          const areaCol = 'área mínima do lote';
+          query = query
+            .gte(areaCol, debouncedAreaRange[0].toString())
+            .lte(areaCol, debouncedAreaRange[1].toString());
+        }
+
         // Get count first - rebuild the same query for counting
         let countQuery = supabase
           .from('regime_urbanistico_consolidado')
@@ -128,6 +150,22 @@ export function useRegimeData({
 
         if (zona && zona !== 'todos') {
           countQuery = countQuery.eq('zona', zona);
+        }
+
+        // Apply same altura range filter for count
+        if (debouncedAlturaRange[0] > 0 || debouncedAlturaRange[1] < 130) {
+          const alturaCol = 'altura máxima para edificação isolada';
+          countQuery = countQuery
+            .gte(alturaCol, debouncedAlturaRange[0].toString())
+            .lte(alturaCol, debouncedAlturaRange[1].toString());
+        }
+
+        // Apply same area range filter for count
+        if (debouncedAreaRange[0] > 0 || debouncedAreaRange[1] < 20000) {
+          const areaCol = 'área mínima do lote';
+          countQuery = countQuery
+            .gte(areaCol, debouncedAreaRange[0].toString())
+            .lte(areaCol, debouncedAreaRange[1].toString());
         }
 
         const { count, error: countError } = await countQuery;
@@ -154,7 +192,7 @@ export function useRegimeData({
     };
 
     loadData();
-  }, [debouncedSearchTerm, bairro, zona, page, limit]);
+  }, [debouncedSearchTerm, bairro, zona, debouncedAlturaRange, debouncedAreaRange, page, limit]);
 
   const bairros = useMemo(() => allBairros, [allBairros]);
   const zonas = useMemo(() => allZonas, [allZonas]);

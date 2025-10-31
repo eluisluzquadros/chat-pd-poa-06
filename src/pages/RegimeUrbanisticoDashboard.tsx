@@ -45,26 +45,16 @@ export default function RegimeUrbanisticoDashboard() {
     searchTerm,
     bairro: selectedBairro,
     zona: selectedZona,
+    alturaRange,
+    areaRange,
     page: currentPage,
     limit: itemsPerPage
   });
 
-  // Apply local filters for range sliders
-  const filteredData = useMemo(() => {
-    if (!regimeData) return [];
-    return regimeData.filter(item => {
-      const altura = item['altura máxima para edificação isolada'];
-      const area = item['área mínima do lote'];
-      const alturaValue = typeof altura === 'string' ? parseFloat(altura) : altura;
-      const areaValue = typeof area === 'string' ? parseFloat(area) : area;
-      return alturaValue >= alturaRange[0] && alturaValue <= alturaRange[1] && areaValue >= areaRange[0] && areaValue <= areaRange[1];
-    });
-  }, [regimeData, alturaRange, areaRange]);
-
   // Sort data
   const sortedData = useMemo(() => {
-    if (!filteredData) return [];
-    const sorted = [...filteredData];
+    if (!regimeData) return [];
+    const sorted = [...regimeData];
     sorted.sort((a, b) => {
       let aValue: any;
       let bValue: any;
@@ -97,7 +87,7 @@ export default function RegimeUrbanisticoDashboard() {
       return 0;
     });
     return sorted;
-  }, [filteredData, sortField, sortDirection]);
+  }, [regimeData, sortField, sortDirection]);
   const handleClearFilters = () => {
     setSearchTerm('');
     setSelectedBairro('todos');
