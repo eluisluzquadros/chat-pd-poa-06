@@ -363,21 +363,6 @@ export class DifyAdapter implements IExternalAgentAdapter {
         let difyMessageId = '';
         let metadata: any = {};
 
-        // Debug: verificar detecção iOS Safari
-        const detectedAsIOSSafari = isIOSSafari();
-        const ua = navigator.userAgent;
-        console.log('🔍 [DEBUG] iOS Safari Detection:', {
-          detectedAsIOSSafari,
-          userAgent: ua.substring(0, 150),
-          isIOS: /iPad|iPhone|iPod/.test(ua),
-          isWebKit: /WebKit/.test(ua),
-          isChrome: /CriOS|Chrome/.test(ua)
-        });
-        telemetryService.logInfo('iOS Safari Detection Debug', {
-          detectedAsIOSSafari,
-          userAgent: ua.substring(0, 150)
-        }).catch(() => {});
-
         // 🔥 CRITICAL: iOS Safari precisa de abordagem diferente para streams
         if (detectedAsIOSSafari) {
           console.log('🍎 [iOS] Detected iOS Safari, using iOS-specific stream processing');
@@ -520,9 +505,9 @@ export class DifyAdapter implements IExternalAgentAdapter {
       const executionTime = Date.now() - startTime;
       
       // 🔥 TELEMETRIA: Falha completa
-      await telemetryService.logError('DifyAdapter', 'Process failed completely', error as Error, {
+      telemetryService.logError('DifyAdapter', 'Process failed completely', error as Error, {
         executionTime
-      });
+      }).catch(() => {});
       
       console.error('❌ DifyAdapter.process FAILED:', {
         agentId: agent.id,
