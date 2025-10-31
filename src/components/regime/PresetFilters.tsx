@@ -11,6 +11,8 @@ export interface PresetFilter {
     zona?: string;
     alturaMin?: number;
     alturaMax?: number;
+    areaMin?: number;
+    areaMax?: number;
   };
 }
 
@@ -22,19 +24,25 @@ export function PresetFilters({ onApplyPreset }: PresetFiltersProps) {
   const presets: PresetFilter[] = [
     {
       id: 'high-buildings',
-      label: 'Edifícios Altos',
+      label: 'Edifícios Altos (>50m)',
       icon: <Sparkles className="h-4 w-4" />,
       filters: { alturaMin: 50 }
     },
     {
-      id: 'zot-areas',
-      label: 'Áreas ZOT',
-      filters: { zona: 'ZOT' }
+      id: 'very-high-buildings',
+      label: 'Edifícios Muito Altos (>80m)',
+      icon: <Sparkles className="h-4 w-4" />,
+      filters: { alturaMin: 80 }
     },
     {
-      id: 'center',
-      label: 'Centro',
-      filters: { bairro: 'Centro' }
+      id: 'small-lots',
+      label: 'Lotes Pequenos (<500m²)',
+      filters: { areaMax: 500 }
+    },
+    {
+      id: 'large-lots',
+      label: 'Lotes Grandes (>5000m²)',
+      filters: { areaMin: 5000 }
     }
   ];
 

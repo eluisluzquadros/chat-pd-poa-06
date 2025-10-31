@@ -30,8 +30,8 @@ export default function RegimeUrbanisticoDashboard() {
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
-  const [alturaRange, setAlturaRange] = useState<[number, number]>([0, 100]);
-  const [areaRange, setAreaRange] = useState<[number, number]>([0, 1500]);
+  const [alturaRange, setAlturaRange] = useState<[number, number]>([0, 130]);
+  const [areaRange, setAreaRange] = useState<[number, number]>([0, 20000]);
   const itemsPerPage = 20;
   const {
     data: regimeData,
@@ -102,8 +102,8 @@ export default function RegimeUrbanisticoDashboard() {
     setSearchTerm('');
     setSelectedBairro('todos');
     setSelectedZona('todos');
-    setAlturaRange([0, 100]);
-    setAreaRange([0, 1500]);
+    setAlturaRange([0, 130]);
+    setAreaRange([0, 20000]);
     setCurrentPage(1);
     toast({
       title: "Filtros limpos",
@@ -148,13 +148,19 @@ export default function RegimeUrbanisticoDashboard() {
     if (preset.filters.alturaMax !== undefined) {
       setAlturaRange([alturaRange[0], preset.filters.alturaMax]);
     }
+    if (preset.filters.areaMin !== undefined) {
+      setAreaRange([preset.filters.areaMin, areaRange[1]]);
+    }
+    if (preset.filters.areaMax !== undefined) {
+      setAreaRange([areaRange[0], preset.filters.areaMax]);
+    }
     setCurrentPage(1);
     toast({
       title: "Filtro aplicado",
       description: `Filtro "${preset.label}" foi aplicado`
     });
   };
-  const hasActiveFilters = searchTerm || selectedBairro !== 'todos' || selectedZona !== 'todos' || alturaRange[0] !== 0 || alturaRange[1] !== 100 || areaRange[0] !== 0 || areaRange[1] !== 1500;
+  const hasActiveFilters = searchTerm || selectedBairro !== 'todos' || selectedZona !== 'todos' || alturaRange[0] !== 0 || alturaRange[1] !== 130 || areaRange[0] !== 0 || areaRange[1] !== 20000;
 
   // Get active filter chips
   const activeFilters = useMemo(() => {
@@ -186,22 +192,22 @@ export default function RegimeUrbanisticoDashboard() {
         onRemove: () => setSelectedZona('todos')
       });
     }
-    if (alturaRange[0] !== 0 || alturaRange[1] !== 100) {
+    if (alturaRange[0] !== 0 || alturaRange[1] !== 130) {
       filters.push({
         id: 'altura',
         label: 'Altura',
         value: `${alturaRange[0]}m - ${alturaRange[1]}m`,
         type: 'search' as const,
-        onRemove: () => setAlturaRange([0, 100])
+        onRemove: () => setAlturaRange([0, 130])
       });
     }
-    if (areaRange[0] !== 0 || areaRange[1] !== 1500) {
+    if (areaRange[0] !== 0 || areaRange[1] !== 20000) {
       filters.push({
         id: 'area',
         label: 'Área',
         value: `${areaRange[0]}m² - ${areaRange[1]}m²`,
         type: 'search' as const,
-        onRemove: () => setAreaRange([0, 1500])
+        onRemove: () => setAreaRange([0, 20000])
       });
     }
     return filters;
@@ -268,9 +274,9 @@ export default function RegimeUrbanisticoDashboard() {
 
             {/* Range Sliders */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 bg-muted/30 rounded-xl border border-border/50">
-              <RangeSlider label="Altura Máxima" min={0} max={100} value={alturaRange} onChange={setAlturaRange} unit="m" />
+              <RangeSlider label="Altura Máxima" min={0} max={130} value={alturaRange} onChange={setAlturaRange} unit="m" />
               
-              <RangeSlider label="Área Mínima do Lote" min={0} max={1500} value={areaRange} onChange={setAreaRange} unit="m²" step={50} />
+              <RangeSlider label="Área Mínima do Lote" min={0} max={20000} value={areaRange} onChange={setAreaRange} unit="m²" step={100} />
             </div>
 
             {/* Preset Filters */}
@@ -306,14 +312,12 @@ export default function RegimeUrbanisticoDashboard() {
           }}>
                     <RegimeCardV2 data={regime} />
                   </div>)}
-              </div> : viewMode === 'list' ? <div className="space-y-3 mb-8">
+              </div> : <div className="space-y-3 mb-8">
                 {sortedData.map((regime, index) => <div key={index} className="animate-fade-in" style={{
             animationDelay: `${index * 0.03}s`
           }}>
                     <RegimeListView data={regime} />
                   </div>)}
-              </div> : <div className="glass p-8 rounded-2xl text-center mb-8">
-                <p className="text-muted-foreground">Visualização em mapa em desenvolvimento</p>
               </div>}
 
             {/* Enhanced Pagination */}

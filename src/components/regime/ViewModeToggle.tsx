@@ -1,8 +1,8 @@
 import React from 'react';
-import { Grid, List, Map } from 'lucide-react';
+import { Grid, List } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
-export type ViewMode = 'grid' | 'list' | 'map';
+export type ViewMode = 'grid' | 'list';
 
 interface ViewModeToggleProps {
   viewMode: ViewMode;
@@ -12,8 +12,7 @@ interface ViewModeToggleProps {
 export function ViewModeToggle({ viewMode, onChange }: ViewModeToggleProps) {
   const modes: { value: ViewMode; icon: typeof Grid; label: string }[] = [
     { value: 'grid', icon: Grid, label: 'Grade' },
-    { value: 'list', icon: List, label: 'Lista' },
-    { value: 'map', icon: Map, label: 'Mapa' }
+    { value: 'list', icon: List, label: 'Lista' }
   ];
 
   return (

@@ -23,8 +23,13 @@ export function RangeSlider({
   return (
     <div className="space-y-3">
       <div className="flex justify-between items-center">
-        <label className="text-sm font-medium text-foreground">{label}</label>
-        <span className="text-xs text-muted-foreground">
+        <div className="flex items-center gap-2">
+          <label className="text-sm font-medium text-foreground">{label}</label>
+          <span className="text-xs text-muted-foreground italic">
+            ({min}{unit} - {max}{unit} disponível)
+          </span>
+        </div>
+        <span className="text-xs font-semibold text-primary">
           {value[0]}{unit} - {value[1]}{unit}
         </span>
       </div>
