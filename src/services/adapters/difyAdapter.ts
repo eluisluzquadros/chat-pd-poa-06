@@ -337,170 +337,165 @@ export class DifyAdapter implements IExternalAgentAdapter {
         statusText: response.statusText
       });
 
-        console.log('🍎 [Mobile Debug] fetchWithTimeout returned response');
-        console.log('🍎 [Mobile Debug] Response status:', response.status);
-        console.log('🍎 [Mobile Debug] Response ok:', response.ok);
+      console.log('🍎 [Mobile Debug] fetchWithTimeout returned response');
+      console.log('🍎 [Mobile Debug] Response status:', response.status);
+      console.log('🍎 [Mobile Debug] Response ok:', response.ok);
 
-        if (!response.ok) {
-          const errorText = await response.text();
-          await telemetryService.logError('DifyAdapter', 'HTTP error from Dify API', undefined, {
-            status: response.status,
-            errorText: errorText.substring(0, 500)
-          });
-          throw new Error(`Dify API error: ${response.status} - ${errorText}`);
-        }
-
-        // ✅ CRÍTICO: Clonar response ANTES de qualquer tentativa de leitura do body
-        // Isso permite fallback se o primeiro método falhar
-        const responseClone = response.clone();
-
-        // ✅ Processar resposta em streaming (SSE)
-        console.log('🍎 [Streaming] Starting SSE processing');
-        telemetryService.logInfo('Starting SSE streaming mode').catch(() => {});
-
-        let fullAnswer = '';
-        let difyConversationId = '';
-        let difyMessageId = '';
-        let metadata: any = {};
-
-        // 🔥 CRITICAL: iOS Safari precisa de abordagem diferente para streams
-        if (detectedAsIOSSafari) {
-          console.log('🍎 [iOS] Detected iOS Safari, using iOS-specific stream processing');
-          try {
-            // Usar response original para método iOS
-            const result = await this.processStreamForiOS(response);
-            fullAnswer = result.fullAnswer;
-            difyConversationId = result.conversationId;
-            difyMessageId = result.messageId;
-            metadata = result.metadata;
-          } catch (iosError) {
-            // Se falhar, tentar com o clone
-            console.error('🍎 [iOS] Primary iOS method failed, trying clone:', iosError);
-            const result = await this.processStreamForiOS(responseClone);
-            fullAnswer = result.fullAnswer;
-            difyConversationId = result.conversationId;
-            difyMessageId = result.messageId;
-            metadata = result.metadata;
-          }
-        } else {
-          // Desktop/Android: usar ReadableStream.getReader() padrão
-          console.log('🖥️ [Desktop] Using standard ReadableStream processing');
-          
-          try {
-            const reader = response.body?.getReader();
-            if (!reader) {
-              // Fallback: usar o clone com método iOS
-              console.warn('⚠️ [Fallback] getReader() failed, trying iOS method with clone');
-              telemetryService.logInfo('Fallback: Using iOS method after getReader failed').catch(() => {});
-              const result = await this.processStreamForiOS(responseClone);
-              fullAnswer = result.fullAnswer;
-              difyConversationId = result.conversationId;
-              difyMessageId = result.messageId;
-              metadata = result.metadata;
-            } else {
-              // ReadableStream disponível, processar normalmente
-              const decoder = new TextDecoder();
-              
-              while (true) {
-                const { done, value } = await reader.read();
-                if (done) {
-                  console.log('🖥️ [Streaming] Stream ended');
-                  break;
-                }
-                
-                const chunk = decoder.decode(value, { stream: true });
-                const lines = chunk.split('\n');
-                
-                for (const line of lines) {
-                  if (!line.startsWith('data: ')) continue;
-                  
-                  const jsonStr = line.slice(6).trim();
-                  if (jsonStr === '[DONE]' || !jsonStr) continue;
-                  
-                  try {
-                    const data = JSON.parse(jsonStr);
-                    console.log('🖥️ [Streaming] Event:', data.event);
-                    
-                    if (data.event === 'message') {
-                      fullAnswer += data.answer || '';
-                    } else if (data.event === 'message_end') {
-                      difyConversationId = data.conversation_id || '';
-                      difyMessageId = data.id || '';
-                      metadata = data.metadata || {};
-                    }
-                  } catch (parseError) {
-                    console.warn('🖥️ [Streaming] Failed to parse SSE line:', jsonStr.substring(0, 100));
-                  }
-                }
-              }
-              
-              telemetryService.logInfo('SSE streaming completed', {
-                answerLength: fullAnswer.length,
-                conversationId: difyConversationId
-              }).catch(() => {});
-            }
-          } catch (streamError) {
-            // Se qualquer erro ocorrer, tentar método iOS com clone
-            console.error('❌ [Stream Error] Standard processing failed:', streamError);
-            console.log('🔄 [Fallback] Attempting iOS method with clone as last resort');
-            telemetryService.logError(streamError as Error, 'Stream processing - trying iOS fallback with clone').catch(() => {});
-            
-            const result = await this.processStreamForiOS(responseClone);
-            fullAnswer = result.fullAnswer;
-            difyConversationId = result.conversationId;
-            difyMessageId = result.messageId;
-            metadata = result.metadata;
-          }
-        }
-
-        // Armazenar conversation_id retornado pelo Dify para uso futuro
-        if (difyConversationId && difyConversationId !== conversationId) {
-          this.conversationMapping.set(sessionId, difyConversationId);
-          console.log('💾 DifyAdapter stored conversation mapping:', {
-            sessionId,
-            difyConversationId,
-            wasNewConversation: !storedConversationId
-          });
-        }
-
-        const executionTime = Date.now() - startTime;
-        
-        // 🔥 TELEMETRIA: Processo completo com sucesso
-        await telemetryService.logInfo('DifyAdapter', 'Process completed successfully', {
-          executionTime,
-          responseLength: fullAnswer?.length,
-          hasConversationId: !!difyConversationId
+      if (!response.ok) {
+        const errorText = await response.text();
+        await telemetryService.logError('DifyAdapter', 'HTTP error from Dify API', undefined, {
+          status: response.status,
+          errorText: errorText.substring(0, 500)
         });
-
-        console.log('✅ DifyAdapter.process COMPLETE:', {
-          agentId: agent.id,
-          executionTime,
-          hasResponse: !!fullAnswer,
-          responseLength: fullAnswer.length,
-          conversationId: difyConversationId,
-          messageId: difyMessageId
-        });
-
-        // Mapear resposta para formato padrão
-        return {
-          response: fullAnswer || 'No response from Dify agent',
-          confidence: 0.85,
-          sources: { tabular: 0, conceptual: 0 },
-          executionTime,
-          metadata: {
-            model: agent.model,
-            provider: 'dify',
-            conversationId: difyConversationId,
-            messageId: difyMessageId,
-            tokensUsed: metadata?.usage?.total_tokens || 0,
-            difyData: metadata
-          }
-        };
-      } catch (fetchError) {
-        await telemetryService.logError('DifyAdapter', 'Fetch error', fetchError as Error);
-        throw fetchError;
+        throw new Error(`Dify API error: ${response.status} - ${errorText}`);
       }
 
+      // ✅ CRÍTICO: Clonar response ANTES de qualquer tentativa de leitura do body
+      // Isso permite fallback se o primeiro método falhar
+      const responseClone = response.clone();
+
+      // ✅ Processar resposta em streaming (SSE)
+      console.log('🍎 [Streaming] Starting SSE processing');
+      telemetryService.logInfo('Starting SSE streaming mode').catch(() => {});
+
+      let fullAnswer = '';
+      let difyConversationId = '';
+      let difyMessageId = '';
+      let metadata: any = {};
+
+      // 🔥 CRITICAL: iOS Safari precisa de abordagem diferente para streams
+      if (detectedAsIOSSafari) {
+        console.log('🍎 [iOS] Detected iOS Safari, using iOS-specific stream processing');
+        try {
+          // Usar response original para método iOS
+          const result = await this.processStreamForiOS(response);
+          fullAnswer = result.fullAnswer;
+          difyConversationId = result.conversationId;
+          difyMessageId = result.messageId;
+          metadata = result.metadata;
+        } catch (iosError) {
+          // Se falhar, tentar com o clone
+          console.error('🍎 [iOS] Primary iOS method failed, trying clone:', iosError);
+          const result = await this.processStreamForiOS(responseClone);
+          fullAnswer = result.fullAnswer;
+          difyConversationId = result.conversationId;
+          difyMessageId = result.messageId;
+          metadata = result.metadata;
+        }
+      } else {
+        // Desktop/Android: usar ReadableStream.getReader() padrão
+        console.log('🖥️ [Desktop] Using standard ReadableStream processing');
+        
+        try {
+          const reader = response.body?.getReader();
+          if (!reader) {
+            // Fallback: usar o clone com método iOS
+            console.warn('⚠️ [Fallback] getReader() failed, trying iOS method with clone');
+            telemetryService.logInfo('Fallback: Using iOS method after getReader failed').catch(() => {});
+            const result = await this.processStreamForiOS(responseClone);
+            fullAnswer = result.fullAnswer;
+            difyConversationId = result.conversationId;
+            difyMessageId = result.messageId;
+            metadata = result.metadata;
+          } else {
+            // ReadableStream disponível, processar normalmente
+            const decoder = new TextDecoder();
+            
+            while (true) {
+              const { done, value } = await reader.read();
+              if (done) {
+                console.log('🖥️ [Streaming] Stream ended');
+                break;
+              }
+              
+              const chunk = decoder.decode(value, { stream: true });
+              const lines = chunk.split('\n');
+              
+              for (const line of lines) {
+                if (!line.startsWith('data: ')) continue;
+                
+                const jsonStr = line.slice(6).trim();
+                if (jsonStr === '[DONE]' || !jsonStr) continue;
+                
+                try {
+                  const data = JSON.parse(jsonStr);
+                  console.log('🖥️ [Streaming] Event:', data.event);
+                  
+                  if (data.event === 'message') {
+                    fullAnswer += data.answer || '';
+                  } else if (data.event === 'message_end') {
+                    difyConversationId = data.conversation_id || '';
+                    difyMessageId = data.id || '';
+                    metadata = data.metadata || {};
+                  }
+                } catch (parseError) {
+                  console.warn('🖥️ [Streaming] Failed to parse SSE line:', jsonStr.substring(0, 100));
+                }
+              }
+            }
+            
+            telemetryService.logInfo('SSE streaming completed', {
+              answerLength: fullAnswer.length,
+              conversationId: difyConversationId
+            }).catch(() => {});
+          }
+        } catch (streamError) {
+          // Se qualquer erro ocorrer, tentar método iOS com clone
+          console.error('❌ [Stream Error] Standard processing failed:', streamError);
+          console.log('🔄 [Fallback] Attempting iOS method with clone as last resort');
+          telemetryService.logError(streamError as Error, 'Stream processing - trying iOS fallback with clone').catch(() => {});
+          
+          const result = await this.processStreamForiOS(responseClone);
+          fullAnswer = result.fullAnswer;
+          difyConversationId = result.conversationId;
+          difyMessageId = result.messageId;
+          metadata = result.metadata;
+        }
+      }
+
+      // Armazenar conversation_id retornado pelo Dify para uso futuro
+      if (difyConversationId && difyConversationId !== conversationId) {
+        this.conversationMapping.set(sessionId, difyConversationId);
+        console.log('💾 DifyAdapter stored conversation mapping:', {
+          sessionId,
+          difyConversationId,
+          wasNewConversation: !storedConversationId
+        });
+      }
+
+      const executionTime = Date.now() - startTime;
+      
+      // 🔥 TELEMETRIA: Processo completo com sucesso
+      await telemetryService.logInfo('DifyAdapter', 'Process completed successfully', {
+        executionTime,
+        responseLength: fullAnswer?.length,
+        hasConversationId: !!difyConversationId
+      });
+
+      console.log('✅ DifyAdapter.process COMPLETE:', {
+        agentId: agent.id,
+        executionTime,
+        hasResponse: !!fullAnswer,
+        responseLength: fullAnswer.length,
+        conversationId: difyConversationId,
+        messageId: difyMessageId
+      });
+
+      // Mapear resposta para formato padrão
+      return {
+        response: fullAnswer || 'No response from Dify agent',
+        confidence: 0.85,
+        sources: { tabular: 0, conceptual: 0 },
+        executionTime,
+        metadata: {
+          model: agent.model,
+          provider: 'dify',
+          conversationId: difyConversationId,
+          messageId: difyMessageId,
+          tokensUsed: metadata?.usage?.total_tokens || 0,
+          difyData: metadata
+        }
+      };
     } catch (error) {
       const executionTime = Date.now() - startTime;
       
