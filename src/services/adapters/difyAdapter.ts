@@ -271,24 +271,71 @@ export class DifyAdapter implements IExternalAgentAdapter {
 
       console.log('📡 DifyAdapter making request to:', url);
 
-      try {
-        console.log('🍎 [Mobile Debug] About to call fetchWithTimeout');
-        console.log('🍎 [Mobile Debug] URL:', url);
-        console.log('🍎 [Mobile Debug] Payload:', JSON.stringify(payload).substring(0, 200));
-        
-        const response = await fetchWithTimeout(url, {
-          method: 'POST',
-          headers,
-          body: JSON.stringify(payload),
-          timeout: 60000 // 60 segundos
-        });
+      // ✅ SOLUÇÃO iOS: Detectar iOS Safari e usar proxy
+      const detectedAsIOSSafari = isIOSSafari();
+      await telemetryService.logInfo('DifyAdapter', 'Detected platform', { 
+        isIOSSafari: detectedAsIOSSafari 
+      });
 
-        // 🔥 TELEMETRIA: Fetch completado
-        await telemetryService.logInfo('DifyAdapter', 'Fetch completed', {
-          responseOk: response.ok,
-          status: response.status,
-          statusText: response.statusText
-        });
+      let response: Response;
+
+      if (detectedAsIOSSafari) {
+        // iOS Safari: Usar edge function proxy para evitar CORS
+        const proxyUrl = 'https://ngrqwmvuhvjkeohesbxs.supabase.co/functions/v1/dify-proxy';
+        
+        console.log('🍎 [iOS] Using proxy for iOS Safari:', proxyUrl);
+        await telemetryService.logInfo('DifyAdapter', 'Using proxy for iOS', { proxyUrl });
+        
+        try {
+          response = await fetchWithTimeout(proxyUrl, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5ncnF3bXZ1aHZqa2VvaGVzYnhzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM2MDkwMTcsImV4cCI6MjA2OTE4NTAxN30.K3uyyzjyAQ17ohQGCUFx_RiMufblLyQzvxEZHakqKrg',
+            },
+            body: JSON.stringify({
+              baseUrl: base_url,
+              endpoint: endpoint,
+              headers: headers,
+              body: payload,
+            }),
+            timeout: 60000
+          });
+        } catch (proxyError) {
+          console.error('❌ [iOS] Proxy failed:', proxyError);
+          await telemetryService.logError('DifyAdapter', 'Proxy failed', proxyError as Error);
+          throw proxyError;
+        }
+      } else {
+        // Desktop/Android: Requisição direta (funciona normalmente)
+        console.log('🖥️ [Desktop] Using direct request');
+        
+        try {
+          console.log('🍎 [Mobile Debug] About to call fetchWithTimeout');
+          console.log('🍎 [Mobile Debug] URL:', url);
+          console.log('🍎 [Mobile Debug] Payload:', JSON.stringify(payload).substring(0, 200));
+          
+          response = await fetchWithTimeout(url, {
+            method: 'POST',
+            headers,
+            body: JSON.stringify(payload),
+            timeout: 60000 // 60 segundos
+          });
+        } catch (directError) {
+          console.error('❌ [Desktop] Direct request failed:', directError);
+          await telemetryService.logError('DifyAdapter', 'Direct request failed', directError as Error);
+          throw directError;
+        }
+      }
+
+      // 🔥 TELEMETRIA: Fetch completado
+      await telemetryService.logInfo('DifyAdapter', 'Fetch completed', {
+        isIOSSafari: detectedAsIOSSafari,
+        usedProxy: detectedAsIOSSafari,
+        responseOk: response.ok,
+        status: response.status,
+        statusText: response.statusText
+      });
 
         console.log('🍎 [Mobile Debug] fetchWithTimeout returned response');
         console.log('🍎 [Mobile Debug] Response status:', response.status);

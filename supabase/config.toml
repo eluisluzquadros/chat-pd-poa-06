@@ -1,5 +1,8 @@
 project_id = "ngrqwmvuhvjkeohesbxs"
 
+[functions.dify-proxy]
+verify_jwt = false
+
 [functions.qa-create-test-case]
 verify_jwt = true
 
