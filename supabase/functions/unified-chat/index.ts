@@ -6,6 +6,25 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+const SYSTEM_UNAVAILABLE_MESSAGE = `⚠️ **Instabilidade Temporária no ChatPDPOA**
+
+Pedimos desculpas. No momento, o ChatPDPOA está passando por uma instabilidade devido a um alto volume de acessos.
+
+Nossa equipe técnica já foi acionada e está trabalhando para normalizar o serviço o mais rápido possível.
+
+**Enquanto isso, você pode consultar:**
+
+🗺️ **Mapa Interativo (Painel do Regime Urbanístico):**  
+https://bit.ly/pdpoaregramento
+
+📧 **Dúvidas Oficiais:**  
+planodiretor@portoalegre.rs.gov.br
+
+💬 **Contribuições (SMAMUS):**  
+Envie suas sugestões pelos canais oficiais da SMAMUS.
+
+Agradecemos a sua compreensão.`;
+
 interface ChatRequest {
   message: string;
   model: string; // UUID do agente
@@ -219,15 +238,27 @@ serve(async (req) => {
     );
 
   } catch (error) {
-    console.error("[unified-chat] Error:", error);
+    // ✅ Log técnico apenas no servidor (usuário não vê)
+    console.error("[unified-chat] Technical error:", {
+      message: error.message,
+      stack: error.stack,
+      timestamp: new Date().toISOString()
+    });
+    
+    // ✅ SEMPRE retornar mensagem amigável
     return new Response(
       JSON.stringify({
-        error: error.message || "Unknown error occurred",
-        details: error.stack,
+        response: SYSTEM_UNAVAILABLE_MESSAGE, // ✅ Mensagem amigável
+        model: "system",
+        provider: "system",
+        metadata: {
+          isError: true,
+          errorType: "service_unavailable"
+        }
       }),
       {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 500,
+        status: 200 // ✅ Retornar 200 com mensagem amigável
       }
     );
   }

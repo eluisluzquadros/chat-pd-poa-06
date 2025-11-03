@@ -7,6 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import { getCurrentAuthenticatedSession } from "@/utils/authUtils";
 import { ChatService } from "@/services/chatService";
 import { useTokenTracking } from "@/hooks/useTokenTracking";
+import { getUserFriendlyErrorMessage } from "@/utils/errorMessages";
 
 interface UseMessageSubmitProps {
   input: string;
@@ -383,54 +384,47 @@ export function useMessageSubmit({
       }
 
     } catch (error) {
-      console.error('❌ [useMessageSubmit] Error in handleSubmit:', {
-        error: error instanceof Error ? error.message : 'Unknown error',
-        errorObject: error, // Add full error object for debugging
-        stack: error instanceof Error ? error.stack : undefined,
-        userRole,
-        selectedModel,
-        sessionId: sessionId, // Use local sessionId variable, not currentSessionId
-        userId: session?.user?.id,
-        userEmail: session?.user?.email,
-        messageLength: currentInput.length
-      });
-      
-      // Also log the error directly for easier debugging
-      console.error('🔧 [DEBUG] Full error object:', error);
-      
-      setInput(currentInput);
-      
-      // Enhanced error messaging
-      let errorMessage = "Failed to send message";
-      if (error instanceof Error) {
-        if (error.message.includes('User not authenticated')) {
-          errorMessage = "Authentication failed. Please refresh and try again.";
-        } else if (error.message.includes('RAG system')) {
-          errorMessage = "AI service temporarily unavailable. Please try again.";
-        } else if (error.message.includes('network') || error.message.includes('fetch')) {
-          errorMessage = "Network error. Please check your connection and try again.";
-        } else {
-          errorMessage = error.message;
-        }
+      // ✅ Log técnico detalhado apenas em desenvolvimento
+      if (process.env.NODE_ENV === 'development') {
+        console.error('❌ [DEV] Technical error details:', {
+          error: error instanceof Error ? error.message : 'Unknown error',
+          stack: error instanceof Error ? error.stack : undefined,
+          userRole,
+          selectedModel,
+          sessionId,
+          userId: session?.user?.id
+        });
       }
       
+      // ✅ Log resumido em produção
+      console.error('❌ [PROD] Message submission failed:', {
+        timestamp: new Date().toISOString(),
+        hasSession: !!sessionId
+      });
+      
+      // ✅ Restaurar input do usuário
+      setInput(currentInput);
+      
+      // ✅ Obter mensagem amigável unificada
+      const friendlyMessage = getUserFriendlyErrorMessage(error);
+      
+      // ✅ Mostrar toast com mensagem amigável
       toast({
-        title: "Error",
-        description: errorMessage,
+        title: "Serviço Temporariamente Indisponível",
+        description: "Por favor, tente novamente em instantes ou use os canais alternativos.",
         variant: "destructive",
       });
       
-      // Also add error message to chat for debugging
-      if (process.env.NODE_ENV === 'development') {
-        const errorMessage: Message = {
-          id: crypto.randomUUID(),
-          content: `❌ Debug Error: ${error instanceof Error ? error.message : 'Unknown error'}`,
-          role: "assistant",
-          timestamp: new Date(),
-          model: selectedModel,
-        };
-        addMessage(errorMessage);
-      }
+      // ✅ Adicionar mensagem amigável diretamente no chat
+      const errorMessage: Message = {
+        id: crypto.randomUUID(),
+        content: friendlyMessage, // ✅ Mensagem amigável formatada
+        role: "assistant",
+        timestamp: new Date(),
+        model: selectedModel,
+      };
+      addMessage(errorMessage);
+      
     } finally {
       setIsLoading(false);
     }

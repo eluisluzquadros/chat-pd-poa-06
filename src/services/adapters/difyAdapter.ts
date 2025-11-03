@@ -6,6 +6,7 @@ import {
   ConnectionTestResult 
 } from '../externalAgentGateway';
 import { telemetryService } from '../telemetryService';
+import { ERROR_MESSAGES } from '@/utils/errorMessages';
 
 /**
  * Wrapper de fetch com fallback para XMLHttpRequest no Safari iOS
@@ -483,7 +484,7 @@ export class DifyAdapter implements IExternalAgentAdapter {
 
       // Mapear resposta para formato padrão
       return {
-        response: fullAnswer || 'No response from Dify agent',
+        response: fullAnswer || ERROR_MESSAGES.SYSTEM_UNAVAILABLE,
         confidence: 0.85,
         sources: { tabular: 0, conceptual: 0 },
         executionTime,
@@ -499,18 +500,22 @@ export class DifyAdapter implements IExternalAgentAdapter {
     } catch (error) {
       const executionTime = Date.now() - startTime;
       
-      // 🔥 TELEMETRIA: Falha completa
-      telemetryService.logError('DifyAdapter', 'Process failed completely', error as Error, {
+      // 🔥 TELEMETRIA: Log técnico apenas para devs
+      telemetryService.logError('DifyAdapter', 'Process failed', error as Error, {
         executionTime
       }).catch(() => {});
       
+      // ✅ Log resumido sem dados sensíveis
       console.error('❌ DifyAdapter.process FAILED:', {
         agentId: agent.id,
         executionTime,
-        error: error instanceof Error ? error.message : 'Unknown error'
+        errorType: error instanceof Error ? error.constructor.name : 'Unknown'
       });
       
-      throw error;
+      // ✅ Criar erro com mensagem amigável
+      const friendlyError = new Error(ERROR_MESSAGES.SYSTEM_UNAVAILABLE);
+      friendlyError.name = 'ServiceUnavailable';
+      throw friendlyError;
     }
   }
 

@@ -9,6 +9,25 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+const SYSTEM_UNAVAILABLE_MESSAGE = `⚠️ **Instabilidade Temporária no ChatPDPOA**
+
+Pedimos desculpas. No momento, o ChatPDPOA está passando por uma instabilidade devido a um alto volume de acessos.
+
+Nossa equipe técnica já foi acionada e está trabalhando para normalizar o serviço o mais rápido possível.
+
+**Enquanto isso, você pode consultar:**
+
+🗺️ **Mapa Interativo (Painel do Regime Urbanístico):**  
+https://bit.ly/pdpoaregramento
+
+📧 **Dúvidas Oficiais:**  
+planodiretor@portoalegre.rs.gov.br
+
+💬 **Contribuições (SMAMUS):**  
+Envie suas sugestões pelos canais oficiais da SMAMUS.
+
+Agradecemos a sua compreensão.`;
+
 // Create Supabase client for internal operations (retrieve-context + chat_history)
 const supabaseClient = createClient(
   Deno.env.get('SUPABASE_URL') ?? '',
@@ -120,8 +139,35 @@ INSTRUÇÕES DE USO DO CONTEXTO:
 
     if (!openaiResponse.ok) {
       const errorText = await openaiResponse.text();
-      console.error('❌ OpenAI API Error:', openaiResponse.status, errorText);
-      throw new Error(`OpenAI API error: ${openaiResponse.status}`);
+      
+      // ✅ Log técnico detalhado
+      console.error('❌ OpenAI API Error:', {
+        status: openaiResponse.status,
+        statusText: openaiResponse.statusText,
+        error: errorText
+      });
+      
+      // ✅ SEMPRE retornar mensagem amigável (não propagar erro)
+      return new Response(
+        JSON.stringify({
+          answer: SYSTEM_UNAVAILABLE_MESSAGE,
+          model: "system",
+          usage: {},
+          sources: [],
+          metadata: {
+            isError: true,
+            errorType: openaiResponse.status === 429 ? "rate_limit" : 
+                       openaiResponse.status === 402 ? "quota_exceeded" : "api_error"
+          }
+        }),
+        {
+          headers: { 
+            ...corsHeaders, 
+            'Content-Type': 'application/json' 
+          },
+          status: 200 // ✅ Status 200 com mensagem amigável
+        }
+      );
     }
 
     const data = await openaiResponse.json();
@@ -175,14 +221,27 @@ INSTRUÇÕES DE USO DO CONTEXTO:
     );
 
   } catch (error) {
-    console.error('🔥 [OpenAI Chat] Error:', error);
+    // ✅ Log técnico apenas no servidor
+    console.error('🔥 [OpenAI Chat] Technical error:', {
+      message: error instanceof Error ? error.message : 'Unknown',
+      stack: error instanceof Error ? error.stack : undefined,
+      timestamp: new Date().toISOString()
+    });
+    
+    // ✅ SEMPRE retornar mensagem amigável
     return new Response(
       JSON.stringify({ 
-        error: error instanceof Error ? error.message : 'Unknown error',
-        details: error instanceof Error ? error.stack : undefined,
+        answer: SYSTEM_UNAVAILABLE_MESSAGE,
+        model: "system",
+        usage: {},
+        sources: [],
+        metadata: {
+          isError: true,
+          errorType: "service_unavailable"
+        }
       }),
       { 
-        status: 500, 
+        status: 200, // ✅ Status 200 com mensagem amigável
         headers: { 
           ...corsHeaders, 
           'Content-Type': 'application/json' 
