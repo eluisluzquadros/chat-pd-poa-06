@@ -23,11 +23,7 @@ interface ConsentDialogProps {
 }
 
 export const ConsentDialog = ({ open, documents, onAcceptAll }: ConsentDialogProps) => {
-  const [consents, setConsents] = useState({
-    terms: false,
-    privacy: false,
-    cookies: false
-  });
+  const [allConsentsAccepted, setAllConsentsAccepted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [activeSection, setActiveSection] = useState('terms');
   const scrollAreaRef = useRef<HTMLDivElement>(null);
@@ -36,10 +32,8 @@ export const ConsentDialog = ({ open, documents, onAcceptAll }: ConsentDialogPro
   const privacyDoc = documents.find(d => d.document_type === 'privacy');
   const cookiesDoc = documents.find(d => d.document_type === 'cookies');
 
-  const allAccepted = consents.terms && consents.privacy && consents.cookies;
-
   const handleAccept = async () => {
-    if (!allAccepted) return;
+    if (!allConsentsAccepted) return;
     
     setLoading(true);
     try {
@@ -157,41 +151,19 @@ export const ConsentDialog = ({ open, documents, onAcceptAll }: ConsentDialogPro
         {/* Sticky Footer */}
         <DialogFooter className="sticky bottom-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 border-t pt-4 pb-6 px-6 shadow-lg mt-0">
           <div className="w-full space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div className="flex justify-center">
               <ConsentCheckbox
-                id="consent-terms"
-                checked={consents.terms}
-                onCheckedChange={(checked) => 
-                  setConsents(prev => ({ ...prev, terms: checked }))
-                }
+                id="consent-all"
+                checked={allConsentsAccepted}
+                onCheckedChange={setAllConsentsAccepted}
                 icon={FileText}
-                label="Li e aceito os Termos de Uso"
-              />
-              
-              <ConsentCheckbox
-                id="consent-privacy"
-                checked={consents.privacy}
-                onCheckedChange={(checked) => 
-                  setConsents(prev => ({ ...prev, privacy: checked }))
-                }
-                icon={Shield}
-                label="Li e aceito a Política de Privacidade"
-              />
-              
-              <ConsentCheckbox
-                id="consent-cookies"
-                checked={consents.cookies}
-                onCheckedChange={(checked) => 
-                  setConsents(prev => ({ ...prev, cookies: checked }))
-                }
-                icon={Cookie}
-                label="Li e aceito a Política de Cookies"
+                label="Li e aceito os Termos de Uso, Política de Privacidade e Política de Cookies"
               />
             </div>
 
             <Button 
               onClick={handleAccept} 
-              disabled={!allAccepted || loading}
+              disabled={!allConsentsAccepted || loading}
               className="w-full"
               size="lg"
             >

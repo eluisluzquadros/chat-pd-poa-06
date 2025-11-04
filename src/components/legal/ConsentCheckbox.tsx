@@ -20,10 +20,10 @@ export const ConsentCheckbox = ({ id, checked, onCheckedChange, icon: Icon, labe
       />
       <label
         htmlFor={id}
-        className="flex items-center gap-2 text-sm font-medium leading-none cursor-pointer flex-1"
+        className="flex items-start gap-2 text-sm font-medium leading-snug cursor-pointer flex-1"
       >
-        <Icon className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-        <span>{label}</span>
+        <Icon className="h-4 w-4 text-muted-foreground flex-shrink-0 mt-0.5" />
+        <span className="text-left">{label}</span>
       </label>
     </div>
   );
