@@ -64,10 +64,26 @@ export class PlatformStatusService {
     return this.updateIncident(id, { updates });
   }
 
-  async resolveIncident(id: string) {
+  async resolveIncident(id: string, resolvedAt?: string) {
+    // Buscar incidente para pegar started_at
+    const { data: incident } = await supabase
+      .from('platform_status_events')
+      .select('started_at')
+      .eq('id', id)
+      .single();
+
+    if (!incident) throw new Error('Incident not found');
+
+    const resolved = resolvedAt ? new Date(resolvedAt) : new Date();
+    const started = new Date(incident.started_at);
+    
+    // Calcular duração em minutos
+    const duration_minutes = Math.round((resolved.getTime() - started.getTime()) / (1000 * 60));
+
     return this.updateIncident(id, {
       status: 'resolved',
-      resolved_at: new Date().toISOString(),
+      resolved_at: resolved.toISOString(),
+      duration_minutes,
     });
   }
 

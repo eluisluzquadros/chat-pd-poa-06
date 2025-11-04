@@ -3,7 +3,7 @@ import { PlatformStatusEvent } from '@/types/platform';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Edit, CheckCircle2 } from 'lucide-react';
+import { Edit, CheckCircle2, Clock } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
@@ -24,6 +24,22 @@ const statusColors = {
   identified: 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20',
   monitoring: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
   resolved: 'bg-green-500/10 text-green-500 border-green-500/20',
+};
+
+const formatDuration = (minutes?: number) => {
+  if (!minutes) return null;
+  
+  if (minutes < 60) {
+    return `${minutes} min`;
+  } else if (minutes < 1440) {
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    return `${hours}h ${mins > 0 ? `${mins}min` : ''}`;
+  } else {
+    const days = Math.floor(minutes / 1440);
+    const hours = Math.floor((minutes % 1440) / 60);
+    return `${days}d ${hours > 0 ? `${hours}h` : ''}`;
+  }
 };
 
 export function IncidentTimeline({ incidents, onEdit, showActions }: IncidentTimelineProps) {
@@ -57,7 +73,7 @@ export function IncidentTimeline({ incidents, onEdit, showActions }: IncidentTim
                 <h4 className="font-medium mb-1">{incident.title}</h4>
                 <p className="text-sm text-muted-foreground mb-2">{incident.description}</p>
 
-                <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
                   <span>Serviço: {incident.service_name}</span>
                   <span>
                     Iniciado há{' '}
@@ -66,8 +82,19 @@ export function IncidentTimeline({ incidents, onEdit, showActions }: IncidentTim
                       addSuffix: false,
                     })}
                   </span>
+                  {incident.resolved_at && (
+                    <span className="flex items-center gap-1">
+                      <Clock className="h-3 w-3" />
+                      Resolvido há {formatDistanceToNow(new Date(incident.resolved_at), { 
+                        addSuffix: false, 
+                        locale: ptBR 
+                      })}
+                    </span>
+                  )}
                   {incident.duration_minutes && (
-                    <span>Duração: {incident.duration_minutes} min</span>
+                    <Badge variant="outline" className="text-xs">
+                      Duração: {formatDuration(incident.duration_minutes)}
+                    </Badge>
                   )}
                   {incident.affected_users > 0 && (
                     <span>Usuários afetados: {incident.affected_users}</span>
