@@ -2,7 +2,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
-import { Users, MessageCircle, BarChart3, Shield, Database, Settings, Activity } from 'lucide-react';
+import { Users, MessageCircle, BarChart3, Database, Settings, Activity } from 'lucide-react';
 
 export const MainNavigation = () => {
   const navigate = useNavigate();
@@ -66,29 +66,11 @@ export const MainNavigation = () => {
             </li>
             <li>
               <button 
-                onClick={() => navigate('/admin/agents-config')} 
-                className="hover:underline flex items-center cursor-pointer"
-              >
-                <Settings className="h-4 w-4 mr-1" />
-                Agentes
-              </button>
-            </li>
-            <li>
-              <button 
-                onClick={() => navigate('/admin/security')} 
-                className="hover:underline flex items-center cursor-pointer"
-              >
-                <Shield className="h-4 w-4 mr-1" />
-                Segurança
-              </button>
-            </li>
-            <li>
-              <button 
                 onClick={() => navigate('/admin/settings')} 
                 className="hover:underline flex items-center cursor-pointer"
               >
                 <Settings className="h-4 w-4 mr-1" />
-                Configurações
+                Plataforma
               </button>
             </li>
           </>

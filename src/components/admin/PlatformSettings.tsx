@@ -1,19 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
-import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
-import { Loader2, RotateCcw, Globe, Bot, Radio } from 'lucide-react';
+import { Loader2, Globe, Bot, Radio, Cpu, Shield, Activity } from 'lucide-react';
 import { platformSettingsService, PlatformSetting } from '@/services/platformSettingsService';
 import { TenantManagement } from './TenantManagement';
 import RAGConfigurationTab from './RAGConfigurationTab';
 import { AnnouncementsManagement } from './platform/AnnouncementsManagement';
 import { StatusManagement } from './platform/StatusManagement';
 import { PlatformGeneralSettings } from './platform/PlatformGeneralSettings';
+import { AgentsConfigTab } from './tabs/AgentsConfigTab';
+import { SecurityTab } from './tabs/SecurityTab';
+import { StatusTab } from './tabs/StatusTab';
 
 interface PlatformSettingsProps {
   onSettingsChange?: () => void;
@@ -51,21 +49,15 @@ export function PlatformSettings({ onSettingsChange }: PlatformSettingsProps) {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold tracking-tight">Configurações da Plataforma</h2>
-          <p className="text-muted-foreground">
-            Configure domínios, sistema RAG, anúncios e status da plataforma
-          </p>
-        </div>
-        <Button variant="outline" onClick={loadSettings} disabled={isLoading}>
-          <RotateCcw className="h-4 w-4 mr-2" />
-          Recarregar
-        </Button>
+      <div>
+        <h2 className="text-2xl font-bold tracking-tight">Configurações da Plataforma</h2>
+        <p className="text-muted-foreground">
+          Configure domínios, sistema RAG, agentes, segurança e status da plataforma
+        </p>
       </div>
 
       <Tabs defaultValue="domains" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="domains" className="flex items-center gap-2">
             <Globe className="h-4 w-4" />
             Domínios
@@ -77,6 +69,18 @@ export function PlatformSettings({ onSettingsChange }: PlatformSettingsProps) {
           <TabsTrigger value="platform" className="flex items-center gap-2">
             <Radio className="h-4 w-4" />
             Plataforma
+          </TabsTrigger>
+          <TabsTrigger value="agents" className="flex items-center gap-2">
+            <Cpu className="h-4 w-4" />
+            Agentes
+          </TabsTrigger>
+          <TabsTrigger value="security" className="flex items-center gap-2">
+            <Shield className="h-4 w-4" />
+            Segurança
+          </TabsTrigger>
+          <TabsTrigger value="status" className="flex items-center gap-2">
+            <Activity className="h-4 w-4" />
+            Status
           </TabsTrigger>
         </TabsList>
 
@@ -127,6 +131,21 @@ export function PlatformSettings({ onSettingsChange }: PlatformSettingsProps) {
               <PlatformGeneralSettings />
             </CardContent>
           </Card>
+        </TabsContent>
+
+        {/* Agentes */}
+        <TabsContent value="agents">
+          <AgentsConfigTab />
+        </TabsContent>
+
+        {/* Segurança */}
+        <TabsContent value="security">
+          <SecurityTab />
+        </TabsContent>
+
+        {/* Status */}
+        <TabsContent value="status">
+          <StatusTab />
         </TabsContent>
       </Tabs>
     </div>

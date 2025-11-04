@@ -27,7 +27,7 @@ const adminNavItems = [
   { path: "/admin/monitoring", label: "Monitoramento", icon: Target },
   { path: "/admin/security", label: "Segurança", icon: Shield },
   { path: "/admin/data-import", label: "Importar Dados", icon: Database },
-  { path: "/admin/settings", label: "Configurações", icon: Settings },
+  { path: "/admin/settings", label: "Plataforma", icon: Settings },
 ];
 
 export function AdminNavigation() {
