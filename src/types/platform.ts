@@ -1,3 +1,14 @@
+export type ServiceType = 'technical' | 'business';
+
+export interface ServiceConfig {
+  name: string;
+  displayName: string;
+  description: string;
+  icon: string;
+  type: ServiceType;
+  route?: string;
+}
+
 export interface PlatformAnnouncement {
   id: string;
   type: 'feature' | 'update' | 'maintenance' | 'improvement' | 'integration';
@@ -58,3 +69,71 @@ export interface ServiceStatus {
   uptime_90d: number[];
   current_incidents: PlatformStatusEvent[];
 }
+
+// Serviços de Negócio (Usuário Final)
+export const BUSINESS_SERVICES: ServiceConfig[] = [
+  {
+    name: 'Chat Agent',
+    displayName: 'Agente IA',
+    description: 'Converse com o assistente sobre o Plano Diretor',
+    icon: 'MessageSquare',
+    type: 'business',
+    route: '/chat'
+  },
+  {
+    name: 'Data Explorer',
+    displayName: 'Painel de Dados',
+    description: 'Explore informações e dados do Plano Diretor',
+    icon: 'BarChart3',
+    type: 'business',
+    route: '/explorar-dados'
+  },
+  {
+    name: 'User Registration',
+    displayName: 'Cadastro',
+    description: 'Cadastro de novos usuários e manifestações',
+    icon: 'UserPlus',
+    type: 'business',
+    route: '/admin/users'
+  },
+  {
+    name: 'Authentication',
+    displayName: 'Login',
+    description: 'Acesso à plataforma',
+    icon: 'LogIn',
+    type: 'business',
+    route: '/auth'
+  }
+];
+
+// Serviços Técnicos (Admin)
+export const TECHNICAL_SERVICES: ServiceConfig[] = [
+  {
+    name: 'Lovable AI',
+    displayName: 'Lovable AI',
+    description: 'Motor de IA generativa',
+    icon: 'Cpu',
+    type: 'technical'
+  },
+  {
+    name: 'Cloud Database',
+    displayName: 'Banco de Dados',
+    description: 'Armazenamento de dados',
+    icon: 'Database',
+    type: 'technical'
+  },
+  {
+    name: 'Edge Functions',
+    displayName: 'Edge Functions',
+    description: 'Funções serverless',
+    icon: 'Zap',
+    type: 'technical'
+  },
+  {
+    name: 'Storage',
+    displayName: 'Storage',
+    description: 'Armazenamento de arquivos',
+    icon: 'HardDrive',
+    type: 'technical'
+  }
+];

@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { PlatformStatusEvent, ServiceStatus } from '@/types/platform';
+import { PlatformStatusEvent, ServiceStatus, BUSINESS_SERVICES, TECHNICAL_SERVICES } from '@/types/platform';
 
-export function usePlatformStatus() {
+export function usePlatformStatus(isAdmin: boolean = false) {
   const [services, setServices] = useState<ServiceStatus[]>([]);
   const [recentEvents, setRecentEvents] = useState<PlatformStatusEvent[]>([]);
   const [isAllOperational, setIsAllOperational] = useState(true);
@@ -41,8 +41,12 @@ export function usePlatformStatus() {
       // Organizar por serviço
       const servicesMap = new Map<string, ServiceStatus>();
       
-      // Definir serviços principais
-      const mainServices = ['Lovable AI', 'Cloud Database', 'Edge Functions', 'Storage', 'Authentication'];
+      // Definir serviços baseado no tipo de usuário
+      const allServices = isAdmin 
+        ? [...BUSINESS_SERVICES, ...TECHNICAL_SERVICES]
+        : BUSINESS_SERVICES;
+      
+      const mainServices = allServices.map(s => s.name);
       
       mainServices.forEach(service => {
         const serviceEvents = (activeEvents || []).filter(e => e.service_name === service);
