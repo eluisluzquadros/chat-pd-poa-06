@@ -11,7 +11,7 @@ interface ConsentCheckboxProps {
 
 export const ConsentCheckbox = ({ id, checked, onCheckedChange, icon: Icon, label }: ConsentCheckboxProps) => {
   return (
-    <div className="flex items-start space-x-3 p-3 rounded-md border bg-card hover:bg-accent/50 transition-colors">
+    <div className="flex items-start space-x-2 p-2 rounded-md border bg-card hover:bg-accent/50 transition-colors">
       <Checkbox
         id={id}
         checked={checked}
@@ -20,9 +20,9 @@ export const ConsentCheckbox = ({ id, checked, onCheckedChange, icon: Icon, labe
       />
       <label
         htmlFor={id}
-        className="flex items-start gap-2 text-sm font-medium leading-snug cursor-pointer flex-1"
+        className="flex items-start gap-2 text-xs font-medium leading-tight cursor-pointer flex-1"
       >
-        <Icon className="h-4 w-4 text-muted-foreground flex-shrink-0 mt-0.5" />
+        <Icon className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0 mt-0.5" />
         <span className="text-left">{label}</span>
       </label>
     </div>

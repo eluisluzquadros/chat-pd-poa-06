@@ -82,7 +82,8 @@ export const ConsentDialog = ({ open, documents, onAcceptAll }: ConsentDialogPro
         className="max-w-5xl h-[85vh] flex flex-col p-0" 
         onPointerDownOutside={(e) => e.preventDefault()}
       >
-        <div className="px-6 pt-6">
+        {/* Header - fixo */}
+        <div className="px-6 pt-6 flex-shrink-0">
           <DialogHeader>
             <DialogTitle>Termos de Uso e Políticas</DialogTitle>
             <DialogDescription>
@@ -91,7 +92,8 @@ export const ConsentDialog = ({ open, documents, onAcceptAll }: ConsentDialogPro
           </DialogHeader>
         </div>
 
-        <div className="flex-1 flex gap-4 overflow-hidden px-6">
+        {/* Conteúdo scrollável - ocupa espaço restante */}
+        <div className="flex-1 flex gap-4 overflow-hidden px-6 min-h-0">
           {/* Navigation Sidebar - Hidden on mobile */}
           <div className="hidden md:block">
             <LegalNavigationSidebar 
@@ -102,7 +104,7 @@ export const ConsentDialog = ({ open, documents, onAcceptAll }: ConsentDialogPro
 
           {/* Unified scrollable content */}
           <ScrollArea className="flex-1 pr-4" ref={scrollAreaRef}>
-            <div className="space-y-6 pb-4">
+            <div className="space-y-6 pb-8">
               {termsDoc && (
                 <>
                   <LegalDocumentViewer
@@ -148,9 +150,9 @@ export const ConsentDialog = ({ open, documents, onAcceptAll }: ConsentDialogPro
           </ScrollArea>
         </div>
 
-        {/* Sticky Footer */}
-        <DialogFooter className="sticky bottom-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 border-t pt-4 pb-6 px-6 shadow-lg mt-0">
-          <div className="w-full space-y-4">
+        {/* Footer - fixo no fundo */}
+        <div className="flex-shrink-0 bg-background border-t pt-3 pb-4 px-6 shadow-lg">
+          <div className="w-full space-y-3">
             <div className="flex justify-center">
               <ConsentCheckbox
                 id="consent-all"
@@ -165,12 +167,11 @@ export const ConsentDialog = ({ open, documents, onAcceptAll }: ConsentDialogPro
               onClick={handleAccept} 
               disabled={!allConsentsAccepted || loading}
               className="w-full"
-              size="lg"
             >
               {loading ? 'Registrando...' : 'Aceitar e Continuar'}
             </Button>
           </div>
-        </DialogFooter>
+        </div>
       </DialogContent>
     </Dialog>
   );

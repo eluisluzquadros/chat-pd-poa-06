@@ -28,12 +28,12 @@ export const LegalDocumentViewer = ({
   const contentElement = (
     <div id={id} className={className}>
       {showHeader && (
-        <div className={compact ? "mb-4" : "mb-6"}>
-          <h2 className={compact ? "text-lg font-bold mb-1" : "text-2xl font-bold mb-2"}>
+        <div className={compact ? "mb-3" : "mb-6"}>
+          <h2 className={compact ? "text-base font-bold mb-1" : "text-2xl font-bold mb-2"}>
             {title}
           </h2>
           {effectiveDate && (
-            <p className="text-sm text-muted-foreground">
+            <p className="text-xs text-muted-foreground">
               Última atualização: {formatDistanceToNow(new Date(effectiveDate), {
                 addSuffix: true,
                 locale: ptBR
@@ -43,7 +43,7 @@ export const LegalDocumentViewer = ({
         </div>
       )}
       
-      <div className={compact ? "prose prose-xs dark:prose-invert max-w-none" : "prose prose-sm dark:prose-invert max-w-none"}>
+      <div className={compact ? "prose prose-sm dark:prose-invert max-w-none prose-headings:text-base prose-h1:text-base prose-h2:text-sm prose-h3:text-sm prose-p:text-sm" : "prose prose-sm dark:prose-invert max-w-none"}>
         <ReactMarkdown>{content}</ReactMarkdown>
       </div>
     </div>
