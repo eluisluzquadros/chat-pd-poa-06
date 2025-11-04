@@ -2,13 +2,11 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sh
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Sparkles, CheckCheck, Package, RefreshCw, AlertCircle, Wrench, Link as LinkIcon } from 'lucide-react';
+import { Sparkles, CheckCheck, Clock, Package, Settings, Zap, Activity } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { usePlatformAnnouncements } from '@/hooks/usePlatformAnnouncements';
-import { Separator } from '@/components/ui/separator';
 import ReactMarkdown from 'react-markdown';
-import { Link } from 'react-router-dom';
 
 interface AnnouncementsPanelProps {
   open: boolean;
@@ -17,10 +15,10 @@ interface AnnouncementsPanelProps {
 
 const typeIcons = {
   feature: Sparkles,
-  update: RefreshCw,
-  maintenance: AlertCircle,
-  improvement: Wrench,
-  integration: LinkIcon
+  update: Activity,
+  maintenance: Settings,
+  improvement: Zap,
+  integration: Package
 };
 
 const typeColors = {
@@ -32,104 +30,108 @@ const typeColors = {
 };
 
 export function AnnouncementsPanel({ open, onOpenChange }: AnnouncementsPanelProps) {
-  const { announcements, unreadCount, isLoading, markAsRead, markAllAsRead } = usePlatformAnnouncements();
+  const { announcements, isLoading, markAsRead, markAllAsRead } = usePlatformAnnouncements();
+
+  const handleAnnouncementClick = (id: string) => {
+    markAsRead(id);
+  };
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="sm:max-w-md overflow-hidden flex flex-col">
+      <SheetContent className="w-full sm:max-w-2xl">
         <SheetHeader>
           <div className="flex items-center justify-between">
             <SheetTitle className="flex items-center gap-2">
               <Sparkles className="h-5 w-5 text-primary" />
-              Novidades
+              Novidades da Plataforma
             </SheetTitle>
-            {unreadCount > 0 && (
+            {announcements.some(a => a.is_new) && (
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={markAllAsRead}
-                className="h-8 text-xs"
+                className="text-xs"
               >
                 <CheckCheck className="h-4 w-4 mr-1" />
-                Marcar todas como lidas
+                Marcar tudo como lido
               </Button>
             )}
           </div>
         </SheetHeader>
 
-        <ScrollArea className="flex-1 -mx-6 px-6">
-          <div className="space-y-4 py-4">
-            {isLoading ? (
-              <div className="text-center text-muted-foreground py-8">
-                Carregando...
-              </div>
-            ) : announcements.length === 0 ? (
-              <div className="text-center text-muted-foreground py-8">
-                <Package className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                <p>Nenhuma novidade no momento</p>
-              </div>
-            ) : (
-              announcements.map((announcement, index) => {
+        <ScrollArea className="h-[calc(100vh-8rem)] mt-6">
+          {isLoading ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            </div>
+          ) : announcements.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-muted-foreground">Nenhuma novidade no momento</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {announcements.map((announcement) => {
                 const Icon = typeIcons[announcement.type];
-                const timeAgo = formatDistanceToNow(new Date(announcement.published_at), {
-                  addSuffix: true,
-                  locale: ptBR
-                });
-
+                
                 return (
-                  <div key={announcement.id}>
-                    {index > 0 && <Separator className="my-4" />}
-                    <div 
-                      className={`relative group cursor-pointer rounded-lg p-4 transition-colors ${
-                        announcement.is_new ? 'bg-primary/5 hover:bg-primary/10' : 'hover:bg-muted/50'
-                      }`}
-                      onClick={() => markAsRead(announcement.id)}
-                    >
+                  <div
+                    key={announcement.id}
+                    onClick={() => handleAnnouncementClick(announcement.id)}
+                    className={`p-4 rounded-lg border cursor-pointer transition-all hover:shadow-md ${
+                      announcement.is_new ? 'bg-accent/50 border-primary/30' : 'bg-card'
+                    }`}
+                  >
+                    <div className="flex items-start gap-3">
                       {announcement.is_new && (
-                        <div className="absolute top-2 right-2">
-                          <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
-                        </div>
+                        <div className="w-2 h-2 rounded-full bg-primary mt-2 flex-shrink-0" />
                       )}
+                      
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-2 flex-wrap">
+                          <Badge variant="outline" className={typeColors[announcement.type]}>
+                            <Icon className="h-3 w-3 mr-1" />
+                            {announcement.type === 'feature' && 'Novo Recurso'}
+                            {announcement.type === 'update' && 'Atualização'}
+                            {announcement.type === 'maintenance' && 'Manutenção'}
+                            {announcement.type === 'improvement' && 'Melhoria'}
+                            {announcement.type === 'integration' && 'Integração'}
+                          </Badge>
+                          
+                          <span className="text-xs text-muted-foreground flex items-center gap-1">
+                            <Clock className="h-3 w-3" />
+                            {formatDistanceToNow(new Date(announcement.published_at), {
+                              addSuffix: true,
+                              locale: ptBR
+                            })}
+                          </span>
+                        </div>
 
-                      <div className="flex items-start gap-3">
-                        <div className={`p-2 rounded-lg border ${typeColors[announcement.type]}`}>
-                          <Icon className="h-4 w-4" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-1">
-                            <h4 className="font-semibold text-sm">{announcement.title}</h4>
-                            <Badge variant="outline" className="text-xs">
-                              {announcement.type}
-                            </Badge>
+                        <h3 className="font-semibold mb-1">{announcement.title}</h3>
+                        <p className="text-sm text-muted-foreground mb-2">
+                          {announcement.description}
+                        </p>
+
+                        {announcement.content && (
+                          <div className="prose prose-sm dark:prose-invert max-w-none mt-3">
+                            <ReactMarkdown>{announcement.content}</ReactMarkdown>
                           </div>
-                          <p className="text-sm text-muted-foreground mb-2">
-                            {announcement.description}
-                          </p>
-                          {announcement.content && (
-                            <div className="prose prose-sm max-w-none text-xs text-muted-foreground mt-3 border-t pt-3">
-                              <ReactMarkdown>{announcement.content}</ReactMarkdown>
-                            </div>
-                          )}
-                          <p className="text-xs text-muted-foreground mt-3">
-                            {timeAgo}
-                          </p>
-                        </div>
+                        )}
+
+                        {announcement.image_url && (
+                          <img
+                            src={announcement.image_url}
+                            alt={announcement.title}
+                            className="mt-3 rounded-md w-full object-cover max-h-48"
+                          />
+                        )}
                       </div>
                     </div>
                   </div>
                 );
-              })
-            )}
-          </div>
+              })}
+            </div>
+          )}
         </ScrollArea>
-
-        <div className="border-t pt-4 mt-4">
-          <Link to="/status">
-            <Button variant="outline" className="w-full" onClick={() => onOpenChange(false)}>
-              Ver Status da Plataforma
-            </Button>
-          </Link>
-        </div>
       </SheetContent>
     </Sheet>
   );

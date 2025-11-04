@@ -5,7 +5,7 @@ export interface PlatformAnnouncement {
   description: string;
   content?: string;
   image_url?: string;
-  category?: string;
+  category: string;
   priority: number;
   published_at: string;
   expires_at?: string;
@@ -14,7 +14,7 @@ export interface PlatformAnnouncement {
   created_by?: string;
   is_active: boolean;
   metadata?: Record<string, any>;
-  is_new?: boolean; // Computado no frontend
+  is_new?: boolean; // Computed on frontend
 }
 
 export interface PlatformStatusEvent {

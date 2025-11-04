@@ -12,12 +12,10 @@ export function usePlatformAnnouncements() {
   useEffect(() => {
     if (user) {
       fetchAnnouncements();
-      const channel = subscribeToAnnouncements();
+      const subscription = subscribeToAnnouncements();
       return () => {
-        supabase.removeChannel(channel);
+        supabase.removeChannel(subscription);
       };
-    } else {
-      setIsLoading(false);
     }
   }, [user]);
 
@@ -25,8 +23,8 @@ export function usePlatformAnnouncements() {
     if (!user) return;
 
     try {
-      // Buscar anúncios ativos
-      const { data: announcementsData, error: annError } = await supabase
+      // Fetch active announcements
+      const { data: announcementsData } = await supabase
         .from('platform_announcements')
         .select('*')
         .eq('is_active', true)
@@ -34,13 +32,7 @@ export function usePlatformAnnouncements() {
         .order('published_at', { ascending: false })
         .limit(50);
 
-      if (annError) {
-        console.error('Error fetching announcements:', annError);
-        setIsLoading(false);
-        return;
-      }
-
-      // Buscar visualizações do usuário
+      // Fetch user views
       const { data: viewsData } = await supabase
         .from('user_announcement_views')
         .select('announcement_id')
@@ -56,14 +48,14 @@ export function usePlatformAnnouncements() {
       setAnnouncements(enrichedAnnouncements);
       setUnreadCount(enrichedAnnouncements.filter(a => a.is_new).length);
     } catch (error) {
-      console.error('Failed to fetch announcements:', error);
+      console.error('Error fetching announcements:', error);
     } finally {
       setIsLoading(false);
     }
   };
 
   const subscribeToAnnouncements = () => {
-    const channel = supabase
+    return supabase
       .channel('platform_announcements_changes')
       .on('postgres_changes', {
         event: '*',
@@ -73,8 +65,6 @@ export function usePlatformAnnouncements() {
         fetchAnnouncements();
       })
       .subscribe();
-
-    return channel;
   };
 
   const markAsRead = async (announcementId: string) => {
@@ -87,6 +77,8 @@ export function usePlatformAnnouncements() {
           user_id: user.id,
           announcement_id: announcementId,
           viewed_at: new Date().toISOString()
+        }, {
+          onConflict: 'user_id,announcement_id'
         });
 
       await fetchAnnouncements();
@@ -98,15 +90,17 @@ export function usePlatformAnnouncements() {
   const markAllAsRead = async () => {
     if (!user) return;
 
-    const unreadAnnouncements = announcements.filter(a => a.is_new);
-    
     try {
+      const unreadAnnouncements = announcements.filter(a => a.is_new);
+      
       await Promise.all(
         unreadAnnouncements.map(a =>
           supabase.from('user_announcement_views').upsert({
             user_id: user.id,
             announcement_id: a.id,
             viewed_at: new Date().toISOString()
+          }, {
+            onConflict: 'user_id,announcement_id'
           })
         )
       );
