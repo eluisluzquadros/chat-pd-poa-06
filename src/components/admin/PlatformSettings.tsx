@@ -7,11 +7,13 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
-import { Loader2, Save, RotateCcw, Settings, Brain, MessageSquare, Zap, Globe, Bot } from 'lucide-react';
+import { Loader2, Save, RotateCcw, Settings, Brain, MessageSquare, Zap, Globe, Bot, Radio } from 'lucide-react';
 import { platformSettingsService, PlatformSetting } from '@/services/platformSettingsService';
 import { UPDATED_MODEL_CONFIGS } from '@/config/llm-models-2025';
 import { TenantManagement } from './TenantManagement';
 import RAGConfigurationTab from './RAGConfigurationTab';
+import { AnnouncementsManagement } from './platform/AnnouncementsManagement';
+import { StatusManagement } from './platform/StatusManagement';
 
 interface PlatformSettingsProps {
   onSettingsChange?: () => void;
@@ -114,7 +116,7 @@ export function PlatformSettings({ onSettingsChange }: PlatformSettingsProps) {
       </div>
 
       <Tabs defaultValue="llm" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-6">
+        <TabsList className="grid w-full grid-cols-7">
           <TabsTrigger value="llm" className="flex items-center gap-2">
             <Brain className="h-4 w-4" />
             Modelos LLM
@@ -134,6 +136,10 @@ export function PlatformSettings({ onSettingsChange }: PlatformSettingsProps) {
           <TabsTrigger value="rag" className="flex items-center gap-2">
             <Bot className="h-4 w-4" />
             Sistema RAG
+          </TabsTrigger>
+          <TabsTrigger value="platform" className="flex items-center gap-2">
+            <Radio className="h-4 w-4" />
+            Plataforma
           </TabsTrigger>
           <TabsTrigger value="general" className="flex items-center gap-2">
             <Settings className="h-4 w-4" />
@@ -241,6 +247,33 @@ export function PlatformSettings({ onSettingsChange }: PlatformSettingsProps) {
         {/* Sistema RAG */}
         <TabsContent value="rag" className="space-y-4">
           <RAGConfigurationTab />
+        </TabsContent>
+
+        {/* Plataforma - Anúncios e Status */}
+        <TabsContent value="platform" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Anúncios da Plataforma</CardTitle>
+              <CardDescription>
+                Gerencie comunicações sobre novos recursos, atualizações e manutenções
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <AnnouncementsManagement />
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Status e Incidentes</CardTitle>
+              <CardDescription>
+                Monitore a saúde da plataforma e registre incidentes
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <StatusManagement />
+            </CardContent>
+          </Card>
         </TabsContent>
 
         {/* Outras categorias */}

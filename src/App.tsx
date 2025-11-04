@@ -30,6 +30,7 @@ import AdminDataImport from "./pages/AdminDataImport";
 import RegimeUrbanisticoDashboard from "./pages/RegimeUrbanisticoDashboard";
 import Metrics from "./pages/admin/Metrics";
 import PlatformSettings from "./pages/admin/PlatformSettings";
+import PlatformStatus from "./pages/PlatformStatus";
 import AgenticRAGDashboard from "./components/admin/AgenticRAGDashboard";
 const KnowledgeBaseAdminLazy = React.lazy(() => import("./pages/admin/KnowledgeBaseAdmin"));
 const KnowledgeManagementLazy = React.lazy(() => import("./pages/admin/KnowledgeManagement"));
@@ -85,6 +86,8 @@ function App() {
               {/* Página de reset de senha */}
               <Route path="/reset-password" element={<ResetPassword />} />
               
+              {/* Página pública de status */}
+              <Route path="/status" element={<PlatformStatus />} />
               
               {/* Basic authenticated routes */}
               <Route path="/chat" element={<SimpleAuthGuard><Chat /></SimpleAuthGuard>} />
