@@ -488,6 +488,39 @@ export type Database = {
         }
         Relationships: []
       }
+      cookie_preferences: {
+        Row: {
+          analytics_cookies: boolean | null
+          created_at: string | null
+          essential_cookies: boolean | null
+          functional_cookies: boolean | null
+          id: string
+          session_id: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          analytics_cookies?: boolean | null
+          created_at?: string | null
+          essential_cookies?: boolean | null
+          functional_cookies?: boolean | null
+          id?: string
+          session_id?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          analytics_cookies?: boolean | null
+          created_at?: string | null
+          essential_cookies?: boolean | null
+          functional_cookies?: boolean | null
+          id?: string
+          session_id?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       data_consistency_log: {
         Row: {
           check_type: string
@@ -1004,6 +1037,42 @@ export type Database = {
           id?: number | null
           keywords?: string[] | null
           updated_at?: string | null
+        }
+        Relationships: []
+      }
+      legal_documents: {
+        Row: {
+          content: string
+          created_at: string | null
+          created_by: string | null
+          document_type: string
+          effective_date: string
+          id: string
+          is_active: boolean | null
+          title: string
+          version: string
+        }
+        Insert: {
+          content: string
+          created_at?: string | null
+          created_by?: string | null
+          document_type: string
+          effective_date: string
+          id?: string
+          is_active?: boolean | null
+          title: string
+          version: string
+        }
+        Update: {
+          content?: string
+          created_at?: string | null
+          created_by?: string | null
+          document_type?: string
+          effective_date?: string
+          id?: string
+          is_active?: boolean | null
+          title?: string
+          version?: string
         }
         Relationships: []
       }
@@ -2731,38 +2800,94 @@ export type Database = {
       user_accounts: {
         Row: {
           auth_provider: string | null
+          cookies_accepted_at: string | null
           created_at: string
           email: string
           email_verified: boolean | null
           full_name: string | null
           id: string
           is_active: boolean
+          privacy_accepted_at: string | null
+          terms_accepted_at: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
           auth_provider?: string | null
+          cookies_accepted_at?: string | null
           created_at?: string
           email: string
           email_verified?: boolean | null
           full_name?: string | null
           id?: string
           is_active?: boolean
+          privacy_accepted_at?: string | null
+          terms_accepted_at?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
           auth_provider?: string | null
+          cookies_accepted_at?: string | null
           created_at?: string
           email?: string
           email_verified?: boolean | null
           full_name?: string | null
           id?: string
           is_active?: boolean
+          privacy_accepted_at?: string | null
+          terms_accepted_at?: string | null
           updated_at?: string
           user_id?: string
         }
         Relationships: []
+      }
+      user_consents: {
+        Row: {
+          consented_at: string | null
+          document_id: string
+          document_type: string
+          document_version: string
+          id: string
+          ip_address: unknown
+          metadata: Json | null
+          revoked_at: string | null
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          consented_at?: string | null
+          document_id: string
+          document_type: string
+          document_version: string
+          id?: string
+          ip_address?: unknown
+          metadata?: Json | null
+          revoked_at?: string | null
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          consented_at?: string | null
+          document_id?: string
+          document_type?: string
+          document_version?: string
+          id?: string
+          ip_address?: unknown
+          metadata?: Json | null
+          revoked_at?: string | null
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_consents_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "legal_documents"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_feedback: {
         Row: {

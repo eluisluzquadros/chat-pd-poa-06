@@ -10,6 +10,7 @@ import ProfileLoading from "@/components/profile/ProfileLoading";
 import AccountDeletion from "@/components/profile/AccountDeletion";
 import AccountInfoTab from "@/components/account/AccountInfoTab";
 import AppearanceTab from "@/components/profile/AppearanceTab";
+import PrivacyTab from "@/components/profile/PrivacyTab";
 
 
 const UserSettings = () => {
@@ -56,6 +57,7 @@ const UserSettings = () => {
               <TabsTrigger value="account">Conta</TabsTrigger>
               <TabsTrigger value="security">Segurança</TabsTrigger>
               <TabsTrigger value="appearance">Aparência</TabsTrigger>
+              <TabsTrigger value="privacy">Privacidade e Dados</TabsTrigger>
             </TabsList>
             
             <TabsContent value="personal">
@@ -91,6 +93,10 @@ const UserSettings = () => {
 
             <TabsContent value="appearance">
               <AppearanceTab />
+            </TabsContent>
+
+            <TabsContent value="privacy">
+              <PrivacyTab />
             </TabsContent>
           </Tabs>
         )}

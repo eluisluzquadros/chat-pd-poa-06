@@ -40,6 +40,8 @@ import { SimpleRoleGuard } from "./components/SimpleRoleGuard";
 import { AdminRoleGuard } from "./components/layout/AdminRoleGuard";
 import ChatHistorySync from "./components/ChatHistorySync";
 import { AdminErrorBoundary } from "./components/admin/AdminErrorBoundary";
+import { ConsentGuard } from "./components/legal/ConsentGuard";
+import { GlobalCookieBanner } from "./components/legal/GlobalCookieBanner";
 
 
 // Create a new query client instance with proper cache configuration
@@ -64,9 +66,10 @@ function App() {
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
           <DomainProvider>
-            <BrowserRouter>
-            
-            <Routes>
+            <ConsentGuard>
+              <BrowserRouter>
+              
+              <Routes>
               {/* Redirecionar a rota inicial para a autenticação */}
               <Route path="/" element={<Navigate to="/auth" replace />} />
               
@@ -234,8 +237,10 @@ function App() {
               <Route path="*" element={<NotFound />} />
             </Routes>
             
+            <GlobalCookieBanner />
             <Toaster position="top-right" />
-            </BrowserRouter>
+              </BrowserRouter>
+            </ConsentGuard>
           </DomainProvider>
         </AuthProvider>
       </QueryClientProvider>
