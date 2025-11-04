@@ -1,14 +1,11 @@
-import { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { usePlatformStatus } from '@/hooks/usePlatformStatus';
 import { BUSINESS_SERVICES, TECHNICAL_SERVICES } from '@/types/platform';
-import { CheckCircle2, AlertTriangle, XCircle, Wrench, Eye, Settings } from 'lucide-react';
+import { CheckCircle2, AlertTriangle, XCircle, Wrench } from 'lucide-react';
 import * as LucideIcons from 'lucide-react';
 import { IncidentTimeline } from '../admin/platform/IncidentTimeline';
-import { useNavigate } from 'react-router-dom';
 
 const statusConfig = {
   operational: {
@@ -42,9 +39,7 @@ const statusConfig = {
 };
 
 export function AdminStatusPage() {
-  const navigate = useNavigate();
   const { services, recentEvents, isAllOperational, isLoading } = usePlatformStatus(true);
-  const [viewAsPublic, setViewAsPublic] = useState(false);
 
   if (isLoading) {
     return (
@@ -58,12 +53,6 @@ export function AdminStatusPage() {
         </div>
       </div>
     );
-  }
-
-  if (viewAsPublic) {
-    // Redirect to public view
-    window.location.href = '/status?view=public';
-    return null;
   }
 
   const renderServiceCard = (serviceConfig: typeof BUSINESS_SERVICES[0]) => {
@@ -114,30 +103,11 @@ export function AdminStatusPage() {
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-6 py-8">
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-3xl font-bold mb-2">Status da Plataforma</h1>
-            <p className="text-muted-foreground">Monitoramento completo dos serviços</p>
-          </div>
-          
-          <div className="flex gap-2">
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={() => window.location.href = '/status?view=public'}
-            >
-              <Eye className="h-4 w-4 mr-2" />
-              Ver como usuário
-            </Button>
-            <Button 
-              variant="default" 
-              size="sm"
-              onClick={() => navigate('/admin/settings?tab=plataforma')}
-            >
-              <Settings className="h-4 w-4 mr-2" />
-              Gerenciar
-            </Button>
-          </div>
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold mb-2">Status da Plataforma</h1>
+          <p className="text-muted-foreground">
+            Monitoramento completo dos serviços e infraestrutura
+          </p>
         </div>
 
         {/* Status Banner */}
@@ -188,7 +158,7 @@ export function AdminStatusPage() {
               <p className="text-sm text-muted-foreground">Últimos 30 dias</p>
             </div>
             {recentEvents.length > 0 ? (
-              <IncidentTimeline events={recentEvents} />
+              <IncidentTimeline incidents={recentEvents} />
             ) : (
               <Card className="p-8 text-center">
                 <CheckCircle2 className="h-12 w-12 text-green-500 mx-auto mb-3" />

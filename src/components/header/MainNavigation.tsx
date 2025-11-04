@@ -31,15 +31,17 @@ export const MainNavigation = () => {
           </button>
         </li>
         
-        <li>
-          <button 
-            onClick={() => navigate('/status')} 
-            className="hover:underline flex items-center cursor-pointer"
-          >
-            <Activity className="h-4 w-4 mr-1" />
-            Status
-          </button>
-        </li>
+        {!isAdmin && (
+          <li>
+            <button 
+              onClick={() => navigate('/status')} 
+              className="hover:underline flex items-center cursor-pointer"
+            >
+              <Activity className="h-4 w-4 mr-1" />
+              Status
+            </button>
+          </li>
+        )}
         
         {(isAdmin || isSupervisor) && (
           <li>

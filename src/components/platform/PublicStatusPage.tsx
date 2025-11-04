@@ -5,6 +5,7 @@ import { BUSINESS_SERVICES } from '@/types/platform';
 import { CheckCircle2, AlertTriangle, XCircle, Wrench, Clock } from 'lucide-react';
 import * as LucideIcons from 'lucide-react';
 import { Header } from '@/components/Header';
+import { IncidentTimeline } from '../admin/platform/IncidentTimeline';
 
 const statusConfig = {
   operational: {
@@ -38,7 +39,7 @@ const statusConfig = {
 };
 
 export function PublicStatusPage() {
-  const { services, isAllOperational, isLoading } = usePlatformStatus(false);
+  const { services, recentEvents, isAllOperational, isLoading } = usePlatformStatus(false);
 
   if (isLoading) {
     return (
@@ -151,6 +152,26 @@ export function PublicStatusPage() {
               </Card>
             );
           })}
+        </div>
+
+        {/* Histórico de Incidentes */}
+        <div className="mb-8">
+          <h2 className="text-2xl font-bold mb-4">Histórico de Incidentes</h2>
+          <p className="text-muted-foreground mb-6">
+            Últimos eventos e manutenções dos últimos 30 dias
+          </p>
+          
+          {recentEvents && recentEvents.length > 0 ? (
+            <IncidentTimeline incidents={recentEvents} showActions={false} />
+          ) : (
+            <Card className="p-8 text-center">
+              <CheckCircle2 className="h-12 w-12 text-green-500 mx-auto mb-3" />
+              <p className="text-lg font-medium mb-1">Nenhum incidente recente</p>
+              <p className="text-sm text-muted-foreground">
+                Sistema operando normalmente nos últimos 30 dias
+              </p>
+            </Card>
+          )}
         </div>
 
         {/* Footer */}
