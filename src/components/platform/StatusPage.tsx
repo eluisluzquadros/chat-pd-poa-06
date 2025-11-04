@@ -5,7 +5,6 @@ import { CheckCircle2, AlertTriangle } from 'lucide-react';
 import { usePlatformStatus } from '@/hooks/usePlatformStatus';
 import { ServiceStatusCard } from './ServiceStatusCard';
 import { IncidentTimeline } from '../admin/platform/IncidentTimeline';
-import { Logo } from '@/components/Logo';
 
 export function StatusPage() {
   const { services, recentEvents, isAllOperational, isLoading } = usePlatformStatus();
@@ -16,7 +15,7 @@ export function StatusPage() {
       <header className="border-b">
         <div className="container mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
-            <Logo />
+            <h1 className="text-xl font-bold">Status da Plataforma</h1>
             <a 
               href="/auth" 
               className="text-sm text-muted-foreground hover:text-foreground transition-colors"
