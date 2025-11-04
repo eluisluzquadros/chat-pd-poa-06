@@ -4,6 +4,7 @@ import { usePlatformStatus } from '@/hooks/usePlatformStatus';
 import { BUSINESS_SERVICES } from '@/types/platform';
 import { CheckCircle2, AlertTriangle, XCircle, Wrench, Clock } from 'lucide-react';
 import * as LucideIcons from 'lucide-react';
+import { Header } from '@/components/Header';
 
 const statusConfig = {
   operational: {
@@ -42,6 +43,7 @@ export function PublicStatusPage() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background">
+        <Header />
         <div className="container mx-auto px-6 py-8 max-w-4xl">
           <div className="animate-pulse space-y-6">
             <div className="h-8 bg-muted rounded w-48" />
@@ -68,6 +70,7 @@ export function PublicStatusPage() {
 
   return (
     <div className="min-h-screen bg-background">
+      <Header />
       <div className="container mx-auto px-6 py-8 max-w-4xl">
         {/* Header */}
         <div className="mb-8">

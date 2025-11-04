@@ -2,7 +2,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
-import { Users, FileText, MessageCircle, BarChart3, Shield, Database, Settings, Settings2 } from 'lucide-react';
+import { Users, MessageCircle, BarChart3, Shield, Database, Settings, Activity } from 'lucide-react';
 
 export const MainNavigation = () => {
   const navigate = useNavigate();
@@ -28,6 +28,16 @@ export const MainNavigation = () => {
           >
             <Database className="h-4 w-4 mr-1" />
             Explorar Dados
+          </button>
+        </li>
+        
+        <li>
+          <button 
+            onClick={() => navigate('/status')} 
+            className="hover:underline flex items-center cursor-pointer"
+          >
+            <Activity className="h-4 w-4 mr-1" />
+            Status
           </button>
         </li>
         
@@ -77,8 +87,8 @@ export const MainNavigation = () => {
                 onClick={() => navigate('/admin/settings')} 
                 className="hover:underline flex items-center cursor-pointer"
               >
-                <Settings2 className="h-4 w-4 mr-1" />
-                Plataforma
+                <Settings className="h-4 w-4 mr-1" />
+                Configurações
               </button>
             </li>
           </>
