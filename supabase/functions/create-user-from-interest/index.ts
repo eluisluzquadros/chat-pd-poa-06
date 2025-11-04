@@ -101,11 +101,13 @@ serve(async (req) => {
       user && typeof user === 'object' && 'email' in user && user.email?.toLowerCase() === interest.email
     )
 
+    let authUserId: string
+    let isReusedAuth = false
+
     if (existingAuthUser) {
       console.log('⚠️ User already exists in auth:', interest.email)
-      console.log('🔄 Reusing existing auth user instead of deleting...')
-      
-      // FASE 3: Reutilizar auth.users existente
+      console.log('🔄 Reusing existing auth.users entry (FASE 3 implementation)')
+
       // Check if user exists in user_accounts
       const { data: existingAccount, error: accountCheckError } = await supabaseAdmin
         .from('user_accounts')
@@ -121,183 +123,100 @@ serve(async (req) => {
       if (existingAccount) {
         console.log('✅ User exists in user_accounts, checking completeness...')
         
-        // Check profile
-        const { data: existingProfile } = await supabaseAdmin
-          .from('profiles')
-          .select('id')
-          .eq('id', existingAccount.user_id)
-          .maybeSingle()
-        
-        // Check role
-        const { data: existingRole } = await supabaseAdmin
+        // Check if user has a role assigned
+        const { data: existingRole, error: roleCheckError } = await supabaseAdmin
           .from('user_roles')
           .select('role')
           .eq('user_id', existingAccount.user_id)
           .maybeSingle()
 
-        // Complete missing parts
-        if (!existingProfile) {
-          console.log('➕ Adding missing profile...')
-          await supabaseAdmin.from('profiles').insert({
-            id: existingAccount.user_id,
-            full_name: interest.full_name,
-          })
+        if (roleCheckError) {
+          console.error('❌ Error checking user role:', roleCheckError)
         }
 
         if (!existingRole) {
-          console.log('➕ Adding missing role...')
-          await supabaseAdmin.from('user_roles').insert({ 
-            user_id: existingAccount.user_id, 
-            role: role as any 
-          })
-        }
+          console.log('⚠️ Incomplete account detected - missing role. Completing...')
+          
+          // Add missing role
+          const { error: roleError } = await supabaseAdmin
+            .from('user_roles')
+            .insert({ user_id: existingAccount.user_id, role: role as any })
 
-        // Update interest manifestation
-        await supabaseAdmin
-          .from('interest_manifestations')
-          .update({ account_created: true, status: 'converted' })
-          .eq('id', interest.id)
-
-        console.log('✅ Account verified/completed successfully')
-        return new Response(
-          JSON.stringify({ 
-            success: true, 
-            user_id: existingAccount.user_id,
-            message: 'Conta já existente foi verificada e completada'
-          }),
-          { 
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-            status: 200
+          if (roleError) {
+            console.error('❌ Error adding missing role:', roleError)
+            throw new Error('Erro ao completar conta de usuário')
           }
-        )
-      } else {
-        console.log('⚠️ Orphaned auth user detected, completing registration...')
-        
-        // Create complete account using existing auth user
-        const authUserId = existingAuthUser.id
-        
-        // Create user account
-        const { error: accountError } = await supabaseAdmin
-          .from('user_accounts')
-          .insert({
-            user_id: authUserId,
-            email: interest.email,
-            full_name: interest.full_name,
-            is_active: true
-          })
 
-        if (accountError) {
-          console.error('❌ Error creating account:', accountError)
-          throw accountError
-        }
+          // Update interest manifestation
+          await supabaseAdmin
+            .from('interest_manifestations')
+            .update({ account_created: true, status: 'converted' })
+            .eq('id', interest.id)
 
-        console.log('✅ User account created')
-
-        // Create profile
-        const { error: profileError } = await supabaseAdmin
-          .from('profiles')
-          .insert({
-            id: authUserId,
-            full_name: interest.full_name,
-          })
-
-        if (profileError) {
-          console.error('⚠️ Error creating profile:', profileError)
-          // Continue anyway
-        }
-
-        // Set user role
-        const { error: userRoleError } = await supabaseAdmin
-          .from('user_roles')
-          .insert({
-            user_id: authUserId,
-            role: role as any
-          })
-
-        if (userRoleError) {
-          console.error('❌ Error setting role:', userRoleError)
-          throw userRoleError
-        }
-
-        console.log('✅ User role set')
-
-        // Update interest manifestation
-        await supabaseAdmin
-          .from('interest_manifestations')
-          .update({ account_created: true, status: 'converted' })
-          .eq('id', interest.id)
-
-        console.log('✅ Orphaned auth user completed successfully')
-        
-        // Send welcome email
-        try {
-          await supabaseAdmin.functions.invoke('send-welcome-email', {
-            body: {
-              email: interest.email,
-              fullName: interest.full_name,
-              password: '(senha já configurada)'
+          console.log('✅ Incomplete account completed successfully')
+          return new Response(
+            JSON.stringify({ 
+              success: true, 
+              user_id: existingAccount.user_id,
+              message: 'Conta incompleta foi finalizada com sucesso'
+            }),
+            { 
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+              status: 200
             }
-          })
-          console.log('✅ Welcome email sent')
-        } catch (emailError) {
-          console.error('⚠️ Email error:', emailError)
+          )
         }
 
-        return new Response(
-          JSON.stringify({ 
-            success: true, 
-            user_id: authUserId,
-            message: 'Usuário órfão foi completado com sucesso'
-          }),
-          { 
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-            status: 200
-          }
-        )
+        throw new Error('Este email já está registrado no sistema de autenticação e tem conta de usuário')
+      } else {
+        console.log('⚠️ Orphaned auth user detected - reusing instead of deleting')
+        authUserId = existingAuthUser.id
+        isReusedAuth = true
       }
     } else {
       console.log('✅ User does not exist in auth, proceeding with creation')
-    }
+      
+      // Check if user already exists in user accounts
+      const { data: existingUsers, error: checkError } = await supabaseAdmin
+        .from('user_accounts')
+        .select('email')
+        .eq('email', interest.email)
+        .limit(1)
 
-    // Check if user already exists in user accounts
-    const { data: existingUsers, error: checkError } = await supabaseAdmin
-      .from('user_accounts')
-      .select('email')
-      .eq('email', interest.email)
-      .limit(1)
-
-    if (checkError) {
-      console.error('Error checking existing user:', checkError)
-    } else if (existingUsers && existingUsers.length > 0) {
-      throw new Error('Este email já está registrado no sistema')
-    }
-
-    // Create auth user
-    const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
-      email: interest.email,
-      password: password,
-      email_confirm: true,
-      user_metadata: {
-        full_name: interest.full_name,
+      if (checkError) {
+        console.error('Error checking existing user:', checkError)
+      } else if (existingUsers && existingUsers.length > 0) {
+        throw new Error('Este email já está registrado no sistema')
       }
-    })
 
-    if (authError) {
-      console.error('Auth error:', authError)
-      throw authError
+      // Create auth user
+      const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
+        email: interest.email,
+        password: password,
+        email_confirm: true,
+        user_metadata: {
+          full_name: interest.full_name,
+        }
+      })
+
+      if (authError) {
+        console.error('Auth error:', authError)
+        throw authError
+      }
+
+      if (!authData?.user) {
+        throw new Error('Falha ao criar usuário de autenticação')
+      }
+
+      console.log('Auth user created, ID:', authData.user.id)
+      authUserId = authData.user.id
     }
-
-    if (!authData?.user) {
-      throw new Error('Falha ao criar usuário de autenticação')
-    }
-
-    console.log('Auth user created, ID:', authData.user.id)
 
     // Create user account with the auth user's ID
     const { error: accountError } = await supabaseAdmin
       .from('user_accounts')
       .insert({
-        user_id: authData.user.id,
+        user_id: authUserId,
         email: interest.email,
         full_name: interest.full_name,
         is_active: true
@@ -314,7 +233,7 @@ serve(async (req) => {
     const { error: profileError } = await supabaseAdmin
       .from('profiles')
       .insert({
-        id: authData.user.id,
+        id: authUserId,
         full_name: interest.full_name,
       })
 
@@ -327,7 +246,7 @@ serve(async (req) => {
     const { error: userRoleError } = await supabaseAdmin
       .from('user_roles')
       .insert({
-        user_id: authData.user.id,
+        user_id: authUserId,
         role: role as any
       })
 
@@ -354,14 +273,15 @@ serve(async (req) => {
 
     console.log('User creation from interest complete!')
 
-    // Send welcome email with credentials
-    console.log('📧 Sending welcome email with credentials...')
+    // Send welcome email with credentials or reset link
+    console.log('📧 Sending welcome email...')
     try {
       const { data: emailData, error: emailError } = await supabaseAdmin.functions.invoke('send-welcome-email', {
         body: {
           email: interest.email,
           fullName: interest.full_name,
-          password: password
+          password: isReusedAuth ? undefined : password,
+          isExistingUser: isReusedAuth
         }
       })
       
@@ -377,8 +297,10 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         success: true, 
-        user_id: authData.user.id,
-        message: 'Usuário criado com sucesso'
+        user_id: authUserId,
+        message: isReusedAuth 
+          ? 'Usuário criado com sucesso (conta existente reutilizada)' 
+          : 'Usuário criado com sucesso'
       }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
