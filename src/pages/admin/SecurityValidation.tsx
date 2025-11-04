@@ -24,7 +24,11 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
-export default function SecurityValidation() {
+interface SecurityValidationProps {
+  embedded?: boolean;
+}
+
+export default function SecurityValidation({ embedded = false }: SecurityValidationProps) {
   const [selectedTests, setSelectedTests] = useState<number[]>([]);
   const [selectedAgentId, setSelectedAgentId] = useState<string | null>(null);
   const [isRunning, setIsRunning] = useState(false);
@@ -215,161 +219,168 @@ export default function SecurityValidation() {
     }
   };
 
+  const content = (
+    <main className={embedded ? "space-y-8" : "container mx-auto px-4 py-8 space-y-8"}>
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className={embedded ? "text-2xl font-bold flex items-center gap-3" : "text-4xl font-bold flex items-center gap-3"}>
+            <Shield className={embedded ? "h-6 w-6 text-primary" : "h-10 w-10 text-primary"} />
+            Validação de Segurança
+          </h1>
+          <p className="text-muted-foreground mt-2">
+            Sistema de testes automatizados contra Prompt Injection
+          </p>
+        </div>
+      </div>
+
+      {/* Executar Nova Validação */}
+      <Card className="border-primary/20">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Play className="h-5 w-5" />
+            Executar Validação
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <SecurityAgentSelector
+            selectedAgentId={selectedAgentId}
+            onAgentChange={setSelectedAgentId}
+          />
+
+          <SecurityTestSelector
+            selectedTests={selectedTests}
+            onSelectionChange={setSelectedTests}
+          />
+
+          <div className="flex items-center gap-4">
+            <Button
+              onClick={handleRunValidation}
+              disabled={isRunning}
+              size="lg"
+              className="gap-2"
+            >
+              <Play className="h-4 w-4" />
+              {isRunning ? 'Executando...' : 'Executar Validação Completa'}
+            </Button>
+
+            {selectedTests.length > 0 && (
+              <Badge variant="outline">
+                {selectedTests.length} teste(s) selecionado(s)
+              </Badge>
+            )}
+          </div>
+
+          {isRunning && (
+            <div className="space-y-2">
+              <Progress value={progress} className="h-2" />
+              <p className="text-sm text-muted-foreground">
+                Executando testes de segurança... {progress}%
+              </p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Última Execução */}
+      {latestRun && (
+        <SecurityRunCard run={latestRun} />
+      )}
+
+      {/* Histórico */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2">
+              <Clock className="h-5 w-5" />
+              Histórico de Execuções
+            </CardTitle>
+            {runs && runs.length > 0 && (
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowOrphanDialog(true)}
+                  className="gap-2"
+                >
+                  <AlertTriangle className="h-4 w-4" />
+                  Limpar Órfãs
+                </Button>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => setShowClearDialog(true)}
+                  className="gap-2"
+                >
+                  <Trash2 className="h-4 w-4" />
+                  Limpar Tudo
+                </Button>
+              </div>
+            )}
+          </div>
+        </CardHeader>
+        <CardContent>
+          <SecurityHistoryTable runs={runs || []} onRunDeleted={refetchRuns} />
+        </CardContent>
+      </Card>
+
+      {/* Alert Dialog para limpar tudo */}
+      <AlertDialog open={showClearDialog} onOpenChange={setShowClearDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Limpar todo o histórico?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta ação irá deletar permanentemente TODAS as {runs?.length || 0} execuções de validação 
+              e seus resultados. Esta ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isClearing}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleClearAllHistory}
+              disabled={isClearing}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isClearing ? "Limpando..." : "Limpar Tudo"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Alert Dialog para limpar órfãs */}
+      <AlertDialog open={showOrphanDialog} onOpenChange={setShowOrphanDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Limpar execuções órfãs?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta ação irá marcar como "falha" todas as execuções com status "Em Execução" 
+              que foram iniciadas há mais de 10 minutos. Use isso para limpar execuções travadas.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isCleaningOrphans}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleCleanOrphanRuns}
+              disabled={isCleaningOrphans}
+              className="bg-orange-600 text-white hover:bg-orange-700"
+            >
+              {isCleaningOrphans ? "Limpando..." : "Limpar Órfãs"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </main>
+  );
+
+  if (embedded) {
+    return content;
+  }
+
   return (
     <SimpleAuthGuard requiredRole="admin">
       <div className="min-h-screen bg-gradient-to-b from-background to-secondary/20">
         <Header />
-        
-        <main className="container mx-auto px-4 py-8 space-y-8">
-          {/* Header */}
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-4xl font-bold flex items-center gap-3">
-                <Shield className="h-10 w-10 text-primary" />
-                Validação de Segurança
-              </h1>
-              <p className="text-muted-foreground mt-2">
-                Sistema de testes automatizados contra Prompt Injection
-              </p>
-            </div>
-          </div>
-
-          {/* Executar Nova Validação */}
-          <Card className="border-primary/20">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Play className="h-5 w-5" />
-                Executar Validação
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <SecurityAgentSelector
-                selectedAgentId={selectedAgentId}
-                onAgentChange={setSelectedAgentId}
-              />
-
-              <SecurityTestSelector
-                selectedTests={selectedTests}
-                onSelectionChange={setSelectedTests}
-              />
-
-              <div className="flex items-center gap-4">
-                <Button
-                  onClick={handleRunValidation}
-                  disabled={isRunning}
-                  size="lg"
-                  className="gap-2"
-                >
-                  <Play className="h-4 w-4" />
-                  {isRunning ? 'Executando...' : 'Executar Validação Completa'}
-                </Button>
-
-                {selectedTests.length > 0 && (
-                  <Badge variant="outline">
-                    {selectedTests.length} teste(s) selecionado(s)
-                  </Badge>
-                )}
-              </div>
-
-              {isRunning && (
-                <div className="space-y-2">
-                  <Progress value={progress} className="h-2" />
-                  <p className="text-sm text-muted-foreground">
-                    Executando testes de segurança... {progress}%
-                  </p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Última Execução */}
-          {latestRun && (
-            <SecurityRunCard run={latestRun} />
-          )}
-
-          {/* Histórico */}
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle className="flex items-center gap-2">
-                  <Clock className="h-5 w-5" />
-                  Histórico de Execuções
-                </CardTitle>
-                {runs && runs.length > 0 && (
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setShowOrphanDialog(true)}
-                      className="gap-2"
-                    >
-                      <AlertTriangle className="h-4 w-4" />
-                      Limpar Órfãs
-                    </Button>
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      onClick={() => setShowClearDialog(true)}
-                      className="gap-2"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                      Limpar Tudo
-                    </Button>
-                  </div>
-                )}
-              </div>
-            </CardHeader>
-            <CardContent>
-              <SecurityHistoryTable runs={runs || []} onRunDeleted={refetchRuns} />
-            </CardContent>
-          </Card>
-
-          {/* Alert Dialog para limpar tudo */}
-          <AlertDialog open={showClearDialog} onOpenChange={setShowClearDialog}>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Limpar todo o histórico?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  Esta ação irá deletar permanentemente TODAS as {runs?.length || 0} execuções de validação 
-                  e seus resultados. Esta ação não pode ser desfeita.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel disabled={isClearing}>Cancelar</AlertDialogCancel>
-                <AlertDialogAction
-                  onClick={handleClearAllHistory}
-                  disabled={isClearing}
-                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                >
-                  {isClearing ? "Limpando..." : "Limpar Tudo"}
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-
-          {/* Alert Dialog para limpar órfãs */}
-          <AlertDialog open={showOrphanDialog} onOpenChange={setShowOrphanDialog}>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Limpar execuções órfãs?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  Esta ação irá marcar como "falha" todas as execuções com status "Em Execução" 
-                  que foram iniciadas há mais de 10 minutos. Use isso para limpar execuções travadas.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel disabled={isCleaningOrphans}>Cancelar</AlertDialogCancel>
-                <AlertDialogAction
-                  onClick={handleCleanOrphanRuns}
-                  disabled={isCleaningOrphans}
-                  className="bg-orange-600 text-white hover:bg-orange-700"
-                >
-                  {isCleaningOrphans ? "Limpando..." : "Limpar Órfãs"}
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-        </main>
+        {content}
       </div>
     </SimpleAuthGuard>
   );
