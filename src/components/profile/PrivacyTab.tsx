@@ -4,7 +4,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { useLegalConsents } from '@/hooks/useLegalConsents';
 import { useCookiePreferences } from '@/hooks/useCookiePreferences';
-import { FileText, Shield, Cookie, Download, Trash2, Edit } from 'lucide-react';
+import { FileText, Shield, Cookie } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useState } from 'react';
@@ -146,33 +146,6 @@ const PrivacyTab = () => {
               }
             />
           </div>
-        </CardContent>
-      </Card>
-
-      {/* Direitos LGPD */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Seus Direitos (LGPD)</CardTitle>
-          <CardDescription>
-            Exercite seus direitos sobre seus dados pessoais
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <Button variant="outline" className="w-full justify-start" disabled>
-            <Download className="h-4 w-4 mr-2" />
-            Exportar Meus Dados
-            <span className="ml-auto text-xs text-muted-foreground">Em breve</span>
-          </Button>
-          <Button variant="outline" className="w-full justify-start" disabled>
-            <Edit className="h-4 w-4 mr-2" />
-            Corrigir Dados
-            <span className="ml-auto text-xs text-muted-foreground">Em breve</span>
-          </Button>
-          <Button variant="outline" className="w-full justify-start text-destructive" disabled>
-            <Trash2 className="h-4 w-4 mr-2" />
-            Solicitar Exclusão de Dados
-            <span className="ml-auto text-xs text-muted-foreground">Em breve</span>
-          </Button>
         </CardContent>
       </Card>
 

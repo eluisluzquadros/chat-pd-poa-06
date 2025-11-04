@@ -76,6 +76,7 @@ export const useLegalConsents = () => {
     try {
       const metadata = LegalService.getClientMetadata();
       
+      // Register legal document consents
       for (const document of documents) {
         const existingConsent = consents.find(
           c => c.document_type === document.document_type && !c.revoked_at
@@ -91,6 +92,14 @@ export const useLegalConsents = () => {
           );
         }
       }
+
+      // Enable all cookie preferences
+      await LegalService.saveCookiePreferences({
+        user_id: user.id,
+        essential_cookies: true,
+        analytics_cookies: true,
+        functional_cookies: true
+      });
 
       await loadData();
       toast.success('Todos os consentimentos foram registrados');

@@ -10,8 +10,8 @@ export const useCookiePreferences = () => {
   const { user } = useAuth();
   const [preferences, setPreferences] = useState<CookiePreferences>({
     essential_cookies: true,
-    analytics_cookies: false,
-    functional_cookies: false
+    analytics_cookies: true,
+    functional_cookies: true
   });
   const [loading, setLoading] = useState(true);
   const [hasSetPreferences, setHasSetPreferences] = useState(false);
