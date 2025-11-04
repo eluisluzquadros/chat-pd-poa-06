@@ -1,15 +1,22 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { Logo } from '@/components/header/Logo';
 import { MainNavigation } from '@/components/header/MainNavigation';
 import { UserMenu } from '@/components/header/UserMenu';
+import { Button } from '@/components/ui/button';
+import { Bell } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { AnnouncementsPanel } from '@/components/platform/AnnouncementsPanel';
+import { usePlatformAnnouncements } from '@/hooks/usePlatformAnnouncements';
 
 const Header = () => {
   const { isAuthenticated, isLoading } = useAuth();
   const location = useLocation();
   const isInChat = location.pathname === '/chat';
+  const [showAnnouncements, setShowAnnouncements] = useState(false);
+  const { unreadCount } = usePlatformAnnouncements();
 
   return (
     <header className="bg-primary text-primary-foreground shadow-md sticky top-0 z-50">
@@ -27,10 +34,30 @@ const Header = () => {
           
           {/* User Menu - sempre visível mas compacto em mobile */}
           <div className="flex items-center gap-2">
+            {isAuthenticated && (
+              <Button 
+                variant="ghost" 
+                size="icon"
+                onClick={() => setShowAnnouncements(true)}
+                className="relative"
+              >
+                <Bell className="h-5 w-5" />
+                {unreadCount > 0 && (
+                  <Badge 
+                    className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs"
+                    variant="destructive"
+                  >
+                    {unreadCount}
+                  </Badge>
+                )}
+              </Button>
+            )}
             <UserMenu isAuthenticated={isAuthenticated} isLoading={isLoading} />
           </div>
         </div>
       </div>
+
+      <AnnouncementsPanel open={showAnnouncements} onOpenChange={setShowAnnouncements} />
     </header>
   );
 };

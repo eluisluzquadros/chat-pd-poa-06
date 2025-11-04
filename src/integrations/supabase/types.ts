@@ -1394,6 +1394,99 @@ export type Database = {
           },
         ]
       }
+      platform_announcements: {
+        Row: {
+          category: string | null
+          content: string | null
+          created_at: string | null
+          created_by: string | null
+          description: string
+          expires_at: string | null
+          id: string
+          image_url: string | null
+          is_active: boolean | null
+          metadata: Json | null
+          priority: number | null
+          published_at: string | null
+          title: string
+          type: string
+          updated_at: string | null
+        }
+        Insert: {
+          category?: string | null
+          content?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          description: string
+          expires_at?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean | null
+          metadata?: Json | null
+          priority?: number | null
+          published_at?: string | null
+          title: string
+          type: string
+          updated_at?: string | null
+        }
+        Update: {
+          category?: string | null
+          content?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string
+          expires_at?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean | null
+          metadata?: Json | null
+          priority?: number | null
+          published_at?: string | null
+          title?: string
+          type?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      platform_service_metrics: {
+        Row: {
+          avg_response_time_ms: number | null
+          created_at: string | null
+          date: string
+          failed_requests: number | null
+          id: string
+          incidents_count: number | null
+          metadata: Json | null
+          service_name: string
+          total_requests: number | null
+          uptime_percentage: number | null
+        }
+        Insert: {
+          avg_response_time_ms?: number | null
+          created_at?: string | null
+          date: string
+          failed_requests?: number | null
+          id?: string
+          incidents_count?: number | null
+          metadata?: Json | null
+          service_name: string
+          total_requests?: number | null
+          uptime_percentage?: number | null
+        }
+        Update: {
+          avg_response_time_ms?: number | null
+          created_at?: string | null
+          date?: string
+          failed_requests?: number | null
+          id?: string
+          incidents_count?: number | null
+          metadata?: Json | null
+          service_name?: string
+          total_requests?: number | null
+          uptime_percentage?: number | null
+        }
+        Relationships: []
+      }
       platform_settings: {
         Row: {
           category: string
@@ -1427,6 +1520,60 @@ export type Database = {
           updated_at?: string
           updated_by?: string | null
           value?: Json
+        }
+        Relationships: []
+      }
+      platform_status_events: {
+        Row: {
+          affected_users: number | null
+          created_at: string | null
+          description: string
+          duration_minutes: number | null
+          event_type: string
+          id: string
+          metadata: Json | null
+          resolved_at: string | null
+          service_name: string
+          severity: string
+          started_at: string | null
+          status: string
+          title: string
+          updated_at: string | null
+          updates: Json | null
+        }
+        Insert: {
+          affected_users?: number | null
+          created_at?: string | null
+          description: string
+          duration_minutes?: number | null
+          event_type: string
+          id?: string
+          metadata?: Json | null
+          resolved_at?: string | null
+          service_name: string
+          severity: string
+          started_at?: string | null
+          status: string
+          title: string
+          updated_at?: string | null
+          updates?: Json | null
+        }
+        Update: {
+          affected_users?: number | null
+          created_at?: string | null
+          description?: string
+          duration_minutes?: number | null
+          event_type?: string
+          id?: string
+          metadata?: Json | null
+          resolved_at?: string | null
+          service_name?: string
+          severity?: string
+          started_at?: string | null
+          status?: string
+          title?: string
+          updated_at?: string | null
+          updates?: Json | null
         }
         Relationships: []
       }
@@ -2841,6 +2988,35 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      user_announcement_views: {
+        Row: {
+          announcement_id: string
+          id: string
+          user_id: string
+          viewed_at: string | null
+        }
+        Insert: {
+          announcement_id: string
+          id?: string
+          user_id: string
+          viewed_at?: string | null
+        }
+        Update: {
+          announcement_id?: string
+          id?: string
+          user_id?: string
+          viewed_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_announcement_views_announcement_id_fkey"
+            columns: ["announcement_id"]
+            isOneToOne: false
+            referencedRelation: "platform_announcements"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_consents: {
         Row: {
