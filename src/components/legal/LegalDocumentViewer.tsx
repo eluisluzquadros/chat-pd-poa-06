@@ -10,6 +10,9 @@ interface LegalDocumentViewerProps {
   effectiveDate?: string;
   showHeader?: boolean;
   className?: string;
+  compact?: boolean;
+  showCard?: boolean;
+  id?: string;
 }
 
 export const LegalDocumentViewer = ({
@@ -17,13 +20,18 @@ export const LegalDocumentViewer = ({
   content,
   effectiveDate,
   showHeader = true,
-  className = ''
+  className = '',
+  compact = false,
+  showCard = true,
+  id
 }: LegalDocumentViewerProps) => {
-  return (
-    <Card className={`p-6 ${className}`}>
+  const contentElement = (
+    <div id={id} className={className}>
       {showHeader && (
-        <div className="mb-6">
-          <h2 className="text-2xl font-bold mb-2">{title}</h2>
+        <div className={compact ? "mb-4" : "mb-6"}>
+          <h2 className={compact ? "text-lg font-bold mb-1" : "text-2xl font-bold mb-2"}>
+            {title}
+          </h2>
           {effectiveDate && (
             <p className="text-sm text-muted-foreground">
               Última atualização: {formatDistanceToNow(new Date(effectiveDate), {
@@ -35,10 +43,20 @@ export const LegalDocumentViewer = ({
         </div>
       )}
       
+      <div className={compact ? "prose prose-xs dark:prose-invert max-w-none" : "prose prose-sm dark:prose-invert max-w-none"}>
+        <ReactMarkdown>{content}</ReactMarkdown>
+      </div>
+    </div>
+  );
+
+  if (!showCard) {
+    return contentElement;
+  }
+
+  return (
+    <Card className="p-6">
       <ScrollArea className="h-[600px] pr-4">
-        <div className="prose prose-sm dark:prose-invert max-w-none">
-          <ReactMarkdown>{content}</ReactMarkdown>
-        </div>
+        {contentElement}
       </ScrollArea>
     </Card>
   );

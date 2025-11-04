@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -8,9 +8,11 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
 import { LegalDocumentViewer } from './LegalDocumentViewer';
+import { LegalNavigationSidebar } from './LegalNavigationSidebar';
+import { ConsentCheckbox } from './ConsentCheckbox';
 import type { LegalDocument } from '@/types/legal';
 import { FileText, Shield, Cookie } from 'lucide-react';
 
@@ -27,6 +29,8 @@ export const ConsentDialog = ({ open, documents, onAcceptAll }: ConsentDialogPro
     cookies: false
   });
   const [loading, setLoading] = useState(false);
+  const [activeSection, setActiveSection] = useState('terms');
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
 
   const termsDoc = documents.find(d => d.document_type === 'terms');
   const privacyDoc = documents.find(d => d.document_type === 'privacy');
@@ -45,133 +49,155 @@ export const ConsentDialog = ({ open, documents, onAcceptAll }: ConsentDialogPro
     }
   };
 
-  const getIcon = (type: string) => {
-    switch (type) {
-      case 'terms': return <FileText className="h-4 w-4" />;
-      case 'privacy': return <Shield className="h-4 w-4" />;
-      case 'cookies': return <Cookie className="h-4 w-4" />;
-      default: return null;
+  const handleNavigate = (sectionId: string) => {
+    const element = document.getElementById(sectionId);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      setActiveSection(sectionId);
     }
   };
 
+  // Detect active section on scroll
+  useEffect(() => {
+    const handleScroll = () => {
+      const sections = ['terms', 'privacy', 'cookies'];
+      const scrollPosition = scrollAreaRef.current?.scrollTop || 0;
+      
+      for (const sectionId of sections) {
+        const element = document.getElementById(sectionId);
+        if (element) {
+          const { offsetTop, offsetHeight } = element;
+          if (scrollPosition >= offsetTop - 100 && scrollPosition < offsetTop + offsetHeight - 100) {
+            setActiveSection(sectionId);
+            break;
+          }
+        }
+      }
+    };
+
+    const scrollArea = scrollAreaRef.current;
+    if (scrollArea) {
+      scrollArea.addEventListener('scroll', handleScroll);
+      return () => scrollArea.removeEventListener('scroll', handleScroll);
+    }
+  }, []);
+
   return (
     <Dialog open={open}>
-      <DialogContent className="max-w-4xl max-h-[90vh]" onPointerDownOutside={(e) => e.preventDefault()}>
-        <DialogHeader>
-          <DialogTitle>Termos de Uso e Políticas</DialogTitle>
-          <DialogDescription>
-            Por favor, leia e aceite nossos termos de uso, política de privacidade e política de cookies para continuar.
-          </DialogDescription>
-        </DialogHeader>
+      <DialogContent 
+        className="max-w-5xl h-[85vh] flex flex-col p-0" 
+        onPointerDownOutside={(e) => e.preventDefault()}
+      >
+        <div className="px-6 pt-6">
+          <DialogHeader>
+            <DialogTitle>Termos de Uso e Políticas</DialogTitle>
+            <DialogDescription>
+              Por favor, leia e aceite nossos documentos para continuar.
+            </DialogDescription>
+          </DialogHeader>
+        </div>
 
-        <Tabs defaultValue="terms" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="terms" className="flex items-center gap-2">
-              <FileText className="h-4 w-4" />
-              Termos de Uso
-            </TabsTrigger>
-            <TabsTrigger value="privacy" className="flex items-center gap-2">
-              <Shield className="h-4 w-4" />
-              Privacidade
-            </TabsTrigger>
-            <TabsTrigger value="cookies" className="flex items-center gap-2">
-              <Cookie className="h-4 w-4" />
-              Cookies
-            </TabsTrigger>
-          </TabsList>
+        <div className="flex-1 flex gap-4 overflow-hidden px-6">
+          {/* Navigation Sidebar - Hidden on mobile */}
+          <div className="hidden md:block">
+            <LegalNavigationSidebar 
+              activeSection={activeSection}
+              onNavigate={handleNavigate}
+            />
+          </div>
 
-          {termsDoc && (
-            <TabsContent value="terms">
-              <LegalDocumentViewer
-                title={termsDoc.title}
-                content={termsDoc.content}
-                effectiveDate={termsDoc.effective_date}
-                showHeader={false}
-              />
-            </TabsContent>
-          )}
+          {/* Unified scrollable content */}
+          <ScrollArea className="flex-1 pr-4" ref={scrollAreaRef}>
+            <div className="space-y-6 pb-4">
+              {termsDoc && (
+                <>
+                  <LegalDocumentViewer
+                    id="terms"
+                    title={termsDoc.title}
+                    content={termsDoc.content}
+                    effectiveDate={termsDoc.effective_date}
+                    showHeader={true}
+                    compact={true}
+                    showCard={false}
+                  />
+                  <Separator className="my-6" />
+                </>
+              )}
 
-          {privacyDoc && (
-            <TabsContent value="privacy">
-              <LegalDocumentViewer
-                title={privacyDoc.title}
-                content={privacyDoc.content}
-                effectiveDate={privacyDoc.effective_date}
-                showHeader={false}
-              />
-            </TabsContent>
-          )}
+              {privacyDoc && (
+                <>
+                  <LegalDocumentViewer
+                    id="privacy"
+                    title={privacyDoc.title}
+                    content={privacyDoc.content}
+                    effectiveDate={privacyDoc.effective_date}
+                    showHeader={true}
+                    compact={true}
+                    showCard={false}
+                  />
+                  <Separator className="my-6" />
+                </>
+              )}
 
-          {cookiesDoc && (
-            <TabsContent value="cookies">
-              <LegalDocumentViewer
-                title={cookiesDoc.title}
-                content={cookiesDoc.content}
-                effectiveDate={cookiesDoc.effective_date}
-                showHeader={false}
-              />
-            </TabsContent>
-          )}
-        </Tabs>
+              {cookiesDoc && (
+                <LegalDocumentViewer
+                  id="cookies"
+                  title={cookiesDoc.title}
+                  content={cookiesDoc.content}
+                  effectiveDate={cookiesDoc.effective_date}
+                  showHeader={true}
+                  compact={true}
+                  showCard={false}
+                />
+              )}
+            </div>
+          </ScrollArea>
+        </div>
 
-        <DialogFooter className="flex-col sm:flex-col gap-4">
-          <div className="flex flex-col gap-3">
-            <div className="flex items-center space-x-2">
-              <Checkbox
+        {/* Sticky Footer */}
+        <DialogFooter className="sticky bottom-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 border-t pt-4 pb-6 px-6 shadow-lg mt-0">
+          <div className="w-full space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <ConsentCheckbox
                 id="consent-terms"
                 checked={consents.terms}
                 onCheckedChange={(checked) => 
-                  setConsents(prev => ({ ...prev, terms: checked as boolean }))
+                  setConsents(prev => ({ ...prev, terms: checked }))
                 }
+                icon={FileText}
+                label="Li e aceito os Termos de Uso"
               />
-              <label
-                htmlFor="consent-terms"
-                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-              >
-                Li e aceito os Termos de Uso
-              </label>
-            </div>
-
-            <div className="flex items-center space-x-2">
-              <Checkbox
+              
+              <ConsentCheckbox
                 id="consent-privacy"
                 checked={consents.privacy}
                 onCheckedChange={(checked) => 
-                  setConsents(prev => ({ ...prev, privacy: checked as boolean }))
+                  setConsents(prev => ({ ...prev, privacy: checked }))
                 }
+                icon={Shield}
+                label="Li e aceito a Política de Privacidade"
               />
-              <label
-                htmlFor="consent-privacy"
-                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-              >
-                Li e aceito a Política de Privacidade
-              </label>
-            </div>
-
-            <div className="flex items-center space-x-2">
-              <Checkbox
+              
+              <ConsentCheckbox
                 id="consent-cookies"
                 checked={consents.cookies}
                 onCheckedChange={(checked) => 
-                  setConsents(prev => ({ ...prev, cookies: checked as boolean }))
+                  setConsents(prev => ({ ...prev, cookies: checked }))
                 }
+                icon={Cookie}
+                label="Li e aceito a Política de Cookies"
               />
-              <label
-                htmlFor="consent-cookies"
-                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-              >
-                Li e aceito a Política de Cookies
-              </label>
             </div>
-          </div>
 
-          <Button 
-            onClick={handleAccept} 
-            disabled={!allAccepted || loading}
-            className="w-full"
-          >
-            {loading ? 'Registrando...' : 'Aceitar e Continuar'}
-          </Button>
+            <Button 
+              onClick={handleAccept} 
+              disabled={!allAccepted || loading}
+              className="w-full"
+              size="lg"
+            >
+              {loading ? 'Registrando...' : 'Aceitar e Continuar'}
+            </Button>
+          </div>
         </DialogFooter>
       </DialogContent>
     </Dialog>
