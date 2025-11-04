@@ -103,8 +103,9 @@ serve(async (req) => {
 
     if (existingAuthUser) {
       console.log('⚠️ User already exists in auth:', interest.email)
-      console.log('🔍 Checking if user exists in user_accounts...')
-
+      console.log('🔄 Reusing existing auth user instead of deleting...')
+      
+      // FASE 3: Reutilizar auth.users existente
       // Check if user exists in user_accounts
       const { data: existingAccount, error: accountCheckError } = await supabaseAdmin
         .from('user_accounts')
@@ -118,61 +119,141 @@ serve(async (req) => {
       }
 
       if (existingAccount) {
-        console.log('✅ User exists in user_accounts')
+        console.log('✅ User exists in user_accounts, checking completeness...')
         
-        // Check if user has a role assigned
-        const { data: existingRole, error: roleCheckError } = await supabaseAdmin
+        // Check profile
+        const { data: existingProfile } = await supabaseAdmin
+          .from('profiles')
+          .select('id')
+          .eq('id', existingAccount.user_id)
+          .maybeSingle()
+        
+        // Check role
+        const { data: existingRole } = await supabaseAdmin
           .from('user_roles')
           .select('role')
           .eq('user_id', existingAccount.user_id)
           .maybeSingle()
 
-        if (roleCheckError) {
-          console.error('❌ Error checking user role:', roleCheckError)
+        // Complete missing parts
+        if (!existingProfile) {
+          console.log('➕ Adding missing profile...')
+          await supabaseAdmin.from('profiles').insert({
+            id: existingAccount.user_id,
+            full_name: interest.full_name,
+          })
         }
 
         if (!existingRole) {
-          console.log('⚠️ Incomplete account detected - missing role. Completing...')
-          
-          // Add missing role
-          const { error: roleError } = await supabaseAdmin
-            .from('user_roles')
-            .insert({ user_id: existingAccount.user_id, role: role as any })
+          console.log('➕ Adding missing role...')
+          await supabaseAdmin.from('user_roles').insert({ 
+            user_id: existingAccount.user_id, 
+            role: role as any 
+          })
+        }
 
-          if (roleError) {
-            console.error('❌ Error adding missing role:', roleError)
-            throw new Error('Erro ao completar conta de usuário')
+        // Update interest manifestation
+        await supabaseAdmin
+          .from('interest_manifestations')
+          .update({ account_created: true, status: 'converted' })
+          .eq('id', interest.id)
+
+        console.log('✅ Account verified/completed successfully')
+        return new Response(
+          JSON.stringify({ 
+            success: true, 
+            user_id: existingAccount.user_id,
+            message: 'Conta já existente foi verificada e completada'
+          }),
+          { 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            status: 200
           }
-
-          // Update interest manifestation
-          await supabaseAdmin
-            .from('interest_manifestations')
-            .update({ account_created: true, status: 'converted' })
-            .eq('id', interest.id)
-
-          console.log('✅ Incomplete account completed successfully')
-          return new Response(
-            JSON.stringify({ 
-              success: true, 
-              user_id: existingAccount.user_id,
-              message: 'Conta incompleta foi finalizada com sucesso'
-            }),
-            { 
-              headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-              status: 200
-            }
-          )
-        }
-
-        throw new Error('Este email já está registrado no sistema de autenticação e tem conta de usuário')
+        )
       } else {
-        console.log('⚠️ Orphaned auth user detected, cleaning up...')
-        const { error: deleteError } = await supabaseAdmin.auth.admin.deleteUser(existingAuthUser.id)
-        if (deleteError) {
-          console.error('❌ Error deleting orphaned user:', deleteError)
-          throw new Error('Erro ao limpar usuário órfão do sistema')
+        console.log('⚠️ Orphaned auth user detected, completing registration...')
+        
+        // Create complete account using existing auth user
+        const authUserId = existingAuthUser.id
+        
+        // Create user account
+        const { error: accountError } = await supabaseAdmin
+          .from('user_accounts')
+          .insert({
+            user_id: authUserId,
+            email: interest.email,
+            full_name: interest.full_name,
+            is_active: true
+          })
+
+        if (accountError) {
+          console.error('❌ Error creating account:', accountError)
+          throw accountError
         }
-        console.log('✅ Orphaned user cleaned up, proceeding with creation')
+
+        console.log('✅ User account created')
+
+        // Create profile
+        const { error: profileError } = await supabaseAdmin
+          .from('profiles')
+          .insert({
+            id: authUserId,
+            full_name: interest.full_name,
+          })
+
+        if (profileError) {
+          console.error('⚠️ Error creating profile:', profileError)
+          // Continue anyway
+        }
+
+        // Set user role
+        const { error: userRoleError } = await supabaseAdmin
+          .from('user_roles')
+          .insert({
+            user_id: authUserId,
+            role: role as any
+          })
+
+        if (userRoleError) {
+          console.error('❌ Error setting role:', userRoleError)
+          throw userRoleError
+        }
+
+        console.log('✅ User role set')
+
+        // Update interest manifestation
+        await supabaseAdmin
+          .from('interest_manifestations')
+          .update({ account_created: true, status: 'converted' })
+          .eq('id', interest.id)
+
+        console.log('✅ Orphaned auth user completed successfully')
+        
+        // Send welcome email
+        try {
+          await supabaseAdmin.functions.invoke('send-welcome-email', {
+            body: {
+              email: interest.email,
+              fullName: interest.full_name,
+              password: '(senha já configurada)'
+            }
+          })
+          console.log('✅ Welcome email sent')
+        } catch (emailError) {
+          console.error('⚠️ Email error:', emailError)
+        }
+
+        return new Response(
+          JSON.stringify({ 
+            success: true, 
+            user_id: authUserId,
+            message: 'Usuário órfão foi completado com sucesso'
+          }),
+          { 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            status: 200
+          }
+        )
       }
     } else {
       console.log('✅ User does not exist in auth, proceeding with creation')
