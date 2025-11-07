@@ -2537,6 +2537,75 @@ export type Database = {
         }
         Relationships: []
       }
+      security_incident_reports: {
+        Row: {
+          alert_id: string | null
+          assigned_to: string | null
+          created_at: string | null
+          generated_at: string
+          generated_by: string | null
+          id: string
+          report_data: Json
+          report_id: string
+          resolution_notes: string | null
+          resolved_at: string | null
+          session_id: string | null
+          status: string | null
+          threat_level: string
+          threat_score: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          alert_id?: string | null
+          assigned_to?: string | null
+          created_at?: string | null
+          generated_at?: string
+          generated_by?: string | null
+          id?: string
+          report_data?: Json
+          report_id: string
+          resolution_notes?: string | null
+          resolved_at?: string | null
+          session_id?: string | null
+          status?: string | null
+          threat_level: string
+          threat_score?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          alert_id?: string | null
+          assigned_to?: string | null
+          created_at?: string | null
+          generated_at?: string
+          generated_by?: string | null
+          id?: string
+          report_data?: Json
+          report_id?: string
+          resolution_notes?: string | null
+          resolved_at?: string | null
+          session_id?: string | null
+          status?: string | null
+          threat_level?: string
+          threat_score?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "security_incident_reports_alert_id_fkey"
+            columns: ["alert_id"]
+            isOneToOne: false
+            referencedRelation: "intelligence_alerts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "security_incident_reports_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "chat_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       security_lessons_learned: {
         Row: {
           created_at: string | null
@@ -2583,6 +2652,47 @@ export type Database = {
             columns: ["related_run_id"]
             isOneToOne: false
             referencedRelation: "security_validation_runs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      security_notifications: {
+        Row: {
+          alert_id: string | null
+          error_message: string | null
+          id: string
+          metadata: Json | null
+          notification_type: string
+          recipient: string
+          sent_at: string | null
+          status: string | null
+        }
+        Insert: {
+          alert_id?: string | null
+          error_message?: string | null
+          id?: string
+          metadata?: Json | null
+          notification_type: string
+          recipient: string
+          sent_at?: string | null
+          status?: string | null
+        }
+        Update: {
+          alert_id?: string | null
+          error_message?: string | null
+          id?: string
+          metadata?: Json | null
+          notification_type?: string
+          recipient?: string
+          sent_at?: string | null
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "security_notifications_alert_id_fkey"
+            columns: ["alert_id"]
+            isOneToOne: false
+            referencedRelation: "intelligence_alerts"
             referencedColumns: ["id"]
           },
         ]
