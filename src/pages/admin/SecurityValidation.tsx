@@ -99,12 +99,18 @@ export default function SecurityValidation({ embedded = false }: SecurityValidat
       setIsRunning(false);
       setProgress(100);
       
-      toast.success('Validação concluída!', {
-        description: `Score: ${data.summary.overallScore}% - ${data.summary.passedTests}/${data.summary.totalTests} testes passaram`,
+      toast.success('Validação iniciada com sucesso!', {
+        description: `Run ID: ${data.runId || 'N/A'}. Acompanhe o progresso na lista abaixo.`,
       });
 
-      queryClient.invalidateQueries({ queryKey: ['security-latest-run'] });
-      queryClient.invalidateQueries({ queryKey: ['security-runs'] });
+      // Polling para atualizar resultados em tempo real
+      const pollInterval = setInterval(() => {
+        queryClient.invalidateQueries({ queryKey: ['security-latest-run'] });
+        queryClient.invalidateQueries({ queryKey: ['security-runs'] });
+      }, 3000);
+
+      // Parar polling após 2 minutos
+      setTimeout(() => clearInterval(pollInterval), 120000);
       
       setSelectedTests([]);
     },
