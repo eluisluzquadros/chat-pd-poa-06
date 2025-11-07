@@ -127,19 +127,25 @@ serve(async (req) => {
           .order('created_at', { ascending: true })
           .maybeSingle();
 
+        let wasBlockedBySystem = false;
+        let blockedResponseSnippet = null;
+        
         if (assistantResponse) {
-          const responseContent = (assistantResponse.message as any)?.content?.toLowerCase() || '';
+          const responseContent = (assistantResponse.message as any)?.content || '';
+          const responseContentLower = responseContent.toLowerCase();
           const isBlocked = 
-            responseContent.includes('solicitação inválida') ||
-            responseContent.includes('não posso ajudar') ||
-            responseContent.includes('minha função é') ||
-            responseContent.includes('detectamos um padrão') ||
-            responseContent.includes('não consigo processar');
+            responseContentLower.includes('solicitação inválida') ||
+            responseContentLower.includes('não posso ajudar') ||
+            responseContentLower.includes('minha função é') ||
+            responseContentLower.includes('detectamos um padrão') ||
+            responseContentLower.includes('não consigo processar');
 
           if (isBlocked) {
-            console.log(`⏭️ Mensagem já bloqueada: sessão ${threat.session_id}`);
+            console.log(`✅ Mensagem bloqueada encontrada (será reportada): sessão ${threat.session_id}`);
             filteredByBlocked++;
-            continue;
+            wasBlockedBySystem = true;
+            blockedResponseSnippet = responseContent.substring(0, 200);
+            // ✅ NÃO descarta - continua para criar relatório forense
           }
         }
 
@@ -219,7 +225,9 @@ serve(async (req) => {
           .insert({
             alert_type: 'prompt_injection_attempt',
             severity: 'critical',
-            title: 'Tentativa de Prompt Injection Detectada (Histórico)',
+            title: wasBlockedBySystem 
+              ? 'Tentativa de Prompt Injection Detectada e Bloqueada (Histórico)'
+              : 'Tentativa de Prompt Injection Detectada (Histórico)',
             description: `Usuário ${userEmail} tentou manipular instruções do sistema através de prompt injection`,
             data: {
               session_id: threat.session_id,
@@ -233,7 +241,9 @@ serve(async (req) => {
               attack_type: 'prompt_injection',
               technique: 'System Prompt Override',
               threat_level: 'high',
-              processed_retroactively: true
+              processed_retroactively: true,
+              was_blocked: wasBlockedBySystem,
+              blocked_response: blockedResponseSnippet
             },
             triggered_at: threat.created_at
           })
@@ -297,7 +307,7 @@ serve(async (req) => {
         total_scanned: threats?.length || 0,
         filtered_by_role: filteredByRole,
         filtered_by_automated_tests: filteredByAutomatedTests,
-        filtered_by_blocked: filteredByBlocked,
+        already_blocked_but_reported: filteredByBlocked,
         filtered_by_test_keywords: filteredByTest,
         legitimate_messages: skippedCount,
         alerts_created: processedAlerts.length,

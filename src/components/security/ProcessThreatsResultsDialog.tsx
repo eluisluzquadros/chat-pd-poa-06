@@ -37,7 +37,6 @@ export function ProcessThreatsResultsDialog({
   const totalFiltered = 
     (stats.filtered_by_role || 0) + 
     (stats.filtered_by_automated_tests || 0) + 
-    (stats.filtered_by_blocked || 0) + 
     (stats.filtered_by_test_keywords || 0);
 
   return (
@@ -154,18 +153,18 @@ export function ProcessThreatsResultsDialog({
                 </Badge>
               </div>
 
-              <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+              <div className="flex items-center justify-between p-3 bg-green-500/10 rounded-lg border border-green-500/20">
                 <div className="flex items-center gap-3">
-                  <Ban className="h-5 w-5 text-red-500" />
+                  <Shield className="h-5 w-5 text-green-500" />
                   <div>
-                    <p className="font-medium">Mensagens Bloqueadas</p>
+                    <p className="font-medium text-green-500">Bloqueadas (Reportadas)</p>
                     <p className="text-sm text-muted-foreground">
-                      Já rejeitadas pelo sistema
+                      Já rejeitadas em tempo real, mas relatórios gerados
                     </p>
                   </div>
                 </div>
-                <Badge variant="outline" className="text-lg">
-                  {stats.filtered_by_blocked || 0}
+                <Badge variant="outline" className="text-lg border-green-500/20">
+                  {stats.already_blocked_but_reported || 0}
                 </Badge>
               </div>
 
