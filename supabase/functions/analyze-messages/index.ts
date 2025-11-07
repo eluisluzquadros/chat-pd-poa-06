@@ -29,6 +29,54 @@ function cleanText(text: string): string {
     .trim();
 }
 
+// Helper para retry com exponential backoff
+async function fetchWithRetry(url: string, options: any, maxRetries = 3): Promise<Response> {
+  let lastError;
+  
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      console.log(`🔄 [RETRY] Attempt ${attempt}/${maxRetries}`);
+      
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s timeout
+      
+      const response = await fetch(url, {
+        ...options,
+        signal: controller.signal
+      });
+      
+      clearTimeout(timeoutId);
+      
+      // Se for 502/503/504, tentar novamente
+      if (response.status === 502 || response.status === 503 || response.status === 504) {
+        const errorText = await response.text();
+        console.warn(`⚠️ [RETRY] Server error ${response.status} on attempt ${attempt}: ${errorText.substring(0, 200)}`);
+        
+        if (attempt < maxRetries) {
+          const delay = Math.pow(2, attempt) * 1000; // 2s, 4s, 8s
+          console.log(`⏳ [RETRY] Waiting ${delay}ms before retry...`);
+          await new Promise(resolve => setTimeout(resolve, delay));
+          continue;
+        }
+      }
+      
+      return response;
+      
+    } catch (error) {
+      lastError = error;
+      console.error(`❌ [RETRY] Attempt ${attempt} failed:`, error.message);
+      
+      if (attempt < maxRetries) {
+        const delay = Math.pow(2, attempt) * 1000;
+        console.log(`⏳ [RETRY] Waiting ${delay}ms before retry...`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+      }
+    }
+  }
+  
+  throw new Error(`Failed after ${maxRetries} attempts: ${lastError?.message || 'Unknown error'}`);
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -96,7 +144,7 @@ Retorne um JSON com estrutura:
   ]
 }`;
 
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    const response = await fetchWithRetry('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${OPENAI_API_KEY}`,
@@ -115,8 +163,8 @@ Retorne um JSON com estrutura:
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('❌ Lovable AI error:', errorText);
-      throw new Error(`AI analysis failed: ${response.status}`);
+      console.error('❌ OpenAI API error:', errorText);
+      throw new Error(`AI analysis failed: ${response.status} - ${errorText.substring(0, 200)}`);
     }
 
     const aiResult = await response.json();
