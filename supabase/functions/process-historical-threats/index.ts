@@ -50,10 +50,16 @@ serve(async (req) => {
 
     console.log('🔍 Buscando ameaças históricas não processadas...');
 
-    // Buscar todos os message_insights (sem filtro de sentiment)
+    // Buscar sessões de chat com informações do usuário
     const { data: threats, error: threatsError } = await supabase
       .from('message_insights')
-      .select('*')
+      .select(`
+        *,
+        chat_sessions!inner (
+          user_id,
+          created_at
+        )
+      `)
       .order('created_at', { ascending: false });
 
     if (threatsError) {
@@ -64,14 +70,99 @@ serve(async (req) => {
     const processedReports: any[] = [];
     let skippedCount = 0;
     let errorCount = 0;
+    let filteredByRole = 0;
+    let filteredByBlocked = 0;
+    let filteredByTest = 0;
+    let filteredByAutomatedTests = 0;
 
     console.log(`📊 Total de registros encontrados: ${threats?.length || 0}`);
 
+    // FILTRO 1: Obter lista de user_ids com roles privilegiadas (admin/supervisor)
+    const { data: privilegedUsers } = await supabase
+      .from('user_roles')
+      .select('user_id')
+      .in('role', ['admin', 'supervisor']);
+
+    const privilegedUserIds = new Set(privilegedUsers?.map(u => u.user_id) || []);
+
+    // FILTRO 2: Obter sessões de testes automatizados
+    const { data: automatedTestRuns } = await supabase
+      .from('security_validation_runs')
+      .select('executed_by, started_at, completed_at');
+
     for (const threat of threats || []) {
       try {
+        const sessionUserId = (threat as any).chat_sessions?.user_id;
+        const sessionCreatedAt = (threat as any).chat_sessions?.created_at;
+
+        // FILTRO 1: Pular mensagens de usuários admin/supervisor
+        if (sessionUserId && privilegedUserIds.has(sessionUserId)) {
+          console.log(`⏭️ Filtrado por role: sessão ${threat.session_id}`);
+          filteredByRole++;
+          continue;
+        }
+
+        // FILTRO 2: Pular sessões criadas durante testes automatizados
+        const isAutomatedTest = automatedTestRuns?.some(run => {
+          if (run.executed_by !== sessionUserId) return false;
+          const startTime = new Date(run.started_at).getTime();
+          const endTime = run.completed_at ? new Date(run.completed_at).getTime() : Date.now();
+          const sessionTime = new Date(sessionCreatedAt).getTime();
+          return sessionTime >= startTime && sessionTime <= endTime;
+        });
+
+        if (isAutomatedTest) {
+          console.log(`⏭️ Filtrado por teste automatizado: sessão ${threat.session_id}`);
+          filteredByAutomatedTests++;
+          continue;
+        }
+
+        // FILTRO 3: Verificar se mensagem já foi bloqueada pelo sistema
+        const { data: assistantResponse } = await supabase
+          .from('chat_history')
+          .select('message')
+          .eq('session_id', threat.session_id)
+          .gte('created_at', threat.created_at)
+          .limit(1)
+          .order('created_at', { ascending: true })
+          .maybeSingle();
+
+        if (assistantResponse) {
+          const responseContent = (assistantResponse.message as any)?.content?.toLowerCase() || '';
+          const isBlocked = 
+            responseContent.includes('solicitação inválida') ||
+            responseContent.includes('não posso ajudar') ||
+            responseContent.includes('minha função é') ||
+            responseContent.includes('detectamos um padrão') ||
+            responseContent.includes('não consigo processar');
+
+          if (isBlocked) {
+            console.log(`⏭️ Mensagem já bloqueada: sessão ${threat.session_id}`);
+            filteredByBlocked++;
+            continue;
+          }
+        }
+
+        // FILTRO 4: Verificar keywords de teste/ruído
         const message = threat.user_message?.toLowerCase() || '';
+        const keywords = threat.keywords || [];
         
-        // Verificar padrões de ataque (independente do sentiment)
+        const isTestKeywords = 
+          message.includes('teste') ||
+          message.includes('test') ||
+          message.includes('agente v') ||
+          message.includes('pd v') ||
+          keywords.some(k => 
+            ['teste', 'test', 'v1', 'v2', 'v3', 'agent', 'agente'].includes(k.toLowerCase())
+          );
+
+        if (isTestKeywords && !message.includes('[system') && !message.includes('ignore')) {
+          console.log(`⏭️ Filtrado por keywords de teste: sessão ${threat.session_id}`);
+          filteredByTest++;
+          continue;
+        }
+
+        // Verificar padrões de ataque
         const isAttack = 
           message.includes('[system') ||
           (message.includes('reiniciar') && message.includes('instruç')) ||
@@ -204,9 +295,13 @@ serve(async (req) => {
       message: 'Processamento de ameaças históricas concluído',
       stats: {
         total_scanned: threats?.length || 0,
+        filtered_by_role: filteredByRole,
+        filtered_by_automated_tests: filteredByAutomatedTests,
+        filtered_by_blocked: filteredByBlocked,
+        filtered_by_test_keywords: filteredByTest,
+        legitimate_messages: skippedCount,
         alerts_created: processedAlerts.length,
         reports_generated: processedReports.length,
-        skipped: skippedCount,
         errors: errorCount
       },
       alerts: processedAlerts,

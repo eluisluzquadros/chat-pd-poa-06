@@ -6,16 +6,23 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Shield, AlertTriangle, Eye, Download, CheckCircle2, Clock } from "lucide-react";
+import { Shield, AlertTriangle, Eye, Download, CheckCircle2, Clock, Database } from "lucide-react";
 import { IncidentReportViewer } from "@/components/security/IncidentReportViewer";
 import { AdminRoleGuard } from "@/components/layout/AdminRoleGuard";
+import { ProcessThreatsDialog } from "@/components/security/ProcessThreatsDialog";
+import { ProcessThreatsResultsDialog } from "@/components/security/ProcessThreatsResultsDialog";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { toast } from "sonner";
 
 export default function SecurityIncidents() {
   const [selectedReportId, setSelectedReportId] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [severityFilter, setSeverityFilter] = useState<string>("all");
+  const [showProcessDialog, setShowProcessDialog] = useState(false);
+  const [showResultsDialog, setShowResultsDialog] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [processResults, setProcessResults] = useState<any>(null);
 
   const { data: incidents, isLoading } = useQuery({
     queryKey: ["security-incidents", statusFilter, severityFilter],
@@ -53,6 +60,32 @@ export default function SecurityIncidents() {
 
     if (!error) {
       window.location.reload();
+    }
+  };
+
+  const handleProcessThreats = async () => {
+    setShowProcessDialog(false);
+    setIsProcessing(true);
+    
+    toast.info("Iniciando processamento de ameaças históricas...");
+
+    try {
+      const { data, error } = await supabase.functions.invoke('process-historical-threats');
+
+      if (error) throw error;
+
+      setProcessResults(data);
+      setShowResultsDialog(true);
+      
+      toast.success(`Processamento concluído! ${data.stats.alerts_created} alertas criados.`);
+      
+      // Recarregar lista de incidentes
+      window.location.reload();
+    } catch (error: any) {
+      console.error('Erro ao processar ameaças:', error);
+      toast.error(`Erro no processamento: ${error.message}`);
+    } finally {
+      setIsProcessing(false);
     }
   };
 
@@ -110,7 +143,27 @@ export default function SecurityIncidents() {
               Relatórios forenses e alertas críticos
             </p>
           </div>
+          <Button 
+            onClick={() => setShowProcessDialog(true)}
+            disabled={isProcessing}
+            className="gap-2"
+          >
+            <Database className="h-4 w-4" />
+            {isProcessing ? "Processando..." : "Processar Ameaças Históricas"}
+          </Button>
         </div>
+
+        <ProcessThreatsDialog 
+          open={showProcessDialog}
+          onOpenChange={setShowProcessDialog}
+          onConfirm={handleProcessThreats}
+        />
+
+        <ProcessThreatsResultsDialog 
+          open={showResultsDialog}
+          onOpenChange={setShowResultsDialog}
+          results={processResults}
+        />
 
         {/* Metrics Cards */}
         <div className="grid gap-4 md:grid-cols-4">
