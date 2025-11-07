@@ -68,3 +68,12 @@ verify_jwt = true
 
 [functions.qa-reset-history]
 verify_jwt = true
+
+[functions.security-validation-worker]
+verify_jwt = false
+
+[functions.send-security-email]
+verify_jwt = false
+
+[functions.security-validator]
+verify_jwt = true

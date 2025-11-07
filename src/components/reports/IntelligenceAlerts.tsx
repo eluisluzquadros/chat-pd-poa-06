@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Loader2, AlertTriangle, Info, AlertCircle, CheckCircle2, FileText, Eye } from "lucide-react";
+import { Loader2, AlertTriangle, Info, AlertCircle, CheckCircle2, FileText, Eye, Bell } from "lucide-react";
 import { Period, TimeRange } from "@/utils/dateUtils";
 
 interface Alert {
@@ -42,10 +42,66 @@ const SEVERITY_CONFIG = {
 export function IntelligenceAlerts({ period, timeRange }: IntelligenceAlertsProps) {
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [hasNewAlerts, setHasNewAlerts] = useState(false);
 
   useEffect(() => {
     fetchAlerts();
   }, [period, timeRange]);
+
+  // Subscription em tempo real para novos alertas
+  useEffect(() => {
+    console.log('🔔 Configurando subscription de alertas em tempo real...');
+    
+    const channel = supabase
+      .channel('intelligence_alerts_realtime')
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'intelligence_alerts'
+      }, (payload) => {
+        console.log('🚨 Novo alerta recebido:', payload.new);
+        
+        const newAlert = payload.new as Alert;
+        
+        // Marcar que há novos alertas
+        setHasNewAlerts(true);
+        
+        // Notificação visual
+        const severityLabel = newAlert.severity === 'critical' ? 'ALERTA CRÍTICO' : 'ALERTA DE SEGURANÇA';
+        toast.error(`🚨 ${severityLabel}: ${newAlert.title}`, {
+          description: newAlert.description,
+          duration: 10000,
+          action: {
+            label: 'Ver Detalhes',
+            onClick: () => {
+              setHasNewAlerts(false);
+              fetchAlerts();
+            }
+          }
+        });
+
+        // Reproduzir som de alerta (apenas para alertas críticos)
+        if (newAlert.severity === 'critical') {
+          try {
+            const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBTGH0fPTgjMGHm7A7+OZURE');
+            audio.play().catch(e => console.log('Áudio bloqueado pelo navegador'));
+          } catch (e) {
+            console.log('Não foi possível reproduzir som de alerta');
+          }
+        }
+        
+        // Atualizar lista
+        fetchAlerts();
+      })
+      .subscribe((status) => {
+        console.log('📡 Status do canal de alertas:', status);
+      });
+    
+    return () => {
+      console.log('🔌 Desconectando subscription de alertas');
+      supabase.removeChannel(channel);
+    };
+  }, []);
 
   const fetchAlerts = async () => {
     setIsLoading(true);
@@ -147,10 +203,22 @@ export function IntelligenceAlerts({ period, timeRange }: IntelligenceAlertsProp
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Alertas Inteligentes</CardTitle>
-        <CardDescription>
-          {unacknowledged.length} alerta(s) não reconhecido(s)
-        </CardDescription>
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle className="flex items-center gap-2">
+              Alertas Inteligentes
+              {hasNewAlerts && (
+                <Badge variant="destructive" className="animate-pulse">
+                  <Bell className="h-3 w-3 mr-1" />
+                  Novo!
+                </Badge>
+              )}
+            </CardTitle>
+            <CardDescription>
+              {unacknowledged.length} alerta(s) não reconhecido(s) • Monitoramento em tempo real
+            </CardDescription>
+          </div>
+        </div>
       </CardHeader>
       <CardContent>
         {alerts.length === 0 ? (
