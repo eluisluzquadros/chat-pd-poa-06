@@ -22,12 +22,10 @@ const UserManagement = () => {
     queryKey: ["user_accounts", searchTerm],
     queryFn: async () => {
       try {
+        // Fetch users and roles separately to bypass JOIN issues
         let query = supabase
           .from("user_accounts")
-          .select(`
-            *,
-            user_roles!user_roles_user_id_fkey(role)
-          `);
+          .select("*");
 
         if (searchTerm) {
           query = query.or(
@@ -49,10 +47,22 @@ const UserManagement = () => {
           return [];
         }
 
-        // Process data to extract role from user_roles join
+        // Fetch roles for all users
+        const { data: rolesData, error: rolesError } = await supabase
+          .from("user_roles")
+          .select("user_id, role");
+
+        if (rolesError) {
+          console.error("Error fetching roles:", rolesError);
+        }
+
+        // Create map of user_id -> role
+        const roleMap = new Map(rolesData?.map(r => [r.user_id, r.role]) || []);
+
+        // Process data to add roles
         const processedData = data?.map(user => ({
           ...user,
-          role: (user as any).user_roles?.[0]?.role || 'user'
+          role: roleMap.get(user.user_id) || 'user'
         })) || [];
 
         return processedData as UserAccount[];
