@@ -5,6 +5,7 @@ import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import ReactWordcloud from "react-wordcloud";
 import { Period, TimeRange } from "@/utils/dateUtils";
+import { filterNoiseKeywords } from "@/services/keywordFilterService";
 
 interface KeywordsCloudProps {
   period: Period;
@@ -39,7 +40,10 @@ export function KeywordsCloud({ period, timeRange }: KeywordsCloudProps) {
         const keywordCounts = new Map<string, number>();
         data.forEach((insight: any) => {
           if (insight.keywords && Array.isArray(insight.keywords)) {
-            insight.keywords.forEach((keyword: string) => {
+            // ✅ APLICAR FILTRO ANTES DE CONTAR
+            const cleanedKeywords = filterNoiseKeywords(insight.keywords);
+            
+            cleanedKeywords.forEach((keyword: string) => {
               keywordCounts.set(keyword, (keywordCounts.get(keyword) || 0) + 1);
             });
           }

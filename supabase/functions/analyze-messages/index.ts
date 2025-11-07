@@ -13,6 +13,13 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
 console.log('🔑 Supabase client initialized with service role');
 
+// Lista de palavras de teste/técnicas a serem excluídas das análises
+const EXCLUDED_KEYWORDS = [
+  'teste', 'test', 'agente', 'ios', 'android', 'windows', 'desktop', 'mobile',
+  'safari', 'chrome', 'pd', 'pdpoa', 'pduap', 'lovable',
+  'v1', 'v2', 'v3', 'v4', 'v5', 'v6', 'versão', 'versao', 'browser', 'firefox', 'edge'
+];
+
 // Helper para limpar texto (remoção de stop words e saudações)
 function cleanText(text: string): string {
   return text
@@ -60,11 +67,17 @@ Para cada mensagem, identifique:
 4. **topics**: array de tópicos (ex: ["LUOS", "zoneamento", "mobilidade"])
 5. **keywords**: array das principais palavras-chave RELEVANTES
 
-**IMPORTANTE:**
-- IGNORE saudações (oi, olá, bom dia, boa tarde, coe, etc.)
-- IGNORE stop words comuns (de, para, com, o, a, etc.)
-- FOQUE em termos técnicos e relevantes sobre planejamento urbano
-- Palavras-chave devem ter significado analítico real
+**IMPORTANTE - PALAVRAS A IGNORAR:**
+- Saudações: oi, olá, bom dia, boa tarde, etc.
+- Stop words comuns: de, para, com, o, a, etc.
+- **Palavras de teste/técnicas: ${EXCLUDED_KEYWORDS.join(', ')}**
+- Nomes de versões, browsers, sistemas operacionais
+- Palavras que indicam testes internos
+
+**FOQUE EXCLUSIVAMENTE EM:**
+- Termos técnicos sobre planejamento urbano
+- Tópicos de interesse real dos usuários
+- Dúvidas e necessidades relacionadas ao PDUS/LUOS
 
 Mensagens:
 ${messageTexts.map((m: string, i: number) => `${i + 1}. "${m}"`).join('\n')}
