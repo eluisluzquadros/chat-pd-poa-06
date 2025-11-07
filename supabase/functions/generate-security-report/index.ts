@@ -121,7 +121,7 @@ serve(async (req) => {
       console.error('Error fetching user account:', userError);
     }
 
-    // 4. Fetch authentication attempts
+    // 4. Fetch authentication attempts (incluindo user_agent)
     const { data: authAttempts, error: authError2 } = await supabase
       .from('auth_attempts')
       .select('*')
@@ -132,6 +132,40 @@ serve(async (req) => {
     if (authError2) {
       console.error('Error fetching auth attempts:', authError2);
     }
+
+    // 4.5 Parsear informações do dispositivo do último auth attempt
+    const parseDeviceInfo = (userAgent: string | null) => {
+      if (!userAgent) {
+        return { device_type: 'unknown', browser: 'unknown', os: 'unknown' };
+      }
+
+      const ua = userAgent.toLowerCase();
+      
+      let device_type = 'desktop';
+      if (ua.includes('mobile') || ua.includes('android') || ua.includes('iphone')) {
+        device_type = 'mobile';
+      } else if (ua.includes('tablet') || ua.includes('ipad')) {
+        device_type = 'tablet';
+      }
+
+      let browser = 'unknown';
+      if (ua.includes('edg')) browser = 'Edge';
+      else if (ua.includes('chrome') && !ua.includes('edg')) browser = 'Chrome';
+      else if (ua.includes('safari') && !ua.includes('chrome')) browser = 'Safari';
+      else if (ua.includes('firefox')) browser = 'Firefox';
+      else if (ua.includes('opera') || ua.includes('opr')) browser = 'Opera';
+
+      let os = 'unknown';
+      if (ua.includes('windows')) os = 'Windows';
+      else if (ua.includes('mac os') || ua.includes('macos')) os = 'macOS';
+      else if (ua.includes('linux') && !ua.includes('android')) os = 'Linux';
+      else if (ua.includes('android')) os = 'Android';
+      else if (ua.includes('ios') || ua.includes('iphone') || ua.includes('ipad')) os = 'iOS';
+
+      return { device_type, browser, os };
+    };
+
+    const deviceInfo = parseDeviceInfo(authAttempts?.[0]?.user_agent || null);
 
     // 5. Fetch message insights (sentiment analysis)
     const { data: insights, error: insightsError } = await supabase
@@ -207,6 +241,12 @@ serve(async (req) => {
         is_active: userAccount?.is_active ?? false,
         account_status: userAccount?.is_active ? 'ACTIVE' : 'DEACTIVATED',
         ip_address: authAttempts?.[0]?.ip_address?.toString() || 'Unknown',
+        device_info: {
+          device_type: deviceInfo.device_type,
+          browser: deviceInfo.browser,
+          os: deviceInfo.os,
+          user_agent: authAttempts?.[0]?.user_agent || 'unknown'
+        },
         total_sessions: allUserSessions?.length || 0,
         total_messages: messages?.length || 0,
       },

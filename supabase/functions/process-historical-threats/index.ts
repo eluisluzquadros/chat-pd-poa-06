@@ -14,6 +14,47 @@ interface HistoricalThreat {
   created_at: string;
 }
 
+interface DeviceInfo {
+  device_type: string;
+  browser: string;
+  os: string;
+}
+
+// Função para parsear user agent e extrair informações do dispositivo
+function parseDeviceInfo(userAgent: string | null): DeviceInfo {
+  if (!userAgent) {
+    return { device_type: 'unknown', browser: 'unknown', os: 'unknown' };
+  }
+
+  const ua = userAgent.toLowerCase();
+  
+  // Detectar tipo de dispositivo
+  let device_type = 'desktop';
+  if (ua.includes('mobile') || ua.includes('android') || ua.includes('iphone')) {
+    device_type = 'mobile';
+  } else if (ua.includes('tablet') || ua.includes('ipad')) {
+    device_type = 'tablet';
+  }
+
+  // Detectar navegador
+  let browser = 'unknown';
+  if (ua.includes('edg')) browser = 'Edge';
+  else if (ua.includes('chrome') && !ua.includes('edg')) browser = 'Chrome';
+  else if (ua.includes('safari') && !ua.includes('chrome')) browser = 'Safari';
+  else if (ua.includes('firefox')) browser = 'Firefox';
+  else if (ua.includes('opera') || ua.includes('opr')) browser = 'Opera';
+
+  // Detectar OS
+  let os = 'unknown';
+  if (ua.includes('windows')) os = 'Windows';
+  else if (ua.includes('mac os') || ua.includes('macos')) os = 'macOS';
+  else if (ua.includes('linux') && !ua.includes('android')) os = 'Linux';
+  else if (ua.includes('android')) os = 'Android';
+  else if (ua.includes('ios') || ua.includes('iphone') || ua.includes('ipad')) os = 'iOS';
+
+  return { device_type, browser, os };
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -229,10 +270,10 @@ serve(async (req) => {
           .eq('user_id', session.user_id)
           .maybeSingle();
 
-        // ✅ Buscar IP address mais recente
+        // ✅ Buscar IP address e user_agent mais recente
         const { data: lastAuthAttempt } = await supabase
           .from('auth_attempts')
-          .select('ip_address, created_at')
+          .select('ip_address, user_agent, created_at')
           .eq('email', userAccount?.email || '')
           .order('created_at', { ascending: false })
           .limit(1)
@@ -243,6 +284,11 @@ serve(async (req) => {
         const userIp = lastAuthAttempt?.ip_address?.toString() || 'Unknown';
         const userRoleStr = userRole?.role || 'user';
         const userId = session.user_id;
+        
+        // ✅ Parsear informações do dispositivo
+        const deviceInfo = parseDeviceInfo(lastAuthAttempt?.user_agent || null);
+        
+        console.log(`📱 Device Info: ${deviceInfo.device_type} | ${deviceInfo.browser} | ${deviceInfo.os}`);
 
         // Criar alerta
         const { data: newAlert, error: alertError } = await supabase
@@ -261,6 +307,10 @@ serve(async (req) => {
               user_full_name: userFullName,
               user_role: userRoleStr,
               ip_address: userIp,
+              device_type: deviceInfo.device_type,
+              browser: deviceInfo.browser,
+              os: deviceInfo.os,
+              user_agent: lastAuthAttempt?.user_agent || 'unknown',
               is_active: userAccount?.is_active ?? true,
               user_message: threat.user_message.substring(0, 500),
               sentiment: threat.sentiment,
@@ -279,7 +329,15 @@ serve(async (req) => {
           .single();
 
         if (alertError) {
-          console.error(`❌ Erro ao criar alerta: ${alertError.message}`);
+          console.error(`❌ Erro ao criar alerta:`, {
+            message: alertError.message,
+            code: alertError.code,
+            details: alertError.details,
+            hint: alertError.hint,
+            session_id: threat.session_id,
+            user_email: userEmail,
+            user_id: userId
+          });
           errorCount++;
           continue;
         }

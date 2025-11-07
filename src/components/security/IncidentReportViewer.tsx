@@ -2,10 +2,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { AlertTriangle, Shield, Download, User, MapPin, Clock, Activity, Bot } from "lucide-react";
+import { AlertTriangle, Shield, Download, User, MapPin, Clock, Activity, Bot, Monitor, Smartphone } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
+import { ExportReportPDF } from "./ExportReportPDF";
 
 interface IncidentReportViewerProps {
   report: any;
@@ -62,10 +63,13 @@ export function IncidentReportViewer({ report }: IncidentReportViewerProps) {
                 <Badge variant="outline">{report.status}</Badge>
               </div>
             </div>
-            <Button onClick={handleDownloadReport} variant="outline">
-              <Download className="h-4 w-4 mr-2" />
-              Download JSON
-            </Button>
+            <div className="flex gap-2">
+              <ExportReportPDF report={reportData} />
+              <Button onClick={handleDownloadReport} variant="outline">
+                <Download className="h-4 w-4 mr-2" />
+                JSON
+              </Button>
+            </div>
           </div>
         </CardHeader>
       </Card>
@@ -175,25 +179,62 @@ export function IncidentReportViewer({ report }: IncidentReportViewerProps) {
             <CardContent className="space-y-4">
               <div className="grid gap-4 md:grid-cols-2">
                 <div>
+                  <h4 className="font-semibold mb-2">Nome Completo</h4>
+                  <p className="text-sm">{reportData?.attacker_profile?.full_name || "N/A"}</p>
+                </div>
+                <div>
+                  <h4 className="font-semibold mb-2">Email</h4>
+                  <p className="text-sm font-mono">{reportData?.attacker_profile?.email || "N/A"}</p>
+                </div>
+                <div>
+                  <h4 className="font-semibold mb-2">Role</h4>
+                  <p className="text-sm">{reportData?.attacker_profile?.role || "N/A"}</p>
+                </div>
+                <div>
+                  <h4 className="font-semibold mb-2">Status da Conta</h4>
+                  <Badge variant={reportData?.attacker_profile?.account_status === 'ACTIVE' ? 'default' : 'destructive'}>
+                    {reportData?.attacker_profile?.account_status || "N/A"}
+                  </Badge>
+                </div>
+                <div>
                   <h4 className="font-semibold mb-2">Endereço IP</h4>
                   <p className="text-sm font-mono">{reportData?.attacker_profile?.ip_address}</p>
                 </div>
                 <div>
-                  <h4 className="font-semibold mb-2">Localização</h4>
-                  <p className="text-sm">{reportData?.attacker_profile?.location || "Não disponível"}</p>
+                  <h4 className="font-semibold mb-2">Total de Sessões</h4>
+                  <p className="text-sm">{reportData?.attacker_profile?.total_sessions || 0}</p>
                 </div>
-                <div>
-                  <h4 className="font-semibold mb-2">User Agent</h4>
-                  <p className="text-sm break-all">{reportData?.attacker_profile?.user_agent || "Não disponível"}</p>
-                </div>
-                <div>
-                  <h4 className="font-semibold mb-2">Padrões de Comportamento</h4>
-                  <div className="space-y-1">
-                    {reportData?.attacker_profile?.behavior_patterns?.map((pattern: string, index: number) => (
-                      <Badge key={index} variant="outline" className="mr-1">
-                        {pattern}
-                      </Badge>
-                    ))}
+              </div>
+
+              <div className="mt-6 p-4 bg-muted rounded-lg">
+                <h4 className="font-semibold mb-3 flex items-center gap-2">
+                  {reportData?.attacker_profile?.device_info?.device_type === 'mobile' ? (
+                    <Smartphone className="h-5 w-5" />
+                  ) : (
+                    <Monitor className="h-5 w-5" />
+                  )}
+                  Informações de Dispositivo
+                </h4>
+                <div className="grid gap-3 md:grid-cols-3">
+                  <div>
+                    <span className="text-xs text-muted-foreground">Tipo de Dispositivo</span>
+                    <Badge variant="secondary" className="ml-2">
+                      {reportData?.attacker_profile?.device_info?.device_type || 'N/A'}
+                    </Badge>
+                  </div>
+                  <div>
+                    <span className="text-xs text-muted-foreground">Navegador</span>
+                    <p className="text-sm font-medium mt-1">{reportData?.attacker_profile?.device_info?.browser || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <span className="text-xs text-muted-foreground">Sistema Operacional</span>
+                    <p className="text-sm font-medium mt-1">{reportData?.attacker_profile?.device_info?.os || 'N/A'}</p>
+                  </div>
+                  <div className="md:col-span-3">
+                    <span className="text-xs text-muted-foreground">User Agent</span>
+                    <p className="text-xs mt-1 font-mono bg-background p-2 rounded break-all">
+                      {reportData?.attacker_profile?.device_info?.user_agent || 'N/A'}
+                    </p>
                   </div>
                 </div>
               </div>
