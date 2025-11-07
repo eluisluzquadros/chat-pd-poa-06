@@ -284,6 +284,46 @@ serve(async (req) => {
 
     console.log('✅ Security report generated successfully');
 
+    // Save report to database
+    const { error: saveError } = await supabase
+      .from('security_incident_reports')
+      .insert({
+        session_id: sessionId,
+        alert_id: alertId,
+        report_data: report,
+        generated_by: user.id,
+        threat_level: threatLevel,
+        status: 'pending_review'
+      });
+
+    if (saveError) {
+      console.error("⚠️ Error saving report:", saveError);
+    } else {
+      console.log("✅ Report saved to database");
+      
+      // Trigger email notification for critical threats
+      if (threatLevel === 'critical') {
+        try {
+          await supabase.functions.invoke('send-security-email', {
+            body: {
+              to: 'security@urbanista.app',
+              title: `Incidente Crítico: ${session.title}`,
+              description: `Tentativa de injeção de prompt detectada na sessão ${sessionId}`,
+              severity: 'critical',
+              sessionId: sessionId,
+              reportId: alertId,
+              alert_type: 'prompt_injection',
+              triggered_at: new Date().toISOString(),
+              user_email: userAccount?.email || 'unknown',
+            }
+          });
+          console.log("📧 Critical alert email sent");
+        } catch (emailError) {
+          console.error("⚠️ Error sending alert email:", emailError);
+        }
+      }
+    }
+
     return new Response(JSON.stringify(report), {
       status: 200,
       headers: {

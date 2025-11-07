@@ -32,6 +32,7 @@ import Metrics from "./pages/admin/Metrics";
 import PlatformSettings from "./pages/admin/PlatformSettings";
 import PlatformStatus from "./pages/PlatformStatus";
 import AgenticRAGDashboard from "./components/admin/AgenticRAGDashboard";
+import SecurityIncidents from "./pages/SecurityIncidents";
 const KnowledgeBaseAdminLazy = React.lazy(() => import("./pages/admin/KnowledgeBaseAdmin"));
 const KnowledgeManagementLazy = React.lazy(() => import("./pages/admin/KnowledgeManagement"));
 
@@ -214,6 +215,15 @@ function App() {
                   <SimpleRoleGuard adminOnly={true}>
                     <AdminErrorBoundary>
                       <SecurityRunDetails />
+                    </AdminErrorBoundary>
+                  </SimpleRoleGuard>
+                </SimpleAuthGuard>
+              } />
+              <Route path="/admin/security-incidents" element={
+                <SimpleAuthGuard>
+                  <SimpleRoleGuard adminOnly={true}>
+                    <AdminErrorBoundary>
+                      <SecurityIncidents />
                     </AdminErrorBoundary>
                   </SimpleRoleGuard>
                 </SimpleAuthGuard>

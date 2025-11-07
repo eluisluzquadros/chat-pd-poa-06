@@ -26,6 +26,7 @@ const adminNavItems = [
   { path: "/admin/knowledge", label: "Base de Conhecimento", icon: BookOpen },
   { path: "/admin/monitoring", label: "Monitoramento", icon: Target },
   { path: "/admin/security", label: "Segurança", icon: Shield },
+  { path: "/admin/security-incidents", label: "Incidentes de Segurança", icon: Shield },
   { path: "/admin/data-import", label: "Importar Dados", icon: Database },
   { path: "/admin/settings", label: "Plataforma", icon: Settings },
 ];

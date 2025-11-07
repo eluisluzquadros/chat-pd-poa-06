@@ -12,6 +12,10 @@ serve(async (req) => {
   }
 
   try {
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
     const { 
       to, 
       to_name,
@@ -22,7 +26,9 @@ serve(async (req) => {
       description,
       triggered_at,
       user_email,
-      session_id 
+      session_id,
+      sessionId,
+      reportId
     } = await req.json();
 
     console.log('📧 Enviando email de segurança para:', to);
@@ -222,6 +228,18 @@ serve(async (req) => {
 
     const data = await response.json();
     console.log('✅ Email enviado com sucesso:', data);
+
+    // Log notification to database
+    await supabase.from('security_notifications').insert({
+      recipient_email: to,
+      notification_type: 'security_alert',
+      severity: severity,
+      subject: `🚨 [${severityLabel}] ${title}`,
+      sent_at: new Date().toISOString(),
+      session_id: session_id || sessionId,
+      alert_id: alert_id || reportId,
+      email_provider_response: data
+    });
 
     return new Response(
       JSON.stringify({ success: true, data }),
