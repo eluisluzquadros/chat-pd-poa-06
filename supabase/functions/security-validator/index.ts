@@ -164,12 +164,64 @@ serve(async (req) => {
 
     console.log(`✅ Run criada com ID: ${run.id}`);
 
+    // 🚀 RETORNAR IMEDIATAMENTE - processar de forma assíncrona
+    // Isso evita timeout do Edge Function (60s)
+    
+    // Processar testes em background sem bloquear a resposta HTTP
+    processTestsAsync(supabase, run, testNumbers, agentId, user.id, systemVersion).catch(error => {
+      console.error('❌ Erro no processamento assíncrono:', error);
+    });
+
+    // Retornar sucesso imediatamente
+    return new Response(
+      JSON.stringify({
+        success: true,
+        runId: run.id,
+        message: 'Validação de segurança iniciada. Acompanhe o progresso em tempo real.',
+        status: 'running'
+      }),
+      { 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 200 
+      }
+    );
+
+  } catch (error) {
+    console.error('❌ Erro na validação de segurança:', error);
+    
+    return new Response(
+      JSON.stringify({ 
+        error: error.message,
+        details: error.stack 
+      }),
+      { 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 500 
+      }
+    );
+  }
+});
+
+/**
+ * Processa todos os testes de forma assíncrona
+ */
+async function processTestsAsync(
+  supabase: any,
+  run: any,
+  testNumbers: number[] | undefined,
+  agentId: string | undefined,
+  userId: string,
+  systemVersion: string
+) {
+  try {
+    console.log(`🔄 Iniciando processamento assíncrono para run ${run.id}`);
+
     // ⏱️  Timeout automático: marcar como failed após 10 minutos
-    const timeoutMs = 10 * 60 * 1000; // 10 minutos
+    const timeoutMs = 10 * 60 * 1000;
     const timeoutId = setTimeout(async () => {
-      console.log(`⏱️  TIMEOUT: Run ${run.id} excedeu 10 minutos, marcando como failed`);
+      console.log(`⏱️  TIMEOUT: Run ${run.id} excedeu 10 minutos`);
       
-      const { error } = await supabase
+      await supabase
         .from('security_validation_runs')
         .update({
           status: 'failed',
@@ -177,11 +229,7 @@ serve(async (req) => {
           error_message: 'Timeout: Execução excedeu 10 minutos'
         })
         .eq('id', run.id)
-        .eq('status', 'running'); // Só atualiza se ainda estiver running
-      
-      if (error) {
-        console.error('❌ Erro ao aplicar timeout:', error);
-      }
+        .eq('status', 'running');
     }, timeoutMs);
 
     // Buscar casos de teste
@@ -430,9 +478,9 @@ serve(async (req) => {
       }
     };
 
-    // Configuração de concorrência (ajustado para evitar rate limit)
-    const CONCURRENT_TESTS = 1;           // 1 teste por vez (sequencial)
-    const DELAY_BETWEEN_BATCHES = 3000;   // 3 segundos entre cada teste
+    // Configuração de concorrência otimizada
+    const CONCURRENT_TESTS = 2;           // 2 testes em paralelo
+    const DELAY_BETWEEN_BATCHES = 1500;   // 1.5 segundos entre lotes
 
     console.log(`🚀 Executando ${testCases.length} testes em lotes de ${CONCURRENT_TESTS} com ${DELAY_BETWEEN_BATCHES}ms entre lotes`);
 
@@ -509,11 +557,11 @@ serve(async (req) => {
       .insert(resultsToInsert);
 
     if (resultsError) {
-      console.error('Erro ao salvar resultados:', resultsError);
+      console.error('❌ Erro ao salvar resultados:', resultsError);
     }
 
-    // Atualizar run com resultados finais
-    const { error: updateError } = await supabase
+    // Atualizar run com os resultados
+    await supabase
       .from('security_validation_runs')
       .update({
         status: 'completed',
@@ -529,59 +577,23 @@ serve(async (req) => {
       })
       .eq('id', run.id);
 
-    if (updateError) {
-      console.error('Erro ao atualizar run:', updateError);
-    }
-
-    // ✅ Limpar timeout pois a execução completou com sucesso
     clearTimeout(timeoutId);
-
-    return new Response(
-      JSON.stringify({
-        success: true,
-        runId: run.id,
-        summary: {
-          totalTests: testCases.length,
-          passedTests,
-          failedTests,
-          partialTests,
-          criticalFailures,
-          highSeverityFailures,
-          mediumSeverityFailures,
-          overallScore: parseFloat(overallScore),
-        },
-        results,
-      }),
-      {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200,
-      }
-    );
+    console.log(`✅ Processamento concluído para run ${run.id}`);
 
   } catch (error) {
-    console.error('❌ Erro na validação de segurança:', error);
-
-    // Em caso de erro, também limpar o timeout (se existir)
-    try {
-      if (typeof timeoutId !== 'undefined') {
-        clearTimeout(timeoutId);
-      }
-    } catch (e) {
-      // Ignorar erro ao limpar timeout
-    }
-
-    return new Response(
-      JSON.stringify({
-        success: false,
-        error: error.message,
-      }),
-      {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 500,
-      }
-    );
+    console.error('❌ Erro no processamento assíncrono:', error);
+    
+    // Marcar run como failed
+    await supabase
+      .from('security_validation_runs')
+      .update({
+        status: 'failed',
+        completed_at: new Date().toISOString(),
+        error_message: error.message
+      })
+      .eq('id', run.id);
   }
-});
+}
 
 function analyzeResponse(
   testCase: TestCase,
