@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Loader2, AlertTriangle, Info, AlertCircle, CheckCircle2 } from "lucide-react";
+import { Loader2, AlertTriangle, Info, AlertCircle, CheckCircle2, FileText, Eye } from "lucide-react";
 import { Period, TimeRange } from "@/utils/dateUtils";
 
 interface Alert {
@@ -15,6 +15,17 @@ interface Alert {
   description: string;
   triggered_at: string;
   acknowledged: boolean;
+  data?: {
+    session_id?: string;
+    user_id?: string;
+    user_email?: string;
+    user_full_name?: string;
+    user_message?: string;
+    ip_address?: string;
+    sentiment?: string;
+    keywords?: string[];
+    [key: string]: any;
+  };
 }
 
 interface IntelligenceAlertsProps {
@@ -71,6 +82,56 @@ export function IntelligenceAlerts({ period, timeRange }: IntelligenceAlertsProp
     }
   };
 
+  const handleGenerateReport = async (alert: Alert) => {
+    if (!alert.data?.session_id) {
+      toast.error('ID da sessão não encontrado');
+      return;
+    }
+
+    try {
+      toast.loading('Gerando relatório forense...', { id: 'report-gen' });
+      
+      const { data, error } = await supabase.functions.invoke('generate-security-report', {
+        body: {
+          sessionId: alert.data.session_id,
+          alertId: alert.id,
+        }
+      });
+
+      if (error) throw error;
+
+      // Download report as JSON
+      const blob = new Blob([JSON.stringify(data, null, 2)], {
+        type: 'application/json'
+      });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `security-incident-${data.report_metadata.report_id}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      toast.success('Relatório forense gerado com sucesso', { id: 'report-gen' });
+      
+      // Show summary
+      toast.info(
+        `Relatório ID: ${data.report_metadata.report_id}\n` +
+        `Nível de ameaça: ${data.incident_classification.severity.toUpperCase()}\n` +
+        `Status: ${data.incident_classification.status}`,
+        { duration: 8000 }
+      );
+    } catch (error) {
+      console.error('Error generating report:', error);
+      toast.error('Erro ao gerar relatório forense', { id: 'report-gen' });
+    }
+  };
+
+  const handleViewConversation = (sessionId: string) => {
+    window.open(`/chat/${sessionId}`, '_blank');
+  };
+
   if (isLoading) {
     return (
       <Card>
@@ -125,20 +186,79 @@ export function IntelligenceAlerts({ period, timeRange }: IntelligenceAlertsProp
                         <p className="text-sm text-muted-foreground mb-2">
                           {alert.description}
                         </p>
-                        <p className="text-xs text-muted-foreground">
+                        <p className="text-xs text-muted-foreground mb-3">
                           {new Date(alert.triggered_at).toLocaleString('pt-BR')}
                         </p>
+                        
+                        {/* Alert Details */}
+                        {alert.data && (
+                          <div className="mt-3 p-3 bg-muted/50 rounded-lg space-y-2 text-sm">
+                            {alert.data.user_email && (
+                              <div className="flex justify-between">
+                                <span className="font-medium">Usuário:</span>
+                                <span className="text-muted-foreground">{alert.data.user_email}</span>
+                              </div>
+                            )}
+                            {alert.data.ip_address && (
+                              <div className="flex justify-between">
+                                <span className="font-medium">IP:</span>
+                                <span className="font-mono text-xs">{alert.data.ip_address}</span>
+                              </div>
+                            )}
+                            {alert.data.session_id && (
+                              <div className="flex justify-between">
+                                <span className="font-medium">Sessão:</span>
+                                <span className="font-mono text-xs truncate max-w-[200px]">{alert.data.session_id}</span>
+                              </div>
+                            )}
+                            {alert.data.user_message && (
+                              <div className="mt-2 pt-2 border-t">
+                                <span className="font-medium block mb-1">Mensagem suspeita:</span>
+                                <p className="text-xs text-muted-foreground italic line-clamp-2">
+                                  "{alert.data.user_message}"
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                        )}
+
+                        {/* Action Buttons */}
+                        <div className="flex flex-wrap gap-2 mt-4">
+                          {alert.severity === 'critical' && alert.data?.session_id && (
+                            <Button 
+                              onClick={() => handleGenerateReport(alert)} 
+                              size="sm" 
+                              variant="destructive"
+                            >
+                              <FileText className="h-4 w-4 mr-2" />
+                              Relatório Jurídico
+                            </Button>
+                          )}
+                          
+                          {alert.data?.session_id && (
+                            <Button 
+                              onClick={() => handleViewConversation(alert.data.session_id!)} 
+                              size="sm" 
+                              variant="outline"
+                            >
+                              <Eye className="h-4 w-4 mr-2" />
+                              Ver Conversa
+                            </Button>
+                          )}
+                          
+                          {!alert.acknowledged && (
+                            <Button 
+                              onClick={() => handleAcknowledge(alert.id)} 
+                              size="sm" 
+                              variant="outline"
+                            >
+                              <CheckCircle2 className="h-4 w-4 mr-2" />
+                              Marcar como Lido
+                            </Button>
+                          )}
+                        </div>
                       </div>
                     </div>
-                    {!alert.acknowledged && (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handleAcknowledge(alert.id)}
-                      >
-                        Marcar como lido
-                      </Button>
-                    )}
                   </div>
                 </div>
               );

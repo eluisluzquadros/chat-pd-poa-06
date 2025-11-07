@@ -1,5 +1,8 @@
 project_id = "ngrqwmvuhvjkeohesbxs"
 
+[functions.generate-security-report]
+verify_jwt = true
+
 [functions.dify-proxy]
 verify_jwt = false
 
