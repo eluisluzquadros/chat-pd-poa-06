@@ -27,6 +27,13 @@
     --input: 240 5.9% 90%;
     --ring: 177 41% 27%;
     --radius: 1rem;
+    
+    /* Chart colors - cores vibrantes e acessíveis */
+    --chart-1: 142 76% 36%;    /* Verde para positivo */
+    --chart-2: 0 84% 60%;      /* Vermelho para negativo */
+    --chart-3: 217 91% 60%;    /* Azul para neutro */
+    --chart-4: 280 83% 57%;    /* Roxo */
+    --chart-5: 38 92% 50%;     /* Laranja */
   }
 
   .dark {
@@ -49,6 +56,13 @@
     --border: 177 30% 18%;
     --input: 177 30% 18%;
     --ring: 177 41% 35%;
+    
+    /* Chart colors dark mode - versões mais suaves */
+    --chart-1: 142 70% 45%;    /* Verde mais claro */
+    --chart-2: 0 72% 55%;      /* Vermelho mais suave */
+    --chart-3: 217 85% 65%;    /* Azul mais claro */
+    --chart-4: 280 75% 62%;    /* Roxo mais claro */
+    --chart-5: 38 85% 55%;     /* Laranja mais suave */
   }
 }
  
