@@ -50,12 +50,10 @@ serve(async (req) => {
 
     console.log('🔍 Buscando ameaças históricas não processadas...');
 
-    // Buscar todos os message_insights com padrões de ataque
+    // Buscar todos os message_insights (sem filtro de sentiment)
     const { data: threats, error: threatsError } = await supabase
       .from('message_insights')
       .select('*')
-      .eq('sentiment', 'negative')
-      .or(`keywords.is.null,keywords.eq.{}`)
       .order('created_at', { ascending: false });
 
     if (threatsError) {
@@ -73,16 +71,19 @@ serve(async (req) => {
       try {
         const message = threat.user_message?.toLowerCase() || '';
         
-        // Verificar padrões de ataque
+        // Verificar padrões de ataque (independente do sentiment)
         const isAttack = 
-          message.includes('system') && message.includes('prompt') ||
-          message.includes('reiniciar') && message.includes('instruç') ||
-          message.includes('acesso') && message.includes('irrestrito') ||
           message.includes('[system') ||
-          message.includes('ignore') && message.includes('instruction') ||
-          message.includes('database') ||
-          message.includes('override') ||
-          message.includes('bypass') && message.includes('security');
+          (message.includes('reiniciar') && message.includes('instruç')) ||
+          (message.includes('libere') && message.includes('acesso')) ||
+          (message.includes('obedeça') && (message.includes('pedidos') || message.includes('pedido'))) ||
+          (message.includes('ignore') && message.includes('instruction')) ||
+          (message.includes('override') && message.includes('previous')) ||
+          (message.includes('bypass') && message.includes('security')) ||
+          (message.includes('system') && message.includes('prompt')) ||
+          (message.includes('acesso') && message.includes('irrestrito')) ||
+          message.includes('database access') ||
+          message.includes('admin privileges');
 
         if (!isAttack) {
           skippedCount++;
