@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Loader2, Download } from "lucide-react";
 import { toast } from "sonner";
 import { Period, TimeRange } from "@/utils/dateUtils";
+import { filterNoiseKeywords, filterTestInsights } from "@/services/keywordFilterService";
 
 interface FAQDetectorProps {
   period: Period;
@@ -36,14 +37,23 @@ export function FAQDetector({ period, timeRange }: FAQDetectorProps) {
           return;
         }
 
+        // Filtrar mensagens de teste
+        const cleanData = filterTestInsights(data);
+
         // Group similar questions by keywords
         const questionGroups = new Map<string, { questions: string[]; keywords: Set<string> }>();
 
-        data.forEach((insight: any) => {
-          const keywordsStr = insight.keywords?.join(",") || "";
+        cleanData.forEach((insight: any) => {
+          // Filtrar keywords ruidosas
+          const cleanKeywords = filterNoiseKeywords(insight.keywords || []);
+          
+          // Se não sobrou nenhuma keyword relevante, pular
+          if (cleanKeywords.length === 0) return;
+          
+          const keywordsStr = cleanKeywords.join(",");
           const current = questionGroups.get(keywordsStr) || { 
             questions: [], 
-            keywords: new Set(insight.keywords || []) 
+            keywords: new Set(cleanKeywords) 
           };
           current.questions.push(insight.user_message);
           questionGroups.set(keywordsStr, current);

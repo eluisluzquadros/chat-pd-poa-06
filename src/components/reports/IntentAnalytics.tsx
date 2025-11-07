@@ -5,6 +5,7 @@ import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { Period, TimeRange } from "@/utils/dateUtils";
+import { filterTestInsights } from "@/services/keywordFilterService";
 
 interface IntentAnalyticsProps {
   period: Period;
@@ -27,7 +28,7 @@ export function IntentAnalytics({ period, timeRange }: IntentAnalyticsProps) {
       try {
         const { data, error } = await supabase
           .from("message_insights")
-          .select("intent, user_message");
+          .select("intent, user_message, keywords, topics");
 
         if (error) throw error;
 
@@ -36,10 +37,13 @@ export function IntentAnalytics({ period, timeRange }: IntentAnalyticsProps) {
           return;
         }
 
+        // Filtrar mensagens de teste
+        const cleanData = filterTestInsights(data);
+
         // Group by intent
         const intentMap = new Map<string, { count: number; examples: string[] }>();
         
-        data.forEach((insight: any) => {
+        cleanData.forEach((insight: any) => {
           if (insight.intent && Array.isArray(insight.intent)) {
             insight.intent.forEach((intentType: string) => {
               const current = intentMap.get(intentType) || { count: 0, examples: [] };

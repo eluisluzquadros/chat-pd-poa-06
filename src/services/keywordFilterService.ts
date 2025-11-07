@@ -80,3 +80,37 @@ export function isNoiseKeyword(keyword: string): boolean {
 export function filterNoiseTopics(topics: string[]): string[] {
   return filterNoiseKeywords(topics);
 }
+
+/**
+ * Verifica se uma mensagem é considerada "ruído" (teste/técnica)
+ * baseado em suas keywords e tópicos
+ */
+export function isTestMessage(keywords: string[], topics: string[]): boolean {
+  if (!keywords && !topics) return false;
+  
+  const allTerms = [
+    ...(keywords || []),
+    ...(topics || [])
+  ];
+  
+  // Se não há termos, não é ruído
+  if (allTerms.length === 0) return false;
+  
+  // Contar quantos termos são ruído
+  const noiseCount = allTerms.filter(term => 
+    isNoiseKeyword(term)
+  ).length;
+  
+  // Se 80% ou mais dos termos são ruído, considerar mensagem como teste
+  const noiseRatio = noiseCount / allTerms.length;
+  return noiseRatio >= 0.8;
+}
+
+/**
+ * Filtra insights removendo mensagens de teste
+ */
+export function filterTestInsights(insights: any[]): any[] {
+  return insights.filter(insight => 
+    !isTestMessage(insight.keywords, insight.topics)
+  );
+}

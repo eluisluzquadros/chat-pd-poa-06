@@ -1,5 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import { Period, getDateRangeByPeriod } from "@/utils/dateUtils";
+import { filterTestInsights, isNoiseKeyword } from "./keywordFilterService";
 
 export class MessageAnalysisService {
   /**
@@ -106,7 +107,7 @@ export class MessageAnalysisService {
     const { data, error } = await supabase.rpc('get_top_topics', {
       start_date: startDate.toISOString(),
       end_date: endDate.toISOString(),
-      limit_count: limit
+      limit_count: limit * 3 // Buscar 3x mais para compensar filtros
     });
 
     if (error) {
@@ -114,7 +115,12 @@ export class MessageAnalysisService {
       return [];
     }
 
-    return data || [];
+    // Filtrar tópicos ruidosos
+    const cleanTopics = (data || [])
+      .filter(topic => !isNoiseKeyword(topic.topic))
+      .slice(0, limit);
+
+    return cleanTopics;
   }
 
   /**
@@ -125,7 +131,7 @@ export class MessageAnalysisService {
 
     const { data, error } = await supabase
       .from('message_insights')
-      .select('sentiment, sentiment_score')
+      .select('sentiment, sentiment_score, keywords, topics')
       .gte('created_at', startDate.toISOString())
       .lte('created_at', endDate.toISOString());
 
@@ -134,10 +140,13 @@ export class MessageAnalysisService {
       return null;
     }
 
-    const total = data.length;
-    const positive = data.filter(d => d.sentiment === 'positive').length;
-    const negative = data.filter(d => d.sentiment === 'negative').length;
-    const neutral = data.filter(d => d.sentiment === 'neutral').length;
+    // Filtrar mensagens de teste
+    const cleanData = filterTestInsights(data);
+
+    const total = cleanData.length;
+    const positive = cleanData.filter(d => d.sentiment === 'positive').length;
+    const negative = cleanData.filter(d => d.sentiment === 'negative').length;
+    const neutral = cleanData.filter(d => d.sentiment === 'neutral').length;
 
     return {
       total,
