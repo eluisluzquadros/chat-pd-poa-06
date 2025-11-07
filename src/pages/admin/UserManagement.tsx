@@ -39,6 +39,12 @@ const UserManagement = () => {
 
         if (error) {
           console.error("Error fetching users:", error);
+          console.error("Error details:", {
+            message: error.message,
+            code: error.code,
+            details: error.details,
+            hint: error.hint
+          });
           toast.error("Erro ao carregar usuários");
           return [];
         }
