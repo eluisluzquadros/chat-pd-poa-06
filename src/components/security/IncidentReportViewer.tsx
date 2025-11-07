@@ -2,9 +2,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { AlertTriangle, Shield, Download, User, MapPin, Clock, Activity } from "lucide-react";
+import { AlertTriangle, Shield, Download, User, MapPin, Clock, Activity, Bot } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { cn } from "@/lib/utils";
 
 interface IncidentReportViewerProps {
   report: any;
@@ -104,11 +105,12 @@ export function IncidentReportViewer({ report }: IncidentReportViewerProps) {
 
       {/* Main Content */}
       <Tabs defaultValue="overview" className="space-y-4">
-        <TabsList>
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="overview">Visão Geral</TabsTrigger>
           <TabsTrigger value="attacker">Perfil do Atacante</TabsTrigger>
           <TabsTrigger value="technical">Evidências Técnicas</TabsTrigger>
           <TabsTrigger value="conversation">Conversação</TabsTrigger>
+          <TabsTrigger value="full-history">Histórico Completo</TabsTrigger>
           <TabsTrigger value="recommendations">Recomendações</TabsTrigger>
         </TabsList>
 
@@ -240,7 +242,7 @@ export function IncidentReportViewer({ report }: IncidentReportViewerProps) {
         <TabsContent value="conversation" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Histórico de Conversação</CardTitle>
+              <CardTitle>Conversação do Ataque</CardTitle>
               <CardDescription>Mensagens trocadas durante o incidente</CardDescription>
             </CardHeader>
             <CardContent>
@@ -260,6 +262,82 @@ export function IncidentReportViewer({ report }: IncidentReportViewerProps) {
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="full-history" className="space-y-4">
+          <div className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Histórico Completo do Usuário</CardTitle>
+                <CardDescription>
+                  Todas as {reportData?.attacker_profile?.total_sessions || 0} sessões e {reportData?.attacker_profile?.total_messages || 0} mensagens do usuário investigado
+                </CardDescription>
+              </CardHeader>
+            </Card>
+            
+            {reportData?.full_conversation_history?.map((session: any, idx: number) => (
+              <Card key={idx} className="border-l-4 border-l-primary">
+                <CardHeader>
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <CardTitle className="text-lg">
+                        Sessão {idx + 1}: {session.session_title}
+                      </CardTitle>
+                      <CardDescription className="mt-1">
+                        {format(new Date(session.session_date), "dd/MM/yyyy HH:mm", { locale: ptBR })} • Modelo: {session.model}
+                      </CardDescription>
+                    </div>
+                    <Badge variant="outline">
+                      {session.messages?.length || 0} mensagens
+                    </Badge>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {session.messages?.map((msg: any, msgIdx: number) => {
+                      const messageContent = msg.message?.content || '';
+                      const messageRole = msg.message?.role || 'unknown';
+                      
+                      return (
+                        <div
+                          key={msgIdx}
+                          className={cn(
+                            "p-3 rounded-lg border",
+                            messageRole === 'user' 
+                              ? 'bg-blue-50 dark:bg-blue-950 border-blue-200 dark:border-blue-800' 
+                              : 'bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-800'
+                          )}
+                        >
+                          <div className="flex items-center gap-2 mb-2">
+                            {messageRole === 'user' ? (
+                              <User className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                            ) : (
+                              <Bot className="h-4 w-4 text-gray-600 dark:text-gray-400" />
+                            )}
+                            <span className="text-xs font-medium">
+                              {messageRole === 'user' ? 'Usuário' : 'Assistente'}
+                            </span>
+                            <span className="text-xs text-muted-foreground">
+                              {format(new Date(msg.created_at), "HH:mm:ss", { locale: ptBR })}
+                            </span>
+                          </div>
+                          <p className="text-sm whitespace-pre-wrap">{messageContent}</p>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+            
+            {(!reportData?.full_conversation_history || reportData.full_conversation_history.length === 0) && (
+              <Card>
+                <CardContent className="py-8 text-center text-muted-foreground">
+                  Nenhum histórico de conversação disponível
+                </CardContent>
+              </Card>
+            )}
+          </div>
         </TabsContent>
 
         <TabsContent value="recommendations" className="space-y-4">

@@ -80,16 +80,29 @@ serve(async (req) => {
       });
     }
 
-    // 2. Fetch all messages from the session
+    // 2. Fetch ALL user sessions and messages
+    const userId = session.user_id;
+
+    // 2a. Buscar todas as sessões do usuário
+    const { data: allUserSessions } = await supabase
+      .from('chat_sessions')
+      .select('id, title, created_at, model')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: true });
+
+    // 2b. Buscar TODAS as mensagens de TODAS as sessões
+    const sessionIds = allUserSessions?.map(s => s.id) || [sessionId];
     const { data: messages, error: messagesError } = await supabase
       .from('chat_history')
       .select('*')
-      .eq('session_id', sessionId)
+      .in('session_id', sessionIds)
       .order('created_at', { ascending: true });
 
     if (messagesError) {
       console.error('Error fetching messages:', messagesError);
     }
+
+    console.log(`📊 Conversas analisadas: ${allUserSessions?.length || 0} sessões, ${messages?.length || 0} mensagens`);
 
     // 3. Fetch user account details
     const { data: userAccount, error: userError } = await supabase
@@ -160,6 +173,15 @@ serve(async (req) => {
     const threatScore = Object.values(threatIndicators).filter(Boolean).length;
     const threatLevel = threatScore >= 3 ? 'critical' : threatScore >= 2 ? 'high' : 'medium';
 
+    // 8.5. Agrupar mensagens por sessão para o relatório
+    const conversationsBySession = allUserSessions?.map(sess => ({
+      session_id: sess.id,
+      session_title: sess.title,
+      session_date: sess.created_at,
+      model: sess.model,
+      messages: messages?.filter(m => m.session_id === sess.id) || []
+    })) || [];
+
     // 9. Generate comprehensive forensic report
     const report = {
       report_metadata: {
@@ -184,6 +206,9 @@ serve(async (req) => {
         role: userAccount?.user_roles?.[0]?.role || 'unknown',
         is_active: userAccount?.is_active ?? false,
         account_status: userAccount?.is_active ? 'ACTIVE' : 'DEACTIVATED',
+        ip_address: authAttempts?.[0]?.ip_address?.toString() || 'Unknown',
+        total_sessions: allUserSessions?.length || 0,
+        total_messages: messages?.length || 0,
       },
 
       attack_details: {
@@ -253,12 +278,16 @@ serve(async (req) => {
         containment_status: 'complete',
       },
 
-      full_conversation_log: messages?.map(m => ({
+      // ✅ Histórico completo de conversas (agrupado por sessão)
+      full_conversation_history: conversationsBySession,
+
+      // Conversação da sessão do ataque (mantido para compatibilidade)
+      conversation_log: messages?.filter(m => m.session_id === sessionId).map(m => ({
         message_id: m.id,
         timestamp: m.created_at,
         role: m.message?.role || 'unknown',
         content: m.message?.content || '',
-        metadata: m.metadata,
+        session_id: m.session_id,
       })) || [],
 
       recommendations: [

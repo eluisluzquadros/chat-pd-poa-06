@@ -202,22 +202,47 @@ serve(async (req) => {
           continue;
         }
 
-        // Buscar informações do usuário
+        // ✅ Buscar sessão primeiro
         const { data: session } = await supabase
           .from('chat_sessions')
-          .select(`
-            user_id,
-            user_accounts!inner (
-              email,
-              full_name
-            )
-          `)
+          .select('user_id, created_at')
           .eq('id', threat.session_id)
           .maybeSingle();
 
-        const userEmail = session?.user_accounts?.email || 'desconhecido';
-        const userFullName = session?.user_accounts?.full_name || 'Desconhecido';
-        const userId = session?.user_id;
+        if (!session?.user_id) {
+          console.log(`⚠️ Sessão sem user_id: ${threat.session_id}`);
+          errorCount++;
+          continue;
+        }
+
+        // ✅ Buscar dados completos do usuário
+        const { data: userAccount } = await supabase
+          .from('user_accounts')
+          .select('email, full_name, is_active, created_at')
+          .eq('user_id', session.user_id)
+          .maybeSingle();
+
+        // ✅ Buscar role do usuário
+        const { data: userRole } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', session.user_id)
+          .maybeSingle();
+
+        // ✅ Buscar IP address mais recente
+        const { data: lastAuthAttempt } = await supabase
+          .from('auth_attempts')
+          .select('ip_address, created_at')
+          .eq('email', userAccount?.email || '')
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        const userEmail = userAccount?.email || 'desconhecido';
+        const userFullName = userAccount?.full_name || 'Desconhecido';
+        const userIp = lastAuthAttempt?.ip_address?.toString() || 'Unknown';
+        const userRoleStr = userRole?.role || 'user';
+        const userId = session.user_id;
 
         // Criar alerta
         const { data: newAlert, error: alertError } = await supabase
@@ -234,6 +259,9 @@ serve(async (req) => {
               user_id: userId,
               user_email: userEmail,
               user_full_name: userFullName,
+              user_role: userRoleStr,
+              ip_address: userIp,
+              is_active: userAccount?.is_active ?? true,
               user_message: threat.user_message.substring(0, 500),
               sentiment: threat.sentiment,
               keywords: threat.keywords,
