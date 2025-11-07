@@ -80,13 +80,12 @@ const EditUserDialog = ({
     setIsSubmitting(true);
 
     try {
-      // Update user account
+      // Update user account (without role - role is in user_roles table)
       const { error: accountError } = await supabase
         .from("user_accounts")
         .update({
           full_name: formValues.fullName,
           email: formValues.email,
-          role: formValues.role,
           is_active: formValues.is_active,
         })
         .eq("id", user.id);
@@ -95,19 +94,19 @@ const EditUserDialog = ({
 
       // Update user role if user_id exists and role has changed
       if (user.user_id && user.role !== formValues.role) {
-        // Check if role record exists
+        // Check if role record exists (using maybeSingle to avoid error if not found)
         const { data: existingRole } = await supabase
           .from("user_roles")
           .select("*")
           .eq("user_id", user.user_id)
-          .single();
+          .maybeSingle();
 
         if (existingRole) {
           // Update existing role
           const { error: roleError } = await supabase
             .from("user_roles")
             .update({
-              role: formValues.role as any,
+              role: formValues.role as AppRole,
             })
             .eq("user_id", user.user_id);
 
@@ -118,7 +117,7 @@ const EditUserDialog = ({
             .from("user_roles")
             .insert({
               user_id: user.user_id,
-              role: formValues.role as any,
+              role: formValues.role as AppRole,
             });
 
           if (insertRoleError) throw insertRoleError;

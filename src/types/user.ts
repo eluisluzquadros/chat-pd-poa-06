@@ -6,7 +6,7 @@ export interface UserAccount {
   user_id: string;
   full_name: string;
   email: string;
-  role: string;
+  role: string; // ⚠️ Comes from LEFT JOIN with user_roles table, not stored in user_accounts
   is_active: boolean;
   created_at: string;
   updated_at: string;

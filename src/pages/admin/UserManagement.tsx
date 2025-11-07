@@ -24,7 +24,10 @@ const UserManagement = () => {
       try {
         let query = supabase
           .from("user_accounts")
-          .select("*");
+          .select(`
+            *,
+            user_roles!user_roles_user_id_fkey(role)
+          `);
 
         if (searchTerm) {
           query = query.or(
@@ -40,7 +43,13 @@ const UserManagement = () => {
           return [];
         }
 
-        return data as UserAccount[];
+        // Process data to extract role from user_roles join
+        const processedData = data?.map(user => ({
+          ...user,
+          role: (user as any).user_roles?.[0]?.role || 'user'
+        })) || [];
+
+        return processedData as UserAccount[];
       } catch (error) {
         console.error("Failed to fetch users:", error);
         toast.error("Erro ao carregar usuários");
