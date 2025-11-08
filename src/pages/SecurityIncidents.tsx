@@ -110,17 +110,38 @@ export default function SecurityIncidents() {
     setSelectedReportId(reportId);
   };
 
-  const handleUpdateStatus = async (reportId: string, newStatus: string) => {
-    const { error } = await supabase
-      .from("security_incident_reports")
-      .update({ 
-        status: newStatus,
-        reviewed_at: newStatus !== 'pending_review' ? new Date().toISOString() : null
-      })
-      .eq("id", reportId);
+  const handleUpdateStatus = async (incidentId: string, newStatus: string, incidentType: string) => {
+    if (incidentType === 'alert') {
+      // Atualizar intelligence_alerts
+      const { error } = await supabase
+        .from("intelligence_alerts")
+        .update({ 
+          acknowledged: newStatus === 'resolved',
+          acknowledged_at: newStatus === 'resolved' ? new Date().toISOString() : null
+        })
+        .eq("id", incidentId);
 
-    if (!error) {
-      window.location.reload();
+      if (!error) {
+        toast.success("Status do alerta atualizado");
+        window.location.reload();
+      } else {
+        toast.error("Erro ao atualizar alerta");
+      }
+    } else {
+      // Atualizar security_incident_reports
+      const { error } = await supabase
+        .from("security_incident_reports")
+        .update({ 
+          status: newStatus
+        })
+        .eq("id", incidentId);
+
+      if (!error) {
+        toast.success("Status do relatório atualizado");
+        window.location.reload();
+      } else {
+        toast.error("Erro ao atualizar relatório");
+      }
     }
   };
 
@@ -177,7 +198,64 @@ export default function SecurityIncidents() {
   };
 
   if (selectedReportId) {
-    const report = incidents?.find(i => i.id === selectedReportId);
+    const incident = incidents?.find(i => i.id === selectedReportId);
+    
+    // Se for um alert sem report, mostrar mensagem
+    if (incident?.type === 'alert') {
+      return (
+        <AdminRoleGuard>
+          <div className="container mx-auto py-6">
+            <Button 
+              variant="outline" 
+              onClick={() => setSelectedReportId(null)}
+              className="mb-4"
+            >
+              ← Voltar para lista
+            </Button>
+            <Card>
+              <CardHeader>
+                <CardTitle>Alerta de Segurança</CardTitle>
+                <CardDescription>Este é um alerta detectado. Relatório forense não foi gerado ainda.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <h3 className="font-semibold mb-2">{incident.report_data?.metadata?.title}</h3>
+                  <p className="text-muted-foreground">{incident.report_data?.incident_classification?.description}</p>
+                </div>
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div>
+                    <p className="text-sm font-medium">Email do Usuário</p>
+                    <p className="text-sm text-muted-foreground">{incident.report_data?.attacker_profile?.email}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium">Endereço IP</p>
+                    <p className="text-sm text-muted-foreground">{incident.report_data?.attacker_profile?.ip_address}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium">Nível de Ameaça</p>
+                    <Badge variant="destructive">{incident.threat_level}</Badge>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium">ID da Sessão</p>
+                    <p className="text-sm text-muted-foreground font-mono text-xs">{incident.report_data?.attack_details?.session_id}</p>
+                  </div>
+                </div>
+                <div className="pt-4">
+                  <Button 
+                    onClick={() => handleProcessThreats()}
+                    className="w-full"
+                  >
+                    <Database className="h-4 w-4 mr-2" />
+                    Processar e Gerar Relatório Forense
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </AdminRoleGuard>
+      );
+    }
+    
     return (
       <AdminRoleGuard>
         <div className="container mx-auto py-6">
@@ -188,7 +266,7 @@ export default function SecurityIncidents() {
           >
             ← Voltar para lista
           </Button>
-          {report && <IncidentReportViewer report={report} />}
+          {incident && <IncidentReportViewer report={incident} />}
         </div>
       </AdminRoleGuard>
     );
@@ -366,15 +444,15 @@ export default function SecurityIncidents() {
                               onClick={() => handleViewReport(incident.id)}
                             >
                               <Eye className="h-4 w-4 mr-2" />
-                              Ver Relatório
+                              {incident.type === 'alert' ? 'Ver Detalhes' : 'Ver Relatório'}
                             </Button>
                             {incident.status === "pending_review" && (
                               <Button
                                 variant="default"
                                 size="sm"
-                                onClick={() => handleUpdateStatus(incident.id, "investigating")}
+                                onClick={() => handleUpdateStatus(incident.id, "investigating", incident.type)}
                               >
-                                Investigar
+                                {incident.type === 'alert' ? 'Reconhecer' : 'Investigar'}
                               </Button>
                             )}
                           </div>
