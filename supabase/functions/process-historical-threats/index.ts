@@ -342,29 +342,38 @@ serve(async (req) => {
           continue;
         }
 
-        processedAlerts.push(newAlert);
-        console.log(`✅ Alerta criado: ${newAlert.id}`);
-
-        // Gerar relatório forense
-        try {
-          const { data: report, error: reportError } = await supabase.functions.invoke(
-            'generate-security-report',
-            {
-              body: {
-                sessionId: threat.session_id,
-                alertId: newAlert.id
+        if (newAlert) {
+          processedAlerts.push(newAlert);
+          console.log(`✅ Alerta criado: ${newAlert.id}`);
+          
+          // ✅ NOVO: Gerar relatório forense automaticamente
+          try {
+            console.log(`📝 Gerando relatório para sessão ${threat.session_id}...`);
+            
+            const { data: report, error: reportError } = await supabase.functions.invoke(
+              'generate-security-report',
+              {
+                body: {
+                  sessionId: threat.session_id,
+                  alertId: newAlert.id
+                }
               }
-            }
-          );
+            );
 
-          if (reportError) {
-            console.error(`⚠️ Erro ao gerar relatório: ${reportError.message}`);
-          } else {
-            processedReports.push(report);
-            console.log(`📄 Relatório forense gerado para sessão ${threat.session_id}`);
+            if (reportError) {
+              console.error(`❌ Erro ao gerar relatório para alerta ${newAlert.id}:`, {
+                message: reportError.message,
+                details: reportError
+              });
+            } else if (report) {
+              processedReports.push(report);
+              console.log(`✅ Relatório gerado: ${report.id}`);
+            }
+          } catch (reportErr) {
+            console.error(`❌ Exceção ao gerar relatório:`, reportErr);
           }
-        } catch (reportErr) {
-          console.error(`⚠️ Falha ao gerar relatório: ${reportErr}`);
+        } else {
+          console.error(`⚠️ Alerta não foi criado (newAlert é null)`);
         }
 
         // Desativar usuário se identificado

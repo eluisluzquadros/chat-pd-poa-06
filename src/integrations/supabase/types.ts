@@ -316,6 +316,7 @@ export type Database = {
           id: string
           ip_address: unknown
           success: boolean | null
+          user_agent: string | null
         }
         Insert: {
           created_at?: string | null
@@ -323,6 +324,7 @@ export type Database = {
           id?: string
           ip_address: unknown
           success?: boolean | null
+          user_agent?: string | null
         }
         Update: {
           created_at?: string | null
@@ -330,6 +332,7 @@ export type Database = {
           id?: string
           ip_address?: unknown
           success?: boolean | null
+          user_agent?: string | null
         }
         Relationships: []
       }

@@ -27,21 +27,82 @@ export default function SecurityIncidents() {
   const { data: incidents, isLoading } = useQuery({
     queryKey: ["security-incidents", statusFilter, severityFilter],
     queryFn: async () => {
-      let query = supabase
+      // Buscar intelligence_alerts
+      const { data: alerts } = await supabase
+        .from("intelligence_alerts")
+        .select("*")
+        .order("triggered_at", { ascending: false });
+
+      // Buscar security_incident_reports
+      let reportsQuery = supabase
         .from("security_incident_reports")
         .select("*")
         .order("created_at", { ascending: false });
 
       if (statusFilter !== "all") {
-        query = query.eq("status", statusFilter);
+        reportsQuery = reportsQuery.eq("status", statusFilter);
       }
       if (severityFilter !== "all") {
-        query = query.eq("threat_level", severityFilter);
+        reportsQuery = reportsQuery.eq("threat_level", severityFilter);
       }
 
-      const { data, error } = await query;
-      if (error) throw error;
-      return data;
+      const { data: reports } = await reportsQuery;
+
+      // Combinar ambos em um único array
+      const combined = [
+        ...(reports || []).map(r => ({
+          ...r,
+          type: 'report',
+          threat_level: r.threat_level,
+          status: r.status || 'pending_review'
+        })),
+        ...(alerts || []).map(a => {
+          const alertData = a.data as any;
+          return {
+            id: a.id,
+            type: 'alert',
+            threat_level: a.severity,
+            status: a.acknowledged ? 'resolved' : 'pending_review',
+            created_at: a.triggered_at,
+            report_data: {
+              metadata: { 
+                title: a.title 
+              },
+              incident_classification: {
+                description: a.description
+              },
+              attacker_profile: {
+                full_name: alertData?.user_full_name || 'Desconhecido',
+                email: alertData?.user_email || 'desconhecido',
+                ip_address: alertData?.ip_address || 'Desconhecido',
+                device_info: {
+                  device_type: alertData?.device_type || 'unknown',
+                  browser: alertData?.browser || 'unknown',
+                  os: alertData?.os || 'unknown'
+                }
+              },
+              attack_details: { 
+                session_id: alertData?.session_id 
+              }
+            }
+          };
+        })
+      ];
+
+      // Aplicar filtros aos alerts combinados
+      let filtered = combined;
+      
+      if (statusFilter !== "all") {
+        filtered = filtered.filter(i => i.status === statusFilter);
+      }
+      if (severityFilter !== "all") {
+        filtered = filtered.filter(i => i.threat_level === severityFilter);
+      }
+
+      // Ordenar por data
+      return filtered.sort((a, b) => 
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      );
     },
   });
 
