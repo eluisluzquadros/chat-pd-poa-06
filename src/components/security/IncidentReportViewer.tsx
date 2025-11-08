@@ -1,19 +1,32 @@
+import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { AlertTriangle, Shield, Download, User, MapPin, Clock, Activity, Bot, Monitor, Smartphone } from "lucide-react";
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { AlertTriangle, Shield, Download, User, MapPin, Clock, Activity, Bot, Monitor, Smartphone, CheckCircle2, XCircle } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { ExportReportPDF } from "./ExportReportPDF";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 interface IncidentReportViewerProps {
   report: any;
+  onStatusChange?: () => void;
 }
 
-export function IncidentReportViewer({ report }: IncidentReportViewerProps) {
+export function IncidentReportViewer({ report, onStatusChange }: IncidentReportViewerProps) {
   const reportData = report.report_data as any;
+  const [currentStatus, setCurrentStatus] = useState(report.status || 'pending_review');
+  const [isUpdating, setIsUpdating] = useState(false);
 
   const handleDownloadReport = () => {
     const dataStr = JSON.stringify(reportData, null, 2);
@@ -23,6 +36,52 @@ export function IncidentReportViewer({ report }: IncidentReportViewerProps) {
     link.href = url;
     link.download = `security-report-${report.id}.json`;
     link.click();
+  };
+
+  const handleStatusChange = async (newStatus: string) => {
+    setIsUpdating(true);
+    try {
+      const { error } = await supabase
+        .from("security_incident_reports")
+        .update({ status: newStatus })
+        .eq("id", report.id);
+
+      if (error) throw error;
+
+      setCurrentStatus(newStatus);
+      toast.success(`Status atualizado para: ${getStatusLabel(newStatus)}`);
+      
+      if (onStatusChange) {
+        onStatusChange();
+      }
+    } catch (error: any) {
+      toast.error(`Erro ao atualizar status: ${error.message}`);
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  const getStatusLabel = (status: string) => {
+    const labels: Record<string, string> = {
+      pending_review: 'Pendente de Revisão',
+      investigating: 'Em Investigação',
+      resolved: 'Resolvido',
+      false_positive: 'Falso Positivo'
+    };
+    return labels[status] || status;
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'resolved':
+        return 'bg-green-500/10 text-green-500 border-green-500/20';
+      case 'investigating':
+        return 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20';
+      case 'false_positive':
+        return 'bg-gray-500/10 text-gray-500 border-gray-500/20';
+      default:
+        return 'bg-orange-500/10 text-orange-500 border-orange-500/20';
+    }
   };
 
   const getSeverityColor = (level: string) => {
@@ -43,8 +102,8 @@ export function IncidentReportViewer({ report }: IncidentReportViewerProps) {
       {/* Header */}
       <Card className="border-destructive">
         <CardHeader>
-          <div className="flex items-start justify-between">
-            <div className="space-y-2">
+          <div className="flex items-start justify-between gap-4">
+            <div className="space-y-2 flex-1">
               <div className="flex items-center gap-3">
                 <AlertTriangle className="h-8 w-8 text-destructive" />
                 <div>
@@ -56,19 +115,64 @@ export function IncidentReportViewer({ report }: IncidentReportViewerProps) {
                   </CardDescription>
                 </div>
               </div>
-              <div className="flex gap-2">
+              <div className="flex gap-2 flex-wrap items-center">
                 <Badge variant="outline" className={getSeverityColor(report.threat_level)}>
                   {report.threat_level}
                 </Badge>
-                <Badge variant="outline">{report.status}</Badge>
+                <Badge variant="outline" className={getStatusColor(currentStatus)}>
+                  {getStatusLabel(currentStatus)}
+                </Badge>
               </div>
             </div>
-            <div className="flex gap-2">
-              <ExportReportPDF report={reportData} />
-              <Button onClick={handleDownloadReport} variant="outline">
-                <Download className="h-4 w-4 mr-2" />
-                JSON
-              </Button>
+            
+            <div className="flex flex-col gap-3">
+              {/* Status Control */}
+              <div className="flex items-center gap-2">
+                <Select
+                  value={currentStatus}
+                  onValueChange={handleStatusChange}
+                  disabled={isUpdating}
+                >
+                  <SelectTrigger className="w-[200px]">
+                    <SelectValue placeholder="Alterar status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="pending_review">
+                      <div className="flex items-center gap-2">
+                        <Clock className="h-4 w-4" />
+                        Pendente
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="investigating">
+                      <div className="flex items-center gap-2">
+                        <Activity className="h-4 w-4" />
+                        Investigando
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="resolved">
+                      <div className="flex items-center gap-2">
+                        <CheckCircle2 className="h-4 w-4" />
+                        Resolvido
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="false_positive">
+                      <div className="flex items-center gap-2">
+                        <XCircle className="h-4 w-4" />
+                        Falso Positivo
+                      </div>
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              {/* Export Buttons */}
+              <div className="flex gap-2">
+                <ExportReportPDF report={reportData} />
+                <Button onClick={handleDownloadReport} variant="outline" size="sm">
+                  <Download className="h-4 w-4 mr-2" />
+                  JSON
+                </Button>
+              </div>
             </div>
           </div>
         </CardHeader>
