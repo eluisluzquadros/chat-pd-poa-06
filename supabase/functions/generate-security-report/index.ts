@@ -217,10 +217,13 @@ serve(async (req) => {
     })) || [];
 
     // 9. Generate comprehensive forensic report
+    const timestamp = new Date();
+    const reportId = `RPT-${timestamp.getFullYear()}${String(timestamp.getMonth() + 1).padStart(2, '0')}${String(timestamp.getDate()).padStart(2, '0')}-${crypto.randomUUID().slice(0, 5).toUpperCase()}`;
+    
     const report = {
       report_metadata: {
-        report_id: crypto.randomUUID(),
-        generated_at: new Date().toISOString(),
+        report_id: reportId,
+        generated_at: timestamp.toISOString(),
         generated_by: user.email,
         report_version: '1.0',
       },
@@ -357,6 +360,7 @@ serve(async (req) => {
     const { error: saveError } = await supabase
       .from('security_incident_reports')
       .insert({
+        report_id: reportId,
         session_id: sessionId,
         alert_id: alertId,
         report_data: report,
