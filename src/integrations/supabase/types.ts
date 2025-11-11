@@ -692,6 +692,9 @@ export type Database = {
           severity: string | null
           title: string
           triggered_at: string
+          visibility: string | null
+          visibility_approved_at: string | null
+          visibility_approved_by: string | null
         }
         Insert: {
           acknowledged?: boolean | null
@@ -704,6 +707,9 @@ export type Database = {
           severity?: string | null
           title: string
           triggered_at?: string
+          visibility?: string | null
+          visibility_approved_at?: string | null
+          visibility_approved_by?: string | null
         }
         Update: {
           acknowledged?: boolean | null
@@ -716,6 +722,9 @@ export type Database = {
           severity?: string | null
           title?: string
           triggered_at?: string
+          visibility?: string | null
+          visibility_approved_at?: string | null
+          visibility_approved_by?: string | null
         }
         Relationships: []
       }
@@ -2557,6 +2566,9 @@ export type Database = {
           threat_level: string
           threat_score: number | null
           updated_at: string | null
+          visibility: string | null
+          visibility_approved_at: string | null
+          visibility_approved_by: string | null
         }
         Insert: {
           alert_id?: string | null
@@ -2574,6 +2586,9 @@ export type Database = {
           threat_level: string
           threat_score?: number | null
           updated_at?: string | null
+          visibility?: string | null
+          visibility_approved_at?: string | null
+          visibility_approved_by?: string | null
         }
         Update: {
           alert_id?: string | null
@@ -2591,6 +2606,9 @@ export type Database = {
           threat_level?: string
           threat_score?: number | null
           updated_at?: string | null
+          visibility?: string | null
+          visibility_approved_at?: string | null
+          visibility_approved_by?: string | null
         }
         Relationships: [
           {

@@ -1,7 +1,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { CheckCircle, XCircle, AlertTriangle, Clock } from "lucide-react";
+import { CheckCircle, XCircle, AlertTriangle, Clock, Download } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
@@ -26,12 +27,46 @@ export function SecurityRunCard({ run }: SecurityRunCardProps) {
     return 'text-red-600';
   };
 
+  const handleExportJSON = () => {
+    const exportData = {
+      id: run.id,
+      started_at: run.started_at,
+      completed_at: run.completed_at,
+      status: run.status,
+      overall_score: run.overall_score,
+      total_tests: run.total_tests,
+      passed_tests: run.passed_tests,
+      failed_tests: run.failed_tests,
+      partial_tests: run.partial_tests,
+      critical_failures: run.critical_failures,
+      system_version: run.system_version,
+      results: run.results
+    };
+
+    const dataStr = JSON.stringify(exportData, null, 2);
+    const dataBlob = new Blob([dataStr], { type: "application/json" });
+    const url = URL.createObjectURL(dataBlob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `security-run-${run.id.slice(0, 8)}-${new Date().toISOString().split('T')[0]}.json`;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <Card className="border-2">
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle>Última Validação</CardTitle>
-          {getStatusBadge()}
+          <div className="flex gap-2">
+            {getStatusBadge()}
+            {run.status === 'completed' && (
+              <Button variant="outline" size="sm" onClick={handleExportJSON}>
+                <Download className="h-4 w-4 mr-2" />
+                JSON
+              </Button>
+            )}
+          </div>
         </div>
       </CardHeader>
       <CardContent className="space-y-6">

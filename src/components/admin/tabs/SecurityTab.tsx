@@ -1,9 +1,9 @@
-import SecurityValidation from '@/pages/admin/SecurityValidation';
+import { SecurityComplianceHub } from '@/components/security/SecurityComplianceHub';
 
 export function SecurityTab() {
   return (
     <div className="space-y-6">
-      <SecurityValidation embedded={true} />
+      <SecurityComplianceHub />
     </div>
   );
 }
