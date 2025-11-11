@@ -346,31 +346,221 @@ serve(async (req) => {
           processedAlerts.push(newAlert);
           console.log(`✅ Alerta criado: ${newAlert.id}`);
           
-          // ✅ NOVO: Gerar relatório forense automaticamente
+          // ✅ Gerar relatório forense DIRETAMENTE (sem chamar outra edge function)
           try {
-            console.log(`📝 Gerando relatório para sessão ${threat.session_id}...`);
+            console.log(`📝 Gerando relatório forense para sessão ${threat.session_id}...`);
             
-            const { data: report, error: reportError } = await supabase.functions.invoke(
-              'generate-security-report',
-              {
-                body: {
-                  sessionId: threat.session_id,
-                  alertId: newAlert.id
-                }
-              }
+            // Buscar todas as sessões e mensagens do usuário
+            const { data: allUserSessions } = await supabase
+              .from('chat_sessions')
+              .select('id, title, created_at, model')
+              .eq('user_id', userId)
+              .order('created_at', { ascending: true });
+
+            const sessionIds = allUserSessions?.map(s => s.id) || [threat.session_id];
+            const { data: allMessages } = await supabase
+              .from('chat_history')
+              .select('*')
+              .in('session_id', sessionIds)
+              .order('created_at', { ascending: true });
+
+            // Buscar insights e alertas
+            const { data: insights } = await supabase
+              .from('message_insights')
+              .select('*')
+              .eq('session_id', threat.session_id)
+              .order('created_at', { ascending: true });
+
+            const { data: relatedAlerts } = await supabase
+              .from('intelligence_alerts')
+              .select('*')
+              .contains('data', { session_id: threat.session_id })
+              .order('triggered_at', { ascending: false });
+
+            // Calcular threat level
+            const maliciousMessage = allMessages?.find(m => 
+              m.message?.content?.toLowerCase().includes('[system') ||
+              m.message?.content?.toLowerCase().includes('reiniciar') ||
+              m.message?.content?.toLowerCase().includes('ignore')
             );
 
-            if (reportError) {
-              console.error(`❌ Erro ao gerar relatório para alerta ${newAlert.id}:`, {
-                message: reportError.message,
-                details: reportError
+            const threatIndicators = {
+              hasPromptInjection: !!maliciousMessage,
+              hasNegativeSentiment: insights?.some(i => i.sentiment === 'negative') || false,
+              hasMultipleFailedAuth: false,
+              isAccountDeactivated: !userAccount?.is_active,
+            };
+
+            const threatScore = Object.values(threatIndicators).filter(Boolean).length;
+            const threatLevel = threatScore >= 3 ? 'critical' : threatScore >= 2 ? 'high' : 'medium';
+
+            // Gerar report_id único
+            const timestamp = new Date();
+            const reportId = `RPT-${timestamp.getFullYear()}${String(timestamp.getMonth() + 1).padStart(2, '0')}${String(timestamp.getDate()).padStart(2, '0')}-${crypto.randomUUID().slice(0, 5).toUpperCase()}`;
+
+            // Agrupar mensagens por sessão
+            const conversationsBySession = allUserSessions?.map(sess => ({
+              session_id: sess.id,
+              session_title: sess.title,
+              session_date: sess.created_at,
+              model: sess.model,
+              messages: allMessages?.filter(m => m.session_id === sess.id) || []
+            })) || [];
+
+            // Criar objeto do relatório
+            const reportData = {
+              report_metadata: {
+                report_id: reportId,
+                generated_at: timestamp.toISOString(),
+                generated_by: user.email,
+                report_version: '1.0',
+              },
+
+              incident_classification: {
+                incident_type: 'prompt_injection_attempt',
+                severity: threatLevel,
+                status: userAccount?.is_active ? 'active_threat' : 'neutralized',
+                confidence_score: threatScore / 4,
+              },
+
+              attacker_profile: {
+                user_id: userId,
+                full_name: userFullName,
+                email: userEmail,
+                account_created: userAccount?.created_at || session?.created_at,
+                role: userRoleStr,
+                is_active: userAccount?.is_active ?? false,
+                account_status: userAccount?.is_active ? 'ACTIVE' : 'DEACTIVATED',
+                ip_address: userIp,
+                device_info: {
+                  device_type: deviceInfo.device_type,
+                  browser: deviceInfo.browser,
+                  os: deviceInfo.os,
+                  user_agent: lastAuthAttempt?.user_agent || 'unknown'
+                },
+                total_sessions: allUserSessions?.length || 0,
+                total_messages: allMessages?.length || 0,
+              },
+
+              attack_details: {
+                session_id: threat.session_id,
+                attack_timestamp: session?.created_at || threat.created_at,
+                session_title: session?.title || 'Unknown',
+                last_activity: session?.updated_at,
+                ip_address: userIp,
+                technique: 'System Prompt Override / Instruction Injection',
+                objective: 'Data Exfiltration & System Manipulation',
+                target: 'Knowledge Base & System Configuration',
+                attack_vector: 'Chat Interface',
+              },
+
+              threat_indicators: {
+                prompt_injection_detected: threatIndicators.hasPromptInjection,
+                negative_sentiment_detected: threatIndicators.hasNegativeSentiment,
+                multiple_failed_auth: threatIndicators.hasMultipleFailedAuth,
+                account_deactivated: threatIndicators.isAccountDeactivated,
+                threat_score: `${threatScore}/4`,
+                threat_level: threatLevel.toUpperCase(),
+              },
+
+              technical_evidence: {
+                malicious_messages: maliciousMessage ? [{
+                  message_id: maliciousMessage.id,
+                  content: maliciousMessage.message?.content || '',
+                  timestamp: maliciousMessage.created_at,
+                  role: maliciousMessage.message?.role || 'user',
+                }] : [],
+                
+                sentiment_analysis: insights?.map(i => ({
+                  sentiment: i.sentiment,
+                  sentiment_score: i.sentiment_score,
+                  keywords: i.keywords,
+                  topics: i.topics,
+                  intent: i.intent,
+                  analyzed_at: i.analyzed_at,
+                })) || [],
+                
+                authentication_history: lastAuthAttempt ? [{
+                  timestamp: lastAuthAttempt.created_at,
+                  ip_address: lastAuthAttempt.ip_address,
+                  success: true,
+                  email: userEmail,
+                }] : [],
+
+                security_alerts: relatedAlerts?.map(a => ({
+                  alert_id: a.id,
+                  alert_type: a.alert_type,
+                  severity: a.severity,
+                  title: a.title,
+                  description: a.description,
+                  triggered_at: a.triggered_at,
+                  acknowledged: a.acknowledged,
+                })) || [],
+              },
+
+              system_response: {
+                automated_actions_taken: [
+                  userAccount?.is_active === false ? 'User account automatically deactivated' : 'User account remains active',
+                  'Security alert generated',
+                  'Incident logged for forensic analysis',
+                ],
+                attack_blocked: wasBlockedBySystem,
+                data_compromised: false,
+                containment_status: 'complete',
+              },
+
+              full_conversation_history: conversationsBySession,
+
+              conversation_log: allMessages?.filter(m => m.session_id === threat.session_id).map(m => ({
+                message_id: m.id,
+                timestamp: m.created_at,
+                role: m.message?.role || 'unknown',
+                content: m.message?.content || '',
+                session_id: m.session_id,
+              })) || [],
+
+              recommendations: [
+                threatIndicators.isAccountDeactivated 
+                  ? 'Account successfully deactivated. Review other sessions from this user.'
+                  : 'URGENT: Manually review and deactivate account if necessary.',
+                'Forward this report to legal team for potential law enforcement notification.',
+                'Review access logs for any unauthorized data access.',
+                'Implement additional rate limiting on prompt injection patterns.',
+                'Consider IP blocking for repeat offenders.',
+              ],
+
+              legal_notice: 
+                'CONFIDENTIAL SECURITY INCIDENT REPORT\n\n' +
+                'This document contains sensitive security information regarding an attempted ' +
+                'unauthorized access to the system. The incident was detected and blocked by ' +
+                'automated security measures. This report is generated for legal and compliance ' +
+                'purposes and may be used as evidence in legal proceedings.\n\n' +
+                'Generated by: Automated Security System\n' +
+                'Report Classification: CONFIDENTIAL\n' +
+                'Retention Period: 7 years (as per legal requirements)',
+            };
+
+            // Salvar relatório no banco de dados
+            const { error: saveError } = await supabase
+              .from('security_incident_reports')
+              .insert({
+                report_id: reportId,
+                session_id: threat.session_id,
+                alert_id: newAlert.id,
+                report_data: reportData,
+                generated_by: user.id,
+                threat_level: threatLevel,
+                status: 'pending_review'
               });
-            } else if (report) {
-              processedReports.push(report);
-              console.log(`✅ Relatório gerado: ${report.id}`);
+
+            if (saveError) {
+              console.error(`❌ Erro ao salvar relatório ${reportId}:`, saveError);
+            } else {
+              processedReports.push(reportId);
+              console.log(`✅ Relatório ${reportId} salvo com sucesso`);
             }
           } catch (reportErr) {
-            console.error(`❌ Exceção ao gerar relatório:`, reportErr);
+            console.error(`❌ Erro ao gerar relatório:`, reportErr);
           }
         } else {
           console.error(`⚠️ Alerta não foi criado (newAlert é null)`);
