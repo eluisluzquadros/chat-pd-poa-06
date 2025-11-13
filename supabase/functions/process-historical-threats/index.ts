@@ -557,10 +557,42 @@ serve(async (req) => {
               console.error(`❌ Erro ao salvar relatório ${reportId}:`, saveError);
             } else {
               processedReports.push(reportId);
-              console.log(`✅ Relatório ${reportId} salvo com sucesso`);
+            console.log(`✅ Relatório ${reportId} salvo com sucesso`);
             }
           } catch (reportErr) {
             console.error(`❌ Erro ao gerar relatório:`, reportErr);
+          }
+
+          // 🔔 Enviar notificação por email
+          if (newAlert.severity === 'critical' || newAlert.severity === 'high') {
+            try {
+              console.log('📧 Enviando notificação de incidente crítico...');
+              
+              const { error: notifyError } = await supabase.functions.invoke(
+                'send-security-notification',
+                {
+                  body: {
+                    notification_type: 'incident',
+                    alert_id: newAlert.id,
+                    report_id: reportId,
+                    incident_data: {
+                      severity: newAlert.severity,
+                      title: newAlert.title,
+                      attacker_email: userEmail,
+                      attacker_name: userFullName
+                    }
+                  }
+                }
+              );
+              
+              if (!notifyError) {
+                console.log('✅ Notificação enviada com sucesso');
+              } else {
+                console.error('❌ Erro ao enviar notificação:', notifyError);
+              }
+            } catch (notifyErr) {
+              console.error('❌ Erro ao invocar send-security-notification:', notifyErr);
+            }
           }
         } else {
           console.error(`⚠️ Alerta não foi criado (newAlert é null)`);
