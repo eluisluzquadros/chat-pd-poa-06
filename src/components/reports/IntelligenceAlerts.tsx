@@ -43,6 +43,7 @@ export function IntelligenceAlerts({ period, timeRange }: IntelligenceAlertsProp
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [hasNewAlerts, setHasNewAlerts] = useState(false);
+  const [visibilityFilter, setVisibilityFilter] = useState<'all' | 'public' | 'internal'>('all');
 
   useEffect(() => {
     fetchAlerts();
@@ -105,11 +106,17 @@ export function IntelligenceAlerts({ period, timeRange }: IntelligenceAlertsProp
 
   const fetchAlerts = async () => {
     setIsLoading(true);
-    const { data, error } = await supabase
+    let query = supabase
       .from('intelligence_alerts')
-      .select('*')
+      .select('*, visibility_approved:visibility_approved_by(full_name, email)')
       .order('triggered_at', { ascending: false })
       .limit(20);
+    
+    if (visibilityFilter !== 'all') {
+      query = query.eq('visibility', visibilityFilter);
+    }
+    
+    const { data, error } = await query;
 
     if (error) {
       console.error('Erro ao buscar alertas:', error);
@@ -119,6 +126,10 @@ export function IntelligenceAlerts({ period, timeRange }: IntelligenceAlertsProp
     }
     setIsLoading(false);
   };
+
+  useEffect(() => {
+    fetchAlerts();
+  }, [visibilityFilter]);
 
   const handleAcknowledge = async (alertId: string) => {
     const { error } = await supabase
@@ -218,6 +229,17 @@ export function IntelligenceAlerts({ period, timeRange }: IntelligenceAlertsProp
               {unacknowledged.length} alerta(s) não reconhecido(s) • Monitoramento em tempo real
             </CardDescription>
           </div>
+          <div className="flex items-center gap-2">
+            <select
+              value={visibilityFilter}
+              onChange={(e) => setVisibilityFilter(e.target.value as any)}
+              className="px-3 py-2 border rounded-md text-sm"
+            >
+              <option value="all">Todos</option>
+              <option value="public">Públicos</option>
+              <option value="internal">Internos</option>
+            </select>
+          </div>
         </div>
       </CardHeader>
       <CardContent>
@@ -240,15 +262,18 @@ export function IntelligenceAlerts({ period, timeRange }: IntelligenceAlertsProp
                   }`}
                 >
                   <div className="flex items-start justify-between gap-4">
-                    <div className="flex items-start gap-3 flex-1">
+                      <div className="flex items-start gap-3 flex-1">
                       <div className={`p-2 rounded-full ${config.color} bg-opacity-10`}>
                         <Icon className={`h-5 w-5 ${config.color.replace('bg-', 'text-')}`} />
                       </div>
                       <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
+                        <div className="flex items-center gap-2 mb-1 flex-wrap">
                           <h4 className="font-semibold">{alert.title}</h4>
                           <Badge variant={alert.acknowledged ? "secondary" : "default"}>
                             {config.label}
+                          </Badge>
+                          <Badge variant={(alert as any).visibility === 'public' ? "default" : "outline"}>
+                            {(alert as any).visibility === 'public' ? '🌐 Público' : '🔒 Interno'}
                           </Badge>
                         </div>
                         <p className="text-sm text-muted-foreground mb-2">
