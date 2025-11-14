@@ -5,14 +5,24 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Shield, AlertTriangle, Eye, CheckCircle2, Clock, Database } from "lucide-react";
+import { Shield, AlertTriangle, Eye, CheckCircle2, Clock, Database, Settings, History } from "lucide-react";
 import { IncidentReportViewer } from "./IncidentReportViewer";
 import { ProcessThreatsDialog } from "./ProcessThreatsDialog";
 import { ProcessThreatsResultsDialog } from "./ProcessThreatsResultsDialog";
 import { VisibilityApprovalDialog } from "./VisibilityApprovalDialog";
+import { AutomationConfigDialog } from "./AutomationConfigDialog";
+import { AutomationHistoryTable } from "./AutomationHistoryTable";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { toast } from "sonner";
+import {
+  AlertDialog,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 export function SecurityMonitoringPanel() {
   const [selectedReportId, setSelectedReportId] = useState<string | null>(null);
@@ -24,6 +34,8 @@ export function SecurityMonitoringPanel() {
   const [selectedIncident, setSelectedIncident] = useState<any>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [processResults, setProcessResults] = useState<any>(null);
+  const [showAutomationDialog, setShowAutomationDialog] = useState(false);
+  const [showHistoryDialog, setShowHistoryDialog] = useState(false);
 
   const { data: incidents, isLoading, refetch } = useQuery({
     queryKey: ["security-incidents", statusFilter, severityFilter],
@@ -179,13 +191,33 @@ export function SecurityMonitoringPanel() {
             Relatórios forenses e alertas críticos detectados
           </p>
         </div>
-        <Button 
-          onClick={() => setShowProcessDialog(true)}
-          disabled={isProcessing}
-          className="gap-2"
-        >
-          <Database className="h-4 w-4" />
-          {isProcessing ? "Processando..." : "Processar Ameaças Históricas"}
+        <div className="flex gap-2">
+          <Button 
+            variant="outline"
+            onClick={() => setShowAutomationDialog(true)}
+            className="gap-2"
+          >
+            <Settings className="h-4 w-4" />
+            Configurar Automação
+          </Button>
+          <Button 
+            variant="outline"
+            onClick={() => setShowHistoryDialog(true)}
+            className="gap-2"
+          >
+            <History className="h-4 w-4" />
+            Histórico
+          </Button>
+          <Button 
+            onClick={() => setShowProcessDialog(true)}
+            disabled={isProcessing}
+            className="gap-2"
+          >
+            <Database className="h-4 w-4" />
+            {isProcessing ? "Processando..." : "Processar Ameaças"}
+          </Button>
+        </div>
+      </div>
         </Button>
       </div>
 
@@ -207,6 +239,30 @@ export function SecurityMonitoringPanel() {
         incident={selectedIncident}
         onApproved={refetch}
       />
+
+      <AutomationConfigDialog
+        open={showAutomationDialog}
+        onOpenChange={setShowAutomationDialog}
+        configType="monitoring"
+        onSuccess={() => {
+          toast.success('Configuração de automação salva com sucesso!');
+          refetch();
+        }}
+      />
+
+      {showHistoryDialog && (
+        <AlertDialog open={showHistoryDialog} onOpenChange={setShowHistoryDialog}>
+          <AlertDialogContent className="max-w-6xl max-h-[80vh] overflow-auto">
+            <AlertDialogHeader>
+              <AlertDialogTitle>Histórico de Automações - Monitoramento</AlertDialogTitle>
+            </AlertDialogHeader>
+            <AutomationHistoryTable />
+            <AlertDialogFooter>
+              <AlertDialogCancel>Fechar</AlertDialogCancel>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      )}
 
       {/* Metrics Cards */}
       <div className="grid gap-4 md:grid-cols-4">
