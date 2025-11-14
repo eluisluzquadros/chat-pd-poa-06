@@ -4,7 +4,7 @@ import { SimpleAuthGuard } from "@/components/SimpleAuthGuard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Shield, Play, FileDown, Clock, CheckCircle, XCircle, AlertTriangle, Trash2 } from "lucide-react";
+import { Shield, Play, FileDown, Clock, CheckCircle, XCircle, AlertTriangle, Trash2, Settings, History } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -12,6 +12,8 @@ import { SecurityRunCard } from "@/components/admin/security/SecurityRunCard";
 import { SecurityHistoryTable } from "@/components/admin/security/SecurityHistoryTable";
 import { SecurityTestSelector } from "@/components/admin/security/SecurityTestSelector";
 import { SecurityAgentSelector } from "@/components/admin/security/SecurityAgentSelector";
+import { AutomationConfigDialog } from "@/components/security/AutomationConfigDialog";
+import { AutomationHistoryTable } from "@/components/security/AutomationHistoryTable";
 import { Progress } from "@/components/ui/progress";
 import {
   AlertDialog,
@@ -37,6 +39,8 @@ export default function SecurityValidation({ embedded = false }: SecurityValidat
   const [showOrphanDialog, setShowOrphanDialog] = useState(false);
   const [isClearing, setIsClearing] = useState(false);
   const [isCleaningOrphans, setIsCleaningOrphans] = useState(false);
+  const [showAutomationDialog, setShowAutomationDialog] = useState(false);
+  const [showHistoryDialog, setShowHistoryDialog] = useState(false);
   const queryClient = useQueryClient();
 
   // Buscar última execução
@@ -238,6 +242,24 @@ export default function SecurityValidation({ embedded = false }: SecurityValidat
             Sistema de testes automatizados contra Prompt Injection
           </p>
         </div>
+        <div className="flex gap-2">
+          <Button 
+            variant="outline" 
+            onClick={() => setShowAutomationDialog(true)}
+            className="gap-2"
+          >
+            <Settings className="h-4 w-4" />
+            Configurar Automação
+          </Button>
+          <Button 
+            variant="outline" 
+            onClick={() => setShowHistoryDialog(true)}
+            className="gap-2"
+          >
+            <History className="h-4 w-4" />
+            Histórico de Automações
+          </Button>
+        </div>
       </div>
 
       {/* Executar Nova Validação */}
@@ -375,6 +397,31 @@ export default function SecurityValidation({ embedded = false }: SecurityValidat
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Dialogs de Automação */}
+      <AutomationConfigDialog
+        open={showAutomationDialog}
+        onOpenChange={setShowAutomationDialog}
+        configType="simulation"
+        onSuccess={() => {
+          toast.success('Configuração de automação salva com sucesso!');
+          queryClient.invalidateQueries({ queryKey: ['automation-configs'] });
+        }}
+      />
+
+      {showHistoryDialog && (
+        <AlertDialog open={showHistoryDialog} onOpenChange={setShowHistoryDialog}>
+          <AlertDialogContent className="max-w-6xl max-h-[80vh] overflow-auto">
+            <AlertDialogHeader>
+              <AlertDialogTitle>Histórico de Automações - Simulação</AlertDialogTitle>
+            </AlertDialogHeader>
+            <AutomationHistoryTable />
+            <AlertDialogFooter>
+              <AlertDialogCancel>Fechar</AlertDialogCancel>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      )}
     </main>
   );
 

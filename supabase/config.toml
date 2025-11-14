@@ -77,3 +77,12 @@ verify_jwt = false
 
 [functions.security-validator]
 verify_jwt = true
+
+[functions.security-automation-scheduler]
+verify_jwt = false
+
+[functions.send-security-notification]
+verify_jwt = true
+
+[functions.process-historical-threats]
+verify_jwt = true
