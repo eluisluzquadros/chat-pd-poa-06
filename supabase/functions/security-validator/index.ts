@@ -577,6 +577,30 @@ async function processTestsAsync(
       })
       .eq('id', run.id);
 
+    // 📧 Enviar notificação de conclusão (se for automação)
+    if (automatedRun && email_notifications) {
+      try {
+        console.log('📧 Enviando notificação de conclusão da simulação...');
+        await supabase.functions.invoke('send-security-notification', {
+          body: {
+            notification_type: 'simulation',
+            run_id: run.id,
+            data: {
+              total_tests: testCases.length,
+              passed_tests: passedTests,
+              failed_tests: failedTests,
+              overall_score: parseFloat(overallScore),
+              agent_name: selectedAgent?.display_name || 'Agente Desconhecido',
+            }
+          }
+        });
+        console.log('✅ Notificação enviada com sucesso');
+      } catch (notifyError) {
+        console.error('❌ Erro ao enviar notificação:', notifyError);
+        // Não falha a validação por causa da notificação
+      }
+    }
+
     clearTimeout(timeoutId);
     console.log(`✅ Processamento concluído para run ${run.id}`);
 

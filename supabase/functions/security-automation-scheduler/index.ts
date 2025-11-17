@@ -172,6 +172,21 @@ Deno.serve(async (req) => {
 
     console.log(`\n✅ Processamento completo: ${results.length} automações processadas`);
 
+    // 📊 Verificar se deve enviar relatório semanal (toda segunda-feira às 9h)
+    const currentDay = now.getDay(); // 0 = Domingo, 1 = Segunda
+    const currentHour = now.getHours();
+    
+    // Enviar relatório semanal às segundas-feiras, entre 9h e 10h
+    if (currentDay === 1 && currentHour === 9) {
+      console.log('\n📊 Enviando relatório semanal automatizado...');
+      try {
+        await sendWeeklyReport(supabase);
+        console.log('✅ Relatório semanal enviado com sucesso');
+      } catch (weeklyError) {
+        console.error('❌ Erro ao enviar relatório semanal:', weeklyError);
+      }
+    }
+
     return new Response(
       JSON.stringify({ 
         success: true, 
@@ -302,16 +317,16 @@ async function sendNotification(
   console.log('📧 Enviando notificação por email...');
 
   const notificationType = config.config_type === 'simulation' 
-    ? 'simulation_complete' 
-    : 'monitoring_complete';
+    ? 'simulation' 
+    : 'incident';
 
   try {
     await supabase.functions.invoke('send-security-notification', {
       body: {
         notification_type: notificationType,
-        config_name: config.config_name,
-        recipients: config.notification_emails,
+        run_id: result.run_id,
         data: {
+          config_name: config.config_name,
           config_type: config.config_type,
           status,
           result,
@@ -324,5 +339,25 @@ async function sendNotification(
   } catch (error) {
     console.error('❌ Erro ao enviar notificação:', error);
     // Não lança erro para não falhar a automação inteira
+  }
+}
+
+// ✅ Enviar relatório semanal automatizado
+async function sendWeeklyReport(supabase: any) {
+  console.log('📊 Enviando relatório semanal...');
+  
+  try {
+    await supabase.functions.invoke('send-security-notification', {
+      body: {
+        notification_type: 'weekly_report',
+        data: {
+          week: new Date().toISOString(),
+        },
+      },
+    });
+    
+    console.log('✅ Relatório semanal enviado');
+  } catch (error) {
+    console.error('❌ Erro ao enviar relatório semanal:', error);
   }
 }
