@@ -218,10 +218,8 @@ export function SecurityMonitoringPanel() {
           </Button>
         </div>
       </div>
-        </Button>
-      </div>
 
-      <ProcessThreatsDialog 
+      <ProcessThreatsDialog
         open={showProcessDialog}
         onOpenChange={setShowProcessDialog}
         onConfirm={handleProcessThreats}
