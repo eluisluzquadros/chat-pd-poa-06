@@ -2549,6 +2549,149 @@ export type Database = {
         }
         Relationships: []
       }
+      security_automation_configs: {
+        Row: {
+          auto_generate_pdf: boolean | null
+          auto_send_weekly_report: boolean | null
+          config_name: string
+          config_type: string
+          created_at: string | null
+          created_by: string | null
+          email_notifications: boolean | null
+          id: string
+          is_enabled: boolean | null
+          last_run_at: string | null
+          last_run_status: string | null
+          monitoring_min_severity: string | null
+          monitoring_time_window_hours: number | null
+          next_run_at: string | null
+          notification_emails: string[] | null
+          schedule_days: number[] | null
+          schedule_time: string
+          schedule_type: string
+          simulation_agent_id: string | null
+          simulation_categories: string[] | null
+          simulation_randomize: boolean | null
+          simulation_test_count: number | null
+          timezone: string | null
+          updated_at: string | null
+          updated_by: string | null
+        }
+        Insert: {
+          auto_generate_pdf?: boolean | null
+          auto_send_weekly_report?: boolean | null
+          config_name: string
+          config_type: string
+          created_at?: string | null
+          created_by?: string | null
+          email_notifications?: boolean | null
+          id?: string
+          is_enabled?: boolean | null
+          last_run_at?: string | null
+          last_run_status?: string | null
+          monitoring_min_severity?: string | null
+          monitoring_time_window_hours?: number | null
+          next_run_at?: string | null
+          notification_emails?: string[] | null
+          schedule_days?: number[] | null
+          schedule_time: string
+          schedule_type: string
+          simulation_agent_id?: string | null
+          simulation_categories?: string[] | null
+          simulation_randomize?: boolean | null
+          simulation_test_count?: number | null
+          timezone?: string | null
+          updated_at?: string | null
+          updated_by?: string | null
+        }
+        Update: {
+          auto_generate_pdf?: boolean | null
+          auto_send_weekly_report?: boolean | null
+          config_name?: string
+          config_type?: string
+          created_at?: string | null
+          created_by?: string | null
+          email_notifications?: boolean | null
+          id?: string
+          is_enabled?: boolean | null
+          last_run_at?: string | null
+          last_run_status?: string | null
+          monitoring_min_severity?: string | null
+          monitoring_time_window_hours?: number | null
+          next_run_at?: string | null
+          notification_emails?: string[] | null
+          schedule_days?: number[] | null
+          schedule_time?: string
+          schedule_type?: string
+          simulation_agent_id?: string | null
+          simulation_categories?: string[] | null
+          simulation_randomize?: boolean | null
+          simulation_test_count?: number | null
+          timezone?: string | null
+          updated_at?: string | null
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
+      security_automation_logs: {
+        Row: {
+          alerts_created: number | null
+          completed_at: string | null
+          config_id: string | null
+          created_at: string | null
+          duration_seconds: number | null
+          error_message: string | null
+          execution_type: string
+          id: string
+          notifications_sent: number | null
+          related_run_id: string | null
+          reports_generated: number | null
+          results: Json | null
+          started_at: string
+          status: string
+        }
+        Insert: {
+          alerts_created?: number | null
+          completed_at?: string | null
+          config_id?: string | null
+          created_at?: string | null
+          duration_seconds?: number | null
+          error_message?: string | null
+          execution_type: string
+          id?: string
+          notifications_sent?: number | null
+          related_run_id?: string | null
+          reports_generated?: number | null
+          results?: Json | null
+          started_at?: string
+          status: string
+        }
+        Update: {
+          alerts_created?: number | null
+          completed_at?: string | null
+          config_id?: string | null
+          created_at?: string | null
+          duration_seconds?: number | null
+          error_message?: string | null
+          execution_type?: string
+          id?: string
+          notifications_sent?: number | null
+          related_run_id?: string | null
+          reports_generated?: number | null
+          results?: Json | null
+          started_at?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "security_automation_logs_config_id_fkey"
+            columns: ["config_id"]
+            isOneToOne: false
+            referencedRelation: "security_automation_configs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       security_incident_reports: {
         Row: {
           alert_id: string | null
@@ -2679,44 +2822,72 @@ export type Database = {
       }
       security_notifications: {
         Row: {
-          alert_id: string | null
+          attachment_name: string | null
+          attachment_url: string | null
+          body_html: string
+          body_text: string
+          created_at: string | null
           error_message: string | null
+          has_attachment: boolean | null
           id: string
-          metadata: Json | null
           notification_type: string
-          recipient: string
+          recipient_email: string
+          recipient_name: string | null
+          related_alert_id: string | null
+          related_report_id: string | null
+          related_run_id: string | null
+          retry_count: number | null
           sent_at: string | null
+          sent_by: string | null
           status: string | null
+          subject: string
+          updated_at: string | null
         }
         Insert: {
-          alert_id?: string | null
+          attachment_name?: string | null
+          attachment_url?: string | null
+          body_html: string
+          body_text: string
+          created_at?: string | null
           error_message?: string | null
+          has_attachment?: boolean | null
           id?: string
-          metadata?: Json | null
           notification_type: string
-          recipient: string
+          recipient_email: string
+          recipient_name?: string | null
+          related_alert_id?: string | null
+          related_report_id?: string | null
+          related_run_id?: string | null
+          retry_count?: number | null
           sent_at?: string | null
+          sent_by?: string | null
           status?: string | null
+          subject: string
+          updated_at?: string | null
         }
         Update: {
-          alert_id?: string | null
+          attachment_name?: string | null
+          attachment_url?: string | null
+          body_html?: string
+          body_text?: string
+          created_at?: string | null
           error_message?: string | null
+          has_attachment?: boolean | null
           id?: string
-          metadata?: Json | null
           notification_type?: string
-          recipient?: string
+          recipient_email?: string
+          recipient_name?: string | null
+          related_alert_id?: string | null
+          related_report_id?: string | null
+          related_run_id?: string | null
+          retry_count?: number | null
           sent_at?: string | null
+          sent_by?: string | null
           status?: string | null
+          subject?: string
+          updated_at?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "security_notifications_alert_id_fkey"
-            columns: ["alert_id"]
-            isOneToOne: false
-            referencedRelation: "intelligence_alerts"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       security_test_cases: {
         Row: {
