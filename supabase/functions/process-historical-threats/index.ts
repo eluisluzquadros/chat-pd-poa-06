@@ -90,15 +90,27 @@ serve(async (req) => {
     }
 
     console.log('🔍 Buscando ameaças históricas não processadas...');
+    console.log('⚡ OTIMIZADO: Query consolidada com JOINs + Buscas paralelas');
 
-    // Buscar sessões de chat com informações do usuário
+    // Buscar sessões de chat com informações completas do usuário (OTIMIZADO - Single Query)
     const { data: threats, error: threatsError } = await supabase
       .from('message_insights')
       .select(`
         *,
         chat_sessions!inner (
+          id,
           user_id,
-          created_at
+          created_at,
+          model,
+          user_accounts!inner (
+            email,
+            full_name,
+            is_active,
+            created_at
+          ),
+          user_roles (
+            role
+          )
         )
       `)
       .order('created_at', { ascending: false });
@@ -243,50 +255,54 @@ serve(async (req) => {
           continue;
         }
 
-        // ✅ Buscar sessão primeiro
-        const { data: session } = await supabase
-          .from('chat_sessions')
-          .select('user_id, created_at')
-          .eq('id', threat.session_id)
-          .maybeSingle();
+        // ✅ OTIMIZADO: Dados já vêm da query consolidada
+        const session = (threat as any).chat_sessions;
+        const userAccount = session?.user_accounts;
+        const userRole = session?.user_roles?.[0]; // Array, pega primeiro
 
-        if (!session?.user_id) {
-          console.log(`⚠️ Sessão sem user_id: ${threat.session_id}`);
+        if (!session?.user_id || !userAccount) {
+          console.log(`⚠️ Sessão sem dados completos: ${threat.session_id}`);
           errorCount++;
           continue;
         }
 
-        // ✅ Buscar dados completos do usuário
-        const { data: userAccount } = await supabase
-          .from('user_accounts')
-          .select('email, full_name, is_active, created_at')
-          .eq('user_id', session.user_id)
-          .maybeSingle();
-
-        // ✅ Buscar role do usuário
-        const { data: userRole } = await supabase
-          .from('user_roles')
-          .select('role')
-          .eq('user_id', session.user_id)
-          .maybeSingle();
-
-        // ✅ Buscar IP address e user_agent mais recente
-        const { data: lastAuthAttempt } = await supabase
-          .from('auth_attempts')
-          .select('ip_address, user_agent, created_at')
-          .eq('email', userAccount?.email || '')
-          .order('created_at', { ascending: false })
-          .limit(1)
-          .maybeSingle();
-
-        const userEmail = userAccount?.email || 'desconhecido';
-        const userFullName = userAccount?.full_name || 'Desconhecido';
-        const userIp = lastAuthAttempt?.ip_address?.toString() || 'Unknown';
-        const userRoleStr = userRole?.role || 'user';
         const userId = session.user_id;
+        const userEmail = userAccount.email || 'desconhecido';
+        const userFullName = userAccount.full_name || 'Desconhecido';
+        const userRoleStr = userRole?.role || 'user';
+        const accountCreated = userAccount.created_at;
+        const isActive = userAccount.is_active ?? true;
+
+        console.log(`👤 Processando usuário: ${userEmail} (${userId})`);
+
+        // ✅ OTIMIZADO: Buscar auth_attempts e debug_logs em PARALELO
+        const [authResult, debugResult] = await Promise.all([
+          supabase
+            .from('auth_attempts')
+            .select('ip_address, user_agent, created_at')
+            .eq('email', userEmail)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .maybeSingle(),
+          
+          supabase
+            .from('debug_logs')
+            .select('user_agent, metadata')
+            .eq('user_id', userId)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .maybeSingle()
+        ]);
+
+        const lastAuthAttempt = authResult.data;
+        const lastDebugLog = debugResult.data;
+
+        // ✅ Consolidar device_info de múltiplas fontes (prioridade: auth > debug)
+        const userAgent = lastAuthAttempt?.user_agent || lastDebugLog?.user_agent || null;
+        const userIp = lastAuthAttempt?.ip_address?.toString() || 'Unknown';
         
         // ✅ Parsear informações do dispositivo
-        const deviceInfo = parseDeviceInfo(lastAuthAttempt?.user_agent || null);
+        const deviceInfo = parseDeviceInfo(userAgent);
         
         console.log(`📱 Device Info: ${deviceInfo.device_type} | ${deviceInfo.browser} | ${deviceInfo.os}`);
 
@@ -310,8 +326,9 @@ serve(async (req) => {
               device_type: deviceInfo.device_type,
               browser: deviceInfo.browser,
               os: deviceInfo.os,
-              user_agent: lastAuthAttempt?.user_agent || 'unknown',
-              is_active: userAccount?.is_active ?? true,
+              user_agent: userAgent || 'unknown',
+              is_active: isActive,
+              account_created: accountCreated,
               user_message: threat.user_message.substring(0, 500),
               sentiment: threat.sentiment,
               keywords: threat.keywords,
@@ -388,7 +405,7 @@ serve(async (req) => {
               hasPromptInjection: !!maliciousMessage,
               hasNegativeSentiment: insights?.some(i => i.sentiment === 'negative') || false,
               hasMultipleFailedAuth: false,
-              isAccountDeactivated: !userAccount?.is_active,
+              isAccountDeactivated: !isActive,
             };
 
             const threatScore = Object.values(threatIndicators).filter(Boolean).length;
@@ -427,16 +444,16 @@ serve(async (req) => {
                 user_id: userId,
                 full_name: userFullName,
                 email: userEmail,
-                account_created: userAccount?.created_at || session?.created_at,
+                account_created: accountCreated,
                 role: userRoleStr,
-                is_active: userAccount?.is_active ?? false,
-                account_status: userAccount?.is_active ? 'ACTIVE' : 'DEACTIVATED',
+                is_active: isActive,
+                account_status: isActive ? 'ACTIVE' : 'DEACTIVATED',
                 ip_address: userIp,
                 device_info: {
                   device_type: deviceInfo.device_type,
                   browser: deviceInfo.browser,
                   os: deviceInfo.os,
-                  user_agent: lastAuthAttempt?.user_agent || 'unknown'
+                  user_agent: userAgent || 'unknown'
                 },
                 total_sessions: allUserSessions?.length || 0,
                 total_messages: allMessages?.length || 0,
