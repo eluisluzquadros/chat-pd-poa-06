@@ -100,9 +100,18 @@ Deno.serve(async (req) => {
         let executionResult;
 
         if (config.config_type === 'simulation') {
+          console.log('🎭 Executando simulação...');
           executionResult = await runSimulation(supabase, config);
+          console.log('✅ Simulação concluída:', executionResult);
         } else if (config.config_type === 'monitoring') {
+          console.log('👁️ Executando monitoramento...');
           executionResult = await runMonitoring(supabase, config);
+          console.log('✅ Monitoramento concluído:', executionResult);
+        }
+
+        // Validar resultado
+        if (!executionResult) {
+          throw new Error('Execution returned no result');
         }
 
         const executionTime = Date.now() - startTime;
