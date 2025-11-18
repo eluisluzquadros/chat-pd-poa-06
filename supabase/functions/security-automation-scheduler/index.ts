@@ -293,19 +293,51 @@ async function runSimulation(supabase: any, config: AutomationConfig) {
 }
 
 async function runMonitoring(supabase: any, config: AutomationConfig) {
-  console.log('👁️ Executando monitoramento de ciberataque...');
-
   const hoursAgo = config.monitoring_time_window_hours || 24;
   const minSeverity = config.monitoring_min_severity || 'medium';
 
-  const { data, error } = await supabase.functions.invoke('process-historical-threats', {
-    body: {
-      hoursAgo,
-      minSeverity,
-      automatedRun: true,
-      configId: config.id,
-    },
-  });
+  console.log('👁️ Executando monitoramento de ciberataque...');
+  console.log(`📊 Parâmetros: ${hoursAgo}h atrás, severidade mínima: ${minSeverity}`);
+
+  try {
+    const { data, error } = await supabase.functions.invoke('process-historical-threats', {
+      body: {
+        hoursAgo,
+        minSeverity,
+        automatedRun: true,
+        configId: config.id,
+      },
+    });
+
+    if (error) {
+      console.error('❌ Erro ao invocar process-historical-threats:', error);
+      throw new Error(`Failed to invoke function: ${error.message || JSON.stringify(error)}`);
+    }
+
+    // Validar resposta
+    if (!data) {
+      console.warn('⚠️ Nenhum dado retornado por process-historical-threats');
+      return {
+        alerts_created: 0,
+        reports_generated: 0,
+        notifications_sent: 0,
+        time_window: hoursAgo,
+      };
+    }
+
+    console.log('✅ Monitoramento executado com sucesso:', data);
+
+    return {
+      alerts_created: data.processed || 0,
+      reports_generated: data.generated || 0,
+      notifications_sent: data.notified || 0,
+      time_window: hoursAgo,
+    };
+  } catch (error) {
+    console.error('❌ Exception em runMonitoring:', error);
+    throw error;
+  }
+}
 
   if (error) throw error;
 
