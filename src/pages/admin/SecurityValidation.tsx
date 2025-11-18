@@ -263,6 +263,9 @@ export default function SecurityValidation({ embedded = false }: SecurityValidat
         </div>
       </div>
 
+      {/* Dashboard de KPIs */}
+      <SecurityDashboard />
+
       {/* Executar Nova Validação */}
       <Card className="border-primary/20">
         <CardHeader>
