@@ -14,6 +14,7 @@ import { SecurityTestSelector } from "@/components/admin/security/SecurityTestSe
 import { SecurityAgentSelector } from "@/components/admin/security/SecurityAgentSelector";
 import { AutomationConfigDialog } from "@/components/security/AutomationConfigDialog";
 import { AutomationHistoryTable } from "@/components/security/AutomationHistoryTable";
+import { SecurityDashboard } from "@/components/security/SecurityDashboard";
 import { Progress } from "@/components/ui/progress";
 import {
   AlertDialog,
