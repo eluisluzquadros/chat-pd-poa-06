@@ -151,16 +151,7 @@ serve(async (req) => {
           id,
           user_id,
           created_at,
-          model,
-          user_accounts!inner (
-            email,
-            full_name,
-            is_active,
-            created_at
-          ),
-          user_roles (
-            role
-          )
+          model
         )
       `)
       .gte('created_at', cutoffTimestamp)
@@ -338,21 +329,33 @@ serve(async (req) => {
           continue;
         }
 
-        // ✅ OTIMIZADO: Dados já vêm da query consolidada
+        // ✅ Dados da sessão
         const session = (threat as any).chat_sessions;
-        const userAccount = session?.user_accounts;
-        const userRole = session?.user_roles?.[0]; // Array, pega primeiro
 
-        if (!session?.user_id || !userAccount) {
-          console.log(`⚠️ Sessão sem dados completos: ${threat.session_id}`);
+        if (!session?.user_id) {
+          console.log(`⚠️ Sessão sem user_id: ${threat.session_id}`);
           errorCount++;
           continue;
         }
 
         const userId = session.user_id;
-        const userEmail = userAccount.email || 'desconhecido';
-        const userFullName = userAccount.full_name || 'Desconhecido';
-        const userRoleStr = userRole?.role || 'user';
+        
+        // Buscar perfil do usuário
+        const { data: userProfile } = await supabase
+          .from('profiles')
+          .select('email, full_name')
+          .eq('id', userId)
+          .single();
+        
+        // Buscar role do usuário
+        const { data: userRoles } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', userId);
+        
+        const userEmail = userProfile?.email || 'desconhecido';
+        const userFullName = userProfile?.full_name || 'Desconhecido';
+        const userRoleStr = userRoles?.[0]?.role || 'user';
         const accountCreated = userAccount.created_at;
         const isActive = userAccount.is_active ?? true;
 
@@ -698,17 +701,10 @@ serve(async (req) => {
           console.error(`⚠️ Alerta não foi criado (newAlert é null)`);
         }
 
-        // Desativar usuário se identificado
+        // Log sobre desativação (implementar lógica de desativação se necessário)
         if (userId) {
-          await supabase
-            .from('user_accounts')
-            .update({
-              is_active: false,
-              updated_at: new Date().toISOString()
-            })
-            .eq('user_id', userId);
-          
-          console.log(`🔒 Usuário ${userEmail} desativado automaticamente`);
+          console.log(`⚠️ Usuário ${userEmail} identificado como ameaça - considerar desativação manual`);
+          // TODO: Implementar lógica de desativação se a tabela profiles tiver campo is_active
         }
 
       } catch (threatError) {
