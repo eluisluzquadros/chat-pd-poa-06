@@ -325,13 +325,22 @@ async function runMonitoring(supabase: any, config: AutomationConfig) {
       };
     }
 
-    console.log('✅ Monitoramento executado com sucesso:', data);
+    // Verificar se a função retornou erro
+    if (data.success === false) {
+      console.error('❌ Função retornou erro:', data);
+      throw new Error(`process-historical-threats failed: ${data.error || 'Unknown error'}`);
+    }
 
+    console.log('✅ Monitoramento executado com sucesso');
+    console.log('📊 Estatísticas completas:', data.stats);
+
+    // A função retorna { success, message, stats: { alerts_created, reports_generated, ... }, alerts, reports }
     return {
-      alerts_created: data.processed || 0,
-      reports_generated: data.generated || 0,
-      notifications_sent: data.notified || 0,
+      alerts_created: data.stats?.alerts_created || 0,
+      reports_generated: data.stats?.reports_generated || 0,
+      notifications_sent: data.stats?.alerts_created || 0,  // Assumir notificação por alerta
       time_window: hoursAgo,
+      total_scanned: data.stats?.total_scanned || 0,
     };
   } catch (error) {
     console.error('❌ Exception em runMonitoring:', error);
