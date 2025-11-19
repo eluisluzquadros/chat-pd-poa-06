@@ -223,10 +223,14 @@ function shouldRunNow(config: AutomationConfig, now: Date): boolean {
     }
   }
 
-  const currentHour = now.getHours();
-  const currentMinute = now.getMinutes();
-  const currentDay = now.getDay(); // 0 = Domingo
-  const currentDate = now.getDate();
+  // Converter 'now' para o timezone configurado
+  const timezone = config.timezone || 'America/Sao_Paulo';
+  const nowInTimezone = new Date(now.toLocaleString('en-US', { timeZone: timezone }));
+  
+  const currentHour = nowInTimezone.getHours();
+  const currentMinute = nowInTimezone.getMinutes();
+  const currentDay = nowInTimezone.getDay(); // 0 = Domingo
+  const currentDate = nowInTimezone.getDate();
 
   // Parse schedule_time (formato: "HH:MM:SS" ou "HH:MM")
   const [scheduleHour, scheduleMinute] = config.schedule_time.split(':').map(Number);
@@ -251,19 +255,33 @@ function shouldRunNow(config: AutomationConfig, now: Date): boolean {
 }
 
 function calculateNextRun(config: AutomationConfig, now: Date): Date {
-  const nextRun = new Date(now);
+  const timezone = config.timezone || 'America/Sao_Paulo';
+  
+  // Converter now para timezone local
+  const nowInTimezone = new Date(now.toLocaleString('en-US', { timeZone: timezone }));
+  
   const [scheduleHour, scheduleMinute] = config.schedule_time.split(':').map(Number);
-
-  if (config.schedule_type === 'daily') {
-    nextRun.setDate(nextRun.getDate() + 1);
-  } else if (config.schedule_type === 'weekly') {
-    nextRun.setDate(nextRun.getDate() + 7);
-  } else if (config.schedule_type === 'monthly') {
-    nextRun.setMonth(nextRun.getMonth() + 1);
-  }
-
+  
+  let nextRun = new Date(nowInTimezone);
   nextRun.setHours(scheduleHour, scheduleMinute, 0, 0);
-  return nextRun;
+  
+  // Se já passou a hora hoje, calcular próxima execução
+  if (nextRun <= nowInTimezone) {
+    if (config.schedule_type === 'daily') {
+      nextRun.setDate(nextRun.getDate() + 1);
+    } else if (config.schedule_type === 'weekly') {
+      nextRun.setDate(nextRun.getDate() + 7);
+    } else if (config.schedule_type === 'monthly') {
+      nextRun.setMonth(nextRun.getMonth() + 1);
+    }
+  }
+  
+  // Converter de volta para UTC (subtrair offset do timezone)
+  // America/Sao_Paulo é UTC-3, então adicionar 3 horas
+  const offsetMinutes = nextRun.getTimezoneOffset();
+  const utcNextRun = new Date(nextRun.getTime() - (offsetMinutes * 60000));
+  
+  return utcNextRun;
 }
 
 async function runSimulation(supabase: any, config: AutomationConfig) {
