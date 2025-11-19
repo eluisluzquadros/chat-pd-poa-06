@@ -339,16 +339,6 @@ async function runMonitoring(supabase: any, config: AutomationConfig) {
   }
 }
 
-  if (error) throw error;
-
-  return {
-    alerts_created: data.processed || 0,
-    reports_generated: data.generated || 0,
-    notifications_sent: data.notified || 0,
-    time_window: hoursAgo,
-  };
-}
-
 async function sendNotification(
   supabase: any, 
   config: AutomationConfig, 
