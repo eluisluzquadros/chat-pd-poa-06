@@ -356,8 +356,8 @@ serve(async (req) => {
         const userEmail = userProfile?.email || 'desconhecido';
         const userFullName = userProfile?.full_name || 'Desconhecido';
         const userRoleStr = userRoles?.[0]?.role || 'user';
-        const accountCreated = userAccount.created_at;
-        const isActive = userAccount.is_active ?? true;
+        const accountCreated = userProfile?.created_at || session.created_at;
+        const isActive = true; // profiles não tem is_active, assume ativo por padrão
 
         console.log(`👤 Processando usuário: ${userEmail} (${userId})`);
 
