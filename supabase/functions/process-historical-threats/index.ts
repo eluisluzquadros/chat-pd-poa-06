@@ -56,43 +56,93 @@ function parseDeviceInfo(userAgent: string | null): DeviceInfo {
 }
 
 serve(async (req) => {
+  // 🚀 LOGGING DEFENSIVO: Primeira coisa a fazer
+  console.log('🚀 [process-historical-threats] Função iniciada');
+  console.log('📋 Method:', req.method);
+  console.log('📋 Headers:', Object.fromEntries(req.headers.entries()));
+  
   if (req.method === 'OPTIONS') {
+    console.log('✅ Respondendo a preflight CORS');
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
+    console.log('🔧 Inicializando Supabase client...');
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const supabase = createClient(supabaseUrl, supabaseKey);
-
-    // Autenticar usuário
-    const authHeader = req.headers.get('Authorization');
-    if (!authHeader) {
-      throw new Error('Missing authorization header');
-    }
-
-    const token = authHeader.replace('Bearer ', '');
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
     
-    if (authError || !user) {
-      throw new Error('Unauthorized');
+    if (!supabaseUrl || !supabaseKey) {
+      throw new Error('Missing Supabase environment variables');
+    }
+    
+    const supabase = createClient(supabaseUrl, supabaseKey);
+    console.log('✅ Supabase client criado');
+
+    // Parse body para obter parâmetros
+    let body: any = {};
+    try {
+      const contentType = req.headers.get('content-type');
+      if (contentType?.includes('application/json')) {
+        body = await req.json();
+        console.log('📦 Body recebido:', body);
+      }
+    } catch (parseError) {
+      console.warn('⚠️ Erro ao fazer parse do body (continuando):', parseError);
     }
 
-    // Verificar se é admin
-    const { data: userRole } = await supabase
-      .from('user_roles')
-      .select('role')
-      .eq('user_id', user.id)
-      .single();
+    const { hoursAgo = 24, minSeverity = 'medium', automatedRun = false } = body;
+    console.log('⚙️ Parâmetros:', { hoursAgo, minSeverity, automatedRun });
 
-    if (!userRole || !['admin', 'supervisor'].includes(userRole.role)) {
-      throw new Error('Access denied - Admin role required');
+    // Autenticar usuário (opcional se for chamada automatizada)
+    let user: any = null;
+    if (!automatedRun) {
+      console.log('🔐 Verificando autenticação de usuário...');
+      const authHeader = req.headers.get('Authorization');
+      if (!authHeader) {
+        throw new Error('Missing authorization header');
+      }
+
+      const token = authHeader.replace('Bearer ', '');
+      const { data: { user: authUser }, error: authError } = await supabase.auth.getUser(token);
+      
+      if (authError || !authUser) {
+        throw new Error('Unauthorized');
+      }
+      
+      user = authUser;
+      console.log('✅ Usuário autenticado:', user.id);
+
+      // Verificar se é admin
+      const { data: userRole } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', user.id)
+        .single();
+
+      if (!userRole || !['admin', 'supervisor'].includes(userRole.role)) {
+        throw new Error('Access denied - Admin role required');
+      }
+      
+      console.log('✅ Permissões de admin verificadas');
+    } else {
+      console.log('🤖 Execução automatizada - pulando autenticação de usuário');
+      // Para runs automatizados, usar um user_id de sistema
+      user = { id: '00000000-0000-0000-0000-000000000000' };
     }
 
     console.log('🔍 Buscando ameaças históricas não processadas...');
     console.log('⚡ OTIMIZADO: Query consolidada com JOINs + Buscas paralelas');
+    console.log(`⏰ Janela de tempo: últimas ${hoursAgo} horas`);
+    console.log(`🎯 Severidade mínima: ${minSeverity}`);
+
+    // Calcular timestamp para filtrar por hoursAgo
+    const cutoffTime = new Date();
+    cutoffTime.setHours(cutoffTime.getHours() - hoursAgo);
+    const cutoffTimestamp = cutoffTime.toISOString();
+    console.log(`📅 Buscando registros desde: ${cutoffTimestamp}`);
 
     // Buscar sessões de chat com informações completas do usuário (OTIMIZADO - Single Query)
+    console.log('📡 Executando query no banco...');
     const { data: threats, error: threatsError } = await supabase
       .from('message_insights')
       .select(`
@@ -113,11 +163,15 @@ serve(async (req) => {
           )
         )
       `)
+      .gte('created_at', cutoffTimestamp)
       .order('created_at', { ascending: false });
 
     if (threatsError) {
+      console.error('❌ Erro na query de ameaças:', threatsError);
       throw threatsError;
     }
+    
+    console.log(`✅ Query executada: ${threats?.length || 0} registros encontrados`);
 
     const processedAlerts: any[] = [];
     const processedReports: any[] = [];
@@ -129,6 +183,35 @@ serve(async (req) => {
     let filteredByAutomatedTests = 0;
 
     console.log(`📊 Total de registros encontrados: ${threats?.length || 0}`);
+
+    // Se não houver ameaças, retornar sucesso com contadores zerados
+    if (!threats || threats.length === 0) {
+      console.log('✅ Nenhuma ameaça encontrada no período especificado');
+      const emptySummary = {
+        success: true,
+        message: 'Processamento concluído - nenhuma ameaça detectada no período',
+        stats: {
+          total_scanned: 0,
+          filtered_by_role: 0,
+          filtered_by_automated_tests: 0,
+          already_blocked_but_reported: 0,
+          filtered_by_test_keywords: 0,
+          legitimate_messages: 0,
+          alerts_created: 0,
+          reports_generated: 0,
+          errors: 0
+        },
+        alerts: [],
+        reports: []
+      };
+      
+      console.log('📊 Resumo (vazio):', emptySummary.stats);
+      
+      return new Response(JSON.stringify(emptySummary), {
+        status: 200,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
 
     // FILTRO 1: Obter lista de user_ids com roles privilegiadas (admin/supervisor)
     const { data: privilegedUsers } = await supabase
@@ -660,12 +743,19 @@ serve(async (req) => {
     });
 
   } catch (error: any) {
-    console.error('❌ Erro no processamento histórico:', error);
+    console.error('❌❌❌ ERRO CRÍTICO no processamento histórico ❌❌❌');
+    console.error('Tipo:', error?.constructor?.name);
+    console.error('Mensagem:', error?.message);
+    console.error('Stack:', error?.stack);
+    console.error('Detalhes completos:', JSON.stringify(error, null, 2));
+    
     return new Response(
       JSON.stringify({ 
         success: false,
-        error: error.message,
-        details: error.toString()
+        error: error?.message || 'Unknown error',
+        errorType: error?.constructor?.name || 'UnknownError',
+        details: error?.toString() || 'No details available',
+        timestamp: new Date().toISOString()
       }),
       {
         status: 500,
