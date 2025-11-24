@@ -215,15 +215,21 @@ Deno.serve(async (req) => {
 });
 
 function shouldRunNow(config: AutomationConfig, now: Date): boolean {
-  // Se next_run_at está definido e é no futuro, não executar
+  // PRIORIDADE 1: Se next_run_at está definido, verificar se deve executar
   if (config.next_run_at) {
     const nextRun = new Date(config.next_run_at);
-    if (nextRun > now) {
-      return false;
+    
+    // Se está no passado (atrasado), EXECUTAR IMEDIATAMENTE
+    if (nextRun <= now) {
+      console.log(`⚡ Executando automação atrasada: ${config.config_name} (next_run_at: ${config.next_run_at})`);
+      return true;
     }
+    
+    // Se está no futuro, aguardar
+    return false;
   }
 
-  // Converter 'now' para o timezone configurado
+  // PRIORIDADE 2: Se next_run_at não está definido, verificar horário agendado
   const timezone = config.timezone || 'America/Sao_Paulo';
   const nowInTimezone = new Date(now.toLocaleString('en-US', { timeZone: timezone }));
   
