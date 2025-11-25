@@ -28,6 +28,7 @@ export function AutomationConfigDialog({
     schedule_type: 'daily' as 'daily' | 'weekly' | 'monthly',
     schedule_time: '14:00',
     schedule_days: [] as number[],
+    timezone: 'America/Sao_Paulo',
     simulation_test_count: 20,
     simulation_randomize: true,
     monitoring_time_window_hours: 24,
@@ -63,16 +64,24 @@ export function AutomationConfigDialog({
   }, [config]);
 
   const calculateNextRun = () => {
+    const timezone = 'America/Sao_Paulo';
     const now = new Date();
     const [hours, minutes] = formData.schedule_time.split(':').map(Number);
+    
+    // Criar data no timezone local (Brasília)
     const next = new Date(now);
     next.setHours(hours, minutes, 0, 0);
-
+    
+    // Se já passou, agendar para amanhã
     if (next <= now) {
       next.setDate(next.getDate() + 1);
     }
-
-    return next.toISOString();
+    
+    // Converter para UTC considerando offset de São Paulo (-3h)
+    // São Paulo é UTC-3, então adiciona 3 horas para obter UTC
+    const utcTime = new Date(next.getTime() + (3 * 60 * 60 * 1000));
+    
+    return utcTime.toISOString();
   };
 
   const handleSave = async () => {
@@ -89,6 +98,7 @@ export function AutomationConfigDialog({
 
       const dataToSave = {
         ...formData,
+        timezone: 'America/Sao_Paulo',
         next_run_at: calculateNextRun(),
         created_by: userData.user.id,
         updated_by: userData.user.id,
@@ -158,12 +168,17 @@ export function AutomationConfigDialog({
               />
             </div>
 
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+              <div>
+                <Label className="font-medium">Habilitar Automação</Label>
+                <p className="text-xs text-muted-foreground">
+                  Ativa a execução automática desta configuração
+                </p>
+              </div>
               <Switch
                 checked={formData.is_enabled}
                 onCheckedChange={(checked) => setFormData({ ...formData, is_enabled: checked })}
               />
-              <Label>Habilitar automação</Label>
             </div>
 
             <div>
@@ -205,13 +220,16 @@ export function AutomationConfigDialog({
             </div>
 
             <div>
-              <Label htmlFor="schedule_time">Horário</Label>
+              <Label htmlFor="schedule_time">Horário (Brasília - GMT-3)</Label>
               <Input
                 id="schedule_time"
                 type="time"
                 value={formData.schedule_time}
                 onChange={(e) => setFormData({ ...formData, schedule_time: e.target.value })}
               />
+              <p className="text-xs text-muted-foreground mt-1">
+                Fuso horário: América/São Paulo (UTC-3)
+              </p>
             </div>
           </div>
 
@@ -232,12 +250,17 @@ export function AutomationConfigDialog({
                 />
               </div>
 
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                <div>
+                  <Label className="font-medium">Aleatorizar Casos de Teste</Label>
+                  <p className="text-xs text-muted-foreground">
+                    Seleciona testes em ordem aleatória a cada execução
+                  </p>
+                </div>
                 <Switch
                   checked={formData.simulation_randomize}
                   onCheckedChange={(checked) => setFormData({ ...formData, simulation_randomize: checked })}
                 />
-                <Label>Aleatorizar casos de teste</Label>
               </div>
             </div>
           )}
@@ -288,28 +311,43 @@ export function AutomationConfigDialog({
           <div className="space-y-4 pt-4 border-t">
             <h3 className="font-semibold">Notificações</h3>
             
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+              <div>
+                <Label className="font-medium">Notificações por Email</Label>
+                <p className="text-xs text-muted-foreground">
+                  Enviar resumo dos resultados por email
+                </p>
+              </div>
               <Switch
                 checked={formData.email_notifications}
                 onCheckedChange={(checked) => setFormData({ ...formData, email_notifications: checked })}
               />
-              <Label>Enviar emails de notificação</Label>
             </div>
 
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+              <div>
+                <Label className="font-medium">Gerar PDF Automaticamente</Label>
+                <p className="text-xs text-muted-foreground">
+                  Cria relatório PDF após cada execução
+                </p>
+              </div>
               <Switch
                 checked={formData.auto_generate_pdf}
                 onCheckedChange={(checked) => setFormData({ ...formData, auto_generate_pdf: checked })}
               />
-              <Label>Gerar PDF automaticamente</Label>
             </div>
 
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+              <div>
+                <Label className="font-medium">Relatório Semanal</Label>
+                <p className="text-xs text-muted-foreground">
+                  Envia resumo consolidado toda segunda-feira
+                </p>
+              </div>
               <Switch
                 checked={formData.auto_send_weekly_report}
                 onCheckedChange={(checked) => setFormData({ ...formData, auto_send_weekly_report: checked })}
               />
-              <Label>Relatório semanal</Label>
             </div>
 
             <div>
