@@ -115,42 +115,64 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Autenticar usuário
-    const authHeader = req.headers.get('Authorization');
-    if (!authHeader) {
-      throw new Error('Autorização necessária');
+    // 🔄 LER BODY PRIMEIRO para verificar se é execução automatizada
+    const body = await req.json();
+    const { 
+      testNumbers, 
+      agentId, 
+      systemVersion = 'v1.0',
+      automatedRun = false,
+      configId,
+      email_notifications = false
+    } = body;
+
+    let executedBy: string | null = null;
+
+    // 🤖 Se for execução automatizada, pular autenticação de usuário
+    if (automatedRun) {
+      console.log('🤖 Execução automatizada - pulando autenticação de usuário');
+      console.log(`📋 Config ID: ${configId}`);
+      console.log(`📧 Notificações por email: ${email_notifications}`);
+      executedBy = null;
+    } else {
+      // 👤 Execução manual - requer autenticação de usuário admin
+      const authHeader = req.headers.get('Authorization');
+      if (!authHeader) {
+        throw new Error('Autorização necessária');
+      }
+
+      const token = authHeader.replace('Bearer ', '');
+      const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+      
+      if (authError || !user) {
+        throw new Error('Usuário não autenticado');
+      }
+
+      // Verificar se usuário é admin
+      const { data: userRole } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', user.id)
+        .single();
+
+      if (userRole?.role !== 'admin') {
+        throw new Error('Acesso negado. Apenas administradores podem executar validações de segurança.');
+      }
+
+      executedBy = user.id;
     }
-
-    const token = authHeader.replace('Bearer ', '');
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
-    
-    if (authError || !user) {
-      throw new Error('Usuário não autenticado');
-    }
-
-    // Verificar se usuário é admin
-    const { data: userRole } = await supabase
-      .from('user_roles')
-      .select('role')
-      .eq('user_id', user.id)
-      .single();
-
-    if (userRole?.role !== 'admin') {
-      throw new Error('Acesso negado. Apenas administradores podem executar validações de segurança.');
-    }
-
-    const { testNumbers, agentId, systemVersion = 'v1.0' } = await req.json();
 
     console.log(`🔒 Iniciando validação de segurança - Versão: ${systemVersion}`);
     console.log(`📝 Testes selecionados:`, testNumbers || 'TODOS');
     console.log(`🤖 Agent ID fornecido:`, agentId || 'Usar padrão');
+    console.log(`🔄 Execução automatizada:`, automatedRun);
 
     // Criar registro de execução
     const { data: run, error: runError } = await supabase
       .from('security_validation_runs')
       .insert({
         status: 'running',
-        executed_by: user.id,
+        executed_by: executedBy,
         system_version: systemVersion,
         started_at: new Date().toISOString(),
         agent_id: agentId,
@@ -165,10 +187,7 @@ serve(async (req) => {
     console.log(`✅ Run criada com ID: ${run.id}`);
 
     // 🚀 RETORNAR IMEDIATAMENTE - processar de forma assíncrona
-    // Isso evita timeout do Edge Function (60s)
-    
-    // Processar testes em background sem bloquear a resposta HTTP
-    processTestsAsync(supabase, run, testNumbers, agentId, user.id, systemVersion).catch(error => {
+    processTestsAsync(supabase, run, testNumbers, agentId, executedBy, systemVersion, automatedRun, email_notifications).catch(error => {
       console.error('❌ Erro no processamento assíncrono:', error);
     });
 
@@ -210,8 +229,10 @@ async function processTestsAsync(
   run: any,
   testNumbers: number[] | undefined,
   agentId: string | undefined,
-  userId: string,
-  systemVersion: string
+  userId: string | null,
+  systemVersion: string,
+  automatedRun: boolean = false,
+  email_notifications: boolean = false
 ) {
   try {
     console.log(`🔄 Iniciando processamento assíncrono para run ${run.id}`);

@@ -3821,6 +3821,21 @@ export type Database = {
       hybrid_search:
         | {
             Args: {
+              match_count?: number
+              match_threshold?: number
+              query_embedding: string
+              query_text: string
+            }
+            Returns: {
+              content: string
+              id: string
+              metadata: Json
+              rank: number
+              similarity: number
+            }[]
+          }
+        | {
+            Args: {
               doc_type?: string
               embedding_vector?: string
               limit_results?: number
@@ -3834,21 +3849,6 @@ export type Database = {
               hierarchy: string
               relevance_score: number
               source: string
-            }[]
-          }
-        | {
-            Args: {
-              match_count?: number
-              match_threshold?: number
-              query_embedding: string
-              query_text: string
-            }
-            Returns: {
-              content: string
-              id: string
-              metadata: Json
-              rank: number
-              similarity: number
             }[]
           }
       is_admin: { Args: never; Returns: boolean }
@@ -3891,20 +3891,6 @@ export type Database = {
       }
       match_documents:
         | {
-            Args: {
-              match_count?: number
-              match_threshold?: number
-              query_embedding: string
-            }
-            Returns: {
-              article_number: number
-              article_text: string
-              document_type: string
-              full_content: string
-              similarity: number
-            }[]
-          }
-        | {
             Args: { match_count: number; query_embedding: string }
             Returns: {
               chunk_metadata: Json
@@ -3923,6 +3909,20 @@ export type Database = {
               content: string
               id: number
               metadata: Json
+              similarity: number
+            }[]
+          }
+        | {
+            Args: {
+              match_count?: number
+              match_threshold?: number
+              query_embedding: string
+            }
+            Returns: {
+              article_number: number
+              article_text: string
+              document_type: string
+              full_content: string
               similarity: number
             }[]
           }
