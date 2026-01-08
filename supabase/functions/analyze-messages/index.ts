@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.57.3';
+import { trackTokenUsage, logLLMMetrics } from "../_shared/token-tracker.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -170,6 +171,29 @@ Retorne um JSON com estrutura:
     const aiResult = await response.json();
     const analysisText = aiResult.choices[0].message.content;
     const analysis = JSON.parse(analysisText);
+
+    // ✅ Track token usage
+    const usage = aiResult.usage;
+    if (usage) {
+      await trackTokenUsage({
+        model: 'gpt-4o-mini',
+        inputTokens: usage.prompt_tokens || 0,
+        outputTokens: usage.completion_tokens || 0,
+        totalTokens: usage.total_tokens || 0,
+        source: 'analyze-messages',
+        messagePreview: `Analyzed ${messages.length} messages`,
+      });
+
+      await logLLMMetrics({
+        modelName: 'gpt-4o-mini',
+        provider: 'openai',
+        promptTokens: usage.prompt_tokens,
+        completionTokens: usage.completion_tokens,
+        totalTokens: usage.total_tokens,
+        success: true,
+        requestType: 'message-analysis',
+      });
+    }
 
     console.log(`✅ [STEP 4] OpenAI analysis complete: ${analysis.results.length} results`);
     console.log(`📊 [STEP 4] Sample result:`, JSON.stringify(analysis.results[0]));

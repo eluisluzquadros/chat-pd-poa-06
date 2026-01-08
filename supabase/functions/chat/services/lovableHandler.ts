@@ -1,4 +1,5 @@
 import { ChatResponse } from "../types.ts";
+import { trackTokenUsage, logLLMMetrics } from "../../_shared/token-tracker.ts";
 
 // Função para estimar tokens (aproximação: ~4 chars = 1 token)
 function estimateTokens(text: string): number {
@@ -36,6 +37,7 @@ export async function processLovableAgent(
   const maxCompletionTokens = agent.parameters?.max_tokens || 4000;
   const temperature = agent.parameters?.temperature || 0.7;
   const maxHistoryMessages = agent.parameters?.max_history_messages || 30;
+  const modelName = agent.model || "gpt-4o-mini";
   
   // Buscar histórico da sessão (se houver)
   let conversationHistory: any[] = [];
@@ -81,6 +83,8 @@ export async function processLovableAgent(
   
   console.log(`🔄 Calling OpenAI Completions API with ${messages.length} messages`);
   
+  const startTime = Date.now();
+  
   // Chamar OpenAI Completions API
   const response = await fetch("https://api.openai.com/v1/chat/completions", {
     method: "POST",
@@ -89,7 +93,7 @@ export async function processLovableAgent(
       "Content-Type": "application/json"
     },
     body: JSON.stringify({
-      model: agent.model || "gpt-4o-mini",
+      model: modelName,
       messages: messages,
       max_completion_tokens: maxCompletionTokens,
       temperature: temperature,
@@ -105,8 +109,36 @@ export async function processLovableAgent(
   
   const data = await response.json();
   const assistantMessage = data.choices[0]?.message?.content || "No response generated";
+  const executionTime = Date.now() - startTime;
   
   console.log(`✅ Lovable agent response generated (${assistantMessage.length} chars)`);
+  
+  // ✅ Track token usage with correct model name
+  const usage = data.usage;
+  if (usage) {
+    await trackTokenUsage({
+      sessionId: sessionId || undefined,
+      model: modelName,
+      inputTokens: usage.prompt_tokens || 0,
+      outputTokens: usage.completion_tokens || 0,
+      totalTokens: usage.total_tokens || 0,
+      source: 'chat:lovable-agent',
+      messagePreview: message.substring(0, 100),
+    });
+
+    await logLLMMetrics({
+      modelName: modelName,
+      provider: 'openai',
+      promptTokens: usage.prompt_tokens,
+      completionTokens: usage.completion_tokens,
+      totalTokens: usage.total_tokens,
+      executionTimeMs: executionTime,
+      success: true,
+      requestType: 'lovable-agent-chat',
+      sessionId: sessionId || undefined,
+      metadata: { agentName: agent.display_name },
+    });
+  }
   
   return {
     content: assistantMessage,
