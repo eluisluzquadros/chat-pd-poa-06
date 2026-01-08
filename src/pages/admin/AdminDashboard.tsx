@@ -1,6 +1,7 @@
 import { Header } from '@/components/Header';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ReportsContainer } from "@/components/reports/ReportsContainer";
+import { TokenStats } from "@/components/chat/TokenStats";
 import { BarChart3, DollarSign, Cpu } from "lucide-react";
 
 export default function AdminDashboardPage() {
@@ -37,12 +38,7 @@ export default function AdminDashboardPage() {
             </TabsContent>
 
             <TabsContent value="costs" className="space-y-4 mt-6">
-              <div className="rounded-lg border bg-card p-8 text-center">
-                <h3 className="text-lg font-semibold mb-2">Tokens & Custos</h3>
-                <p className="text-muted-foreground">
-                  Análise de consumo de tokens e custos será implementada em breve
-                </p>
-              </div>
+              <TokenStats />
             </TabsContent>
 
             <TabsContent value="models" className="space-y-4 mt-6">

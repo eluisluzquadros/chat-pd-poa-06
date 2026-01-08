@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.75.0";
+import { trackTokenUsage, logLLMMetrics } from "../_shared/token-tracker.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -217,6 +218,31 @@ serve(async (req) => {
 
     console.log(`[unified-chat] Response generated in ${executionTime}ms`);
     console.log(`[unified-chat] Tokens used: ${tokensUsed}`);
+
+    // ✅ Track token usage with correct model name (not agent UUID)
+    const actualModelName = agent.model || 'gpt-4o-mini';
+    if (tokensUsed > 0) {
+      await trackTokenUsage({
+        model: actualModelName,
+        inputTokens: Math.floor(tokensUsed * 0.3), // Approximate split
+        outputTokens: Math.floor(tokensUsed * 0.7),
+        totalTokens: tokensUsed,
+        sessionId: sessionId,
+        source: `unified-chat:${agent.provider}`,
+        messagePreview: message.substring(0, 100),
+      });
+
+      await logLLMMetrics({
+        modelName: actualModelName,
+        provider: agent.provider,
+        totalTokens: tokensUsed,
+        executionTimeMs: executionTime,
+        success: true,
+        requestType: 'chat',
+        sessionId: sessionId,
+        metadata: { agentName: agent.name },
+      });
+    }
 
     // Return formatted response
     return new Response(

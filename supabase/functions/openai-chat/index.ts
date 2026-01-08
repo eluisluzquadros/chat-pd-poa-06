@@ -1,6 +1,7 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { trackTokenUsage, logLLMMetrics } from "../_shared/token-tracker.ts";
 
 // Context retrieval is now handled by retrieve-context edge function
 
@@ -178,6 +179,37 @@ INSTRUÇÕES DE USO DO CONTEXTO:
       model: data.model,
       usage: data.usage 
     });
+
+    // ✅ Track token usage
+    const usage = data.usage;
+    if (usage) {
+      await trackTokenUsage({
+        userId: userId,
+        sessionId: sessionId,
+        model: data.model || agentConfig?.model || 'gpt-4o-mini',
+        inputTokens: usage.prompt_tokens || 0,
+        outputTokens: usage.completion_tokens || 0,
+        totalTokens: usage.total_tokens || 0,
+        source: 'openai-chat',
+        messagePreview: message.substring(0, 100),
+      });
+
+      await logLLMMetrics({
+        modelName: data.model || agentConfig?.model || 'gpt-4o-mini',
+        provider: 'openai',
+        promptTokens: usage.prompt_tokens,
+        completionTokens: usage.completion_tokens,
+        totalTokens: usage.total_tokens,
+        success: true,
+        requestType: 'chat',
+        sessionId: sessionId,
+        userId: userId,
+        metadata: { 
+          agentName: agentConfig?.name,
+          hasContext: contextSources.length > 0,
+        },
+      });
+    }
 
     // Save to chat_history
     const { error: saveError } = await supabaseClient
