@@ -211,12 +211,12 @@ export default function AgentsConfig() {
         break;
       case 'dify':
           newApiConfig = {
-            base_url: 'https://cloud.dify.ai',
-            service_api_endpoint: '/api/chat-messages',
+            base_url: 'https://api.dify.ai/v1',
+            service_api_endpoint: '/chat-messages',
             api_key: '',
             app_id: '',
-            public_url: 'https://cloud.dify.ai',
-            server_url: 'https://cloud.dify.ai'
+            public_url: 'https://api.dify.ai/v1',
+            server_url: 'https://udify.app/chat/XXXXX'
           };
           newModel = 'dify-app';
           break;
