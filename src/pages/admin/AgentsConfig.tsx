@@ -68,12 +68,12 @@ interface AgentFormData {
 
 // Configuração padrão da API externa (sem credenciais por segurança)
 const defaultApiConfig: ApiConfig = {
-  base_url: 'https://cloud.dify.ai',
-  service_api_endpoint: '/api/chat-messages',
+  base_url: 'https://api.dify.ai/v1',
+  service_api_endpoint: '/chat-messages',
   api_key: '',
   app_id: '',
-  public_url: 'https://cloud.dify.ai',
-  server_url: 'https://cloud.dify.ai',
+  public_url: 'https://api.dify.ai/v1',
+  server_url: 'https://udify.app/chat/XXXXX',
   workflow_id: '',
 };
 
@@ -211,12 +211,12 @@ export default function AgentsConfig() {
         break;
       case 'dify':
           newApiConfig = {
-            base_url: 'https://cloud.dify.ai',
-            service_api_endpoint: '/api/chat-messages',
+            base_url: 'https://api.dify.ai/v1',
+            service_api_endpoint: '/chat-messages',
             api_key: '',
             app_id: '',
-            public_url: 'https://cloud.dify.ai',
-            server_url: 'https://cloud.dify.ai'
+            public_url: 'https://api.dify.ai/v1',
+            server_url: 'https://udify.app/chat/XXXXX'
           };
           newModel = 'dify-app';
           break;
@@ -814,7 +814,7 @@ export default function AgentsConfig() {
                               <AlertCircle className="h-4 w-4 text-muted-foreground" />
                             </TooltipTrigger>
                             <TooltipContent>
-                              <p>URL base da API (ex: https://api.dify.ai)</p>
+                              <p>URL base da API (ex: https://api.dify.ai/v1)</p>
                             </TooltipContent>
                           </Tooltip>
                         </div>
@@ -822,7 +822,7 @@ export default function AgentsConfig() {
                           id="base_url"
                           value={formData.api_config.base_url}
                           onChange={(e) => updateApiConfig('base_url', e.target.value)}
-                          placeholder="https://api.dify.ai"
+                          placeholder="https://api.dify.ai/v1"
                           required
                           className={!formData.api_config.base_url && showValidation ? 'border-destructive' : ''}
                         />
@@ -921,7 +921,7 @@ export default function AgentsConfig() {
                         onChange={(e) => updateApiConfig('app_id', e.target.value)}
                         placeholder={formData.provider === 'crewai' 
                           ? 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx (opcional)'
-                          : 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'
+                          : 'app-xxxxxxxxxxxxxxxxxxxxxxxx'
                         }
                         required={formData.provider !== 'crewai'}
                         className={!formData.api_config.app_id && showValidation && formData.provider !== 'crewai' ? 'border-destructive' : ''}
@@ -938,7 +938,7 @@ export default function AgentsConfig() {
                         id="public_url"
                         value={formData.api_config.public_url}
                         onChange={(e) => updateApiConfig('public_url', e.target.value)}
-                        placeholder="https://api.example.com"
+                        placeholder="https://api.dify.ai/v1"
                       />
                     </div>
 
@@ -948,7 +948,7 @@ export default function AgentsConfig() {
                         id="server_url"
                         value={formData.api_config.server_url}
                         onChange={(e) => updateApiConfig('server_url', e.target.value)}
-                        placeholder="https://server.api.example.com"
+                        placeholder="https://udify.app/chat/XXXXX"
                       />
                     </div>
                   </div>
