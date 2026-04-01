@@ -948,7 +948,7 @@ export default function AgentsConfig() {
                         id="server_url"
                         value={formData.api_config.server_url}
                         onChange={(e) => updateApiConfig('server_url', e.target.value)}
-                        placeholder="https://server.api.example.com"
+                        placeholder="https://udify.app/chat/XXXXX"
                       />
                     </div>
                   </div>
