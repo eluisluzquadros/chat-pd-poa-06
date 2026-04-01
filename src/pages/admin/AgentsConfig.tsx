@@ -822,7 +822,7 @@ export default function AgentsConfig() {
                           id="base_url"
                           value={formData.api_config.base_url}
                           onChange={(e) => updateApiConfig('base_url', e.target.value)}
-                          placeholder="https://api.dify.ai"
+                          placeholder="https://api.dify.ai/v1"
                           required
                           className={!formData.api_config.base_url && showValidation ? 'border-destructive' : ''}
                         />
