@@ -938,7 +938,7 @@ export default function AgentsConfig() {
                         id="public_url"
                         value={formData.api_config.public_url}
                         onChange={(e) => updateApiConfig('public_url', e.target.value)}
-                        placeholder="https://api.example.com"
+                        placeholder="https://api.dify.ai/v1"
                       />
                     </div>
 
