@@ -68,12 +68,12 @@ interface AgentFormData {
 
 // Configuração padrão da API externa (sem credenciais por segurança)
 const defaultApiConfig: ApiConfig = {
-  base_url: 'https://cloud.dify.ai',
-  service_api_endpoint: '/api/chat-messages',
+  base_url: 'https://api.dify.ai/v1',
+  service_api_endpoint: '/chat-messages',
   api_key: '',
   app_id: '',
-  public_url: 'https://cloud.dify.ai',
-  server_url: 'https://cloud.dify.ai',
+  public_url: 'https://api.dify.ai/v1',
+  server_url: 'https://udify.app/chat/XXXXX',
   workflow_id: '',
 };
 
