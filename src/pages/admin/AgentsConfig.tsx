@@ -814,7 +814,7 @@ export default function AgentsConfig() {
                               <AlertCircle className="h-4 w-4 text-muted-foreground" />
                             </TooltipTrigger>
                             <TooltipContent>
-                              <p>URL base da API (ex: https://api.dify.ai)</p>
+                              <p>URL base da API (ex: https://api.dify.ai/v1)</p>
                             </TooltipContent>
                           </Tooltip>
                         </div>
