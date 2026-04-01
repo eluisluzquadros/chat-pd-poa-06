@@ -921,7 +921,7 @@ export default function AgentsConfig() {
                         onChange={(e) => updateApiConfig('app_id', e.target.value)}
                         placeholder={formData.provider === 'crewai' 
                           ? 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx (opcional)'
-                          : 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'
+                          : 'app-xxxxxxxxxxxxxxxxxxxxxxxx'
                         }
                         required={formData.provider !== 'crewai'}
                         className={!formData.api_config.app_id && showValidation && formData.provider !== 'crewai' ? 'border-destructive' : ''}
